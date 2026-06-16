@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge, Section } from "@/components/app-shell";
 import { cleaningTasks, cleaners, getRoom, getProperty, getCleaner, cleaningStatusMeta, type CleaningStatus } from "@/lib/demo-data";
 import { useState } from "react";
-import { MessageCircle, Send, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Send, CheckCheck } from "lucide-react";
 
 export const Route = createFileRoute("/whatsapp")({
   head: () => ({ meta: [{ title: "WhatsApp — StayFlow" }] }),
