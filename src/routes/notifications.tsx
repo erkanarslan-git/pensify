@@ -15,17 +15,27 @@ function NotificationsPage() {
   const problems = cleaningTasks.filter((t) => t.status === "problem");
   const maintenance = rooms.filter((r) => r.status === "maintenance");
 
-  const Group = ({ title, icon: Icon, tone, children }: any) => (
-    <div className="rounded-xl border border-border bg-card shadow-soft">
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
-        <span className={`w-7 h-7 rounded-md grid place-items-center bg-${tone}/10 text-${tone}`}>
-          <Icon className="w-4 h-4" />
-        </span>
-        <h2 className="text-sm font-semibold">{title}</h2>
+  const Group = ({ title, icon: Icon, tone, children }: { title: string; icon: any; tone: "warning" | "destructive" | "muted" | "primary" | "info" | "success"; children: React.ReactNode }) => {
+    const toneClass: Record<string, string> = {
+      warning: "bg-warning/15 text-warning-foreground",
+      destructive: "bg-destructive/10 text-destructive",
+      muted: "bg-muted text-muted-foreground",
+      primary: "bg-primary/10 text-primary",
+      info: "bg-info/10 text-info",
+      success: "bg-success/10 text-success",
+    };
+    return (
+      <div className="rounded-xl border border-border bg-card shadow-soft">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
+          <span className={`w-7 h-7 rounded-md grid place-items-center ${toneClass[tone]}`}>
+            <Icon className="w-4 h-4" />
+          </span>
+          <h2 className="text-sm font-semibold">{title}</h2>
+        </div>
+        <div className="divide-y divide-border">{children}</div>
       </div>
-      <div className="divide-y divide-border">{children}</div>
-    </div>
-  );
+    );
+  };
 
   const Item = ({ title, sub, badge }: { title: string; sub: string; badge?: React.ReactNode }) => (
     <div className="flex items-center justify-between px-5 py-3">
