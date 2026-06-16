@@ -9,8 +9,62 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhatsappRouteImport } from './routes/whatsapp'
+import { Route as RoomsRouteImport } from './routes/rooms'
+import { Route as ReservationsRouteImport } from './routes/reservations'
+import { Route as PropertiesRouteImport } from './routes/properties'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as CleaningRouteImport } from './routes/cleaning'
+import { Route as CleanersRouteImport } from './routes/cleaners'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WhatsappRoute = WhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoomsRoute = RoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReservationsRoute = ReservationsRouteImport.update({
+  id: '/reservations',
+  path: '/reservations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropertiesRoute = PropertiesRouteImport.update({
+  id: '/properties',
+  path: '/properties',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CleaningRoute = CleaningRouteImport.update({
+  id: '/cleaning',
+  path: '/cleaning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CleanersRoute = CleanersRouteImport.update({
+  id: '/cleaners',
+  path: '/cleaners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +73,158 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/calendar': typeof CalendarRoute
+  '/cleaners': typeof CleanersRoute
+  '/cleaning': typeof CleaningRoute
+  '/notifications': typeof NotificationsRoute
+  '/properties': typeof PropertiesRoute
+  '/reservations': typeof ReservationsRoute
+  '/rooms': typeof RoomsRoute
+  '/whatsapp': typeof WhatsappRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/calendar': typeof CalendarRoute
+  '/cleaners': typeof CleanersRoute
+  '/cleaning': typeof CleaningRoute
+  '/notifications': typeof NotificationsRoute
+  '/properties': typeof PropertiesRoute
+  '/reservations': typeof ReservationsRoute
+  '/rooms': typeof RoomsRoute
+  '/whatsapp': typeof WhatsappRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/calendar': typeof CalendarRoute
+  '/cleaners': typeof CleanersRoute
+  '/cleaning': typeof CleaningRoute
+  '/notifications': typeof NotificationsRoute
+  '/properties': typeof PropertiesRoute
+  '/reservations': typeof ReservationsRoute
+  '/rooms': typeof RoomsRoute
+  '/whatsapp': typeof WhatsappRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/analytics'
+    | '/calendar'
+    | '/cleaners'
+    | '/cleaning'
+    | '/notifications'
+    | '/properties'
+    | '/reservations'
+    | '/rooms'
+    | '/whatsapp'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/analytics'
+    | '/calendar'
+    | '/cleaners'
+    | '/cleaning'
+    | '/notifications'
+    | '/properties'
+    | '/reservations'
+    | '/rooms'
+    | '/whatsapp'
+  id:
+    | '__root__'
+    | '/'
+    | '/analytics'
+    | '/calendar'
+    | '/cleaners'
+    | '/cleaning'
+    | '/notifications'
+    | '/properties'
+    | '/reservations'
+    | '/rooms'
+    | '/whatsapp'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  CalendarRoute: typeof CalendarRoute
+  CleanersRoute: typeof CleanersRoute
+  CleaningRoute: typeof CleaningRoute
+  NotificationsRoute: typeof NotificationsRoute
+  PropertiesRoute: typeof PropertiesRoute
+  ReservationsRoute: typeof ReservationsRoute
+  RoomsRoute: typeof RoomsRoute
+  WhatsappRoute: typeof WhatsappRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/whatsapp': {
+      id: '/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof WhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rooms': {
+      id: '/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof RoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reservations': {
+      id: '/reservations'
+      path: '/reservations'
+      fullPath: '/reservations'
+      preLoaderRoute: typeof ReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/properties': {
+      id: '/properties'
+      path: '/properties'
+      fullPath: '/properties'
+      preLoaderRoute: typeof PropertiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cleaning': {
+      id: '/cleaning'
+      path: '/cleaning'
+      fullPath: '/cleaning'
+      preLoaderRoute: typeof CleaningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cleaners': {
+      id: '/cleaners'
+      path: '/cleaners'
+      fullPath: '/cleaners'
+      preLoaderRoute: typeof CleanersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +237,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  CalendarRoute: CalendarRoute,
+  CleanersRoute: CleanersRoute,
+  CleaningRoute: CleaningRoute,
+  NotificationsRoute: NotificationsRoute,
+  PropertiesRoute: PropertiesRoute,
+  ReservationsRoute: ReservationsRoute,
+  RoomsRoute: RoomsRoute,
+  WhatsappRoute: WhatsappRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
