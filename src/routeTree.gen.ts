@@ -9,60 +9,62 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WhatsappRouteImport } from './routes/whatsapp'
-import { Route as RoomsRouteImport } from './routes/rooms'
-import { Route as ReservationsRouteImport } from './routes/reservations'
-import { Route as PropertiesRouteImport } from './routes/properties'
-import { Route as NotificationsRouteImport } from './routes/notifications'
-import { Route as CleaningRouteImport } from './routes/cleaning'
-import { Route as CleanersRouteImport } from './routes/cleaners'
-import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
+import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
+import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
+import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
+import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 
-const WhatsappRoute = WhatsappRouteImport.update({
-  id: '/whatsapp',
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/_authenticated/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
+  id: '/_authenticated/whatsapp',
   path: '/whatsapp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RoomsRoute = RoomsRouteImport.update({
-  id: '/rooms',
+const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
+  id: '/_authenticated/rooms',
   path: '/rooms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReservationsRoute = ReservationsRouteImport.update({
-  id: '/reservations',
-  path: '/reservations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PropertiesRoute = PropertiesRouteImport.update({
-  id: '/properties',
+const AuthenticatedReservationsRoute =
+  AuthenticatedReservationsRouteImport.update({
+    id: '/_authenticated/reservations',
+    path: '/reservations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedPropertiesRoute = AuthenticatedPropertiesRouteImport.update({
+  id: '/_authenticated/properties',
   path: '/properties',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CleaningRoute = CleaningRouteImport.update({
-  id: '/cleaning',
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/_authenticated/notifications',
+    path: '/notifications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
+  id: '/_authenticated/cleaning',
   path: '/cleaning',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CleanersRoute = CleanersRouteImport.update({
-  id: '/cleaners',
+const AuthenticatedCleanersRoute = AuthenticatedCleanersRouteImport.update({
+  id: '/_authenticated/cleaners',
   path: '/cleaners',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/_authenticated/calendar',
   path: '/calendar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
@@ -72,46 +74,46 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/cleaners': typeof CleanersRoute
-  '/cleaning': typeof CleaningRoute
-  '/notifications': typeof NotificationsRoute
-  '/properties': typeof PropertiesRoute
-  '/reservations': typeof ReservationsRoute
-  '/rooms': typeof RoomsRoute
-  '/whatsapp': typeof WhatsappRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
+  '/cleaners': typeof AuthenticatedCleanersRoute
+  '/cleaning': typeof AuthenticatedCleaningRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/properties': typeof AuthenticatedPropertiesRoute
+  '/reservations': typeof AuthenticatedReservationsRoute
+  '/rooms': typeof AuthenticatedRoomsRoute
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/cleaners': typeof CleanersRoute
-  '/cleaning': typeof CleaningRoute
-  '/notifications': typeof NotificationsRoute
-  '/properties': typeof PropertiesRoute
-  '/reservations': typeof ReservationsRoute
-  '/rooms': typeof RoomsRoute
-  '/whatsapp': typeof WhatsappRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
+  '/cleaners': typeof AuthenticatedCleanersRoute
+  '/cleaning': typeof AuthenticatedCleaningRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/properties': typeof AuthenticatedPropertiesRoute
+  '/reservations': typeof AuthenticatedReservationsRoute
+  '/rooms': typeof AuthenticatedRoomsRoute
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/calendar': typeof CalendarRoute
-  '/cleaners': typeof CleanersRoute
-  '/cleaning': typeof CleaningRoute
-  '/notifications': typeof NotificationsRoute
-  '/properties': typeof PropertiesRoute
-  '/reservations': typeof ReservationsRoute
-  '/rooms': typeof RoomsRoute
-  '/whatsapp': typeof WhatsappRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
+  '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
+  '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
+  '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
+  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
+    | '/analytics'
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
@@ -120,10 +122,10 @@ export interface FileRouteTypes {
     | '/reservations'
     | '/rooms'
     | '/whatsapp'
-    | '/analytics'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
+    | '/analytics'
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
@@ -132,97 +134,97 @@ export interface FileRouteTypes {
     | '/reservations'
     | '/rooms'
     | '/whatsapp'
-    | '/analytics'
+    | '/'
   id:
     | '__root__'
-    | '/'
-    | '/calendar'
-    | '/cleaners'
-    | '/cleaning'
-    | '/notifications'
-    | '/properties'
-    | '/reservations'
-    | '/rooms'
-    | '/whatsapp'
     | '/_authenticated/analytics'
+    | '/_authenticated/calendar'
+    | '/_authenticated/cleaners'
+    | '/_authenticated/cleaning'
+    | '/_authenticated/notifications'
+    | '/_authenticated/properties'
+    | '/_authenticated/reservations'
+    | '/_authenticated/rooms'
+    | '/_authenticated/whatsapp'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CalendarRoute: typeof CalendarRoute
-  CleanersRoute: typeof CleanersRoute
-  CleaningRoute: typeof CleaningRoute
-  NotificationsRoute: typeof NotificationsRoute
-  PropertiesRoute: typeof PropertiesRoute
-  ReservationsRoute: typeof ReservationsRoute
-  RoomsRoute: typeof RoomsRoute
-  WhatsappRoute: typeof WhatsappRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
+  AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
+  AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
+  AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
+  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/whatsapp': {
-      id: '/whatsapp'
-      path: '/whatsapp'
-      fullPath: '/whatsapp'
-      preLoaderRoute: typeof WhatsappRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rooms': {
-      id: '/rooms'
-      path: '/rooms'
-      fullPath: '/rooms'
-      preLoaderRoute: typeof RoomsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reservations': {
-      id: '/reservations'
-      path: '/reservations'
-      fullPath: '/reservations'
-      preLoaderRoute: typeof ReservationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/properties': {
-      id: '/properties'
-      path: '/properties'
-      fullPath: '/properties'
-      preLoaderRoute: typeof PropertiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cleaning': {
-      id: '/cleaning'
-      path: '/cleaning'
-      fullPath: '/cleaning'
-      preLoaderRoute: typeof CleaningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cleaners': {
-      id: '/cleaners'
-      path: '/cleaners'
-      fullPath: '/cleaners'
-      preLoaderRoute: typeof CleanersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/whatsapp': {
+      id: '/_authenticated/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/rooms': {
+      id: '/_authenticated/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof AuthenticatedRoomsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/reservations': {
+      id: '/_authenticated/reservations'
+      path: '/reservations'
+      fullPath: '/reservations'
+      preLoaderRoute: typeof AuthenticatedReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/properties': {
+      id: '/_authenticated/properties'
+      path: '/properties'
+      fullPath: '/properties'
+      preLoaderRoute: typeof AuthenticatedPropertiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/cleaning': {
+      id: '/_authenticated/cleaning'
+      path: '/cleaning'
+      fullPath: '/cleaning'
+      preLoaderRoute: typeof AuthenticatedCleaningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/cleaners': {
+      id: '/_authenticated/cleaners'
+      path: '/cleaners'
+      fullPath: '/cleaners'
+      preLoaderRoute: typeof AuthenticatedCleanersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/analytics': {
@@ -236,27 +238,17 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CalendarRoute: CalendarRoute,
-  CleanersRoute: CleanersRoute,
-  CleaningRoute: CleaningRoute,
-  NotificationsRoute: NotificationsRoute,
-  PropertiesRoute: PropertiesRoute,
-  ReservationsRoute: ReservationsRoute,
-  RoomsRoute: RoomsRoute,
-  WhatsappRoute: WhatsappRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
+  AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
+  AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
+  AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
+  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
