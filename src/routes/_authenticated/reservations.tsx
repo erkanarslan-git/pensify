@@ -7,7 +7,7 @@ import {
 import { useState, useMemo } from "react";
 import { Search, Plus, Table as TableIcon, Building2 } from "lucide-react";
 
-export const Route = createFileRoute("/reservations")({
+export const Route = createFileRoute("/_authenticated/reservations")({
   head: () => ({ meta: [{ title: "Reservations — StayFlow" }] }),
   component: ReservationsPage,
 });

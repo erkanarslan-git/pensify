@@ -3,7 +3,7 @@ import { AppShell, Badge } from "@/components/app-shell";
 import { reservations, cleaningTasks, rooms, getRoom, getProperty } from "@/lib/demo-data";
 import { AlertTriangle, Clock, Wrench, LogOut } from "lucide-react";
 
-export const Route = createFileRoute("/notifications")({
+export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Notifications — StayFlow" }] }),
   component: NotificationsPage,
 });

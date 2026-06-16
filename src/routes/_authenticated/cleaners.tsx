@@ -3,7 +3,7 @@ import { AppShell, Badge, Section } from "@/components/app-shell";
 import { cleaners, cities, cleaningTasks, getCity } from "@/lib/demo-data";
 import { Phone, MapPin, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/cleaners")({
+export const Route = createFileRoute("/_authenticated/cleaners")({
   head: () => ({ meta: [{ title: "Cleaners — StayFlow" }] }),
   component: CleanersPage,
 });

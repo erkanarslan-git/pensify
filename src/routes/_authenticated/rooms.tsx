@@ -4,7 +4,7 @@ import { rooms, properties, cities, getProperty, roomStatusMeta, type RoomStatus
 import { useState } from "react";
 import { Users } from "lucide-react";
 
-export const Route = createFileRoute("/rooms")({
+export const Route = createFileRoute("/_authenticated/rooms")({
   head: () => ({ meta: [{ title: "Rooms — StayFlow" }] }),
   component: RoomsPage,
 });

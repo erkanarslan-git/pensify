@@ -4,7 +4,7 @@ import { reservations, rooms, properties, getRoom, sourceColors } from "@/lib/de
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export const Route = createFileRoute("/calendar")({
+export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — StayFlow" }] }),
   component: CalendarPage,
 });

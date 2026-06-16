@@ -7,7 +7,7 @@ import {
 import { ArrowUpRight, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Dashboard — StayFlow" },

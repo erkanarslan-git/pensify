@@ -4,7 +4,7 @@ import { cleaningTasks, cleaners, getRoom, getProperty, getCleaner, cleaningStat
 import { useState } from "react";
 import { MessageCircle, Send, CheckCheck } from "lucide-react";
 
-export const Route = createFileRoute("/whatsapp")({
+export const Route = createFileRoute("/_authenticated/whatsapp")({
   head: () => ({ meta: [{ title: "WhatsApp — StayFlow" }] }),
   component: WhatsAppPage,
 });

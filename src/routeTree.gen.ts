@@ -17,8 +17,8 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as CleaningRouteImport } from './routes/cleaning'
 import { Route as CleanersRouteImport } from './routes/cleaners'
 import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 
 const WhatsappRoute = WhatsappRouteImport.update({
   id: '/whatsapp',
@@ -60,20 +60,19 @@ const CalendarRoute = CalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AnalyticsRoute = AnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/_authenticated/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRoute
   '/calendar': typeof CalendarRoute
   '/cleaners': typeof CleanersRoute
   '/cleaning': typeof CleaningRoute
@@ -82,10 +81,10 @@ export interface FileRoutesByFullPath {
   '/reservations': typeof ReservationsRoute
   '/rooms': typeof RoomsRoute
   '/whatsapp': typeof WhatsappRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRoute
   '/calendar': typeof CalendarRoute
   '/cleaners': typeof CleanersRoute
   '/cleaning': typeof CleaningRoute
@@ -94,11 +93,11 @@ export interface FileRoutesByTo {
   '/reservations': typeof ReservationsRoute
   '/rooms': typeof RoomsRoute
   '/whatsapp': typeof WhatsappRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/analytics': typeof AnalyticsRoute
   '/calendar': typeof CalendarRoute
   '/cleaners': typeof CleanersRoute
   '/cleaning': typeof CleaningRoute
@@ -107,12 +106,12 @@ export interface FileRoutesById {
   '/reservations': typeof ReservationsRoute
   '/rooms': typeof RoomsRoute
   '/whatsapp': typeof WhatsappRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/analytics'
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
@@ -121,10 +120,10 @@ export interface FileRouteTypes {
     | '/reservations'
     | '/rooms'
     | '/whatsapp'
+    | '/analytics'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/analytics'
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
@@ -133,10 +132,10 @@ export interface FileRouteTypes {
     | '/reservations'
     | '/rooms'
     | '/whatsapp'
+    | '/analytics'
   id:
     | '__root__'
     | '/'
-    | '/analytics'
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
@@ -145,11 +144,11 @@ export interface FileRouteTypes {
     | '/reservations'
     | '/rooms'
     | '/whatsapp'
+    | '/_authenticated/analytics'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnalyticsRoute: typeof AnalyticsRoute
   CalendarRoute: typeof CalendarRoute
   CleanersRoute: typeof CleanersRoute
   CleaningRoute: typeof CleaningRoute
@@ -158,6 +157,7 @@ export interface RootRouteChildren {
   ReservationsRoute: typeof ReservationsRoute
   RoomsRoute: typeof RoomsRoute
   WhatsappRoute: typeof WhatsappRoute
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -218,13 +218,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/analytics': {
-      id: '/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AnalyticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -232,12 +225,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnalyticsRoute: AnalyticsRoute,
   CalendarRoute: CalendarRoute,
   CleanersRoute: CleanersRoute,
   CleaningRoute: CleaningRoute,
@@ -246,7 +245,18 @@ const rootRouteChildren: RootRouteChildren = {
   ReservationsRoute: ReservationsRoute,
   RoomsRoute: RoomsRoute,
   WhatsappRoute: WhatsappRoute,
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
