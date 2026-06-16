@@ -30,7 +30,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
+type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; exact?: boolean };
+const navItems: NavItem[] = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
   { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
   { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
@@ -41,7 +42,7 @@ const navItems = [
   { to: "/notifications", labelKey: "nav.notifications", icon: Bell },
   { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
   { to: "/properties", labelKey: "nav.properties", icon: Building2 },
-] as const;
+];
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
