@@ -3,7 +3,7 @@ import { AppShell, Section, Kpi } from "@/components/app-shell";
 import { reservations, rooms, cleaningTasks, sourceColors } from "@/lib/demo-data";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 
-export const Route = createFileRoute("/analytics")({
+export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — StayFlow" }] }),
   component: AnalyticsPage,
 });

@@ -3,7 +3,7 @@ import { AppShell, Section, Badge } from "@/components/app-shell";
 import { cities, properties, rooms, roomStatusMeta } from "@/lib/demo-data";
 import { MapPin, BedDouble, Building2 } from "lucide-react";
 
-export const Route = createFileRoute("/properties")({
+export const Route = createFileRoute("/_authenticated/properties")({
   head: () => ({ meta: [{ title: "Properties — StayFlow" }] }),
   component: PropertiesPage,
 });
