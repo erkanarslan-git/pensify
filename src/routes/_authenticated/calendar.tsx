@@ -216,6 +216,3 @@ function CalendarPage() {
     </AppShell>
   );
 }
-
-// keep refreshKey referenced to satisfy TS unused checks in strict mode
-void 0;
