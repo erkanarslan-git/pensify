@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "StayFlow",
-    "tagline": "Otel Operasyonları"
+    "name": "Pensify",
+    "tagline": "Pansiyon Yönetimi"
   },
   "nav": {
     "dashboard": "Panel",
@@ -58,7 +58,7 @@
     "occupancyRate": "%{{rate}} doluluk"
   },
   "auth": {
-    "welcomeTitle": "StayFlow'a hoş geldiniz",
+    "welcomeTitle": "Pensify'a hoş geldiniz",
     "welcomeSubtitle": "Mülklerinizi tek panelden yönetin",
     "signInTab": "Giriş",
     "signUpTab": "Kayıt ol",

@@ -14,8 +14,8 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in — StayFlow" },
-      { name: "description", content: "Sign in to manage your hotel and guesthouse operations." },
+      { title: "Sign in — Pensify" },
+      { name: "description", content: "Sign in to manage your pension and guesthouse operations." },
     ],
   }),
   component: AuthPage,
@@ -104,7 +104,7 @@ function AuthPage() {
             {t("auth.welcomeSubtitle")}
           </p>
         </div>
-        <div className="text-xs text-muted-foreground">© StayFlow</div>
+        <div className="text-xs text-muted-foreground">© Pensify</div>
       </div>
 
       <div className="flex flex-col">
