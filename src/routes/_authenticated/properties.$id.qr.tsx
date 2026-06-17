@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { Printer, MapPin } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/properties/$id/qr")({
