@@ -33,6 +33,8 @@ function CalendarPage() {
   });
   const [propertyId, setPropertyId] = useState<string>("all");
   const [roomQ, setRoomQ] = useState("");
+  const [newRes, setNewRes] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const days: Date[] = useMemo(
     () =>
