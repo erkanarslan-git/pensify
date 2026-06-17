@@ -25,8 +25,8 @@ const ROLE_LABEL: Record<AppRole, string> = {
   cleaner: "Temizlikçi",
 };
 
-const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "danger"> = {
-  owner: "danger",
+const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"> = {
+  owner: "destructive",
   admin: "warning",
   manager: "success",
   cleaner: "muted",
