@@ -113,93 +113,116 @@ export function AppShell({ title, subtitle, actions, children }: {
     .join("")
     .toUpperCase();
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <>
+      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border">
+        <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft">
+          <Hotel className="w-4 h-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-sm font-semibold tracking-tight truncate">{t("app.name")}</div>
+          <div className="text-[11px] text-muted-foreground -mt-0.5 truncate">{t("app.tagline")}</div>
+        </div>
+      </div>
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {navItems.map((item) => {
+          const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={onNavigate}
+              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-all ${
+                active
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate">{t(item.labelKey)}</span>
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="p-3 border-t border-sidebar-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-sidebar-accent/60 transition-colors">
+              <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold text-accent-foreground shrink-0">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
+                <div className="text-xs text-muted-foreground truncate">Owner</div>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-56">
+            <DropdownMenuLabel className="truncate">{profile?.email}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-2">
+              <Globe className="w-3.5 h-3.5" /> {t("common.language")}
+            </DropdownMenuLabel>
+            {LANGS.map((l) => (
+              <DropdownMenuItem
+                key={l.code}
+                onClick={() => i18n.changeLanguage(l.code)}
+                className={i18n.resolvedLanguage === l.code ? "bg-accent" : ""}
+              >
+                {l.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+              <LogOut className="w-4 h-4 mr-2" /> {t("common.signOut")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className="w-64 shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-sm hidden md:flex flex-col">
-        <div className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border">
-          <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft">
-            <Hotel className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold tracking-tight">{t("app.name")}</div>
-            <div className="text-[11px] text-muted-foreground -mt-0.5">{t("app.tagline")}</div>
-          </div>
-        </div>
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                  active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {t(item.labelKey)}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="p-3 border-t border-sidebar-border">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-sidebar-accent/60 transition-colors">
-                <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold text-accent-foreground shrink-0">
-                  {initials}
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
-                  <div className="text-xs text-muted-foreground truncate">Owner</div>
-                </div>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-56">
-              <DropdownMenuLabel>{profile?.email}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5" /> {t("common.language")}
-              </DropdownMenuLabel>
-              {LANGS.map((l) => (
-                <DropdownMenuItem
-                  key={l.code}
-                  onClick={() => i18n.changeLanguage(l.code)}
-                  className={i18n.resolvedLanguage === l.code ? "bg-accent" : ""}
-                >
-                  {l.label}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                <LogOut className="w-4 h-4 mr-2" /> {t("common.signOut")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <SidebarContent />
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border flex items-center justify-between px-6 sticky top-0 bg-background/70 backdrop-blur-md z-10">
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        <header className="h-14 md:h-16 border-b border-border grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-10">
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
+              <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
+              <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
+            </SheetContent>
+          </Sheet>
+          <div className="min-w-0">
+            <h1 className="text-base md:text-lg font-semibold tracking-tight truncate">{title}</h1>
+            {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-self-end">
             {actions}
             <button
               onClick={() => setDark((d) => !d)}
-              className="w-9 h-9 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
+              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
               aria-label={t("common.theme")}
             >
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           </div>
         </header>
-        <div className="flex-1 p-6 overflow-y-auto">{children}</div>
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</div>
       </main>
     </div>
   );
