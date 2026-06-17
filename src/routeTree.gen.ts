@@ -18,6 +18,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
@@ -73,6 +74,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
   id: '/cleaning',
   path: '/cleaning',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
+  '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
+  '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
+  '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
+    | '/me'
     | '/notifications'
     | '/reservations'
     | '/rooms'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cleaners'
     | '/cleaning'
+    | '/me'
     | '/notifications'
     | '/reservations'
     | '/rooms'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar'
     | '/_authenticated/cleaners'
     | '/_authenticated/cleaning'
+    | '/_authenticated/me'
     | '/_authenticated/notifications'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
@@ -289,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/me': {
+      id: '/_authenticated/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof AuthenticatedMeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cleaning': {
       id: '/_authenticated/cleaning'
       path: '/cleaning'
@@ -346,6 +365,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
+  AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
@@ -363,6 +383,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
+  AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
