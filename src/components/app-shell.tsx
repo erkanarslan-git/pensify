@@ -47,6 +47,7 @@ const navItems: NavItem[] = [
   { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
   { to: "/properties", labelKey: "nav.properties", icon: Building2 },
   { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
+  { to: "/team", labelKey: "nav.team", icon: Shield },
 ];
 
 const LANGS = [
