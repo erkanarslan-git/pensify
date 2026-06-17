@@ -4,7 +4,7 @@ import { reservations, rooms, properties, sourceColors } from "@/lib/demo-data";
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { NewReservationDialog } from "@/components/new-reservation-dialog";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
