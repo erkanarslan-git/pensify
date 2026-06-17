@@ -9,7 +9,7 @@ import { Camera, Check, Play, AlertTriangle, MessageCircle } from "lucide-react"
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
-  head: () => ({ meta: [{ title: "Cleaning — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "Cleaning — Pensify" }] }),
   component: CleaningPage,
 });
 

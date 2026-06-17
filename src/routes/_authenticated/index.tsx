@@ -15,7 +15,7 @@ import {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — StayFlow" },
+      { title: "Dashboard — Pensify" },
       { name: "description", content: "Daily operations overview for your properties." },
     ],
   }),

@@ -4,7 +4,7 @@ import { reservations, cleaningTasks, rooms, getRoom, getProperty } from "@/lib/
 import { AlertTriangle, Clock, Wrench, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "Notifications — Pensify" }] }),
   component: NotificationsPage,
 });
 

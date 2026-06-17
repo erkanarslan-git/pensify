@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/rooms")({
-  head: () => ({ meta: [{ title: "Rooms — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "Rooms — Pensify" }] }),
   component: RoomsPage,
 });
 

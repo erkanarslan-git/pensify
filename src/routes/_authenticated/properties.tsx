@@ -4,7 +4,7 @@ import { cities, properties, rooms, roomStatusMeta } from "@/lib/demo-data";
 import { MapPin, BedDouble, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/properties")({
-  head: () => ({ meta: [{ title: "Properties — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "Properties — Pensify" }] }),
   component: PropertiesPage,
 });
 

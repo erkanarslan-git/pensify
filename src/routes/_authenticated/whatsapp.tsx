@@ -5,7 +5,7 @@ import { useState } from "react";
 import { MessageCircle, Send, CheckCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
-  head: () => ({ meta: [{ title: "WhatsApp — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "WhatsApp — Pensify" }] }),
   component: WhatsAppPage,
 });
 

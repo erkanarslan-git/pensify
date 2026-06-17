@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  head: () => ({ meta: [{ title: "Calendar — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
   component: CalendarPage,
 });
 
