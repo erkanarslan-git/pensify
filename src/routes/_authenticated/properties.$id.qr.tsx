@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { Printer, MapPin } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/properties/$id/qr")({
@@ -32,7 +33,6 @@ function QrCardPage() {
   }
 
   const url = `${window.location.origin}/clock/${data.qr_token}`;
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=12&data=${encodeURIComponent(url)}`;
 
   return (
     <AppShell
@@ -51,7 +51,7 @@ function QrCardPage() {
             {data.cities && <span> · {(data.cities as { name: string }).name}</span>}
           </div>
           <div className="bg-white p-4 rounded-lg flex items-center justify-center">
-            <img src={qrSrc} alt="QR" className="w-full max-w-[400px]" />
+            <QRCodeSVG value={url} size={400} level="M" marginSize={2} className="w-full max-w-[400px] h-auto" />
           </div>
           <div className="mt-4 text-center">
             <div className="text-xs uppercase text-muted-foreground tracking-wide">{t("timeTracking.scanToClock")}</div>
