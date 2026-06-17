@@ -51,7 +51,7 @@ function QrCardPage() {
             {data.cities && <span> · {(data.cities as { name: string }).name}</span>}
           </div>
           <div className="bg-white p-4 rounded-lg flex items-center justify-center">
-            <img src={qrSrc} alt="QR" className="w-full max-w-[400px]" />
+            <QRCodeSVG value={url} size={400} level="M" marginSize={2} className="w-full max-w-[400px] h-auto" />
           </div>
           <div className="mt-4 text-center">
             <div className="text-xs uppercase text-muted-foreground tracking-wide">{t("timeTracking.scanToClock")}</div>
