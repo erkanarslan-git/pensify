@@ -5,7 +5,7 @@
   },
   "nav": {
     "dashboard": "Übersicht",
-    "reservations": "Reservierungen",
+    "reservations": "Buchungen",
     "calendar": "Kalender",
     "rooms": "Zimmer",
     "cleaning": "Reinigung",
@@ -19,7 +19,7 @@
     "today": "Heute",
     "viewAll": "Alle ansehen",
     "search": "Suchen…",
-    "newReservation": "Neue Reservierung",
+    "newReservation": "Neue Buchung",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "signOut": "Abmelden",
