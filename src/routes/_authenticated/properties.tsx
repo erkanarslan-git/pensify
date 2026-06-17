@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Building2, Plus, Pencil, Trash2 } from "lucide-react";
+import { MapPin, Building2, Plus, Pencil, Trash2, QrCode } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -111,6 +112,11 @@ function PropertiesPage() {
                       title={p.name}
                       action={
                         <div className="flex gap-1">
+                          <Link to="/properties/$id/qr" params={{ id: p.id }}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" title="QR">
+                              <QrCode className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
