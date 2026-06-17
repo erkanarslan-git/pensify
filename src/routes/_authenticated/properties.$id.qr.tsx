@@ -33,7 +33,6 @@ function QrCardPage() {
   }
 
   const url = `${window.location.origin}/clock/${data.qr_token}`;
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=12&data=${encodeURIComponent(url)}`;
 
   return (
     <AppShell
