@@ -55,39 +55,48 @@ export type Database = {
           api_credentials: Json | null
           channel: Database["public"]["Enums"]["reservation_channel"]
           created_at: string
+          direction: string
           enabled: boolean
           ical_url: string | null
           id: string
           last_sync_at: string | null
           last_sync_error: string | null
           last_sync_status: string | null
+          name: string | null
           property_id: string
+          room_id: string | null
           updated_at: string
         }
         Insert: {
           api_credentials?: Json | null
           channel: Database["public"]["Enums"]["reservation_channel"]
           created_at?: string
+          direction?: string
           enabled?: boolean
           ical_url?: string | null
           id?: string
           last_sync_at?: string | null
           last_sync_error?: string | null
           last_sync_status?: string | null
+          name?: string | null
           property_id: string
+          room_id?: string | null
           updated_at?: string
         }
         Update: {
           api_credentials?: Json | null
           channel?: Database["public"]["Enums"]["reservation_channel"]
           created_at?: string
+          direction?: string
           enabled?: boolean
           ical_url?: string | null
           id?: string
           last_sync_at?: string | null
           last_sync_error?: string | null
           last_sync_status?: string | null
+          name?: string | null
           property_id?: string
+          room_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -96,6 +105,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_integrations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -220,6 +236,76 @@ export type Database = {
           },
           {
             foreignKeyName: "cleaning_tasks_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conflict_alerts: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string
+          existing_reservation_id: string | null
+          id: string
+          incoming_channel: Database["public"]["Enums"]["reservation_channel"]
+          incoming_payload: Json
+          property_id: string | null
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          room_id: string
+          status: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string
+          existing_reservation_id?: string | null
+          id?: string
+          incoming_channel: Database["public"]["Enums"]["reservation_channel"]
+          incoming_payload: Json
+          property_id?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          room_id: string
+          status?: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          existing_reservation_id?: string | null
+          id?: string
+          incoming_channel?: Database["public"]["Enums"]["reservation_channel"]
+          incoming_payload?: Json
+          property_id?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          room_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conflict_alerts_existing_reservation_id_fkey"
+            columns: ["existing_reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conflict_alerts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conflict_alerts_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
@@ -389,6 +475,7 @@ export type Database = {
         Row: {
           capacity: number
           created_at: string
+          ical_feed_token: string | null
           id: string
           notes: string | null
           number: string
@@ -399,6 +486,7 @@ export type Database = {
         Insert: {
           capacity?: number
           created_at?: string
+          ical_feed_token?: string | null
           id?: string
           notes?: string | null
           number: string
@@ -409,6 +497,7 @@ export type Database = {
         Update: {
           capacity?: number
           created_at?: string
+          ical_feed_token?: string | null
           id?: string
           notes?: string | null
           number?: string
@@ -422,6 +511,79 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_jobs: {
+        Row: {
+          attempts: number
+          channel: Database["public"]["Enums"]["reservation_channel"]
+          completed_at: string | null
+          created_at: string
+          direction: string
+          error_message: string | null
+          id: string
+          integration_id: string | null
+          payload: Json
+          property_id: string | null
+          result: Json | null
+          room_id: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          channel: Database["public"]["Enums"]["reservation_channel"]
+          completed_at?: string | null
+          created_at?: string
+          direction: string
+          error_message?: string | null
+          id?: string
+          integration_id?: string | null
+          payload?: Json
+          property_id?: string | null
+          result?: Json | null
+          room_id?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          channel?: Database["public"]["Enums"]["reservation_channel"]
+          completed_at?: string | null
+          created_at?: string
+          direction?: string
+          error_message?: string | null
+          id?: string
+          integration_id?: string | null
+          payload?: Json
+          property_id?: string | null
+          result?: Json | null
+          room_id?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_jobs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "channel_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_jobs_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_jobs_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]
