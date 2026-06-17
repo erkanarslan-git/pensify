@@ -601,6 +601,8 @@ export type Database = {
         | "phone"
         | "direct"
         | "walkin"
+        | "website"
+        | "ical"
       reservation_status:
         | "confirmed"
         | "tentative"
@@ -765,6 +767,8 @@ export const Constants = {
         "phone",
         "direct",
         "walkin",
+        "website",
+        "ical",
       ],
       reservation_status: [
         "confirmed",
