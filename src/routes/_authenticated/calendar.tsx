@@ -4,7 +4,7 @@ import { reservations, rooms, properties, sourceColors } from "@/lib/demo-data";
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { NewReservationDialog } from "@/components/new-reservation-dialog";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
@@ -33,6 +33,8 @@ function CalendarPage() {
   });
   const [propertyId, setPropertyId] = useState<string>("all");
   const [roomQ, setRoomQ] = useState("");
+  const [newRes, setNewRes] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
+  const [, setRefreshKey] = useState(0);
 
   const days: Date[] = useMemo(
     () =>
@@ -175,9 +177,7 @@ function CalendarPage() {
                             ) : (
                               <button
                                 onClick={() =>
-                                  toast.message("Yeni rezervasyon", {
-                                    description: `${p.name} · Oda #${r.number} · ${dIso}. Rezervasyon formu yakında bağlanacak.`,
-                                  })
+                                  setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
                                 }
                                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 hover:bg-primary/20 grid place-items-center text-primary"
                                 title={`Yeni rezervasyon · #${r.number} · ${dIso}`}
@@ -204,6 +204,15 @@ function CalendarPage() {
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Tüm rezervasyonlar →</Link>
         </div>
       </Section>
+
+      <NewReservationDialog
+        open={!!newRes}
+        onOpenChange={(o) => !o && setNewRes(null)}
+        initialDate={newRes?.date}
+        initialPropertyId={newRes?.propertyId}
+        initialRoomNumber={newRes?.roomNumber}
+        onCreated={() => setRefreshKey((k) => k + 1)}
+      />
     </AppShell>
   );
 }
