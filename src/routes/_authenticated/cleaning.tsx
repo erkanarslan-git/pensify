@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { Camera, Check, Play, AlertTriangle, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
   head: () => ({ meta: [{ title: "Cleaning — Pensify" }] }),
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/cleaning")({
 });
 
 function CleaningPage() {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<CleaningTask[]>(initialTasks);
   const [filter, setFilter] = useState<CleaningStatus | "all">("all");
 
@@ -25,7 +27,7 @@ function CleaningPage() {
   const list = filter === "all" ? tasks : tasks.filter((t) => t.status === filter);
 
   return (
-    <AppShell title="Cleaning Tasks" subtitle="Auto-created on each checkout">
+    <AppShell title={t("pages.cleaning.title")} subtitle="Auto-created on each checkout">
       <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setFilter("all")}

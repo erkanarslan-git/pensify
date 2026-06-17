@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge, Section } from "@/components/app-shell";
 import { cleaners, cities, cleaningTasks, getCity } from "@/lib/demo-data";
 import { Phone, MapPin, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/cleaners")({
   head: () => ({ meta: [{ title: "Cleaners — Pensify" }] }),
@@ -9,8 +10,9 @@ export const Route = createFileRoute("/_authenticated/cleaners")({
 });
 
 function CleanersPage() {
+  const { t } = useTranslation();
   return (
-    <AppShell title="Cleaners" subtitle={`${cleaners.filter((c) => c.active).length} active staff`}
+    <AppShell title={t("pages.cleaners.title")} subtitle={t("pages.cleaners.subtitle", { count: cleaners.filter((c) => c.active).length })}
       actions={
         <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">
           <Plus className="w-4 h-4" /> Add cleaner

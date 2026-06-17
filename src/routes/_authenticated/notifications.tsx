@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { reservations, cleaningTasks, rooms, getRoom, getProperty } from "@/lib/demo-data";
 import { AlertTriangle, Clock, Wrench, LogOut } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Notifications — Pensify" }] }),
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 });
 
 function NotificationsPage() {
+  const { t } = useTranslation();
   const today = new Date().toISOString().slice(0, 10);
   const upcomingCheckouts = reservations.filter((r) => r.checkOut >= today).slice(0, 5);
   const delayed = cleaningTasks.filter((t) => t.status === "pending").slice(0, 4);
@@ -48,7 +50,7 @@ function NotificationsPage() {
   );
 
   return (
-    <AppShell title="Notifications" subtitle="Stay on top of what needs attention">
+    <AppShell title={t("pages.notifications.title")} subtitle="Stay on top of what needs attention">
       <div className="grid lg:grid-cols-2 gap-4">
         <Group title="Upcoming check-outs" icon={LogOut} tone="warning">
           {upcomingCheckouts.map((r) => {

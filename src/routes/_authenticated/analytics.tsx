@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Kpi } from "@/components/app-shell";
 import { reservations, rooms, cleaningTasks, sourceColors } from "@/lib/demo-data";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Pensify" }] }),
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 });
 
 function AnalyticsPage() {
+  const { t } = useTranslation();
   const occupied = rooms.filter((r) => r.status === "occupied" || r.status === "checkout_today").length;
   const occupancyRate = Math.round((occupied / rooms.length) * 100);
   const completion = cleaningTasks.length > 0
@@ -36,7 +38,7 @@ function AnalyticsPage() {
   });
 
   return (
-    <AppShell title="Analytics" subtitle="Operational performance">
+    <AppShell title={t("pages.analytics.title")} subtitle="Operational performance">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Kpi label="Occupancy rate" value={`${occupancyRate}%`} accent="primary" />
         <Kpi label="Cleaning completion" value={`${completion}%`} accent="success" />

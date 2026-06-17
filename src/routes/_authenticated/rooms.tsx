@@ -3,6 +3,7 @@ import { AppShell, Badge, Section } from "@/components/app-shell";
 import { rooms, properties, cities, getProperty, roomStatusMeta, type RoomStatus } from "@/lib/demo-data";
 import { useState } from "react";
 import { Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/rooms")({
   head: () => ({ meta: [{ title: "Rooms — Pensify" }] }),
@@ -10,11 +11,12 @@ export const Route = createFileRoute("/_authenticated/rooms")({
 });
 
 function RoomsPage() {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<RoomStatus | "all">("all");
   const list = filter === "all" ? rooms : rooms.filter((r) => r.status === filter);
 
   return (
-    <AppShell title="Room Status" subtitle={`${rooms.length} rooms in ${properties.length} properties`}>
+    <AppShell title={t("pages.rooms.title")} subtitle={t("pages.rooms.subtitle", { rooms: rooms.length, props: properties.length })}>
       <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setFilter("all")}
