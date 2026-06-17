@@ -73,15 +73,37 @@
     "new": "Neu"
   },
   "pages": {
-    "reservations": { "title": "Buchungen", "subtitle": "{{count}} Buchungen aus allen Quellen" },
-    "calendar": { "title": "Belegungskalender" },
-    "rooms": { "title": "Zimmerstatus", "subtitle": "{{rooms}} Zimmer in {{props}} Pensionen" },
-    "cleaning": { "title": "Reinigung" },
-    "cleaners": { "title": "Personal", "subtitle": "{{count}} aktive Mitarbeiter" },
-    "whatsapp": { "title": "WhatsApp" },
-    "notifications": { "title": "Benachrichtigungen" },
-    "analytics": { "title": "Analysen" },
-    "properties": { "title": "Pensionen", "subtitle": "{{count}} Pensionen in {{cities}} Städten" }
+    "reservations": {
+      "title": "Buchungen",
+      "subtitle": "{{count}} Buchungen aus allen Quellen"
+    },
+    "calendar": {
+      "title": "Belegungskalender"
+    },
+    "rooms": {
+      "title": "Zimmerstatus",
+      "subtitle": "{{rooms}} Zimmer in {{props}} Pensionen"
+    },
+    "cleaning": {
+      "title": "Reinigung"
+    },
+    "cleaners": {
+      "title": "Personal",
+      "subtitle": "{{count}} aktive Mitarbeiter"
+    },
+    "whatsapp": {
+      "title": "WhatsApp"
+    },
+    "notifications": {
+      "title": "Benachrichtigungen"
+    },
+    "analytics": {
+      "title": "Analysen"
+    },
+    "properties": {
+      "title": "Pensionen",
+      "subtitle": "{{count}} Pensionen in {{cities}} Städten"
+    }
   },
   "pensions": {
     "addNew": "Neue Pension",
@@ -141,5 +163,56 @@
     "in_progress": "Läuft",
     "completed": "Erledigt",
     "problem": "Problem"
+  },
+  "timeTracking": {
+    "qrSubtitle": "Druckbare QR-Karte für Reinigungskräfte",
+    "print": "Drucken",
+    "scanToClock": "Zum Ein-/Ausstempeln scannen",
+    "clockTitle": "Zeiterfassung",
+    "clockSubtitle": "Schicht ein-/auschecken",
+    "location": "Standort",
+    "gettingLocation": "Standort wird ermittelt…",
+    "noPropertyCoords": "Keine GPS-Koordinaten für diese Pension hinterlegt",
+    "inRange": "In Reichweite ({{d}}m)",
+    "outOfRange": "Außerhalb (Distanz {{d}}m, max {{max}}m)",
+    "outOfGeofence": "Du bist nicht am Standort dieser Pension",
+    "unknownQr": "Unbekannter QR-Code",
+    "noCleanerLinkTitle": "Kein Reinigungs-Konto verknüpft",
+    "noCleanerLink": "Dein Login ist keinem Reinigungs-Profil zugeordnet. Bitte den Admin um Verknüpfung.",
+    "activeShift": "Aktive Schicht",
+    "readyToStart": "Bereit zu starten",
+    "willAutoClose": "Du hast eine offene Schicht an einem anderen Standort. Sie wird beim Start hier geschlossen.",
+    "start": "Starten",
+    "end": "Beenden",
+    "break": "Pause",
+    "resume": "Fortsetzen",
+    "started": "Schicht gestartet",
+    "ended": "Schicht beendet",
+    "startedAt": "gestartet",
+    "breakMin": "{{m}}m Pause",
+    "onBreak": "in Pause",
+    "adminSubtitle": "Arbeitszeit, Geofence und Abrechnung",
+    "filters": "Filter",
+    "range": "Zeitraum",
+    "lastWeek": "Letzte 7 Tage",
+    "thisMonth": "Dieser Monat",
+    "thisYear": "Dieses Jahr",
+    "custom": "Benutzerdefiniert",
+    "from": "Von",
+    "to": "Bis",
+    "unpaidOnly": "Nur unbezahlte",
+    "summary": "Zusammenfassung",
+    "totalTime": "Gesamtzeit",
+    "entries": "Einträge",
+    "shifts": "Schichten",
+    "hours": "Stunden",
+    "rate": "Stundensatz",
+    "amount": "Betrag",
+    "shiftDetails": "Schicht-Details",
+    "duration": "Dauer",
+    "geo": "GPS",
+    "active": "Aktiv",
+    "markPaid": "Bezahlt markieren",
+    "markedPaid": "Als bezahlt markiert"
   }
 }

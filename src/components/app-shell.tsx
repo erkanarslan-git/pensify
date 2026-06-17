@@ -11,6 +11,7 @@ import {
   Building2,
   ClipboardList,
   Hotel,
+  Clock,
   Moon,
   Sun,
   LogOut,
@@ -44,6 +45,7 @@ const navItems: NavItem[] = [
   { to: "/notifications", labelKey: "nav.notifications", icon: Bell },
   { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
   { to: "/properties", labelKey: "nav.properties", icon: Building2 },
+  { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
 ];
 
 const LANGS = [
