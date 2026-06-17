@@ -18,6 +18,7 @@ import {
   LogOut,
   Globe,
   Menu,
+  RefreshCw,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
