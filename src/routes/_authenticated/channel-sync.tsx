@@ -126,7 +126,7 @@ function ChannelSyncPage() {
       }
     >
       {conflicts.length > 0 && (
-        <Section title={`Conflicts (${conflicts.length})`} action={<Badge tone="danger">Action needed</Badge>}>
+        <Section title={`Conflicts (${conflicts.length})`} action={<Badge tone="destructive">Action needed</Badge>}>
           <div className="space-y-2">
             {conflicts.map((c) => (
               <div key={c.id} className="flex items-start justify-between p-3 rounded-md border border-destructive/40 bg-destructive/5">
@@ -184,7 +184,7 @@ function ChannelSyncPage() {
                       <td className="px-5 py-3 capitalize">{j.channel}</td>
                       <td className="px-5 py-3">{j.direction}</td>
                       <td className="px-5 py-3">
-                        <Badge tone={j.status === "success" ? "success" : j.status === "failed" ? "danger" : j.status === "running" ? "info" : "muted"}>
+                        <Badge tone={j.status === "success" ? "success" : j.status === "failed" ? "destructive" : j.status === "running" ? "info" : "muted"}>
                           {j.status}
                         </Badge>
                       </td>

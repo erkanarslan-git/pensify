@@ -21,6 +21,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
+import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
@@ -93,6 +94,12 @@ const AuthenticatedCleanersRoute = AuthenticatedCleanersRouteImport.update({
   path: '/cleaners',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChannelSyncRoute =
+  AuthenticatedChannelSyncRouteImport.update({
+    id: '/channel-sync',
+    path: '/channel-sync',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -148,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/me': typeof AuthenticatedMeRoute
@@ -169,6 +177,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/me': typeof AuthenticatedMeRoute
@@ -193,6 +202,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/analytics'
     | '/calendar'
+    | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
     | '/me'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/analytics'
     | '/calendar'
+    | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
     | '/me'
@@ -262,6 +274,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/analytics'
     | '/_authenticated/calendar'
+    | '/_authenticated/channel-sync'
     | '/_authenticated/cleaners'
     | '/_authenticated/cleaning'
     | '/_authenticated/me'
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCleanersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/channel-sync': {
+      id: '/_authenticated/channel-sync'
+      path: '/channel-sync'
+      fullPath: '/channel-sync'
+      preLoaderRoute: typeof AuthenticatedChannelSyncRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/calendar': {
       id: '/_authenticated/calendar'
       path: '/calendar'
@@ -445,6 +465,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedChannelSyncRoute: typeof AuthenticatedChannelSyncRoute
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -463,6 +484,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedChannelSyncRoute: AuthenticatedChannelSyncRoute,
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
