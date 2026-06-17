@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import i18n from "@/i18n";
 
-export const Route = createFileRoute("/_authenticated/properties")({
+export const Route = createFileRoute("/_authenticated/properties/")({
   head: () => ({ meta: [{ title: `${i18n.t("nav.properties")} — Pensify` }] }),
   component: PropertiesPage,
 });
