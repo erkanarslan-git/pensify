@@ -116,13 +116,13 @@ function TeamPage() {
                     {missing.length > 0 && (
                       adding?.userId === u.user_id ? (
                         <div className="flex gap-1 justify-end">
-                          <Select value={adding.role} onValueChange={(v) => setAdding({ ...adding, role: v as AppRole })}>
+                          <Select value={adding!.role} onValueChange={(v) => setAdding({ userId: adding!.userId, role: v as AppRole })}>
                             <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
                             <SelectContent>
                               {missing.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
                             </SelectContent>
                           </Select>
-                          <Button size="sm" onClick={() => addRole.mutate(adding)}>OK</Button>
+                          <Button size="sm" onClick={() => adding && addRole.mutate(adding)}>OK</Button>
                         </div>
                       ) : (
                         <Button size="sm" variant="outline" onClick={() => setAdding({ userId: u.user_id, role: missing[0] })}>
