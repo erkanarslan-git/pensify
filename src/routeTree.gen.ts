@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
+import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedPropertiesRouteImport } from './routes/_authenticated/properties'
@@ -21,6 +22,8 @@ import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
+import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -41,6 +44,12 @@ const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTimeTrackingRoute =
+  AuthenticatedTimeTrackingRouteImport.update({
+    id: '/time-tracking',
+    path: '/time-tracking',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
@@ -83,6 +92,17 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
+  id: '/clock/$token',
+  path: '/clock/$token',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPropertiesIdQrRoute =
+  AuthenticatedPropertiesIdQrRouteImport.update({
+    id: '/$id/qr',
+    path: '/$id/qr',
+    getParentRoute: () => AuthenticatedPropertiesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -92,10 +112,13 @@ export interface FileRoutesByFullPath {
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/properties': typeof AuthenticatedPropertiesRoute
+  '/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
+  '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -104,11 +127,14 @@ export interface FileRoutesByTo {
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/properties': typeof AuthenticatedPropertiesRoute
+  '/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
+  '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/': typeof AuthenticatedIndexRoute
+  '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,11 +145,14 @@ export interface FileRoutesById {
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
+  '/_authenticated/properties': typeof AuthenticatedPropertiesRouteWithChildren
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
+  '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,7 +167,10 @@ export interface FileRouteTypes {
     | '/properties'
     | '/reservations'
     | '/rooms'
+    | '/time-tracking'
     | '/whatsapp'
+    | '/clock/$token'
+    | '/properties/$id/qr'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -150,8 +182,11 @@ export interface FileRouteTypes {
     | '/properties'
     | '/reservations'
     | '/rooms'
+    | '/time-tracking'
     | '/whatsapp'
     | '/'
+    | '/clock/$token'
+    | '/properties/$id/qr'
   id:
     | '__root__'
     | '/_authenticated'
@@ -164,8 +199,11 @@ export interface FileRouteTypes {
     | '/_authenticated/properties'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
+    | '/_authenticated/time-tracking'
     | '/_authenticated/whatsapp'
     | '/_authenticated/'
+    | '/_authenticated/clock/$token'
+    | '/_authenticated/properties/$id/qr'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -201,6 +239,13 @@ declare module '@tanstack/react-router' {
       path: '/whatsapp'
       fullPath: '/whatsapp'
       preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/time-tracking': {
+      id: '/_authenticated/time-tracking'
+      path: '/time-tracking'
+      fullPath: '/time-tracking'
+      preLoaderRoute: typeof AuthenticatedTimeTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rooms': {
@@ -259,8 +304,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/clock/$token': {
+      id: '/_authenticated/clock/$token'
+      path: '/clock/$token'
+      fullPath: '/clock/$token'
+      preLoaderRoute: typeof AuthenticatedClockTokenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/properties/$id/qr': {
+      id: '/_authenticated/properties/$id/qr'
+      path: '/$id/qr'
+      fullPath: '/properties/$id/qr'
+      preLoaderRoute: typeof AuthenticatedPropertiesIdQrRouteImport
+      parentRoute: typeof AuthenticatedPropertiesRoute
+    }
   }
 }
+
+interface AuthenticatedPropertiesRouteChildren {
+  AuthenticatedPropertiesIdQrRoute: typeof AuthenticatedPropertiesIdQrRoute
+}
+
+const AuthenticatedPropertiesRouteChildren: AuthenticatedPropertiesRouteChildren =
+  {
+    AuthenticatedPropertiesIdQrRoute: AuthenticatedPropertiesIdQrRoute,
+  }
+
+const AuthenticatedPropertiesRouteWithChildren =
+  AuthenticatedPropertiesRoute._addFileChildren(
+    AuthenticatedPropertiesRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
@@ -268,11 +341,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRoute
+  AuthenticatedPropertiesRoute: typeof AuthenticatedPropertiesRouteWithChildren
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
+  AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
   AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -281,11 +356,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedPropertiesRoute: AuthenticatedPropertiesRoute,
+  AuthenticatedPropertiesRoute: AuthenticatedPropertiesRouteWithChildren,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
+  AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
   AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
