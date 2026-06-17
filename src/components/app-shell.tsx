@@ -82,7 +82,7 @@ export function AppShell({ title, subtitle, actions, children }: {
   const { data: profile } = useProfile();
 
   useEffect(() => {
-    const stored = localStorage.getItem("stayflow.theme");
+    const stored = localStorage.getItem("pensify.theme");
     if (stored === "dark") setDark(true);
   }, []);
 
@@ -90,10 +90,10 @@ export function AppShell({ title, subtitle, actions, children }: {
     const root = document.documentElement;
     if (dark) {
       root.classList.add("dark");
-      localStorage.setItem("stayflow.theme", "dark");
+      localStorage.setItem("pensify.theme", "dark");
     } else {
       root.classList.remove("dark");
-      localStorage.setItem("stayflow.theme", "light");
+      localStorage.setItem("pensify.theme", "light");
     }
   }, [dark]);
 

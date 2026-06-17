@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "StayFlow",
-    "tagline": "Hotel Operations"
+    "name": "Pensify",
+    "tagline": "Pension Operations"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -58,7 +58,7 @@
     "occupancyRate": "{{rate}}% occupancy"
   },
   "auth": {
-    "welcomeTitle": "Welcome to StayFlow",
+    "welcomeTitle": "Welcome to Pensify",
     "welcomeSubtitle": "Manage your properties with ease",
     "signInTab": "Sign in",
     "signUpTab": "Create account",

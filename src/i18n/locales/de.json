@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "StayFlow",
-    "tagline": "Hotelbetrieb"
+    "name": "Pensify",
+    "tagline": "Pensionsverwaltung"
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -58,8 +58,8 @@
     "occupancyRate": "{{rate}}% Auslastung"
   },
   "auth": {
-    "welcomeTitle": "Willkommen bei StayFlow",
-    "welcomeSubtitle": "Verwalten Sie Ihre Objekte mit Leichtigkeit",
+    "welcomeTitle": "Willkommen bei Pensify",
+    "welcomeSubtitle": "Verwalten Sie Ihre Pensionen mit Leichtigkeit",
     "signInTab": "Anmelden",
     "signUpTab": "Konto erstellen",
     "createAccount": "Konto erstellen",
