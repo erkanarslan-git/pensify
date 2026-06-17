@@ -14,7 +14,8 @@
     "notifications": "Notifications",
     "analytics": "Analytics",
     "properties": "Locations",
-    "timeTracking": "Time tracking"
+    "timeTracking": "Time tracking",
+    "team": "Team & roles"
   },
   "common": {
     "today": "Today",
