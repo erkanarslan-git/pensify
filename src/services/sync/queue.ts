@@ -21,7 +21,7 @@ export async function enqueueSyncJob(args: EnqueueArgs) {
       property_id: args.propertyId ?? null,
       room_id: args.roomId ?? null,
       integration_id: args.integrationId ?? null,
-      payload: args.payload ?? {},
+      payload: (args.payload ?? {}) as any,
       status: "pending",
     })
     .select()

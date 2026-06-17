@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/public/webhooks/booking")({
           channel: "booking",
           direction: "import",
           status: "pending",
-          payload: { source: "webhook", body },
+          payload: { source: "webhook", body: body as any },
         });
         return Response.json({ ok: true, mock: true });
       },
