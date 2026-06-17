@@ -177,9 +177,7 @@ function CalendarPage() {
                             ) : (
                               <button
                                 onClick={() =>
-                                  toast.message("Yeni rezervasyon", {
-                                    description: `${p.name} · Oda #${r.number} · ${dIso}. Rezervasyon formu yakında bağlanacak.`,
-                                  })
+                                  setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
                                 }
                                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 hover:bg-primary/20 grid place-items-center text-primary"
                                 title={`Yeni rezervasyon · #${r.number} · ${dIso}`}
