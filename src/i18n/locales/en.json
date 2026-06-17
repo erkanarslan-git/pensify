@@ -73,15 +73,37 @@
     "new": "New"
   },
   "pages": {
-    "reservations": { "title": "Reservations", "subtitle": "{{count}} bookings across all sources" },
-    "calendar": { "title": "Occupancy Calendar" },
-    "rooms": { "title": "Room Status", "subtitle": "{{rooms}} rooms in {{props}} locations" },
-    "cleaning": { "title": "Cleaning" },
-    "cleaners": { "title": "Staff", "subtitle": "{{count}} active staff" },
-    "whatsapp": { "title": "WhatsApp" },
-    "notifications": { "title": "Notifications" },
-    "analytics": { "title": "Analytics" },
-    "properties": { "title": "Locations", "subtitle": "{{count}} locations across {{cities}} cities" }
+    "reservations": {
+      "title": "Reservations",
+      "subtitle": "{{count}} bookings across all sources"
+    },
+    "calendar": {
+      "title": "Occupancy Calendar"
+    },
+    "rooms": {
+      "title": "Room Status",
+      "subtitle": "{{rooms}} rooms in {{props}} locations"
+    },
+    "cleaning": {
+      "title": "Cleaning"
+    },
+    "cleaners": {
+      "title": "Staff",
+      "subtitle": "{{count}} active staff"
+    },
+    "whatsapp": {
+      "title": "WhatsApp"
+    },
+    "notifications": {
+      "title": "Notifications"
+    },
+    "analytics": {
+      "title": "Analytics"
+    },
+    "properties": {
+      "title": "Locations",
+      "subtitle": "{{count}} locations across {{cities}} cities"
+    }
   },
   "pensions": {
     "addNew": "Add location",
@@ -141,5 +163,56 @@
     "in_progress": "In progress",
     "completed": "Completed",
     "problem": "Problem"
+  },
+  "timeTracking": {
+    "qrSubtitle": "Printable QR card for cleaners",
+    "print": "Print",
+    "scanToClock": "Scan to clock in/out",
+    "clockTitle": "Clock",
+    "clockSubtitle": "Clock in or out of your shift",
+    "location": "Location",
+    "gettingLocation": "Getting your location…",
+    "noPropertyCoords": "No GPS coordinates set for this location",
+    "inRange": "In range ({{d}}m)",
+    "outOfRange": "Out of range ({{d}}m, max {{max}}m)",
+    "outOfGeofence": "You are not at this location",
+    "unknownQr": "Unknown QR code",
+    "noCleanerLinkTitle": "No cleaner profile linked",
+    "noCleanerLink": "Your account is not linked to a cleaner profile. Ask an admin to link it.",
+    "activeShift": "Active shift",
+    "readyToStart": "Ready to start",
+    "willAutoClose": "You have an open shift at another location. It will be auto-closed when you start here.",
+    "start": "Start",
+    "end": "End",
+    "break": "Break",
+    "resume": "Resume",
+    "started": "Shift started",
+    "ended": "Shift ended",
+    "startedAt": "started",
+    "breakMin": "{{m}}m break",
+    "onBreak": "on break",
+    "adminSubtitle": "Working hours, geofence, and payroll",
+    "filters": "Filters",
+    "range": "Range",
+    "lastWeek": "Last 7 days",
+    "thisMonth": "This month",
+    "thisYear": "This year",
+    "custom": "Custom",
+    "from": "From",
+    "to": "To",
+    "unpaidOnly": "Unpaid only",
+    "summary": "Summary",
+    "totalTime": "total time",
+    "entries": "entries",
+    "shifts": "Shifts",
+    "hours": "Hours",
+    "rate": "Rate",
+    "amount": "Amount",
+    "shiftDetails": "Shift details",
+    "duration": "Duration",
+    "geo": "GPS",
+    "active": "Active",
+    "markPaid": "Mark paid",
+    "markedPaid": "Marked as paid"
   }
 }

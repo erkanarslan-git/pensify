@@ -73,15 +73,37 @@
     "new": "Yeni"
   },
   "pages": {
-    "reservations": { "title": "Rezervasyonlar", "subtitle": "Tüm kanallardan {{count}} rezervasyon" },
-    "calendar": { "title": "Doluluk Takvimi" },
-    "rooms": { "title": "Oda Durumu", "subtitle": "{{props}} lokasyonda {{rooms}} oda" },
-    "cleaning": { "title": "Temizlik" },
-    "cleaners": { "title": "Personel", "subtitle": "{{count}} aktif personel" },
-    "whatsapp": { "title": "WhatsApp" },
-    "notifications": { "title": "Bildirimler" },
-    "analytics": { "title": "Analizler" },
-    "properties": { "title": "Lokasyonlar", "subtitle": "{{cities}} şehirde {{count}} lokasyon" }
+    "reservations": {
+      "title": "Rezervasyonlar",
+      "subtitle": "Tüm kanallardan {{count}} rezervasyon"
+    },
+    "calendar": {
+      "title": "Doluluk Takvimi"
+    },
+    "rooms": {
+      "title": "Oda Durumu",
+      "subtitle": "{{props}} lokasyonda {{rooms}} oda"
+    },
+    "cleaning": {
+      "title": "Temizlik"
+    },
+    "cleaners": {
+      "title": "Personel",
+      "subtitle": "{{count}} aktif personel"
+    },
+    "whatsapp": {
+      "title": "WhatsApp"
+    },
+    "notifications": {
+      "title": "Bildirimler"
+    },
+    "analytics": {
+      "title": "Analizler"
+    },
+    "properties": {
+      "title": "Lokasyonlar",
+      "subtitle": "{{cities}} şehirde {{count}} lokasyon"
+    }
   },
   "pensions": {
     "addNew": "Yeni lokasyon",
@@ -141,5 +163,56 @@
     "in_progress": "Sürüyor",
     "completed": "Tamamlandı",
     "problem": "Sorun"
+  },
+  "timeTracking": {
+    "qrSubtitle": "Temizlikçiler için yazdırılabilir QR kartı",
+    "print": "Yazdır",
+    "scanToClock": "Giriş/çıkış için tara",
+    "clockTitle": "Zaman takibi",
+    "clockSubtitle": "Vardiyaya giriş/çıkış",
+    "location": "Konum",
+    "gettingLocation": "Konum alınıyor…",
+    "noPropertyCoords": "Bu lokasyon için GPS koordinatı tanımlı değil",
+    "inRange": "Menzilde ({{d}}m)",
+    "outOfRange": "Menzil dışı ({{d}}m, max {{max}}m)",
+    "outOfGeofence": "Bu lokasyonda görünmüyorsunuz",
+    "unknownQr": "Bilinmeyen QR kod",
+    "noCleanerLinkTitle": "Temizlikçi profili eşleşmemiş",
+    "noCleanerLink": "Hesabınız bir temizlikçi profiline bağlı değil. Yöneticiden bağlamasını isteyin.",
+    "activeShift": "Aktif vardiya",
+    "readyToStart": "Başlamaya hazır",
+    "willAutoClose": "Başka bir lokasyonda açık vardiyanız var. Burada başlayınca otomatik kapatılacak.",
+    "start": "Başla",
+    "end": "Bitir",
+    "break": "Ara",
+    "resume": "Devam",
+    "started": "Vardiya başladı",
+    "ended": "Vardiya bitti",
+    "startedAt": "başlangıç",
+    "breakMin": "{{m}}dk ara",
+    "onBreak": "arada",
+    "adminSubtitle": "Çalışma saati, geofence ve ödeme",
+    "filters": "Filtreler",
+    "range": "Aralık",
+    "lastWeek": "Son 7 gün",
+    "thisMonth": "Bu ay",
+    "thisYear": "Bu yıl",
+    "custom": "Özel",
+    "from": "Başlangıç",
+    "to": "Bitiş",
+    "unpaidOnly": "Sadece ödenmemiş",
+    "summary": "Özet",
+    "totalTime": "toplam süre",
+    "entries": "kayıt",
+    "shifts": "Vardiyalar",
+    "hours": "Saat",
+    "rate": "Saat ücreti",
+    "amount": "Tutar",
+    "shiftDetails": "Vardiya detayları",
+    "duration": "Süre",
+    "geo": "GPS",
+    "active": "Aktif",
+    "markPaid": "Ödendi işaretle",
+    "markedPaid": "Ödendi olarak işaretlendi"
   }
 }
