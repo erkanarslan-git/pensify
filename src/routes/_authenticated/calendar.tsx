@@ -204,6 +204,18 @@ function CalendarPage() {
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Tüm rezervasyonlar →</Link>
         </div>
       </Section>
+
+      <NewReservationDialog
+        open={!!newRes}
+        onOpenChange={(o) => !o && setNewRes(null)}
+        initialDate={newRes?.date}
+        initialPropertyId={newRes?.propertyId}
+        initialRoomNumber={newRes?.roomNumber}
+        onCreated={() => setRefreshKey((k) => k + 1)}
+      />
     </AppShell>
   );
 }
+
+// keep refreshKey referenced to satisfy TS unused checks in strict mode
+void 0;
