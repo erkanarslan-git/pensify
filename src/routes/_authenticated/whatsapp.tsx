@@ -3,9 +3,10 @@ import { AppShell, Badge, Section } from "@/components/app-shell";
 import { cleaningTasks, cleaners, getRoom, getProperty, getCleaner, cleaningStatusMeta, type CleaningStatus } from "@/lib/demo-data";
 import { useState } from "react";
 import { MessageCircle, Send, CheckCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
-  head: () => ({ meta: [{ title: "WhatsApp — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "WhatsApp — Pensify" }] }),
   component: WhatsAppPage,
 });
 
@@ -18,6 +19,7 @@ interface Msg {
 }
 
 function WhatsAppPage() {
+  const { t } = useTranslation();
   const [selectedCleanerId, setSelectedCleanerId] = useState(cleaners[0].id);
   const cleaner = getCleaner(selectedCleanerId)!;
   const cleanerTasks = cleaningTasks.filter((t) => t.cleanerId === selectedCleanerId);
@@ -76,7 +78,7 @@ function WhatsAppPage() {
   };
 
   return (
-    <AppShell title="WhatsApp Workflow" subtitle="Simulated cleaner communication channel">
+    <AppShell title={t("pages.whatsapp.title")} subtitle="Simulated cleaner communication channel">
       <div className="grid lg:grid-cols-[280px_1fr] gap-4">
         <Section title="Cleaners">
           <div className="space-y-1 -m-2">

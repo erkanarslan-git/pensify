@@ -3,13 +3,15 @@ import { AppShell, Section } from "@/components/app-shell";
 import { reservations, rooms, properties, getRoom, sourceColors } from "@/lib/demo-data";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  head: () => ({ meta: [{ title: "Calendar — StayFlow" }] }),
+  head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
   component: CalendarPage,
 });
 
 function CalendarPage() {
+  const { t } = useTranslation();
   const [start, setStart] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 3);
@@ -31,7 +33,7 @@ function CalendarPage() {
   };
 
   return (
-    <AppShell title="Occupancy Calendar" subtitle="Booking board for all rooms"
+    <AppShell title={t("pages.calendar.title")} subtitle={t("common.occupancyCalendarSubtitle")}
       actions={
         <div className="flex items-center gap-1">
           <button onClick={() => shift(-7)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">

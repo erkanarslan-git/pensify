@@ -25,7 +25,7 @@ if (!i18n.isInitialized) {
       detection: {
         order: ["localStorage", "navigator", "htmlTag"],
         caches: ["localStorage"],
-        lookupLocalStorage: "stayflow.lang",
+        lookupLocalStorage: "pensify.lang",
       },
     });
 }
