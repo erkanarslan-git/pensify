@@ -1,91 +1,294 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Badge, Section } from "@/components/app-shell";
-import { cleaners, cities, cleaningTasks, getCity } from "@/lib/demo-data";
-import { Phone, MapPin, Plus } from "lucide-react";
+import { AppShell, Badge } from "@/components/app-shell";
+import { Phone, Plus, Pencil, Trash2, Link2, Unlink } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/cleaners")({
   head: () => ({ meta: [{ title: "Cleaners — Pensify" }] }),
   component: CleanersPage,
 });
 
+type CleanerRow = {
+  id: string;
+  user_id: string | null;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  active: boolean;
+  hourly_rate: number | null;
+  notes: string | null;
+};
+
+type AdminUser = {
+  user_id: string;
+  email: string;
+  full_name: string | null;
+  roles: string[];
+};
+
 function CleanersPage() {
   const { t } = useTranslation();
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState<Partial<CleanerRow> | null>(null);
+  const [deleting, setDeleting] = useState<CleanerRow | null>(null);
+  const [linking, setLinking] = useState<CleanerRow | null>(null);
+
+  const cleaners = useQuery({
+    queryKey: ["cleaners"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cleaners")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as CleanerRow[];
+    },
+  });
+
+  const users = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_users");
+      if (error) throw error;
+      return (data ?? []) as AdminUser[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async (c: Partial<CleanerRow>) => {
+      const payload = {
+        full_name: c.full_name!,
+        phone: c.phone || null,
+        email: c.email || null,
+        hourly_rate: c.hourly_rate ?? null,
+        active: c.active ?? true,
+        notes: c.notes || null,
+      };
+      if (c.id) {
+        const { error } = await supabase.from("cleaners").update(payload).eq("id", c.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("cleaners").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cleaners"] });
+      setEditing(null);
+      toast.success("Kaydedildi");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("cleaners").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cleaners"] });
+      setDeleting(null);
+      toast.success("Silindi");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const link = useMutation({
+    mutationFn: async ({ cleanerId, userId }: { cleanerId: string; userId: string | null }) => {
+      const { error } = await supabase.rpc("admin_link_cleaner", {
+        _cleaner_id: cleanerId,
+        _user_id: userId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cleaners"] });
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      setLinking(null);
+      toast.success("Bağlantı güncellendi");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const list = cleaners.data ?? [];
+
   return (
-    <AppShell title={t("pages.cleaners.title")} subtitle={t("pages.cleaners.subtitle", { count: cleaners.filter((c) => c.active).length })}
+    <AppShell
+      title={t("pages.cleaners.title")}
+      subtitle={t("pages.cleaners.subtitle", { count: list.filter((c) => c.active).length })}
       actions={
-        <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">
-          <Plus className="w-4 h-4" /> Add cleaner
-        </button>
-      }>
+        <Button onClick={() => setEditing({ active: true })} size="sm">
+          <Plus className="w-4 h-4 mr-1" /> {t("common.add")}
+        </Button>
+      }
+    >
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cleaners.map((c) => {
-          const assigned = cleaningTasks.filter((t) => t.cleanerId === c.id);
+        {list.map((c) => {
+          const linkedUser = users.data?.find((u) => u.user_id === c.user_id);
           return (
             <div key={c.id} className="rounded-xl border border-border bg-card p-5 shadow-soft">
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-full bg-primary/10 text-primary grid place-items-center text-sm font-semibold">
-                  {c.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  {c.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold tracking-tight">{c.name}</h3>
-                    <Badge tone={c.active ? "success" : "muted"}>{c.active ? "Active" : "Inactive"}</Badge>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold tracking-tight">{c.full_name}</h3>
+                    <Badge tone={c.active ? "success" : "muted"}>{c.active ? "Aktif" : "Pasif"}</Badge>
+                    {c.user_id ? (
+                      <Badge tone="success">Bağlı</Badge>
+                    ) : (
+                      <Badge tone="warning">Hesap yok</Badge>
+                    )}
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                    <Phone className="w-3 h-3" /> {c.phone}
-                  </div>
+                  {c.phone && (
+                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                      <Phone className="w-3 h-3" /> {c.phone}
+                    </div>
+                  )}
+                  {linkedUser && (
+                    <div className="mt-1 text-xs text-muted-foreground">{linkedUser.email}</div>
+                  )}
                 </div>
               </div>
-              <div className="mt-4">
-                <div className="text-xs uppercase text-muted-foreground font-medium mb-1.5">Regions</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {c.regions.map((r) => (
-                    <span key={r} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent text-xs">
-                      <MapPin className="w-3 h-3" /> {getCity(r)?.name}
-                    </span>
-                  ))}
+              {c.hourly_rate != null && (
+                <div className="mt-3 text-sm">
+                  Saatlik: <strong>€{Number(c.hourly_rate).toFixed(2)}</strong>
                 </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border flex justify-between text-sm">
-                <div>
-                  <div className="text-xs text-muted-foreground">Today's tasks</div>
-                  <div className="font-semibold">{assigned.length}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Completed</div>
-                  <div className="font-semibold text-success">{assigned.filter((a) => a.status === "completed").length}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">In progress</div>
-                  <div className="font-semibold text-primary">{assigned.filter((a) => a.status === "in_progress").length}</div>
-                </div>
+              )}
+              {c.notes && <div className="mt-2 text-xs text-muted-foreground">{c.notes}</div>}
+              <div className="mt-4 pt-3 border-t border-border flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setEditing(c)}>
+                  <Pencil className="w-3 h-3 mr-1" /> Düzenle
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setLinking(c)}>
+                  {c.user_id ? <Unlink className="w-3 h-3 mr-1" /> : <Link2 className="w-3 h-3 mr-1" />}
+                  Hesap bağla
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setDeleting(c)}>
+                  <Trash2 className="w-3 h-3 mr-1" /> Sil
+                </Button>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-6">
-        <Section title="Coverage by city">
-          <div className="grid sm:grid-cols-3 gap-4">
-            {cities.map((c) => {
-              const coverage = cleaners.filter((cl) => cl.active && cl.regions.includes(c.id));
-              return (
-                <div key={c.id} className="rounded-lg border border-border p-4">
-                  <div className="font-semibold">{c.name}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{coverage.length} active cleaners</div>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {coverage.map((cl) => (
-                      <span key={cl.id} className="text-xs px-2 py-0.5 rounded-full bg-accent">{cl.name.split(" ")[0]}</span>
-                    ))}
-                  </div>
+      {/* Edit dialog */}
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editing?.id ? "Personel düzenle" : "Yeni personel"}</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <div>
+                <Label>Ad Soyad</Label>
+                <Input value={editing.full_name ?? ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Telefon</Label>
+                  <Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} />
                 </div>
-              );
-            })}
-          </div>
-        </Section>
-      </div>
+                <div>
+                  <Label>E-posta</Label>
+                  <Input value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Saatlik (€)</Label>
+                  <Input type="number" step="0.01" value={editing.hourly_rate ?? ""} onChange={(e) => setEditing({ ...editing, hourly_rate: e.target.value ? Number(e.target.value) : null })} />
+                </div>
+                <div>
+                  <Label>Durum</Label>
+                  <Select value={String(editing.active ?? true)} onValueChange={(v) => setEditing({ ...editing, active: v === "true" })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Aktif</SelectItem>
+                      <SelectItem value="false">Pasif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label>Not</Label>
+                <Input value={editing.notes ?? ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditing(null)}>İptal</Button>
+            <Button onClick={() => editing && save.mutate(editing)} disabled={!editing?.full_name || save.isPending}>
+              Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link dialog */}
+      <Dialog open={!!linking} onOpenChange={(o) => !o && setLinking(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Kullanıcı hesabı bağla</DialogTitle>
+          </DialogHeader>
+          {linking && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {linking.full_name} — QR ile vardiya başlatabilmesi için bir kullanıcı hesabına bağlanmalı.
+                Kişi önce <code>/auth</code> sayfasından kayıt olmalı.
+              </p>
+              <Select
+                value={linking.user_id ?? "none"}
+                onValueChange={(v) => link.mutate({ cleanerId: linking.id, userId: v === "none" ? null : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Kullanıcı seç" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Bağlı değil —</SelectItem>
+                  {users.data?.map((u) => (
+                    <SelectItem key={u.user_id} value={u.user_id}>
+                      {u.full_name || u.email} ({u.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Personeli sil?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleting?.full_name} kalıcı olarak silinecek. Geçmiş zaman kayıtları da silinir.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>Sil</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
