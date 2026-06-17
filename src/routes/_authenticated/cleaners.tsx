@@ -114,7 +114,7 @@ function CleanersPage() {
     mutationFn: async ({ cleanerId, userId }: { cleanerId: string; userId: string | null }) => {
       const { error } = await supabase.rpc("admin_link_cleaner", {
         _cleaner_id: cleanerId,
-        _user_id: userId,
+        _user_id: userId as string,
       });
       if (error) throw error;
     },
