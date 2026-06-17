@@ -12,6 +12,7 @@ import {
   ClipboardList,
   Hotel,
   Clock,
+  Shield,
   Moon,
   Sun,
   LogOut,
