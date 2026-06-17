@@ -18,6 +18,7 @@ import {
   LogOut,
   Globe,
   Menu,
+  RefreshCw,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,6 +49,7 @@ const navItems: NavItem[] = [
   { to: "/properties", labelKey: "nav.properties", icon: Building2 },
   { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
   { to: "/team", labelKey: "nav.team", icon: Shield },
+  { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
 ];
 
 const LANGS = [

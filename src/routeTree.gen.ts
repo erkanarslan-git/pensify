@@ -21,11 +21,16 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
+import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
+import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
+import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
+import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
+import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -89,6 +94,12 @@ const AuthenticatedCleanersRoute = AuthenticatedCleanersRouteImport.update({
   path: '/cleaners',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChannelSyncRoute =
+  AuthenticatedChannelSyncRouteImport.update({
+    id: '/channel-sync',
+    path: '/channel-sync',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -110,11 +121,33 @@ const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
   path: '/clock/$token',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWebhooksBookingRoute =
+  ApiPublicWebhooksBookingRouteImport.update({
+    id: '/api/public/webhooks/booking',
+    path: '/api/public/webhooks/booking',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWebhooksAirbnbRoute = ApiPublicWebhooksAirbnbRouteImport.update({
+  id: '/api/public/webhooks/airbnb',
+  path: '/api/public/webhooks/airbnb',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSyncManualRoute = ApiPublicSyncManualRouteImport.update({
+  id: '/api/public/sync/manual',
+  path: '/api/public/sync/manual',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPropertiesIdQrRoute =
   AuthenticatedPropertiesIdQrRouteImport.update({
     id: '/properties/$id/qr',
     path: '/properties/$id/qr',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicIcalRoomsRoomIdRoute =
+  ApiPublicIcalRoomsRoomIdRouteImport.update({
+    id: '/api/public/ical/rooms/$roomId',
+    path: '/api/public/ical/rooms/$roomId',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -122,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/me': typeof AuthenticatedMeRoute
@@ -134,11 +168,16 @@ export interface FileRoutesByFullPath {
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
+  '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
+  '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
+  '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/me': typeof AuthenticatedMeRoute
@@ -152,6 +191,10 @@ export interface FileRoutesByTo {
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
+  '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
+  '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
+  '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -159,6 +202,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -172,6 +216,10 @@ export interface FileRoutesById {
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
+  '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
+  '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
+  '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,6 +228,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/analytics'
     | '/calendar'
+    | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
     | '/me'
@@ -192,11 +241,16 @@ export interface FileRouteTypes {
     | '/clock/$token'
     | '/properties/'
     | '/properties/$id/qr'
+    | '/api/public/sync/manual'
+    | '/api/public/webhooks/airbnb'
+    | '/api/public/webhooks/booking'
+    | '/api/public/ical/rooms/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
     | '/analytics'
     | '/calendar'
+    | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
     | '/me'
@@ -210,12 +264,17 @@ export interface FileRouteTypes {
     | '/clock/$token'
     | '/properties'
     | '/properties/$id/qr'
+    | '/api/public/sync/manual'
+    | '/api/public/webhooks/airbnb'
+    | '/api/public/webhooks/booking'
+    | '/api/public/ical/rooms/$roomId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/analytics'
     | '/_authenticated/calendar'
+    | '/_authenticated/channel-sync'
     | '/_authenticated/cleaners'
     | '/_authenticated/cleaning'
     | '/_authenticated/me'
@@ -229,11 +288,19 @@ export interface FileRouteTypes {
     | '/_authenticated/clock/$token'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
+    | '/api/public/sync/manual'
+    | '/api/public/webhooks/airbnb'
+    | '/api/public/webhooks/booking'
+    | '/api/public/ical/rooms/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicSyncManualRoute: typeof ApiPublicSyncManualRoute
+  ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
+  ApiPublicWebhooksBookingRoute: typeof ApiPublicWebhooksBookingRoute
+  ApiPublicIcalRoomsRoomIdRoute: typeof ApiPublicIcalRoomsRoomIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -322,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCleanersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/channel-sync': {
+      id: '/_authenticated/channel-sync'
+      path: '/channel-sync'
+      fullPath: '/channel-sync'
+      preLoaderRoute: typeof AuthenticatedChannelSyncRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/calendar': {
       id: '/_authenticated/calendar'
       path: '/calendar'
@@ -350,6 +424,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClockTokenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/booking': {
+      id: '/api/public/webhooks/booking'
+      path: '/api/public/webhooks/booking'
+      fullPath: '/api/public/webhooks/booking'
+      preLoaderRoute: typeof ApiPublicWebhooksBookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhooks/airbnb': {
+      id: '/api/public/webhooks/airbnb'
+      path: '/api/public/webhooks/airbnb'
+      fullPath: '/api/public/webhooks/airbnb'
+      preLoaderRoute: typeof ApiPublicWebhooksAirbnbRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/sync/manual': {
+      id: '/api/public/sync/manual'
+      path: '/api/public/sync/manual'
+      fullPath: '/api/public/sync/manual'
+      preLoaderRoute: typeof ApiPublicSyncManualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/properties/$id/qr': {
       id: '/_authenticated/properties/$id/qr'
       path: '/properties/$id/qr'
@@ -357,12 +452,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPropertiesIdQrRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/ical/rooms/$roomId': {
+      id: '/api/public/ical/rooms/$roomId'
+      path: '/api/public/ical/rooms/$roomId'
+      fullPath: '/api/public/ical/rooms/$roomId'
+      preLoaderRoute: typeof ApiPublicIcalRoomsRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedChannelSyncRoute: typeof AuthenticatedChannelSyncRoute
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -381,6 +484,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedChannelSyncRoute: AuthenticatedChannelSyncRoute,
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
@@ -402,6 +506,10 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicSyncManualRoute: ApiPublicSyncManualRoute,
+  ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,
+  ApiPublicWebhooksBookingRoute: ApiPublicWebhooksBookingRoute,
+  ApiPublicIcalRoomsRoomIdRoute: ApiPublicIcalRoomsRoomIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
