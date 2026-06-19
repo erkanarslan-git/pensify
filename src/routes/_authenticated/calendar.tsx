@@ -6,7 +6,7 @@ import {
   properties as demoProperties,
 } from "@/lib/demo-data";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
@@ -56,6 +56,7 @@ function CalendarPage() {
   const [newRes, setNewRes] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
@@ -151,6 +152,16 @@ function CalendarPage() {
     if (newRes || editId) return;
     const tag = (e.target as HTMLElement).tagName;
     if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+    if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+      e.preventDefault();
+      setShowHelp((v) => !v);
+      return;
+    }
+    if (e.key === "Escape" && showHelp) {
+      e.preventDefault();
+      setShowHelp(false);
+      return;
+    }
     if (!flatRooms.length || !days.length) return;
     const { row, col } = focus;
     if (e.key === "ArrowRight") {
@@ -198,6 +209,13 @@ function CalendarPage() {
       subtitle={t("common.occupancyCalendarSubtitle")}
       actions={
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
+            title="Tastatur-Kürzel (?)"
+          >
+            <Keyboard className="w-4 h-4" />
+          </button>
           <button
             onClick={goToday}
             className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
@@ -387,7 +405,9 @@ function CalendarPage() {
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
           <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Problem-Zimmer</div>
-          <div className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">↑↓←→</kbd> navigieren · <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">Enter</kbd> öffnen</div>
+          <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+            <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> Tastatur-Kürzel
+          </button>
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
@@ -407,6 +427,59 @@ function CalendarPage() {
         reservationId={editId}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
+
+      {showHelp && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4"
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-card border border-border rounded-lg shadow-xl w-full max-w-md p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Keyboard className="w-4 h-4" />
+                <h3 className="font-semibold">Tastatur-Kürzel</h3>
+              </div>
+              <button onClick={() => setShowHelp(false)} className="p-1 rounded hover:bg-accent" title="Schließen">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Klicke zuerst in den Kalender, damit die Kürzel aktiv sind.
+            </p>
+            <div className="space-y-2 text-sm">
+              {[
+                { keys: ["↑", "↓", "←", "→"], desc: "Zwischen Zellen navigieren" },
+                { keys: ["←", "→"], desc: "Am Rand: vorherige / nächste Periode" },
+                { keys: ["Enter"], desc: "Belegt: Buchung bearbeiten · Frei: neue Buchung" },
+                { keys: ["?"], desc: "Diese Hilfe ein-/ausblenden" },
+                { keys: ["Esc"], desc: "Dialoge / Hilfe schließen" },
+              ].map((row, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 py-1.5 border-b border-border last:border-0">
+                  <span className="text-muted-foreground">{row.desc}</span>
+                  <span className="flex items-center gap-1">
+                    {row.keys.map((k) => (
+                      <kbd key={k} className="px-2 py-0.5 rounded border border-border bg-muted text-[11px] font-mono min-w-[24px] text-center">
+                        {k}
+                      </kbd>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">
+              <div className="font-medium mb-1.5 text-foreground">Maus</div>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>Klick auf Zelle: auswählen</li>
+                <li>Klick auf <Plus className="inline w-3 h-3" />: neue Buchung</li>
+                <li>Ziehen: horizontal scrollen</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
