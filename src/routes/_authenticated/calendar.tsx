@@ -217,18 +217,7 @@ function CalendarPage() {
         ))}
       </div>
 
-        <div className="flex rounded-md border border-input bg-card overflow-hidden">
-          {RANGES.map((r) => (
-            <button
-              key={r.key}
-              onClick={() => setRange(r.key)}
-              className={`px-3 py-2 text-xs ${range === r.key ? "bg-accent font-medium" : ""}`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-      </div>
+
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} oda`}>
         <div className="overflow-x-auto -m-5">
