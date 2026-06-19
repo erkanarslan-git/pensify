@@ -220,7 +220,7 @@ function CalendarPage() {
         (res) => res.roomId === entry.room.id && res.checkIn <= dIso && res.checkOut > dIso,
       );
       if (occupant?.realId) setEditId(occupant.realId);
-      else setNewRes({ date: dIso, propertyId: entry.property.id, roomNumber: entry.room.number });
+      else if (canCreate) tryOpenNew({ date: dIso, propertyId: entry.property.id, roomNumber: entry.room.number });
     }
   };
 
