@@ -382,29 +382,38 @@ function CalendarPage() {
                     (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                   );
                   const isFocused = rowIdx === focus.row && dIdx === focus.col;
+                  const past = isPastDate(dIso);
+                  const pastStyle = past
+                    ? {
+                        backgroundImage:
+                          "repeating-linear-gradient(135deg, hsl(var(--muted)/0.35) 0 6px, transparent 6px 12px)",
+                      }
+                    : undefined;
                   cells.push(
                     <div
                       key={`${r.id}-${dIso}`}
                       onClick={() => setFocus({ row: rowIdx, col: dIdx })}
-                      className={`border-b border-l border-border h-12 relative group ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
+                      style={pastStyle}
+                      className={`border-b border-l border-border h-12 relative group ${past ? "bg-muted/30" : ""} ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
                     >
                       {occupant ? (
                         (() => {
                           const c = guestColor(occupant.guestName);
                           const sc = sourceColor(occupant.source);
                           const label = occupant.guestName.split(" ")[0];
+                          const occPast = isPastDate(occupant.checkIn);
                           return (
                             <div
-                              className="absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden"
+                              className={`absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden ${occPast && !canCreatePast ? "opacity-70" : ""}`}
                               style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
-                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}`}
+                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
                             >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
                                   className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                  title="Bearbeiten"
+                                  title={occPast && !canCreatePast ? "Ansehen" : "Bearbeiten"}
                                 >
                                   <Pencil className="w-3 h-3" />
                                 </button>
@@ -413,17 +422,19 @@ function CalendarPage() {
                           );
                         })()
                       ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFocus({ row: rowIdx, col: dIdx });
-                            setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number });
-                          }}
-                          className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
-                          title={`Neue Buchung · #${r.number} · ${dIso}`}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+                        canCreate && (!past || canCreatePast) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFocus({ row: rowIdx, col: dIdx });
+                              tryOpenNew({ date: dIso, propertyId: p.id, roomNumber: r.number });
+                            }}
+                            className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
+                            title={past ? `Vergangene Buchung anlegen · #${r.number} · ${dIso}` : `Neue Buchung · #${r.number} · ${dIso}`}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        )
                       )}
                     </div>,
                   );
