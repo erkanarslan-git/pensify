@@ -125,19 +125,32 @@ export function AppShell({ title, subtitle, actions, children }: {
     .toUpperCase();
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    if (localStorage.getItem("pensify.nav.collapsed") === "1") setCollapsed(true);
+  }, []);
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("pensify.nav.collapsed", next ? "1" : "0");
+      return next;
+    });
+  };
 
-  const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => (
+  const SidebarContent = ({ onNavigate, mini = false }: { onNavigate?: () => void; mini?: boolean }) => (
     <>
-      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border">
-        <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft">
+      <div className={`h-16 flex items-center border-b border-sidebar-border ${mini ? "justify-center px-2" : "gap-2.5 px-5"}`}>
+        <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft shrink-0">
           <Hotel className="w-4 h-4" />
         </div>
-        <div className="min-w-0">
-          <div className="text-sm font-semibold tracking-tight truncate">{t("app.name")}</div>
-          <div className="text-[11px] text-muted-foreground -mt-0.5 truncate">{t("app.tagline")}</div>
-        </div>
+        {!mini && (
+          <div className="min-w-0">
+            <div className="text-sm font-semibold tracking-tight truncate">{t("app.name")}</div>
+            <div className="text-[11px] text-muted-foreground -mt-0.5 truncate">{t("app.tagline")}</div>
+          </div>
+        )}
       </div>
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${mini ? "px-2" : "px-3"}`}>
         {navItems.map((item) => {
           const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
           const Icon = item.icon;
@@ -146,29 +159,34 @@ export function AppShell({ title, subtitle, actions, children }: {
               key={item.to}
               to={item.to}
               onClick={onNavigate}
-              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-all ${
+              title={mini ? t(item.labelKey) : undefined}
+              className={`flex items-center rounded-xl text-sm transition-all ${
+                mini ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-3"
+              } ${
                 active
                   ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              <span className="truncate">{t(item.labelKey)}</span>
+              {!mini && <span className="truncate">{t(item.labelKey)}</span>}
             </Link>
           );
         })}
       </nav>
-      <div className="p-3 border-t border-sidebar-border">
+      <div className={`border-t border-sidebar-border ${mini ? "p-2" : "p-3"}`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-sidebar-accent/60 transition-colors">
+            <button className={`w-full flex items-center rounded-xl hover:bg-sidebar-accent/60 transition-colors ${mini ? "justify-center p-1.5" : "gap-3 px-2 py-2"}`}>
               <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold text-accent-foreground shrink-0">
                 {initials}
               </div>
-              <div className="flex-1 min-w-0 text-left">
-                <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
-                <div className="text-xs text-muted-foreground truncate">Owner</div>
-              </div>
+              {!mini && (
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
+                  <div className="text-xs text-muted-foreground truncate">Owner</div>
+                </div>
+              )}
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" side="top" className="w-56">
@@ -198,26 +216,36 @@ export function AppShell({ title, subtitle, actions, children }: {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <aside className="w-64 shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-sm hidden md:flex flex-col">
-        <SidebarContent />
+      <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-sm hidden md:flex flex-col transition-[width] duration-200`}>
+        <SidebarContent mini={collapsed} />
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-14 md:h-16 border-b border-border grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-10">
-          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-            <SheetTrigger asChild>
-              <button
-                className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
-                aria-label="Open menu"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
-              <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
-              <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
-            </SheetContent>
-          </Sheet>
+          <div className="flex items-center gap-2">
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
+                  aria-label="Open menu"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
+                <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
+                <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
+              </SheetContent>
+            </Sheet>
+            <button
+              onClick={toggleCollapsed}
+              className="hidden md:grid w-10 h-10 rounded-xl border border-border place-items-center hover:bg-accent transition-colors"
+              aria-label={collapsed ? "Menü ausklappen" : "Menü einklappen"}
+              title={collapsed ? "Menü ausklappen" : "Menü einklappen"}
+            >
+              {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
+          </div>
           <div className="min-w-0">
             <h1 className="text-base md:text-lg font-semibold tracking-tight truncate">{title}</h1>
             {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
