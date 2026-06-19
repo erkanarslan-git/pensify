@@ -28,15 +28,25 @@ export function normalizeChannel(src: string): ActiveChannel {
   return "direct"; // direct, phone, tel, walk-in, ical, unknown → Direkt/Tel
 }
 
-const SOURCE_COLOR: Record<ActiveChannel, string> = {
+const DEFAULT_SOURCE_COLOR: Record<ActiveChannel, string> = {
   booking: "#003580",
   airbnb: "#ff5a5f",
   check24: "#005ea8",
   website: "#10b981",
   direct: "#f59e0b",
 };
+function readOverrides(): Partial<Record<ActiveChannel, string>> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem("pensify.channelColors");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
 export function sourceColor(src: string): string {
-  return SOURCE_COLOR[normalizeChannel(src)];
+  const ch = normalizeChannel(src);
+  return readOverrides()[ch] ?? DEFAULT_SOURCE_COLOR[ch];
 }
 
 const SOURCE_LABEL: Record<ActiveChannel, string> = {

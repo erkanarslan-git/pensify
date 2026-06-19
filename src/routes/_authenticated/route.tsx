@@ -15,10 +15,18 @@ export const Route = createFileRoute("/_authenticated")({
     const isStaff = ["owner", "admin", "manager"].some((r) => roleSet.has(r as any));
     const isCleaner = roleSet.has("cleaner" as any);
 
-    // Cleaner-only users may only access /me and /clock/*
     const path = location.pathname;
+    const hasAnyRole = roleSet.size > 0;
+    // Users with no role at all → must request access
+    if (!hasAnyRole && path !== "/request-access") {
+      throw redirect({ to: "/request-access" });
+    }
+    if (hasAnyRole && path === "/request-access") {
+      throw redirect({ to: "/" });
+    }
+    // Cleaner-only users may only access /me and /clock/*
     const allowedForCleaner =
-      path === "/me" || path.startsWith("/clock/") || path.startsWith("/me/");
+      path === "/me" || path.startsWith("/clock/") || path.startsWith("/me/") || path === "/request-access";
     if (isCleaner && !isStaff && !allowedForCleaner) {
       throw redirect({ to: "/me" });
     }
