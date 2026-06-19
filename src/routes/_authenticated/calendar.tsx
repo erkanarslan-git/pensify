@@ -278,7 +278,7 @@ function CalendarPage() {
                                 onClick={() =>
                                   setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
                                 }
-                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 hover:bg-primary/20 grid place-items-center text-primary"
+                                className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
                                 title={`Yeni rezervasyon · #${r.number} · ${dIso}`}
                               >
                                 <Plus className="w-4 h-4" />
