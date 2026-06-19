@@ -4,13 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
-type Channel = "booking" | "airbnb" | "check24" | "web" | "direct";
+type Channel = "booking" | "airbnb" | "check24" | "website" | "direct";
 const CHANNELS: { value: Channel; label: string }[] = [
   { value: "direct", label: "Direkt / Telefon" },
   { value: "booking", label: "Booking" },
   { value: "airbnb", label: "Airbnb" },
   { value: "check24", label: "Check24" },
-  { value: "web", label: "Web" },
+  { value: "website", label: "Web" },
 ];
 
 interface Property { id: string; name: string }
