@@ -52,6 +52,7 @@ function CalendarPage() {
   });
   const [propertyId, setPropertyId] = useState<string>("all");
   const [roomQ, setRoomQ] = useState("");
+  const [guestQ, setGuestQ] = useState("");
   const [newRes, setNewRes] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -119,6 +120,16 @@ function CalendarPage() {
     });
   }, [propertyId, roomQ, rooms]);
 
+  const filteredReservations = useMemo(() => {
+    const q = guestQ.trim().toLowerCase();
+    if (!q) return reservations;
+    return reservations.filter((r) =>
+      r.guestName.toLowerCase().includes(q) || (r.realId ?? r.id).toLowerCase().includes(q),
+    );
+  }, [guestQ, reservations]);
+
+
+
   const shift = (n: number) => {
     const d = new Date(start);
     d.setDate(d.getDate() + n);
@@ -166,7 +177,13 @@ function CalendarPage() {
           value={roomQ}
           onChange={(e) => setRoomQ(e.target.value)}
           placeholder="Oda no…"
-          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-32"
+          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
+        />
+        <input
+          value={guestQ}
+          onChange={(e) => setGuestQ(e.target.value)}
+          placeholder="Misafir veya rezervasyon kodu…"
+          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
         />
         <input
           type="date"
@@ -188,6 +205,19 @@ function CalendarPage() {
           ))}
         </div>
       </div>
+
+      {/* Kaynak (kanal) renk legendi */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3 text-[11px] text-muted-foreground">
+        <span className="uppercase tracking-wide font-medium">Kanal:</span>
+        {["booking", "airbnb", "check24", "website", "woocommerce", "phone", "walkin", "direct", "ical"].map((s) => (
+          <span key={s} className="inline-flex items-center gap-1">
+            <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: sourceColor(s) }} />
+            {sourceLabel(s)}
+          </span>
+        ))}
+      </div>
+
+
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} oda`}>
         <div className="overflow-x-auto -m-5">
@@ -244,7 +274,7 @@ function CalendarPage() {
                       );
                       days.forEach((d) => {
                         const dIso = iso(d);
-                        const occupant = reservations.find(
+                        const occupant = filteredReservations.find(
                           (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                         );
                         cells.push(
@@ -256,7 +286,6 @@ function CalendarPage() {
                               (() => {
                                 const c = guestColor(occupant.guestName);
                                 const sc = sourceColor(occupant.source);
-                                const isFirstDay = occupant.checkIn === dIso;
                                 const label = `${sourceLabel(occupant.source)} · ${occupant.guestName.split(" ")[0]}`;
                                 return (
                                   <div
@@ -264,7 +293,7 @@ function CalendarPage() {
                                     style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
                                     title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}`}
                                   >
-                                    {isFirstDay && <span className="truncate">{label}</span>}
+                                    <span className="truncate">{label}</span>
                                     {occupant.realId && (
                                       <button
                                         onClick={() => setEditId(occupant.realId)}
