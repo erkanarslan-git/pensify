@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          booking_ref: string
+          channel: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          primary_guest_email: string | null
+          primary_guest_name: string
+          primary_guest_phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          booking_ref?: string
+          channel?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          primary_guest_email?: string | null
+          primary_guest_name: string
+          primary_guest_phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          booking_ref?: string
+          channel?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          primary_guest_email?: string | null
+          primary_guest_name?: string
+          primary_guest_phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       channel_integrations: {
         Row: {
           api_credentials: Json | null
@@ -395,6 +434,7 @@ export type Database = {
       }
       reservations: {
         Row: {
+          booking_id: string | null
           channel: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
@@ -415,6 +455,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          booking_id?: string | null
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
@@ -435,6 +476,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          booking_id?: string | null
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in?: string
           check_out?: string
@@ -455,6 +497,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reservations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reservations_property_id_fkey"
             columns: ["property_id"]
