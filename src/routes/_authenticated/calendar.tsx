@@ -128,7 +128,58 @@ function CalendarPage() {
     );
   }, [guestQ, reservations]);
 
+  // Flat ordered list of rooms (matches render order) for keyboard nav
+  const flatRooms = useMemo(() => {
+    const out: { room: UnifiedRoom; property: UnifiedProperty }[] = [];
+    properties
+      .filter((p) => propertyId === "all" || p.id === propertyId)
+      .forEach((p) => {
+        filteredRooms.filter((r) => r.propertyId === p.id).forEach((room) => out.push({ room, property: p }));
+      });
+    return out;
+  }, [properties, filteredRooms, propertyId]);
 
+  const [focus, setFocus] = useState<{ row: number; col: number }>({ row: 0, col: 0 });
+  useEffect(() => {
+    setFocus((f) => ({
+      row: Math.min(f.row, Math.max(0, flatRooms.length - 1)),
+      col: Math.min(f.col, Math.max(0, days.length - 1)),
+    }));
+  }, [flatRooms.length, days.length]);
+
+  const onGridKeyDown = (e: React.KeyboardEvent) => {
+    if (newRes || editId) return;
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+    if (!flatRooms.length || !days.length) return;
+    const { row, col } = focus;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      if (col < days.length - 1) setFocus({ row, col: col + 1 });
+      else { shift(range); setFocus({ row, col: 0 }); }
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      if (col > 0) setFocus({ row, col: col - 1 });
+      else { shift(-range); setFocus({ row, col: days.length - 1 }); }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocus({ row: Math.min(flatRooms.length - 1, row + 1), col });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocus({ row: Math.max(0, row - 1), col });
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const entry = flatRooms[row];
+      const day = days[col];
+      if (!entry || !day) return;
+      const dIso = iso(day);
+      const occupant = filteredReservations.find(
+        (res) => res.roomId === entry.room.id && res.checkIn <= dIso && res.checkOut > dIso,
+      );
+      if (occupant?.realId) setEditId(occupant.realId);
+      else setNewRes({ date: dIso, propertyId: entry.property.id, roomNumber: entry.room.number });
+    }
+  };
 
   const shift = (n: number) => {
     const d = new Date(start);
@@ -220,15 +271,21 @@ function CalendarPage() {
 
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
+        <div
+          tabIndex={0}
+          onKeyDown={onGridKeyDown}
+          className="outline-none focus:ring-2 focus:ring-primary/30 rounded-md"
+        >
         <ScrollableGrid>
           <div className="min-w-[900px] px-5">
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
               <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Zimmer</div>
-              {days.map((d) => {
+              {days.map((d, dIdx) => {
                 const isToday = iso(d) === today;
+                const isFocusCol = dIdx === focus.col;
                 return (
-                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""}`}>
+                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""}`}>
                     <div className="text-[10px] uppercase text-muted-foreground">
                       {d.toLocaleDateString(undefined, { weekday: "short" })}
                     </div>
@@ -237,100 +294,100 @@ function CalendarPage() {
                 );
               })}
 
-              {properties
-                .filter((p) => propertyId === "all" || p.id === propertyId)
-                .flatMap((p) =>
-                  filteredRooms
-                    .filter((r) => r.propertyId === p.id)
-                    .map((r) => {
-                      const cells: React.ReactNode[] = [];
-                      cells.push(
-                        <div key={`${r.id}-label`} className="py-3 pr-3 border-b border-border text-sm flex items-center gap-2">
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium truncate flex items-center gap-1.5">
-                              {r.floor != null && (
-                                <span
-                                  title={r.floor === 0 ? "Erdgeschoss" : `${r.floor}. Obergeschoss`}
-                                  className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground"
-                                >
-                                  {r.floor === 0 ? "EG" : `${r.floor}.OG`}
-                                </span>
-                              )}
-                              #{r.number}
+              {flatRooms.flatMap(({ room: r, property: p }, rowIdx) => {
+                const cells: React.ReactNode[] = [];
+                cells.push(
+                  <div key={`${r.id}-label`} className={`py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-primary/10" : ""}`}>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate flex items-center gap-1.5">
+                        {r.floor != null && (
+                          <span
+                            title={r.floor === 0 ? "Erdgeschoss" : `${r.floor}. Obergeschoss`}
+                            className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground"
+                          >
+                            {r.floor === 0 ? "EG" : `${r.floor}.OG`}
+                          </span>
+                        )}
+                        #{r.number}
 
-                              {r.needsCleaning && !r.issue && (
-                                <span title="Reinigung ausstehend" className="inline-flex">
-                                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                                </span>
-                              )}
-                              {r.issue && (
-                                <span title={r.issue} className="inline-flex">
-                                  <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-                                </span>
+                        {r.needsCleaning && !r.issue && (
+                          <span title="Reinigung ausstehend" className="inline-flex">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          </span>
+                        )}
+                        {r.issue && (
+                          <span title={r.issue} className="inline-flex">
+                            <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">{p.name}</div>
+                    </div>
+                  </div>,
+                );
+                days.forEach((d, dIdx) => {
+                  const dIso = iso(d);
+                  const occupant = filteredReservations.find(
+                    (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
+                  );
+                  const isFocused = rowIdx === focus.row && dIdx === focus.col;
+                  cells.push(
+                    <div
+                      key={`${r.id}-${dIso}`}
+                      onClick={() => setFocus({ row: rowIdx, col: dIdx })}
+                      className={`border-b border-l border-border h-12 relative group ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
+                    >
+                      {occupant ? (
+                        (() => {
+                          const c = guestColor(occupant.guestName);
+                          const sc = sourceColor(occupant.source);
+                          const label = occupant.guestName.split(" ")[0];
+                          return (
+                            <div
+                              className="absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden"
+                              style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
+                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}`}
+                            >
+                              <span className="truncate">{label}</span>
+                              {occupant.realId && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
+                                  className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
+                                  title="Bearbeiten"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </button>
                               )}
                             </div>
-                            <div className="text-[11px] text-muted-foreground truncate">{p.name}</div>
-                          </div>
-                        </div>,
-                      );
-                      days.forEach((d) => {
-                        const dIso = iso(d);
-                        const occupant = filteredReservations.find(
-                          (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
-                        );
-                        cells.push(
-                          <div
-                            key={`${r.id}-${dIso}`}
-                            className="border-b border-l border-border h-12 relative group"
-                          >
-                            {occupant ? (
-                              (() => {
-                                const c = guestColor(occupant.guestName);
-                                const sc = sourceColor(occupant.source);
-                                const label = occupant.guestName.split(" ")[0];
-                                return (
-                                  <div
-                                    className="absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden"
-                                    style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
-                                    title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}`}
-                                  >
-                                    <span className="truncate">{label}</span>
-                                    {occupant.realId && (
-                                      <button
-                                        onClick={() => setEditId(occupant.realId)}
-                                        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                        title="Bearbeiten"
-                                      >
-                                        <Pencil className="w-3 h-3" />
-                                      </button>
-                                    )}
-                                  </div>
-                                );
-                              })()
-                            ) : (
-                              <button
-                                onClick={() =>
-                                  setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
-                                }
-                                className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
-                                title={`Neue Buchung · #${r.number} · ${dIso}`}
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>,
-                        );
-                      });
-                      return cells;
-                    }),
-                )}
+                          );
+                        })()
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFocus({ row: rowIdx, col: dIdx });
+                            setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number });
+                          }}
+                          className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
+                          title={`Neue Buchung · #${r.number} · ${dIso}`}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>,
+                  );
+                });
+                return cells;
+              })}
             </div>
           </div>
         </ScrollableGrid>
+        </div>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
           <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Problem-Zimmer</div>
+          <div className="flex items-center gap-1.5"><kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">↑↓←→</kbd> navigieren · <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">Enter</kbd> öffnen</div>
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
