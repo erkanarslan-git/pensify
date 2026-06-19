@@ -210,6 +210,13 @@ function CalendarPage() {
       actions={
         <div className="flex items-center gap-1">
           <button
+            onClick={() => setShowHelp(true)}
+            className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
+            title="Tastatur-Kürzel (?)"
+          >
+            <Keyboard className="w-4 h-4" />
+          </button>
+          <button
             onClick={goToday}
             className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
           >
