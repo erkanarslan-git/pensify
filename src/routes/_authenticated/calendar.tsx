@@ -217,24 +217,16 @@ function CalendarPage() {
                         <div key={`${r.id}-label`} className="py-3 pr-3 border-b border-border text-sm flex items-center gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="font-medium truncate flex items-center gap-1.5">
-                              <button
-                                onClick={async () => {
-                                  const cur = r.floor == null ? "" : String(r.floor);
-                                  const v = window.prompt(`#${r.number} kat numarası (0 = zemin, boş bırak = kaldır)`, cur);
-                                  if (v === null) return;
-                                  const num = v.trim() === "" ? null : Number(v);
-                                  if (num !== null && (!Number.isInteger(num) || num < 0 || num > 50)) return;
-                                  if (useReal) {
-                                    await supabase.from("rooms").update({ floor: num }).eq("id", r.id);
-                                    setRefreshKey((k) => k + 1);
-                                  }
-                                }}
-                                title="Kat ayarla"
-                                className={`inline-flex items-center justify-center min-w-[22px] h-[18px] px-1 rounded text-[10px] font-semibold ${r.floor != null ? "bg-accent text-accent-foreground" : "border border-dashed border-border text-muted-foreground hover:text-foreground"}`}
-                              >
-                                {r.floor == null ? "+K" : r.floor === 0 ? "Z" : `K${r.floor}`}
-                              </button>
+                              {r.floor != null && (
+                                <span
+                                  title={r.floor === 0 ? "Erdgeschoss" : `${r.floor}. Obergeschoss`}
+                                  className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground"
+                                >
+                                  {r.floor === 0 ? "EG" : `${r.floor}.OG`}
+                                </span>
+                              )}
                               #{r.number}
+
                               {r.needsCleaning && !r.issue && (
                                 <span title="Temizlik bekliyor" className="inline-flex">
                                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
