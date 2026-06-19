@@ -152,6 +152,16 @@ function CalendarPage() {
     if (newRes || editId) return;
     const tag = (e.target as HTMLElement).tagName;
     if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+    if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+      e.preventDefault();
+      setShowHelp((v) => !v);
+      return;
+    }
+    if (e.key === "Escape" && showHelp) {
+      e.preventDefault();
+      setShowHelp(false);
+      return;
+    }
     if (!flatRooms.length || !days.length) return;
     const { row, col } = focus;
     if (e.key === "ArrowRight") {
