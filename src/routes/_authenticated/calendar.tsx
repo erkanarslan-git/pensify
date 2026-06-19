@@ -5,7 +5,7 @@ import {
   rooms as demoRooms,
   properties as demoProperties,
 } from "@/lib/demo-data";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -220,8 +220,9 @@ function CalendarPage() {
 
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
-        <div className="overflow-x-auto -m-5">
+        <ScrollableGrid>
           <div className="min-w-[900px] px-5">
+
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
               <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Zimmer</div>
               {days.map((d) => {
