@@ -15,7 +15,9 @@
     "analytics": "Analizler",
     "properties": "Lokasyonlar",
     "timeTracking": "Zaman takibi",
-    "team": "Ekip & roller"
+    "team": "Ekip & roller",
+    "settings": "Ayarlar",
+    "channelSync": "Kanal Senkronizasyonu"
   },
   "common": {
     "today": "Bugün",

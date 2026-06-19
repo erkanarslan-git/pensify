@@ -15,7 +15,9 @@
     "analytics": "Analytics",
     "properties": "Locations",
     "timeTracking": "Time tracking",
-    "team": "Team & roles"
+    "team": "Team & roles",
+    "settings": "Settings",
+    "channelSync": "Channel Sync"
   },
   "common": {
     "today": "Today",

@@ -19,10 +19,10 @@ type AppRole = "owner" | "admin" | "manager" | "cleaner";
 const ALL_ROLES: AppRole[] = ["owner", "admin", "manager", "cleaner"];
 
 const ROLE_LABEL: Record<AppRole, string> = {
-  owner: "Sahip",
-  admin: "Yönetici",
-  manager: "Ofis personeli",
-  cleaner: "Temizlikçi",
+  owner: "Inhaber",
+  admin: "Administrator",
+  manager: "Manager",
+  cleaner: "Reinigungskraft",
 };
 
 const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"> = {
@@ -31,6 +31,21 @@ const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"
   manager: "success",
   cleaner: "muted",
 };
+
+// Feste Berechtigungen pro Rolle. Anpassbar durch den Inhaber.
+const PERMISSIONS: { key: string; label: string; roles: AppRole[] }[] = [
+  { key: "view_calendar", label: "Kalender ansehen", roles: ["owner", "admin", "manager", "cleaner"] },
+  { key: "create_reservation", label: "Buchungen erstellen / bearbeiten", roles: ["owner", "admin", "manager"] },
+  { key: "delete_reservation", label: "Buchungen löschen", roles: ["owner", "admin"] },
+  { key: "manage_rooms", label: "Zimmer & Pensionen verwalten", roles: ["owner", "admin"] },
+  { key: "assign_cleaning", label: "Reinigung zuweisen", roles: ["owner", "admin", "manager"] },
+  { key: "do_cleaning", label: "Eigene Reinigungsaufträge bearbeiten", roles: ["owner", "admin", "manager", "cleaner"] },
+  { key: "view_finance", label: "Umsatz & Abrechnung ansehen", roles: ["owner", "admin", "manager"] },
+  { key: "pay_cleaners", label: "Lohn freigeben / als bezahlt markieren", roles: ["owner", "admin"] },
+  { key: "manage_team", label: "Team & Rollen verwalten", roles: ["owner", "admin"] },
+  { key: "manage_settings", label: "Einstellungen ändern", roles: ["owner", "admin"] },
+  { key: "manage_integrations", label: "Kanal-Integrationen (Booking/Airbnb/Check24)", roles: ["owner", "admin"] },
+];
 
 function TeamPage() {
   const qc = useQueryClient();
@@ -53,7 +68,7 @@ function TeamPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-users"] });
       setAdding(null);
-      toast.success("Rol verildi");
+      toast.success("Rolle vergeben");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -65,24 +80,24 @@ function TeamPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-users"] });
-      toast.success("Rol kaldırıldı");
+      toast.success("Rolle entfernt");
     },
     onError: (e: any) => toast.error(e.message),
   });
 
   return (
     <AppShell
-      title="Ekip & roller"
-      subtitle="Kullanıcılara rol ata. Yeni kişi önce /auth sayfasından kayıt olmalı."
+      title="Team & Rollen"
+      subtitle="Weise Benutzern Rollen zu. Neue Personen müssen sich zuerst unter /auth registrieren."
     >
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
-              <th className="text-left p-3">Kullanıcı</th>
-              <th className="text-left p-3">E-posta</th>
-              <th className="text-left p-3">Roller</th>
-              <th className="text-right p-3 w-32">İşlem</th>
+              <th className="text-left p-3">Benutzer</th>
+              <th className="text-left p-3">E-Mail</th>
+              <th className="text-left p-3">Rollen</th>
+              <th className="text-right p-3 w-32">Aktion</th>
             </tr>
           </thead>
           <tbody>
@@ -94,7 +109,7 @@ function TeamPage() {
                   <td className="p-3 text-muted-foreground">{u.email}</td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">
-                      {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Rol yok</span>}
+                      {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
                       {(u.roles as AppRole[]).map((r) => (
                         <span key={r} className="inline-flex items-center gap-1">
                           <Badge tone={ROLE_TONE[r]}>
@@ -104,7 +119,7 @@ function TeamPage() {
                           <button
                             className="text-muted-foreground hover:text-destructive"
                             onClick={() => removeRole.mutate({ userId: u.user_id, role: r })}
-                            title="Rolü kaldır"
+                            title="Rolle entfernen"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -126,7 +141,7 @@ function TeamPage() {
                         </div>
                       ) : (
                         <Button size="sm" variant="outline" onClick={() => setAdding({ userId: u.user_id, role: missing[0] })}>
-                          <Plus className="w-3 h-3 mr-1" /> Rol
+                          <Plus className="w-3 h-3 mr-1" /> Rolle
                         </Button>
                       )
                     )}
@@ -136,6 +151,38 @@ function TeamPage() {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Berechtigungen-Übersicht */}
+      <div className="mt-6 rounded-xl border border-border bg-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <div className="text-sm font-semibold">Berechtigungen pro Rolle</div>
+          <div className="text-xs text-muted-foreground">Feste Standardrechte — Inhaber kann sie jederzeit anpassen.</div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left p-3">Berechtigung</th>
+                {ALL_ROLES.map((r) => (
+                  <th key={r} className="p-3 text-center">{ROLE_LABEL[r]}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PERMISSIONS.map((p) => (
+                <tr key={p.key} className="border-t border-border">
+                  <td className="p-3">{p.label}</td>
+                  {ALL_ROLES.map((r) => (
+                    <td key={r} className="p-3 text-center">
+                      {p.roles.includes(r) ? <span className="text-success">✓</span> : <span className="text-muted-foreground/40">—</span>}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </AppShell>
   );

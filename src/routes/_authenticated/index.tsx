@@ -108,6 +108,29 @@ function Dashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mt-6">
+        <Section title={t("dashboard.activeCleaningTasks")}>
+          <div className="space-y-3">
+            {cleaningTasks.slice(0, 6).map((task) => {
+              const room = getRoom(task.roomId);
+              const prop = getProperty(task.propertyId);
+              const meta = cleaningStatusMeta[task.status];
+              return (
+                <div key={task.id} className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {prop?.name} · {room?.number}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("common.due")} {new Date(task.dueTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  </div>
+                  <Badge tone={meta.tone}>{t(`status.${task.status}`)}</Badge>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+
         <div className="lg:col-span-2">
           <Section title={t("dashboard.weeklyOccupancy")}>
             <div className="h-64">
@@ -135,7 +158,9 @@ function Dashboard() {
             </div>
           </Section>
         </div>
+      </div>
 
+      <div className="grid lg:grid-cols-3 gap-4 mt-4">
         <Section title={t("dashboard.channelMix")}>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -164,9 +189,7 @@ function Dashboard() {
             </ResponsiveContainer>
           </div>
         </Section>
-      </div>
 
-      <div className="grid lg:grid-cols-3 gap-4 mt-4">
         <div className="lg:col-span-2">
           <Section title={t("dashboard.cleaningCompletion")}>
             <div className="h-56">
@@ -182,29 +205,6 @@ function Dashboard() {
             </div>
           </Section>
         </div>
-
-        <Section title={t("dashboard.activeCleaningTasks")}>
-          <div className="space-y-3">
-            {cleaningTasks.slice(0, 6).map((task) => {
-              const room = getRoom(task.roomId);
-              const prop = getProperty(task.propertyId);
-              const meta = cleaningStatusMeta[task.status];
-              return (
-                <div key={task.id} className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium truncate">
-                      {prop?.name} · {room?.number}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t("common.due")} {new Date(task.dueTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </div>
-                  </div>
-                  <Badge tone={meta.tone}>{t(`status.${task.status}`)}</Badge>
-                </div>
-              );
-            })}
-          </div>
-        </Section>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mt-4">

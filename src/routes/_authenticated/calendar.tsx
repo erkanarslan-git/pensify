@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { guestColor, sourceColor, sourceLabel } from "@/lib/guest-color";
+import { guestColor, sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
@@ -151,7 +151,7 @@ function CalendarPage() {
             onClick={goToday}
             className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
           >
-            <CalendarIcon className="w-3.5 h-3.5" /> Bugün
+            <CalendarIcon className="w-3.5 h-3.5" /> Heute
           </button>
           <button onClick={() => shift(-range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
             <ChevronLeft className="w-4 h-4" />
@@ -168,7 +168,7 @@ function CalendarPage() {
           onChange={(e) => setPropertyId(e.target.value)}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm"
         >
-          <option value="all">Tüm lokasyonlar</option>
+          <option value="all">Alle Pensionen</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
@@ -176,13 +176,13 @@ function CalendarPage() {
         <input
           value={roomQ}
           onChange={(e) => setRoomQ(e.target.value)}
-          placeholder="Oda no…"
+          placeholder="Zimmer-Nr…"
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
         />
         <input
           value={guestQ}
           onChange={(e) => setGuestQ(e.target.value)}
-          placeholder="Misafir veya rezervasyon kodu…"
+          placeholder="Gast oder Buchungs-Code…"
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
         />
         <input
@@ -206,10 +206,10 @@ function CalendarPage() {
         </div>
       </div>
 
-      {/* Kaynak (kanal) renk legendi */}
+      {/* Kanal-Legende */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3 text-[11px] text-muted-foreground">
         <span className="uppercase tracking-wide font-medium">Kanal:</span>
-        {["booking", "airbnb", "check24", "website", "woocommerce", "phone", "walkin", "direct", "ical"].map((s) => (
+        {ACTIVE_CHANNELS.map((s) => (
           <span key={s} className="inline-flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: sourceColor(s) }} />
             {sourceLabel(s)}
@@ -219,11 +219,11 @@ function CalendarPage() {
 
 
 
-      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} oda`}>
+      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
         <div className="overflow-x-auto -m-5">
           <div className="min-w-[900px] px-5">
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Oda</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Zimmer</div>
               {days.map((d) => {
                 const isToday = iso(d) === today;
                 return (
@@ -258,7 +258,7 @@ function CalendarPage() {
                               #{r.number}
 
                               {r.needsCleaning && !r.issue && (
-                                <span title="Temizlik bekliyor" className="inline-flex">
+                                <span title="Reinigung ausstehend" className="inline-flex">
                                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                                 </span>
                               )}
@@ -298,7 +298,7 @@ function CalendarPage() {
                                       <button
                                         onClick={() => setEditId(occupant.realId)}
                                         className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                        title="Düzenle"
+                                        title="Bearbeiten"
                                       >
                                         <Pencil className="w-3 h-3" />
                                       </button>
@@ -312,7 +312,7 @@ function CalendarPage() {
                                   setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
                                 }
                                 className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
-                                title={`Yeni rezervasyon · #${r.number} · ${dIso}`}
+                                title={`Neue Buchung · #${r.number} · ${dIso}`}
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
@@ -327,10 +327,10 @@ function CalendarPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Renk = misafir, kenar = kanal</div>
-          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Temizlik bekliyor</div>
-          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Sorunlu oda</div>
-          <Link to="/reservations" className="ml-auto text-primary text-xs underline">Tüm rezervasyonlar →</Link>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
+          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
+          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Problem-Zimmer</div>
+          <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
 

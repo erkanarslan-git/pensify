@@ -1,5 +1,4 @@
 // Deterministic color from a guest name. Same guest → same color across the calendar.
-// Returns a soft pastel background + readable foreground + saturated accent.
 export function guestColor(name: string) {
   const key = (name || "").trim().toLowerCase();
   let h = 2166136261;
@@ -15,35 +14,38 @@ export function guestColor(name: string) {
   };
 }
 
-// Map any source/channel string → a strong color used for the left source stripe.
-const SOURCE_COLOR: Record<string, string> = {
-  airbnb: "#ff5a5f",
-  "booking.com": "#003580",
-  booking: "#003580",
-  check24: "#005ea8",
-  website: "#10b981",
-  woocommerce: "#7f54b3",
-  phone: "#f59e0b",
-  "walk-in": "#6b7280",
-  walkin: "#6b7280",
-  direct: "#0ea5e9",
-  ical: "#94a3b8",
-};
-export function sourceColor(src: string): string {
-  return SOURCE_COLOR[(src || "").toLowerCase()] ?? "#64748b";
+// Active channels only: Booking, Airbnb, Check24, Web, Direct/Tel.
+// Anything legacy (website/woocommerce/phone/walkin/ical/direct) collapses to one of these.
+export const ACTIVE_CHANNELS = ["booking", "airbnb", "check24", "website", "direct"] as const;
+export type ActiveChannel = (typeof ACTIVE_CHANNELS)[number];
+
+export function normalizeChannel(src: string): ActiveChannel {
+  const s = (src || "").toLowerCase().trim();
+  if (s === "booking" || s === "booking.com") return "booking";
+  if (s === "airbnb") return "airbnb";
+  if (s === "check24") return "check24";
+  if (s === "web" || s === "website" || s === "woocommerce" || s === "shop") return "website";
+  return "direct"; // direct, phone, tel, walk-in, ical, unknown → Direkt/Tel
 }
 
-// Short, friendly label like "Booking" / "Airbnb" / "Phone"
+const SOURCE_COLOR: Record<ActiveChannel, string> = {
+  booking: "#003580",
+  airbnb: "#ff5a5f",
+  check24: "#005ea8",
+  website: "#10b981",
+  direct: "#f59e0b",
+};
+export function sourceColor(src: string): string {
+  return SOURCE_COLOR[normalizeChannel(src)];
+}
+
+const SOURCE_LABEL: Record<ActiveChannel, string> = {
+  booking: "Booking",
+  airbnb: "Airbnb",
+  check24: "Check24",
+  website: "Web",
+  direct: "Direkt/Tel",
+};
 export function sourceLabel(src: string): string {
-  const s = (src || "").toLowerCase();
-  if (s === "booking" || s === "booking.com") return "Booking";
-  if (s === "airbnb") return "Airbnb";
-  if (s === "check24") return "Check24";
-  if (s === "website") return "Web";
-  if (s === "woocommerce") return "Shop";
-  if (s === "phone") return "Tel";
-  if (s === "walk-in" || s === "walkin") return "Walk-in";
-  if (s === "direct") return "Direct";
-  if (s === "ical") return "iCal";
-  return src;
+  return SOURCE_LABEL[normalizeChannel(src)];
 }

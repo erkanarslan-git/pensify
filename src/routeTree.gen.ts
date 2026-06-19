@@ -15,6 +15,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -60,6 +61,11 @@ const AuthenticatedTimeTrackingRoute =
 const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   id: '/team',
   path: '/team',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/reservations'
     | '/rooms'
+    | '/settings'
     | '/team'
     | '/time-tracking'
     | '/whatsapp'
@@ -257,6 +267,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/reservations'
     | '/rooms'
+    | '/settings'
     | '/team'
     | '/time-tracking'
     | '/whatsapp'
@@ -281,6 +292,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
+    | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
     | '/_authenticated/whatsapp'
@@ -345,6 +357,13 @@ declare module '@tanstack/react-router' {
       path: '/team'
       fullPath: '/team'
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rooms': {
@@ -472,6 +491,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
   AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
@@ -491,6 +511,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
   AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
