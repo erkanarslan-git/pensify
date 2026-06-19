@@ -12,6 +12,8 @@ import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { guestColor, sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
+import { usePermissions } from "@/hooks/use-permissions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
@@ -44,6 +46,11 @@ interface UnifiedRes {
 
 function CalendarPage() {
   const { t } = useTranslation();
+  const perms = usePermissions();
+  const canCreatePast = perms.can("create_past_reservation");
+  const canCreate = perms.can("create_reservation");
+  const isManagerOnly =
+    perms.roles.includes("manager") && !perms.roles.includes("admin") && !perms.roles.includes("owner");
   const [range, setRange] = useState(14);
   const [start, setStart] = useState(() => {
     const d = startOfDay(new Date());
@@ -57,12 +64,31 @@ function CalendarPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
+  const [pendingPast, setPendingPast] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const gridFocusRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // Auto-focus calendar grid so keyboard navigation works immediately
     const t = setTimeout(() => gridFocusRef.current?.focus({ preventScroll: true }), 50);
     return () => clearTimeout(t);
   }, []);
+
+  // Helper: is given iso date strictly before today?
+  const todayIsoStr = new Date().toISOString().slice(0, 10);
+  const isPastDate = (dIso: string) => dIso < todayIsoStr;
+
+  function tryOpenNew(payload: { date: string; propertyId?: string; roomNumber?: string }) {
+    if (isPastDate(payload.date)) {
+      if (!canCreatePast) {
+        toast.error("Vergangene Buchungen", { description: "Nur Manager, Admin oder Inhaber können vergangene Daten anlegen." });
+        return;
+      }
+      if (isManagerOnly) {
+        setPendingPast(payload);
+        return;
+      }
+    }
+    setNewRes(payload);
+  }
 
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
@@ -194,7 +220,7 @@ function CalendarPage() {
         (res) => res.roomId === entry.room.id && res.checkIn <= dIso && res.checkOut > dIso,
       );
       if (occupant?.realId) setEditId(occupant.realId);
-      else setNewRes({ date: dIso, propertyId: entry.property.id, roomNumber: entry.room.number });
+      else if (canCreate) tryOpenNew({ date: dIso, propertyId: entry.property.id, roomNumber: entry.room.number });
     }
   };
 
@@ -309,8 +335,9 @@ function CalendarPage() {
               {days.map((d, dIdx) => {
                 const isToday = iso(d) === today;
                 const isFocusCol = dIdx === focus.col;
+                const past = isPastDate(iso(d));
                 return (
-                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""}`}>
+                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
                     <div className="text-[10px] uppercase text-muted-foreground">
                       {d.toLocaleDateString(undefined, { weekday: "short" })}
                     </div>
@@ -356,29 +383,38 @@ function CalendarPage() {
                     (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                   );
                   const isFocused = rowIdx === focus.row && dIdx === focus.col;
+                  const past = isPastDate(dIso);
+                  const pastStyle = past
+                    ? {
+                        backgroundImage:
+                          "repeating-linear-gradient(135deg, hsl(var(--muted)/0.35) 0 6px, transparent 6px 12px)",
+                      }
+                    : undefined;
                   cells.push(
                     <div
                       key={`${r.id}-${dIso}`}
                       onClick={() => setFocus({ row: rowIdx, col: dIdx })}
-                      className={`border-b border-l border-border h-12 relative group ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
+                      style={pastStyle}
+                      className={`border-b border-l border-border h-12 relative group ${past ? "bg-muted/30" : ""} ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
                     >
                       {occupant ? (
                         (() => {
                           const c = guestColor(occupant.guestName);
                           const sc = sourceColor(occupant.source);
                           const label = occupant.guestName.split(" ")[0];
+                          const occPast = isPastDate(occupant.checkIn);
                           return (
                             <div
-                              className="absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden"
+                              className={`absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden ${occPast && !canCreatePast ? "opacity-70" : ""}`}
                               style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
-                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}`}
+                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
                             >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
                                   className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                  title="Bearbeiten"
+                                  title={occPast && !canCreatePast ? "Ansehen" : "Bearbeiten"}
                                 >
                                   <Pencil className="w-3 h-3" />
                                 </button>
@@ -387,17 +423,19 @@ function CalendarPage() {
                           );
                         })()
                       ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFocus({ row: rowIdx, col: dIdx });
-                            setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number });
-                          }}
-                          className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
-                          title={`Neue Buchung · #${r.number} · ${dIso}`}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+                        canCreate && (!past || canCreatePast) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFocus({ row: rowIdx, col: dIdx });
+                              tryOpenNew({ date: dIso, propertyId: p.id, roomNumber: r.number });
+                            }}
+                            className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
+                            title={past ? `Vergangene Buchung anlegen · #${r.number} · ${dIso}` : `Neue Buchung · #${r.number} · ${dIso}`}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        )
                       )}
                     </div>,
                   );
@@ -483,6 +521,29 @@ function CalendarPage() {
                 <li>Klick auf <Plus className="inline w-3 h-3" />: neue Buchung</li>
                 <li>Ziehen: horizontal scrollen</li>
               </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingPast && (
+        <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4" onClick={() => setPendingPast(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="bg-card border border-border rounded-lg shadow-xl w-full max-w-sm p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-warning" />
+              <h3 className="font-semibold">Vergangene Buchung anlegen?</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Du legst eine Buchung für ein vergangenes Datum an ({pendingPast.date}). Das betrifft Berichte und Abrechnungen. Bitte nur, wenn es ein nachgetragener Eintrag ist.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setPendingPast(null)} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">Abbrechen</button>
+              <button
+                onClick={() => { const p = pendingPast; setPendingPast(null); setNewRes(p); }}
+                className="px-3 py-2 rounded-md bg-warning text-warning-foreground text-sm font-medium hover:opacity-90"
+              >
+                Trotzdem anlegen
+              </button>
             </div>
           </div>
         </div>

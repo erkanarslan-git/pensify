@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { canAccessRoute, type AppRole } from "@/lib/permissions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -11,26 +12,28 @@ export const Route = createFileRoute("/_authenticated")({
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id);
-    const roleSet = new Set((roles ?? []).map((r) => r.role));
-    const isStaff = ["owner", "admin", "manager"].some((r) => roleSet.has(r as any));
-    const isCleaner = roleSet.has("cleaner" as any);
-
+    const roleList = (roles ?? []).map((r) => r.role as AppRole);
     const path = location.pathname;
-    const hasAnyRole = roleSet.size > 0;
-    // Users with no role at all → must request access
-    if (!hasAnyRole && path !== "/request-access") {
-      throw redirect({ to: "/request-access" });
+    const hasAnyRole = roleList.length > 0;
+
+    // No role → only /request-access is allowed
+    if (!hasAnyRole) {
+      if (path !== "/request-access") throw redirect({ to: "/request-access" });
+      return { user: data.user, roles: roleList };
     }
-    if (hasAnyRole && path === "/request-access") {
+    // Has role and on request-access → bounce home
+    if (path === "/request-access") {
       throw redirect({ to: "/" });
     }
-    // Cleaner-only users may only access /me and /clock/*
-    const allowedForCleaner =
-      path === "/me" || path.startsWith("/clock/") || path.startsWith("/me/") || path === "/request-access";
-    if (isCleaner && !isStaff && !allowedForCleaner) {
-      throw redirect({ to: "/me" });
+    // Strict per-route role check
+    if (!canAccessRoute(path, roleList)) {
+      // Cleaner-only users land on /me; everyone else home
+      const isCleaner = roleList.includes("cleaner");
+      const isStaff = roleList.some((r) => ["owner", "admin", "manager", "reception"].includes(r));
+      if (isCleaner && !isStaff) throw redirect({ to: "/me" });
+      throw redirect({ to: "/" });
     }
-    return { user: data.user, roles: Array.from(roleSet), isStaff, isCleaner };
+    return { user: data.user, roles: roleList };
   },
   component: () => <Outlet />,
 });

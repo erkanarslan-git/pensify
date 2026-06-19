@@ -28,6 +28,8 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { canAccessRoute, ROLE_LABEL, type AppRole } from "@/lib/permissions";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +57,7 @@ const navItems: NavItem[] = [
   { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
   { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },
 ];
+
 
 
 const LANGS = [
@@ -91,6 +94,19 @@ export function AppShell({ title, subtitle, actions, children }: {
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
+  const perms = usePermissions();
+  const visibleNav = navItems.filter((item) => canAccessRoute(item.to, perms.roles));
+  const primaryRole: AppRole | null = perms.roles.includes("owner")
+    ? "owner"
+    : perms.roles.includes("admin")
+      ? "admin"
+      : perms.roles.includes("manager")
+        ? "manager"
+        : perms.roles.includes("reception")
+          ? "reception"
+          : perms.roles.includes("cleaner")
+            ? "cleaner"
+            : null;
 
   useEffect(() => {
     const stored = localStorage.getItem("pensify.theme");
@@ -151,7 +167,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         )}
       </div>
       <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${mini ? "px-2" : "px-3"}`}>
-        {navItems.map((item) => {
+        {visibleNav.map((item) => {
           const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
@@ -184,7 +200,7 @@ export function AppShell({ title, subtitle, actions, children }: {
               {!mini && (
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
-                  <div className="text-xs text-muted-foreground truncate">Owner</div>
+                  <div className="text-xs text-muted-foreground truncate">{primaryRole ? ROLE_LABEL[primaryRole] : "—"}</div>
                 </div>
               )}
             </button>

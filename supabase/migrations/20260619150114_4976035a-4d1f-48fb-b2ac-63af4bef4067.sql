@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.enforce_past_reservation_policy() FROM PUBLIC, anon, authenticated;

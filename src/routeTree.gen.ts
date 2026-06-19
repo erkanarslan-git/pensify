@@ -18,6 +18,7 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
+import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
@@ -77,6 +78,12 @@ const AuthenticatedReservationsRoute =
   AuthenticatedReservationsRouteImport.update({
     id: '/reservations',
     path: '/reservations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRequestAccessRoute =
+  AuthenticatedRequestAccessRouteImport.update({
+    id: '/request-access',
+    path: '/request-access',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedNotificationsRoute =
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -189,6 +197,7 @@ export interface FileRoutesByTo {
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -215,6 +224,7 @@ export interface FileRoutesById {
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/cleaning'
     | '/me'
     | '/notifications'
+    | '/request-access'
     | '/reservations'
     | '/rooms'
     | '/settings'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/cleaning'
     | '/me'
     | '/notifications'
+    | '/request-access'
     | '/reservations'
     | '/rooms'
     | '/settings'
@@ -290,6 +302,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cleaning'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
+    | '/_authenticated/request-access'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
     | '/_authenticated/settings'
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/reservations'
       fullPath: '/reservations'
       preLoaderRoute: typeof AuthenticatedReservationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/request-access': {
+      id: '/_authenticated/request-access'
+      path: '/request-access'
+      fullPath: '/request-access'
+      preLoaderRoute: typeof AuthenticatedRequestAccessRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -489,6 +509,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -509,6 +530,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
