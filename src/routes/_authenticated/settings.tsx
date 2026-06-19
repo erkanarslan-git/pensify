@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages } from "lucide-react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush } from "lucide-react";
+import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-color";
+import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
   component: SettingsPage,
 });
+
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
