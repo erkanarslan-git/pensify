@@ -67,14 +67,14 @@ function CalendarPage() {
         supabase.from("properties").select("id,name").order("name"),
         supabase.from("rooms").select("id,number,property_id").order("number"),
         supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status").neq("status", "cancelled"),
-        supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "blocked"]),
+        supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "problem"]),
       ]);
       setRealProperties((props ?? []) as UnifiedProperty[]);
       const cleaningByRoom = new Map<string, { needsCleaning: boolean; issue: string | null }>();
       for (const ct of (tasks ?? []) as { room_id: string; status: string; notes: string | null }[]) {
         const entry = cleaningByRoom.get(ct.room_id) ?? { needsCleaning: false, issue: null };
         entry.needsCleaning = true;
-        if (ct.status === "blocked") entry.issue = ct.notes ?? "Bloke / sorun var";
+        if (ct.status === "problem") entry.issue = ct.notes ?? "Sorun bildirildi";
         cleaningByRoom.set(ct.room_id, entry);
       }
       const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string }[]).map((r) => ({
