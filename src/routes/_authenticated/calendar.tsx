@@ -274,7 +274,7 @@ function CalendarPage() {
                       );
                       days.forEach((d) => {
                         const dIso = iso(d);
-                        const occupant = reservations.find(
+                        const occupant = filteredReservations.find(
                           (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                         );
                         cells.push(
@@ -286,7 +286,6 @@ function CalendarPage() {
                               (() => {
                                 const c = guestColor(occupant.guestName);
                                 const sc = sourceColor(occupant.source);
-                                const isFirstDay = occupant.checkIn === dIso;
                                 const label = `${sourceLabel(occupant.source)} · ${occupant.guestName.split(" ")[0]}`;
                                 return (
                                   <div
@@ -294,7 +293,7 @@ function CalendarPage() {
                                     style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
                                     title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}`}
                                   >
-                                    {isFirstDay && <span className="truncate">{label}</span>}
+                                    <span className="truncate">{label}</span>
                                     {occupant.realId && (
                                       <button
                                         onClick={() => setEditId(occupant.realId)}
