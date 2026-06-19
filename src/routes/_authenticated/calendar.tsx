@@ -219,7 +219,7 @@ function CalendarPage() {
 
 
 
-      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} oda`}>
+      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
         <div className="overflow-x-auto -m-5">
           <div className="min-w-[900px] px-5">
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
