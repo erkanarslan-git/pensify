@@ -525,6 +525,29 @@ function CalendarPage() {
           </div>
         </div>
       )}
+
+      {pendingPast && (
+        <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4" onClick={() => setPendingPast(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="bg-card border border-border rounded-lg shadow-xl w-full max-w-sm p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-warning" />
+              <h3 className="font-semibold">Vergangene Buchung anlegen?</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Du legst eine Buchung für ein vergangenes Datum an ({pendingPast.date}). Das betrifft Berichte und Abrechnungen. Bitte nur, wenn es ein nachgetragener Eintrag ist.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setPendingPast(null)} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">Abbrechen</button>
+              <button
+                onClick={() => { const p = pendingPast; setPendingPast(null); setNewRes(p); }}
+                className="px-3 py-2 rounded-md bg-warning text-warning-foreground text-sm font-medium hover:opacity-90"
+              >
+                Trotzdem anlegen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
