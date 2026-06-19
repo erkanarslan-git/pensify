@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages } from "lucide-react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush } from "lucide-react";
+import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-color";
+import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
   component: SettingsPage,
 });
+
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
@@ -15,11 +19,12 @@ const LANGS = [
   { code: "tr", label: "Türkçe" },
 ];
 
-type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "security";
+type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security";
 
 function SettingsPage() {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState<TabKey>("general");
+  const [channelColors, setChannelColors] = useState<Record<ActiveChannel, string>>(DEFAULT_CHANNEL_COLORS);
 
   // Persisted prefs (local for now — backend can be wired later)
   const [emailNotif, setEmailNotif] = useState(true);
@@ -41,6 +46,7 @@ function SettingsPage() {
     setCompanyName(load("companyName") ?? "");
     setCompanyTax(load("companyTax") ?? "");
     setCompanyAddress(load("companyAddress") ?? "");
+    setChannelColors(loadChannelColors());
   }, []);
 
   const save = (k: string, v: string) => localStorage.setItem(`pensify.settings.${k}`, v);
@@ -52,8 +58,20 @@ function SettingsPage() {
     { key: "email", label: "E-Mail", icon: Mail },
     { key: "company", label: "Unternehmen", icon: Building2 },
     { key: "appearance", label: "Darstellung", icon: Palette },
+    { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
     { key: "security", label: "Sicherheit", icon: Shield },
   ];
+
+  function updateColor(ch: ActiveChannel, color: string) {
+    const next = { ...channelColors, [ch]: color };
+    setChannelColors(next);
+    saveChannelColors(next);
+  }
+  function resetColors() {
+    setChannelColors(DEFAULT_CHANNEL_COLORS);
+    saveChannelColors(DEFAULT_CHANNEL_COLORS);
+  }
+
 
   return (
     <AppShell title="Einstellungen" subtitle="Sprache, Benachrichtigungen, E-Mail und mehr">
@@ -138,6 +156,30 @@ function SettingsPage() {
               <p className="text-sm text-muted-foreground">Hell/Dunkel-Modus kannst du oben rechts in der Kopfzeile umschalten.</p>
             </Section>
           )}
+
+          {tab === "channels" && (
+            <Section title="Kanal-Farben">
+              <p className="text-sm text-muted-foreground mb-4">Diese Farben werden im Kalender als linke Randmarkierung und in der Legende verwendet.</p>
+              <div className="space-y-2 max-w-md">
+                {ACTIVE_CHANNELS.map((ch) => (
+                  <div key={ch} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border">
+                    <span className="inline-block w-4 h-4 rounded" style={{ background: channelColors[ch] }} />
+                    <span className="text-sm flex-1">{sourceLabel(ch)}</span>
+                    <input
+                      type="color"
+                      value={channelColors[ch]}
+                      onChange={(e) => updateColor(ch, e.target.value)}
+                      className="w-10 h-8 rounded border border-border bg-transparent cursor-pointer"
+                    />
+                    <code className="text-xs text-muted-foreground w-20">{channelColors[ch]}</code>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={resetColors}>Auf Standard zurücksetzen</Button>
+              </div>
+            </Section>
+          )}
+
+
 
           {tab === "security" && (
             <Section title="Sicherheit">
