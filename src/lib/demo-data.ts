@@ -126,7 +126,7 @@ const mkReservations = (): Reservation[] => {
       roomId: r.id,
       guests: (i % 3) + 1,
       revenue: 95 + (i % 7) * 18,
-      notes: i % 4 === 0 ? "Late check-in requested" : undefined,
+      notes: i % 4 === 0 ? "Späte Anreise gewünscht" : undefined,
     });
     // upcoming
     if (i % 2 === 0) {
@@ -177,7 +177,7 @@ export const cleaningTasks: CleaningTask[] = rooms
       dueTime: due.toISOString(),
       status: cleaningStatuses[i % cleaningStatuses.length],
       photos: i % 3,
-      notes: i % 5 === 0 ? "Guest left late, hurry please" : undefined,
+      notes: i % 5 === 0 ? "Gast ist spät ausgecheckt, bitte beeilen" : undefined,
     };
   });
 
