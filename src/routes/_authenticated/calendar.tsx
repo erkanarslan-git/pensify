@@ -57,6 +57,12 @@ function CalendarPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
+  const gridFocusRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Auto-focus calendar grid so keyboard navigation works immediately
+    const t = setTimeout(() => gridFocusRef.current?.focus({ preventScroll: true }), 50);
+    return () => clearTimeout(t);
+  }, []);
 
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
@@ -290,6 +296,7 @@ function CalendarPage() {
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
         <div
+          ref={gridFocusRef}
           tabIndex={0}
           onKeyDown={onGridKeyDown}
           className="outline-none focus:ring-2 focus:ring-primary/30 rounded-md"
