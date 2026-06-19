@@ -4,8 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
-type Channel = "booking" | "airbnb" | "check24" | "woocommerce" | "phone" | "direct" | "walkin" | "website" | "ical";
-const CHANNELS: Channel[] = ["direct", "booking", "airbnb", "check24", "woocommerce", "phone", "walkin", "website"];
+type Channel = "booking" | "airbnb" | "check24" | "web" | "direct";
+const CHANNELS: { value: Channel; label: string }[] = [
+  { value: "direct", label: "Direkt / Telefon" },
+  { value: "booking", label: "Booking" },
+  { value: "airbnb", label: "Airbnb" },
+  { value: "check24", label: "Check24" },
+  { value: "web", label: "Web" },
+];
 
 interface Property { id: string; name: string }
 interface Room { id: string; number: string; property_id: string }
