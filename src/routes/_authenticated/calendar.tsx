@@ -335,8 +335,9 @@ function CalendarPage() {
               {days.map((d, dIdx) => {
                 const isToday = iso(d) === today;
                 const isFocusCol = dIdx === focus.col;
+                const past = isPastDate(iso(d));
                 return (
-                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""}`}>
+                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
                     <div className="text-[10px] uppercase text-muted-foreground">
                       {d.toLocaleDateString(undefined, { weekday: "short" })}
                     </div>
