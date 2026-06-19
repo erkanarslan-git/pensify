@@ -57,6 +57,7 @@ const navItems: NavItem[] = [
 ];
 
 
+
 const LANGS = [
   { code: "de", label: "Deutsch" },
   { code: "en", label: "English" },
