@@ -56,6 +56,7 @@ function CalendarPage() {
   const [newRes, setNewRes] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
