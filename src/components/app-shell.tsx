@@ -94,6 +94,19 @@ export function AppShell({ title, subtitle, actions, children }: {
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
+  const perms = usePermissions();
+  const visibleNav = navItems.filter((item) => canAccessRoute(item.to, perms.roles));
+  const primaryRole: AppRole | null = perms.roles.includes("owner")
+    ? "owner"
+    : perms.roles.includes("admin")
+      ? "admin"
+      : perms.roles.includes("manager")
+        ? "manager"
+        : perms.roles.includes("reception")
+          ? "reception"
+          : perms.roles.includes("cleaner")
+            ? "cleaner"
+            : null;
 
   useEffect(() => {
     const stored = localStorage.getItem("pensify.theme");
