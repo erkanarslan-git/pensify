@@ -312,7 +312,7 @@ function CalendarPage() {
                                   setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
                                 }
                                 className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
-                                title={`Yeni rezervasyon · #${r.number} · ${dIso}`}
+                                title={`Neue Buchung · #${r.number} · ${dIso}`}
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
