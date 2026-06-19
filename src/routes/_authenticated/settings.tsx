@@ -19,11 +19,12 @@ const LANGS = [
   { code: "tr", label: "Türkçe" },
 ];
 
-type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "security";
+type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security";
 
 function SettingsPage() {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState<TabKey>("general");
+  const [channelColors, setChannelColors] = useState<Record<ActiveChannel, string>>(DEFAULT_CHANNEL_COLORS);
 
   // Persisted prefs (local for now — backend can be wired later)
   const [emailNotif, setEmailNotif] = useState(true);
@@ -45,6 +46,7 @@ function SettingsPage() {
     setCompanyName(load("companyName") ?? "");
     setCompanyTax(load("companyTax") ?? "");
     setCompanyAddress(load("companyAddress") ?? "");
+    setChannelColors(loadChannelColors());
   }, []);
 
   const save = (k: string, v: string) => localStorage.setItem(`pensify.settings.${k}`, v);
@@ -56,8 +58,20 @@ function SettingsPage() {
     { key: "email", label: "E-Mail", icon: Mail },
     { key: "company", label: "Unternehmen", icon: Building2 },
     { key: "appearance", label: "Darstellung", icon: Palette },
+    { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
     { key: "security", label: "Sicherheit", icon: Shield },
   ];
+
+  function updateColor(ch: ActiveChannel, color: string) {
+    const next = { ...channelColors, [ch]: color };
+    setChannelColors(next);
+    saveChannelColors(next);
+  }
+  function resetColors() {
+    setChannelColors(DEFAULT_CHANNEL_COLORS);
+    saveChannelColors(DEFAULT_CHANNEL_COLORS);
+  }
+
 
   return (
     <AppShell title="Einstellungen" subtitle="Sprache, Benachrichtigungen, E-Mail und mehr">
