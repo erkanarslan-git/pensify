@@ -151,7 +151,7 @@ function CalendarPage() {
             onClick={goToday}
             className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
           >
-            <CalendarIcon className="w-3.5 h-3.5" /> Bugün
+            <CalendarIcon className="w-3.5 h-3.5" /> Heute
           </button>
           <button onClick={() => shift(-range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
             <ChevronLeft className="w-4 h-4" />
@@ -168,7 +168,7 @@ function CalendarPage() {
           onChange={(e) => setPropertyId(e.target.value)}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm"
         >
-          <option value="all">Tüm lokasyonlar</option>
+          <option value="all">Alle Pensionen</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
@@ -176,13 +176,13 @@ function CalendarPage() {
         <input
           value={roomQ}
           onChange={(e) => setRoomQ(e.target.value)}
-          placeholder="Oda no…"
+          placeholder="Zimmer-Nr…"
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
         />
         <input
           value={guestQ}
           onChange={(e) => setGuestQ(e.target.value)}
-          placeholder="Misafir veya rezervasyon kodu…"
+          placeholder="Gast oder Buchungs-Code…"
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
         />
         <input
@@ -206,10 +206,10 @@ function CalendarPage() {
         </div>
       </div>
 
-      {/* Kaynak (kanal) renk legendi */}
+      {/* Kanal-Legende */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3 text-[11px] text-muted-foreground">
         <span className="uppercase tracking-wide font-medium">Kanal:</span>
-        {["booking", "airbnb", "check24", "website", "woocommerce", "phone", "walkin", "direct", "ical"].map((s) => (
+        {ACTIVE_CHANNELS.map((s) => (
           <span key={s} className="inline-flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: sourceColor(s) }} />
             {sourceLabel(s)}
