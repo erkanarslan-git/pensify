@@ -286,7 +286,7 @@ function CalendarPage() {
                               (() => {
                                 const c = guestColor(occupant.guestName);
                                 const sc = sourceColor(occupant.source);
-                                const label = `${sourceLabel(occupant.source)} · ${occupant.guestName.split(" ")[0]}`;
+                                const label = occupant.guestName.split(" ")[0];
                                 return (
                                   <div
                                     className="absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden"
