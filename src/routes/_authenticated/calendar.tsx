@@ -31,7 +31,7 @@ function startOfDay(d: Date) {
 }
 
 interface UnifiedProperty { id: string; name: string }
-interface UnifiedRoom { id: string; number: string; propertyId: string; needsCleaning?: boolean; issue?: string | null }
+interface UnifiedRoom { id: string; number: string; propertyId: string; floor?: number | null; needsCleaning?: boolean; issue?: string | null }
 interface UnifiedRes {
   id: string;
   roomId: string;
@@ -65,7 +65,7 @@ function CalendarPage() {
     (async () => {
       const [{ data: props }, { data: rms }, { data: res }, { data: tasks }] = await Promise.all([
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id").order("number"),
+        supabase.from("rooms").select("id,number,property_id,floor").order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status").neq("status", "cancelled"),
         supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "problem"]),
       ]);
@@ -77,8 +77,8 @@ function CalendarPage() {
         if (ct.status === "problem") entry.issue = ct.notes ?? "Sorun bildirildi";
         cleaningByRoom.set(ct.room_id, entry);
       }
-      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string }[]).map((r) => ({
-        id: r.id, number: r.number, propertyId: r.property_id,
+      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null }[]).map((r) => ({
+        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor,
         needsCleaning: cleaningByRoom.get(r.id)?.needsCleaning ?? false,
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
@@ -217,6 +217,23 @@ function CalendarPage() {
                         <div key={`${r.id}-label`} className="py-3 pr-3 border-b border-border text-sm flex items-center gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="font-medium truncate flex items-center gap-1.5">
+                              <button
+                                onClick={async () => {
+                                  const cur = r.floor == null ? "" : String(r.floor);
+                                  const v = window.prompt(`#${r.number} kat numarası (0 = zemin, boş bırak = kaldır)`, cur);
+                                  if (v === null) return;
+                                  const num = v.trim() === "" ? null : Number(v);
+                                  if (num !== null && (!Number.isInteger(num) || num < 0 || num > 50)) return;
+                                  if (useReal) {
+                                    await supabase.from("rooms").update({ floor: num }).eq("id", r.id);
+                                    setRefreshKey((k) => k + 1);
+                                  }
+                                }}
+                                title="Kat ayarla"
+                                className={`inline-flex items-center justify-center min-w-[22px] h-[18px] px-1 rounded text-[10px] font-semibold ${r.floor != null ? "bg-accent text-accent-foreground" : "border border-dashed border-border text-muted-foreground hover:text-foreground"}`}
+                              >
+                                {r.floor == null ? "+K" : r.floor === 0 ? "Z" : `K${r.floor}`}
+                              </button>
                               #{r.number}
                               {r.needsCleaning && !r.issue && (
                                 <span title="Temizlik bekliyor" className="inline-flex">
@@ -273,7 +290,7 @@ function CalendarPage() {
                                 onClick={() =>
                                   setNewRes({ date: dIso, propertyId: p.id, roomNumber: r.number })
                                 }
-                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 hover:bg-primary/20 grid place-items-center text-primary"
+                                className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
                                 title={`Yeni rezervasyon · #${r.number} · ${dIso}`}
                               >
                                 <Plus className="w-4 h-4" />
