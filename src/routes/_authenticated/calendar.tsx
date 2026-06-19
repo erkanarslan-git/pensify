@@ -46,6 +46,11 @@ interface UnifiedRes {
 
 function CalendarPage() {
   const { t } = useTranslation();
+  const perms = usePermissions();
+  const canCreatePast = perms.can("create_past_reservation");
+  const canCreate = perms.can("create_reservation");
+  const isManagerOnly =
+    perms.roles.includes("manager") && !perms.roles.includes("admin") && !perms.roles.includes("owner");
   const [range, setRange] = useState(14);
   const [start, setStart] = useState(() => {
     const d = startOfDay(new Date());
@@ -59,12 +64,31 @@ function CalendarPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
+  const [pendingPast, setPendingPast] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const gridFocusRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // Auto-focus calendar grid so keyboard navigation works immediately
     const t = setTimeout(() => gridFocusRef.current?.focus({ preventScroll: true }), 50);
     return () => clearTimeout(t);
   }, []);
+
+  // Helper: is given iso date strictly before today?
+  const todayIsoStr = new Date().toISOString().slice(0, 10);
+  const isPastDate = (dIso: string) => dIso < todayIsoStr;
+
+  function tryOpenNew(payload: { date: string; propertyId?: string; roomNumber?: string }) {
+    if (isPastDate(payload.date)) {
+      if (!canCreatePast) {
+        toast.error("Vergangene Buchungen", { description: "Nur Manager, Admin oder Inhaber können vergangene Daten anlegen." });
+        return;
+      }
+      if (isManagerOnly) {
+        setPendingPast(payload);
+        return;
+      }
+    }
+    setNewRes(payload);
+  }
 
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
