@@ -12,6 +12,8 @@ import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { guestColor, sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
+import { usePermissions } from "@/hooks/use-permissions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
