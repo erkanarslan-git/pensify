@@ -31,7 +31,7 @@ function startOfDay(d: Date) {
 }
 
 interface UnifiedProperty { id: string; name: string }
-interface UnifiedRoom { id: string; number: string; propertyId: string; needsCleaning?: boolean; issue?: string | null }
+interface UnifiedRoom { id: string; number: string; propertyId: string; floor?: number | null; needsCleaning?: boolean; issue?: string | null }
 interface UnifiedRes {
   id: string;
   roomId: string;
