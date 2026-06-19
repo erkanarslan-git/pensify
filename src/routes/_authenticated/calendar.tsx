@@ -223,7 +223,7 @@ function CalendarPage() {
         <div className="overflow-x-auto -m-5">
           <div className="min-w-[900px] px-5">
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Oda</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Zimmer</div>
               {days.map((d) => {
                 const isToday = iso(d) === today;
                 return (
