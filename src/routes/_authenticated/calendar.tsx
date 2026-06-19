@@ -353,3 +353,82 @@ function CalendarPage() {
     </AppShell>
   );
 }
+
+function ScrollableGrid({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+  const drag = useRef<{ startX: number; startScroll: number; active: boolean; moved: boolean }>({ startX: 0, startScroll: 0, active: false, moved: false });
+
+  const update = () => {
+    const el = ref.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 4);
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+  useEffect(() => {
+    update();
+    const el = ref.current;
+    if (!el) return;
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
+  }, [children]);
+
+  const step = () => (ref.current?.clientWidth ?? 600) * 0.7;
+  const scrollBy = (dx: number) => ref.current?.scrollBy({ left: dx, behavior: "smooth" });
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button, a, input, [role='button']")) return;
+    const el = ref.current;
+    if (!el) return;
+    drag.current = { startX: e.clientX, startScroll: el.scrollLeft, active: true, moved: false };
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!drag.current.active || !ref.current) return;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 4) drag.current.moved = true;
+    ref.current.scrollLeft = drag.current.startScroll - dx;
+  };
+  const endDrag = () => { drag.current.active = false; };
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (drag.current.moved) { e.stopPropagation(); e.preventDefault(); drag.current.moved = false; }
+  };
+
+  return (
+    <div className="relative -m-5">
+      <div
+        ref={ref}
+        className="overflow-x-auto select-none cursor-grab active:cursor-grabbing"
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onClickCapture={onClickCapture}
+      >
+        {children}
+      </div>
+      {canLeft && (
+        <button
+          type="button"
+          onClick={() => scrollBy(-step())}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-card/95 border border-border shadow-md grid place-items-center hover:bg-accent transition-colors"
+          aria-label="Nach links scrollen"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      )}
+      {canRight && (
+        <button
+          type="button"
+          onClick={() => scrollBy(step())}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-card/95 border border-border shadow-md grid place-items-center hover:bg-accent transition-colors"
+          aria-label="Nach rechts scrollen"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      )}
+    </div>
+  );
+}
