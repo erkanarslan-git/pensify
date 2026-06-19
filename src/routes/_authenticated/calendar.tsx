@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { guestColor, sourceColor, sourceLabel } from "@/lib/guest-color";
+import { guestColor, sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
