@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { History, User as UserIcon, Clock } from "lucide-react";
+import { History, User as UserIcon, Clock, Lock } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 type Channel = "booking" | "airbnb" | "check24" | "woocommerce" | "phone" | "direct" | "walkin" | "website" | "ical";
 const CHANNELS: Channel[] = ["direct", "booking", "airbnb", "check24", "woocommerce", "phone", "walkin", "website"];
@@ -49,6 +50,7 @@ const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_p
   "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes"] as const;
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
+  const perms = usePermissions();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [r, setR] = useState<Reservation | null>(null);
@@ -57,6 +59,11 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const [history, setHistory] = useState<AuditEntry[]>([]);
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const isPast = !!r && r.check_in < todayIso;
+  const canEditPast = perms.can("create_past_reservation");
+  const readOnly = isPast && !canEditPast;
 
   useEffect(() => {
     if (!open || !reservationId) return;
