@@ -13,11 +13,14 @@ import {
   Hotel,
   Clock,
   Shield,
+  Settings as SettingsIcon,
   Moon,
   Sun,
   LogOut,
   Globe,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -50,7 +53,9 @@ const navItems: NavItem[] = [
   { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
   { to: "/team", labelKey: "nav.team", icon: Shield },
   { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
+  { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },
 ];
+
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
