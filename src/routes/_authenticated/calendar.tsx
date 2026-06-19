@@ -65,7 +65,7 @@ function CalendarPage() {
     (async () => {
       const [{ data: props }, { data: rms }, { data: res }, { data: tasks }] = await Promise.all([
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id").order("number"),
+        supabase.from("rooms").select("id,number,property_id,floor").order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status").neq("status", "cancelled"),
         supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "problem"]),
       ]);
@@ -77,8 +77,8 @@ function CalendarPage() {
         if (ct.status === "problem") entry.issue = ct.notes ?? "Sorun bildirildi";
         cleaningByRoom.set(ct.room_id, entry);
       }
-      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string }[]).map((r) => ({
-        id: r.id, number: r.number, propertyId: r.property_id,
+      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null }[]).map((r) => ({
+        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor,
         needsCleaning: cleaningByRoom.get(r.id)?.needsCleaning ?? false,
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
