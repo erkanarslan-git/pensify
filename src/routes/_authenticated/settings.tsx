@@ -1,0 +1,181 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell, Section } from "@/components/app-shell";
+import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/settings")({
+  head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
+  component: SettingsPage,
+});
+
+const LANGS = [
+  { code: "de", label: "Deutsch" },
+  { code: "en", label: "English" },
+  { code: "tr", label: "Türkçe" },
+];
+
+type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "security";
+
+function SettingsPage() {
+  const { t, i18n } = useTranslation();
+  const [tab, setTab] = useState<TabKey>("general");
+
+  // Persisted prefs (local for now — backend can be wired later)
+  const [emailNotif, setEmailNotif] = useState(true);
+  const [browserNotif, setBrowserNotif] = useState(true);
+  const [whatsappNotif, setWhatsappNotif] = useState(false);
+  const [emailFrom, setEmailFrom] = useState("");
+  const [emailReply, setEmailReply] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyTax, setCompanyTax] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+
+  useEffect(() => {
+    const load = (k: string) => localStorage.getItem(`pensify.settings.${k}`);
+    setEmailNotif(load("emailNotif") !== "0");
+    setBrowserNotif(load("browserNotif") !== "0");
+    setWhatsappNotif(load("whatsappNotif") === "1");
+    setEmailFrom(load("emailFrom") ?? "");
+    setEmailReply(load("emailReply") ?? "");
+    setCompanyName(load("companyName") ?? "");
+    setCompanyTax(load("companyTax") ?? "");
+    setCompanyAddress(load("companyAddress") ?? "");
+  }, []);
+
+  const save = (k: string, v: string) => localStorage.setItem(`pensify.settings.${k}`, v);
+
+  const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
+    { key: "general", label: "Allgemein", icon: Globe },
+    { key: "language", label: "Sprache", icon: Languages },
+    { key: "notifications", label: "Benachrichtigungen", icon: Bell },
+    { key: "email", label: "E-Mail", icon: Mail },
+    { key: "company", label: "Unternehmen", icon: Building2 },
+    { key: "appearance", label: "Darstellung", icon: Palette },
+    { key: "security", label: "Sicherheit", icon: Shield },
+  ];
+
+  return (
+    <AppShell title="Einstellungen" subtitle="Sprache, Benachrichtigungen, E-Mail und mehr">
+      <div className="grid lg:grid-cols-[220px_1fr] gap-4">
+        <aside className="rounded-xl border border-border bg-card p-2 h-fit">
+          {tabs.map((x) => {
+            const Icon = x.icon;
+            const active = tab === x.key;
+            return (
+              <button
+                key={x.key}
+                onClick={() => setTab(x.key)}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "bg-accent font-medium" : "hover:bg-accent/50 text-muted-foreground"}`}
+              >
+                <Icon className="w-4 h-4" /> {x.label}
+              </button>
+            );
+          })}
+        </aside>
+
+        <div className="space-y-4">
+          {tab === "general" && (
+            <Section title="Allgemein">
+              <p className="text-sm text-muted-foreground">
+                Hauptsprache der Anwendung ist Deutsch. Weitere Optionen findest du in den anderen Reitern.
+              </p>
+            </Section>
+          )}
+
+          {tab === "language" && (
+            <Section title="Sprache der Oberfläche">
+              <div className="grid sm:grid-cols-3 gap-2 max-w-md">
+                {LANGS.map((l) => {
+                  const active = i18n.resolvedLanguage === l.code;
+                  return (
+                    <button
+                      key={l.code}
+                      onClick={() => i18n.changeLanguage(l.code)}
+                      className={`px-3 py-2 rounded-lg border text-sm ${active ? "border-primary bg-primary/10 font-medium" : "border-border hover:bg-accent"}`}
+                    >
+                      {l.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">{t("common.language")}: <strong>{i18n.resolvedLanguage}</strong></p>
+            </Section>
+          )}
+
+          {tab === "notifications" && (
+            <Section title="Benachrichtigungen">
+              <div className="space-y-3 max-w-md">
+                <Toggle label="E-Mail Benachrichtigungen" value={emailNotif} onChange={(v) => { setEmailNotif(v); save("emailNotif", v ? "1" : "0"); }} />
+                <Toggle label="Browser-Benachrichtigungen" value={browserNotif} onChange={(v) => { setBrowserNotif(v); save("browserNotif", v ? "1" : "0"); }} />
+                <Toggle label="WhatsApp-Benachrichtigungen" value={whatsappNotif} onChange={(v) => { setWhatsappNotif(v); save("whatsappNotif", v ? "1" : "0"); }} />
+              </div>
+            </Section>
+          )}
+
+          {tab === "email" && (
+            <Section title="E-Mail Versand">
+              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
+                <Field label="Absender (Von)" value={emailFrom} onChange={(v) => { setEmailFrom(v); save("emailFrom", v); }} placeholder="buchung@meinepension.de" />
+                <Field label="Antwort an" value={emailReply} onChange={(v) => { setEmailReply(v); save("emailReply", v); }} placeholder="kontakt@meinepension.de" />
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">Diese Adressen werden für Buchungs-Bestätigungen und Benachrichtigungen verwendet.</p>
+            </Section>
+          )}
+
+          {tab === "company" && (
+            <Section title="Unternehmen">
+              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
+                <Field label="Firmenname" value={companyName} onChange={(v) => { setCompanyName(v); save("companyName", v); }} />
+                <Field label="USt-IdNr." value={companyTax} onChange={(v) => { setCompanyTax(v); save("companyTax", v); }} />
+                <Field label="Anschrift" value={companyAddress} onChange={(v) => { setCompanyAddress(v); save("companyAddress", v); }} className="sm:col-span-2" />
+              </div>
+            </Section>
+          )}
+
+          {tab === "appearance" && (
+            <Section title="Darstellung">
+              <p className="text-sm text-muted-foreground">Hell/Dunkel-Modus kannst du oben rechts in der Kopfzeile umschalten.</p>
+            </Section>
+          )}
+
+          {tab === "security" && (
+            <Section title="Sicherheit">
+              <p className="text-sm text-muted-foreground">Passwort ändern und Zwei-Faktor-Authentifizierung folgen in Kürze.</p>
+            </Section>
+          )}
+        </div>
+      </div>
+    </AppShell>
+  );
+}
+
+function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border">
+      <span className="text-sm">{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(!value)}
+        className={`w-10 h-6 rounded-full transition-colors relative ${value ? "bg-primary" : "bg-muted"}`}
+        aria-pressed={value}
+      >
+        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${value ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+      </button>
+    </label>
+  );
+}
+
+function Field({ label, value, onChange, placeholder, className }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; className?: string }) {
+  return (
+    <label className={`grid gap-1 ${className ?? ""}`}>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <input
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="px-3 py-2 rounded-md border border-input bg-card text-sm"
+      />
+    </label>
+  );
+}
