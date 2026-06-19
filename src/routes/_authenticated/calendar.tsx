@@ -290,6 +290,7 @@ function CalendarPage() {
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
         <div
+          ref={gridFocusRef}
           tabIndex={0}
           onKeyDown={onGridKeyDown}
           className="outline-none focus:ring-2 focus:ring-primary/30 rounded-md"
