@@ -108,6 +108,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
 
   const submit = async () => {
     if (!r) return;
+    if (readOnly) { toast.error("Keine Berechtigung", { description: "Vergangene Buchungen dürfen nur Manager/Admin/Inhaber bearbeiten." }); return; }
     if (!r.guest_name.trim()) return toast.error("Misafir adı zorunlu");
     if (r.check_out <= r.check_in) return toast.error("Çıkış tarihi girişten sonra olmalı");
 
@@ -157,6 +158,13 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
           <div className="py-12 text-center text-sm text-muted-foreground">Yükleniyor…</div>
         ) : (
           <>
+            {readOnly && (
+              <div className="mb-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-foreground flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5" />
+                Vergangene Buchung — nur Manager, Admin oder Inhaber dürfen bearbeiten. Ansicht ist schreibgeschützt.
+              </div>
+            )}
+            <fieldset disabled={readOnly} className={readOnly ? "opacity-90" : ""}>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <label className="col-span-2 grid gap-1">
                 <span className="text-xs text-muted-foreground">Misafir adı *</span>
@@ -276,13 +284,17 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
               )}
             </div>
 
+            </fieldset>
+
             <DialogFooter>
               <button onClick={() => onOpenChange(false)} disabled={saving}
-                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">İptal</button>
-              <button onClick={submit} disabled={saving}
-                className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
-                {saving ? "Kaydediliyor…" : "Kaydet"}
-              </button>
+                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? "Schließen" : "İptal"}</button>
+              {!readOnly && (
+                <button onClick={submit} disabled={saving}
+                  className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
+                  {saving ? "Kaydediliyor…" : "Kaydet"}
+                </button>
+              )}
             </DialogFooter>
           </>
         )}
