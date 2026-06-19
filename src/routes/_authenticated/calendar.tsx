@@ -298,7 +298,7 @@ function CalendarPage() {
                                       <button
                                         onClick={() => setEditId(occupant.realId)}
                                         className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                        title="Düzenle"
+                                        title="Bearbeiten"
                                       >
                                         <Pencil className="w-3 h-3" />
                                       </button>
