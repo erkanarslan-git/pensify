@@ -157,6 +157,30 @@ function SettingsPage() {
             </Section>
           )}
 
+          {tab === "channels" && (
+            <Section title="Kanal-Farben">
+              <p className="text-sm text-muted-foreground mb-4">Diese Farben werden im Kalender als linke Randmarkierung und in der Legende verwendet.</p>
+              <div className="space-y-2 max-w-md">
+                {ACTIVE_CHANNELS.map((ch) => (
+                  <div key={ch} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border">
+                    <span className="inline-block w-4 h-4 rounded" style={{ background: channelColors[ch] }} />
+                    <span className="text-sm flex-1">{sourceLabel(ch)}</span>
+                    <input
+                      type="color"
+                      value={channelColors[ch]}
+                      onChange={(e) => updateColor(ch, e.target.value)}
+                      className="w-10 h-8 rounded border border-border bg-transparent cursor-pointer"
+                    />
+                    <code className="text-xs text-muted-foreground w-20">{channelColors[ch]}</code>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={resetColors}>Auf Standard zurücksetzen</Button>
+              </div>
+            </Section>
+          )}
+
+
+
           {tab === "security" && (
             <Section title="Sicherheit">
               <p className="text-sm text-muted-foreground">Passwort ändern und Zwei-Faktor-Authentifizierung folgen in Kürze.</p>
