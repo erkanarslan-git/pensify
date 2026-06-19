@@ -15,8 +15,9 @@
     "analytics": "Analysen",
     "properties": "Pensionen",
     "timeTracking": "Zeiterfassung",
-    "team": "Team & Rollen"
-  },
+    "team": "Team & Rollen",
+    "settings": "Einstellungen",
+    "channelSync": "Kanal-Sync"
   "common": {
     "today": "Heute",
     "viewAll": "Alle ansehen",
