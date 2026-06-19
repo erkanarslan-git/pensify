@@ -113,11 +113,11 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
   const removeLine = (id: string) => setLines((ls) => ls.length > 1 ? ls.filter((l) => l.uid !== id) : ls);
 
   const submit = async () => {
-    if (!guestName.trim()) return toast.error("Misafir adı zorunlu");
-    if (lines.length === 0) return toast.error("En az bir oda ekleyin");
+    if (!guestName.trim()) return toast.error("Gastname erforderlich");
+    if (lines.length === 0) return toast.error("Mindestens ein Zimmer hinzufügen");
     for (const l of lines) {
-      if (!l.propertyId || !l.roomId) return toast.error("Her satırda lokasyon ve oda seçin");
-      if (l.checkOut <= l.checkIn) return toast.error("Çıkış tarihi girişten sonra olmalı");
+      if (!l.propertyId || !l.roomId) return toast.error("Pension und Zimmer in jeder Zeile wählen");
+      if (l.checkOut <= l.checkIn) return toast.error("Check-out muss nach Check-in liegen");
     }
 
     setSaving(true);
@@ -137,7 +137,7 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
       }).select("id").single();
       if (bkErr) {
         setSaving(false);
-        toast.error("Booking oluşturulamadı", { description: bkErr.message });
+        toast.error("Buchung konnte nicht erstellt werden", { description: bkErr.message });
         return;
       }
       bookingId = bk?.id ?? null;
@@ -163,10 +163,10 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
     setSaving(false);
 
     if (error) {
-      toast.error("Rezervasyon eklenemedi", { description: error.message });
+      toast.error("Buchung konnte nicht gespeichert werden", { description: error.message });
       return;
     }
-    toast.success(lines.length > 1 ? `${lines.length} oda kaydedildi` : "Rezervasyon oluşturuldu");
+    toast.success(lines.length > 1 ? `${lines.length} Zimmer gespeichert` : "Buchung erstellt");
     onOpenChange(false);
     onCreated?.();
     setGuestName(""); setGuestEmail(""); setGuestPhone(""); setNotes("");
@@ -176,19 +176,19 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Yeni rezervasyon</DialogTitle>
-          <DialogDescription>Tek misafir, bir veya birden fazla oda.</DialogDescription>
+          <DialogTitle>Neue Buchung</DialogTitle>
+          <DialogDescription>Ein Gast, ein oder mehrere Zimmer.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <label className="col-span-2 grid gap-1">
-              <span className="text-xs text-muted-foreground">Misafir adı *</span>
+              <span className="text-xs text-muted-foreground">Gastname *</span>
               <input value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={100}
                 className="px-3 py-2 rounded-md border border-input bg-card" />
             </label>
             <label className="grid gap-1">
-              <span className="text-xs text-muted-foreground">E-posta</span>
+              <span className="text-xs text-muted-foreground">E-Mail</span>
               <input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} maxLength={255}
                 className="px-3 py-2 rounded-md border border-input bg-card" />
             </label>
@@ -205,7 +205,7 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
               </select>
             </label>
             <label className="grid gap-1">
-              <span className="text-xs text-muted-foreground">Not</span>
+              <span className="text-xs text-muted-foreground">Notiz</span>
               <input value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000}
                 className="px-3 py-2 rounded-md border border-input bg-card" />
             </label>
@@ -214,11 +214,11 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Odalar ({lines.length})
+                Zimmer ({lines.length})
               </div>
               <button type="button" onClick={addLine}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border text-xs hover:bg-accent">
-                <Plus className="w-3.5 h-3.5" /> Oda ekle
+                <Plus className="w-3.5 h-3.5" /> Zimmer hinzufügen
               </button>
             </div>
             <div className="space-y-2">
@@ -227,31 +227,31 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
                 return (
                   <div key={l.uid} className="rounded-md border border-border p-3 grid grid-cols-12 gap-2 items-end">
                     <label className="col-span-4 grid gap-1">
-                      <span className="text-[10px] text-muted-foreground uppercase">Lokasyon</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">Pension</span>
                       <select value={l.propertyId} onChange={(e) => updateLine(l.uid, { propertyId: e.target.value })}
                         className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
                         {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
                     </label>
                     <label className="col-span-2 grid gap-1">
-                      <span className="text-[10px] text-muted-foreground uppercase">Oda</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">Zimmer</span>
                       <select value={l.roomId} onChange={(e) => updateLine(l.uid, { roomId: e.target.value })}
                         className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
                         {propRooms.map((r) => <option key={r.id} value={r.id}>#{r.number}</option>)}
                       </select>
                     </label>
                     <label className="col-span-2 grid gap-1">
-                      <span className="text-[10px] text-muted-foreground uppercase">Giriş</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">Check-in</span>
                       <input type="date" value={l.checkIn} onChange={(e) => updateLine(l.uid, { checkIn: e.target.value })}
                         className="px-2 py-1.5 rounded-md border border-input bg-card text-sm" />
                     </label>
                     <label className="col-span-2 grid gap-1">
-                      <span className="text-[10px] text-muted-foreground uppercase">Çıkış</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">Check-out</span>
                       <input type="date" value={l.checkOut} onChange={(e) => updateLine(l.uid, { checkOut: e.target.value })}
                         className="px-2 py-1.5 rounded-md border border-input bg-card text-sm" />
                     </label>
                     <label className="col-span-1 grid gap-1">
-                      <span className="text-[10px] text-muted-foreground uppercase">Kişi</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">Gäste</span>
                       <input type="number" min={1} value={l.guestsCount}
                         onChange={(e) => updateLine(l.uid, { guestsCount: Math.max(1, +e.target.value || 1) })}
                         className="px-2 py-1.5 rounded-md border border-input bg-card text-sm" />
@@ -263,7 +263,7 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
                       </button>
                     </div>
                     <label className="col-span-12 grid gap-1">
-                      <span className="text-[10px] text-muted-foreground uppercase">Tutar (€)</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">Betrag (€)</span>
                       <input type="number" min={0} step="0.01" value={l.revenue}
                         onChange={(e) => updateLine(l.uid, { revenue: Math.max(0, +e.target.value || 0) })}
                         className="px-2 py-1.5 rounded-md border border-input bg-card text-sm" />
@@ -277,10 +277,10 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
 
         <DialogFooter>
           <button onClick={() => onOpenChange(false)} disabled={saving}
-            className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">İptal</button>
+            className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">Abbrechen</button>
           <button onClick={submit} disabled={saving}
             className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
-            {saving ? "Kaydediliyor…" : `Kaydet${lines.length > 1 ? ` (${lines.length} oda)` : ""}`}
+            {saving ? "Speichern…" : `Speichern${lines.length > 1 ? ` (${lines.length} oda)` : ""}`}
           </button>
         </DialogFooter>
       </DialogContent>
