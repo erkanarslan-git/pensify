@@ -128,7 +128,58 @@ function CalendarPage() {
     );
   }, [guestQ, reservations]);
 
+  // Flat ordered list of rooms (matches render order) for keyboard nav
+  const flatRooms = useMemo(() => {
+    const out: { room: UnifiedRoom; property: UnifiedProperty }[] = [];
+    properties
+      .filter((p) => propertyId === "all" || p.id === propertyId)
+      .forEach((p) => {
+        filteredRooms.filter((r) => r.propertyId === p.id).forEach((room) => out.push({ room, property: p }));
+      });
+    return out;
+  }, [properties, filteredRooms, propertyId]);
 
+  const [focus, setFocus] = useState<{ row: number; col: number }>({ row: 0, col: 0 });
+  useEffect(() => {
+    setFocus((f) => ({
+      row: Math.min(f.row, Math.max(0, flatRooms.length - 1)),
+      col: Math.min(f.col, Math.max(0, days.length - 1)),
+    }));
+  }, [flatRooms.length, days.length]);
+
+  const onGridKeyDown = (e: React.KeyboardEvent) => {
+    if (newRes || editId) return;
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+    if (!flatRooms.length || !days.length) return;
+    const { row, col } = focus;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      if (col < days.length - 1) setFocus({ row, col: col + 1 });
+      else { shift(range); setFocus({ row, col: 0 }); }
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      if (col > 0) setFocus({ row, col: col - 1 });
+      else { shift(-range); setFocus({ row, col: days.length - 1 }); }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocus({ row: Math.min(flatRooms.length - 1, row + 1), col });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocus({ row: Math.max(0, row - 1), col });
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const entry = flatRooms[row];
+      const day = days[col];
+      if (!entry || !day) return;
+      const dIso = iso(day);
+      const occupant = filteredReservations.find(
+        (res) => res.roomId === entry.room.id && res.checkIn <= dIso && res.checkOut > dIso,
+      );
+      if (occupant?.realId) setEditId(occupant.realId);
+      else setNewRes({ date: dIso, propertyId: entry.property.id, roomNumber: entry.room.number });
+    }
+  };
 
   const shift = (n: number) => {
     const d = new Date(start);
