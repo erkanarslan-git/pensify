@@ -20,8 +20,8 @@ export const Route = createFileRoute("/_authenticated/team")({
   component: TeamPage,
 });
 
-const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"> = {
-  owner: "destructive", admin: "warning", manager: "success", cleaner: "muted",
+const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive" | "info"> = {
+  owner: "destructive", admin: "warning", manager: "success", reception: "info", cleaner: "muted",
 };
 
 function TeamPage() {
