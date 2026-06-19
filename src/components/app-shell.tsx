@@ -167,7 +167,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         )}
       </div>
       <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${mini ? "px-2" : "px-3"}`}>
-        {navItems.map((item) => {
+        {visibleNav.map((item) => {
           const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
@@ -200,7 +200,7 @@ export function AppShell({ title, subtitle, actions, children }: {
               {!mini && (
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
-                  <div className="text-xs text-muted-foreground truncate">Owner</div>
+                  <div className="text-xs text-muted-foreground truncate">{primaryRole ? ROLE_LABEL[primaryRole] : "—"}</div>
                 </div>
               )}
             </button>
