@@ -258,7 +258,7 @@ function CalendarPage() {
                               #{r.number}
 
                               {r.needsCleaning && !r.issue && (
-                                <span title="Temizlik bekliyor" className="inline-flex">
+                                <span title="Reinigung ausstehend" className="inline-flex">
                                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                                 </span>
                               )}
