@@ -16,7 +16,7 @@ export function guestColor(name: string) {
 
 // Active channels only: Booking, Airbnb, Check24, Web, Direct/Tel.
 // Anything legacy (website/woocommerce/phone/walkin/ical/direct) collapses to one of these.
-export const ACTIVE_CHANNELS = ["booking", "airbnb", "check24", "web", "direct"] as const;
+export const ACTIVE_CHANNELS = ["booking", "airbnb", "check24", "website", "direct"] as const;
 export type ActiveChannel = (typeof ACTIVE_CHANNELS)[number];
 
 export function normalizeChannel(src: string): ActiveChannel {
@@ -24,15 +24,15 @@ export function normalizeChannel(src: string): ActiveChannel {
   if (s === "booking" || s === "booking.com") return "booking";
   if (s === "airbnb") return "airbnb";
   if (s === "check24") return "check24";
-  if (s === "web" || s === "website" || s === "woocommerce" || s === "shop") return "web";
-  return "direct"; // direct, phone, tel, walk-in, ical, unknown → Direct/Tel
+  if (s === "web" || s === "website" || s === "woocommerce" || s === "shop") return "website";
+  return "direct"; // direct, phone, tel, walk-in, ical, unknown → Direkt/Tel
 }
 
 const SOURCE_COLOR: Record<ActiveChannel, string> = {
   booking: "#003580",
   airbnb: "#ff5a5f",
   check24: "#005ea8",
-  web: "#10b981",
+  website: "#10b981",
   direct: "#f59e0b",
 };
 export function sourceColor(src: string): string {
@@ -43,7 +43,7 @@ const SOURCE_LABEL: Record<ActiveChannel, string> = {
   booking: "Booking",
   airbnb: "Airbnb",
   check24: "Check24",
-  web: "Web",
+  website: "Web",
   direct: "Direkt/Tel",
 };
 export function sourceLabel(src: string): string {
