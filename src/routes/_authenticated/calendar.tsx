@@ -120,6 +120,16 @@ function CalendarPage() {
     });
   }, [propertyId, roomQ, rooms]);
 
+  const filteredReservations = useMemo(() => {
+    const q = guestQ.trim().toLowerCase();
+    if (!q) return reservations;
+    return reservations.filter((r) =>
+      r.guestName.toLowerCase().includes(q) || (r.realId ?? r.id).toLowerCase().includes(q),
+    );
+  }, [guestQ, reservations]);
+
+
+
   const shift = (n: number) => {
     const d = new Date(start);
     d.setDate(d.getDate() + n);
