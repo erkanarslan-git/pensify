@@ -201,7 +201,7 @@ export function NewReservationDialog({ open, onOpenChange, initialDate, initialP
               <span className="text-xs text-muted-foreground">Kanal</span>
               <select value={channel} onChange={(e) => setChannel(e.target.value as Channel)}
                 className="px-3 py-2 rounded-md border border-input bg-card">
-                {CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}
+                {CHANNELS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </label>
             <label className="grid gap-1">
