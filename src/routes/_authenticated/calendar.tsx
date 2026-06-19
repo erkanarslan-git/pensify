@@ -217,6 +217,11 @@ function CalendarPage() {
                         <div key={`${r.id}-label`} className="py-3 pr-3 border-b border-border text-sm flex items-center gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="font-medium truncate flex items-center gap-1.5">
+                              {r.floor != null && (
+                                <span className="inline-flex items-center justify-center min-w-[22px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground" title={r.floor === 0 ? "Zemin kat" : `${r.floor}. kat`}>
+                                  {r.floor === 0 ? "Z" : `K${r.floor}`}
+                                </span>
+                              )}
                               #{r.number}
                               {r.needsCleaning && !r.issue && (
                                 <span title="Temizlik bekliyor" className="inline-flex">
