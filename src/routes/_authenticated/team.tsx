@@ -1,3 +1,4 @@
+import { Fragment as FragmentRow } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge, Section } from "@/components/app-shell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -230,8 +231,8 @@ function TeamPage() {
             </thead>
             <tbody>
               {groups.map((g) => (
-                <>
-                  <tr key={`g-${g}`} className="bg-muted/20">
+                <FragmentRow key={`g-${g}`}>
+                  <tr className="bg-muted/20">
                     <td colSpan={ALL_ROLES.length + 1} className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase">{g}</td>
                   </tr>
                   {PERMISSIONS.filter((p) => p.group === g).map((p) => (
@@ -255,7 +256,7 @@ function TeamPage() {
                       })}
                     </tr>
                   ))}
-                </>
+                </FragmentRow>
               ))}
             </tbody>
           </table>
