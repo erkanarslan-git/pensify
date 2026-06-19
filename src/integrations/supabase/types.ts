@@ -524,6 +524,7 @@ export type Database = {
         Row: {
           capacity: number
           created_at: string
+          floor: number | null
           ical_feed_token: string | null
           id: string
           notes: string | null
@@ -535,6 +536,7 @@ export type Database = {
         Insert: {
           capacity?: number
           created_at?: string
+          floor?: number | null
           ical_feed_token?: string | null
           id?: string
           notes?: string | null
@@ -546,6 +548,7 @@ export type Database = {
         Update: {
           capacity?: number
           created_at?: string
+          floor?: number | null
           ical_feed_token?: string | null
           id?: string
           notes?: string | null
