@@ -327,10 +327,10 @@ function CalendarPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Renk = misafir, kenar = kanal</div>
-          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Temizlik bekliyor</div>
-          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Sorunlu oda</div>
-          <Link to="/reservations" className="ml-auto text-primary text-xs underline">Tüm rezervasyonlar →</Link>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
+          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
+          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Problem-Zimmer</div>
+          <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
 
