@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/rooms")({
   component: RoomsPage,
 });
 
-type RoomStatus = "available" | "occupied" | "cleaning" | "maintenance" | "blocked";
+type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
 
 interface Property { id: string; name: string; city_id: string | null }
 interface City { id: string; name: string }
@@ -32,12 +32,14 @@ interface Room {
   notes: string | null;
 }
 
-const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "danger" | "default" }> = {
+const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
   available: { label: "Müsait", tone: "success" },
-  occupied: { label: "Dolu", tone: "default" },
-  cleaning: { label: "Temizlik", tone: "warning" },
-  maintenance: { label: "Bakım", tone: "warning" },
-  blocked: { label: "Kapalı", tone: "danger" },
+  occupied: { label: "Dolu", tone: "primary" },
+  checkout_today: { label: "Bugün Çıkış", tone: "info" },
+  cleaning_required: { label: "Temizlik Bekliyor", tone: "warning" },
+  cleaning_in_progress: { label: "Temizleniyor", tone: "warning" },
+  cleaned: { label: "Temiz", tone: "success" },
+  maintenance: { label: "Bakım", tone: "destructive" },
 };
 
 const floorLabel = (f: number | null) =>
