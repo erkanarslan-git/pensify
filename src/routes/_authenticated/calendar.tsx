@@ -427,6 +427,59 @@ function CalendarPage() {
         reservationId={editId}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
+
+      {showHelp && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4"
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-card border border-border rounded-lg shadow-xl w-full max-w-md p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Keyboard className="w-4 h-4" />
+                <h3 className="font-semibold">Tastatur-Kürzel</h3>
+              </div>
+              <button onClick={() => setShowHelp(false)} className="p-1 rounded hover:bg-accent" title="Schließen">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Klicke zuerst in den Kalender, damit die Kürzel aktiv sind.
+            </p>
+            <div className="space-y-2 text-sm">
+              {[
+                { keys: ["↑", "↓", "←", "→"], desc: "Zwischen Zellen navigieren" },
+                { keys: ["←", "→"], desc: "Am Rand: vorherige / nächste Periode" },
+                { keys: ["Enter"], desc: "Belegt: Buchung bearbeiten · Frei: neue Buchung" },
+                { keys: ["?"], desc: "Diese Hilfe ein-/ausblenden" },
+                { keys: ["Esc"], desc: "Dialoge / Hilfe schließen" },
+              ].map((row, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 py-1.5 border-b border-border last:border-0">
+                  <span className="text-muted-foreground">{row.desc}</span>
+                  <span className="flex items-center gap-1">
+                    {row.keys.map((k) => (
+                      <kbd key={k} className="px-2 py-0.5 rounded border border-border bg-muted text-[11px] font-mono min-w-[24px] text-center">
+                        {k}
+                      </kbd>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">
+              <div className="font-medium mb-1.5 text-foreground">Maus</div>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>Klick auf Zelle: auswählen</li>
+                <li>Klick auf <Plus className="inline w-3 h-3" />: neue Buchung</li>
+                <li>Ziehen: horizontal scrollen</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
