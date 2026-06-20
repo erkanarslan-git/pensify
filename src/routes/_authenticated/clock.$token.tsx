@@ -136,7 +136,6 @@ function ClockPage() {
       if (!ctx?.openShift) return;
       const now = new Date();
       if (ctx.openShift.break_started_at) {
-        // resume
         const startedAt = new Date(ctx.openShift.break_started_at);
         const addMin = Math.max(0, Math.round((now.getTime() - startedAt.getTime()) / 60000));
         const { error } = await supabase
@@ -157,7 +156,11 @@ function ClockPage() {
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clock-ctx", token] }),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: unknown) => {
+      const err = e as { message?: string; code?: string; details?: string; hint?: string };
+      console.error("[toggleBreak] error", err);
+      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
+    },
   });
 
   const stop = useMutation({
@@ -186,7 +189,11 @@ function ClockPage() {
       toast.success(t("timeTracking.ended"));
       qc.invalidateQueries({ queryKey: ["clock-ctx", token] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: unknown) => {
+      const err = e as { message?: string; code?: string; details?: string; hint?: string };
+      console.error("[stop] error", err);
+      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
+    },
   });
 
   if (isLoading) {
