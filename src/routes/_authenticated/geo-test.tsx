@@ -195,6 +195,10 @@ function GeoTestPage() {
                             Kesişim (kabul)
                           </Badge>
                         )
+                      ) : r.accuracyTooLow ? (
+                        <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
+                          Doğruluk düşük
+                        </Badge>
                       ) : r.intersects ? (
                         <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
                           Sınırda (red)
@@ -317,8 +321,8 @@ function Diagram({
         className="w-full h-auto border border-border rounded-xl bg-muted/20"
       >
         {/* Geofence */}
-        <circle cx={cx} cy={cy} r={rGeo} fill="hsl(var(--success) / 0.15)" stroke="hsl(var(--success))" strokeWidth="1.5" />
-        <circle cx={cx} cy={cy} r="3" fill="hsl(var(--success))" />
+        <circle cx={cx} cy={cy} r={rGeo} fill="var(--success)" fillOpacity="0.15" stroke="var(--success)" strokeWidth="1.5" />
+        <circle cx={cx} cy={cy} r="3" fill="var(--success)" />
         <text x={cx + 6} y={cy - 6} className="text-[10px]" fill="currentColor">
           Lokasyon
         </text>
@@ -328,12 +332,13 @@ function Diagram({
           cx={userX}
           cy={userY}
           r={rAcc}
-          fill="hsl(var(--primary) / 0.15)"
-          stroke="hsl(var(--primary))"
+          fill="var(--primary)"
+          fillOpacity="0.15"
+          stroke="var(--primary)"
           strokeWidth="1.5"
           strokeDasharray="4 3"
         />
-        <circle cx={userX} cy={userY} r="3" fill="hsl(var(--primary))" />
+        <circle cx={userX} cy={userY} r="3" fill="var(--primary)" />
         <text x={userX + 6} y={userY - 6} className="text-[10px]" fill="currentColor">
           Sen
         </text>
@@ -373,6 +378,7 @@ function Details({
     effective: number | null;
     intersects: boolean;
     fullyInside: boolean;
+    accuracyTooLow: boolean;
     accepted: boolean | null;
   };
 }) {
@@ -391,7 +397,7 @@ function Details({
       <Stat label="Tamamen içeride?" value={row.fullyInside ? "Evet" : "Hayır"} />
       <Stat
         label="Sonuç"
-        value={row.accepted === null ? "—" : row.accepted ? "Kabul" : "Red"}
+        value={row.accepted === null ? "—" : row.accepted ? "Kabul" : row.accuracyTooLow ? "Doğruluk düşük" : "Red"}
         tone={row.accepted === null ? "warn" : row.accepted ? "ok" : "bad"}
       />
     </div>
