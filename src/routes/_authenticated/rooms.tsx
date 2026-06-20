@@ -22,6 +22,7 @@ type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_
 
 interface Property { id: string; name: string; city_id: string | null }
 interface City { id: string; name: string }
+interface Cleaner { id: string; full_name: string; active: boolean }
 interface Room {
   id: string;
   property_id: string;
@@ -30,6 +31,7 @@ interface Room {
   status: RoomStatus;
   floor: number | null;
   notes: string | null;
+  default_cleaner_id: string | null;
 }
 
 const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
