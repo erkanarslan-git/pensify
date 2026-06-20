@@ -22,6 +22,7 @@ type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_
 
 interface Property { id: string; name: string; city_id: string | null }
 interface City { id: string; name: string }
+interface Cleaner { id: string; full_name: string; active: boolean }
 interface Room {
   id: string;
   property_id: string;
@@ -30,6 +31,7 @@ interface Room {
   status: RoomStatus;
   floor: number | null;
   notes: string | null;
+  default_cleaner_id: string | null;
 }
 
 const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
@@ -50,6 +52,7 @@ function RoomsPage() {
   const [cities, setCities] = useState<City[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [filter, setFilter] = useState<RoomStatus | "all">("all");
   const [editing, setEditing] = useState<Room | null>(null);
   const [creating, setCreating] = useState<{ propertyId: string } | null>(null);
@@ -57,15 +60,17 @@ function RoomsPage() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: ci }, { data: pr }, { data: rm }] = await Promise.all([
+      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }] = await Promise.all([
         supabase.from("cities").select("id,name").order("name"),
         supabase.from("properties").select("id,name,city_id").order("name"),
-        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes")
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
+        supabase.from("cleaners").select("id,full_name,active").order("full_name"),
       ]);
       setCities((ci ?? []) as City[]);
       setProperties((pr ?? []) as Property[]);
       setRooms((rm ?? []) as Room[]);
+      setCleaners((cl ?? []) as Cleaner[]);
     })();
   }, [refreshKey]);
 
@@ -157,6 +162,9 @@ function RoomsPage() {
                                     </button>
                                   </div>
                                 </div>
+                                <div className="mt-2 text-[11px] text-muted-foreground truncate" title="Varsayılan temizlikçi">
+                                  🧹 {cleaners.find((c) => c.id === r.default_cleaner_id)?.full_name ?? <span className="italic text-amber-600">atanmamış</span>}
+                                </div>
                               </div>
                             );
                           })}
@@ -176,6 +184,7 @@ function RoomsPage() {
         room={editing}
         propertyId={creating?.propertyId}
         properties={properties}
+        cleaners={cleaners}
         onClose={() => { setEditing(null); setCreating(null); }}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
@@ -184,12 +193,13 @@ function RoomsPage() {
 }
 
 function RoomDialog({
-  open, room, propertyId, properties, onClose, onSaved,
+  open, room, propertyId, properties, cleaners, onClose, onSaved,
 }: {
   open: boolean;
   room: Room | null;
   propertyId?: string;
   properties: Property[];
+  cleaners: Cleaner[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -199,6 +209,7 @@ function RoomDialog({
   const [status, setStatus] = useState<RoomStatus>("available");
   const [propId, setPropId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [defaultCleanerId, setDefaultCleanerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -210,6 +221,7 @@ function RoomDialog({
       setStatus(room.status);
       setPropId(room.property_id);
       setNotes(room.notes ?? "");
+      setDefaultCleanerId(room.default_cleaner_id ?? "");
     } else {
       setNumber("");
       setCapacity(2);
@@ -217,6 +229,7 @@ function RoomDialog({
       setStatus("available");
       setPropId(propertyId ?? properties[0]?.id ?? "");
       setNotes("");
+      setDefaultCleanerId("");
     }
   }, [open, room, propertyId, properties]);
 
@@ -234,6 +247,7 @@ function RoomDialog({
       floor: f,
       status,
       notes: notes.trim() || null,
+      default_cleaner_id: defaultCleanerId || null,
     };
     const { error } = room
       ? await supabase.from("rooms").update(payload).eq("id", room.id)
@@ -279,6 +293,16 @@ function RoomDialog({
                 <option key={s} value={s}>{statusMeta[s].label}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Varsayılan temizlikçi</label>
+            <select value={defaultCleanerId} onChange={(e) => setDefaultCleanerId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
+              <option value="">— atanmamış —</option>
+              {cleaners.filter((c) => c.active || c.id === defaultCleanerId).map((c) => (
+                <option key={c.id} value={c.id}>{c.full_name}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground mt-1">Her çıkışta bu temizlikçiye otomatik görev oluşturulur.</p>
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Notlar</label>

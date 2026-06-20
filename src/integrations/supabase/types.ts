@@ -578,6 +578,7 @@ export type Database = {
         Row: {
           capacity: number
           created_at: string
+          default_cleaner_id: string | null
           floor: number | null
           ical_feed_token: string | null
           id: string
@@ -590,6 +591,7 @@ export type Database = {
         Insert: {
           capacity?: number
           created_at?: string
+          default_cleaner_id?: string | null
           floor?: number | null
           ical_feed_token?: string | null
           id?: string
@@ -602,6 +604,7 @@ export type Database = {
         Update: {
           capacity?: number
           created_at?: string
+          default_cleaner_id?: string | null
           floor?: number | null
           ical_feed_token?: string | null
           id?: string
@@ -612,6 +615,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "rooms_default_cleaner_id_fkey"
+            columns: ["default_cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaners"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rooms_property_id_fkey"
             columns: ["property_id"]
