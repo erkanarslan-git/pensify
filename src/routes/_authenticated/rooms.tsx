@@ -295,6 +295,16 @@ function RoomDialog({
             </select>
           </div>
           <div>
+            <label className="text-xs text-muted-foreground">Varsayılan temizlikçi</label>
+            <select value={defaultCleanerId} onChange={(e) => setDefaultCleanerId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
+              <option value="">— atanmamış —</option>
+              {cleaners.filter((c) => c.active || c.id === defaultCleanerId).map((c) => (
+                <option key={c.id} value={c.id}>{c.full_name}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted-foreground mt-1">Her çıkışta bu temizlikçiye otomatik görev oluşturulur.</p>
+          </div>
+          <div>
             <label className="text-xs text-muted-foreground">Notlar</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </div>
