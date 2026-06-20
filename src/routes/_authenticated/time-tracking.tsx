@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Clock, MapPin, Download } from "lucide-react";
+import { CheckCircle2, Clock, MapPin, Download, Square, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ type Entry = {
   clock_in_at: string;
   clock_out_at: string | null;
   break_minutes: number;
+  break_started_at: string | null;
   status: string;
   paid_at: string | null;
   paid_amount: number | null;
@@ -90,7 +91,7 @@ function TimeTrackingPage() {
       let q = supabase
         .from("time_entries")
         .select(
-          "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, status, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name, hourly_rate), properties(name)",
+          "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, break_started_at, status, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name, hourly_rate), properties(name)",
         )
         .gte("clock_in_at", `${from}T00:00:00`)
         .lte("clock_in_at", `${to}T23:59:59`)
@@ -145,6 +146,61 @@ function TimeTrackingPage() {
       qc.invalidateQueries({ queryKey: ["time-entries"] });
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleBreak = useMutation({
+    mutationFn: async (entry: Entry) => {
+      const now = new Date();
+      if (entry.break_started_at) {
+        const addMin = Math.max(0, Math.round((now.getTime() - new Date(entry.break_started_at).getTime()) / 60000));
+        const { error } = await supabase
+          .from("time_entries")
+          .update({ break_started_at: null, break_minutes: (entry.break_minutes ?? 0) + addMin, status: "active" })
+          .eq("id", entry.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("time_entries")
+          .update({ break_started_at: now.toISOString(), status: "on_break" })
+          .eq("id", entry.id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["time-entries"] }),
+    onError: (e: unknown) => {
+      const err = e as { message?: string; code?: string; details?: string };
+      console.error("[admin toggleBreak]", err);
+      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
+    },
+  });
+
+  const endShift = useMutation({
+    mutationFn: async (entry: Entry) => {
+      const now = new Date();
+      let breakAdd = 0;
+      if (entry.break_started_at) {
+        breakAdd = Math.max(0, Math.round((now.getTime() - new Date(entry.break_started_at).getTime()) / 60000));
+      }
+      const { error } = await supabase
+        .from("time_entries")
+        .update({
+          clock_out_at: now.toISOString(),
+          break_started_at: null,
+          break_minutes: (entry.break_minutes ?? 0) + breakAdd,
+          status: "completed",
+        })
+        .eq("id", entry.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(t("timeTracking.ended"));
+      qc.invalidateQueries({ queryKey: ["time-entries"] });
+    },
+    onError: (e: unknown) => {
+      const err = e as { message?: string; code?: string; details?: string };
+      console.error("[admin endShift]", err);
+      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
+    },
   });
 
   function exportCsv() {
@@ -315,7 +371,14 @@ function TimeTrackingPage() {
                           ) : e.clock_out_at ? (
                             <Button size="sm" variant="outline" onClick={() => markPaid.mutate(e)}>{t("timeTracking.markPaid")}</Button>
                           ) : (
-                            "—"
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="outline" onClick={() => toggleBreak.mutate(e)} disabled={toggleBreak.isPending}>
+                                {e.break_started_at ? <><Play className="w-3 h-3 mr-1" />{t("timeTracking.resume")}</> : <><Pause className="w-3 h-3 mr-1" />{t("timeTracking.break")}</>}
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => endShift.mutate(e)} disabled={endShift.isPending}>
+                                <Square className="w-3 h-3 mr-1" />{t("timeTracking.end")}
+                              </Button>
+                            </div>
                           )}
                         </td>
                       </tr>
