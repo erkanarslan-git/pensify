@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
-import { Play, Pause, Square, LogOut, MapPin, Loader2, QrCode, Building2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Play, Pause, Square, LogOut, Loader2, QrCode, Building2, MapPin, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
@@ -12,10 +12,56 @@ export const Route = createFileRoute("/_authenticated/me")({
   component: MePage,
 });
 
+// Haversine distance in meters
+function distanceM(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371000;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function useGeolocation() {
+  const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(true);
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError("Konum desteklenmiyor");
+      setPending(false);
+      return;
+    }
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        setPending(false);
+      },
+      (err) => {
+        setError(err.message);
+        setPending(false);
+      },
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+  return { coords, error, pending };
+}
+
+type PropertyLite = {
+  id: string;
+  name: string;
+  qr_token: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  geofence_radius_m: number | null;
+};
+
 function MePage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const geo = useGeolocation();
 
   const ctx = useQuery({
     queryKey: ["me-shift"],
@@ -28,7 +74,7 @@ function MePage() {
         .eq("user_id", u.user.id)
         .maybeSingle();
       if (!cleaner)
-        return { user: u.user, cleaner: null, open: null, properties: [], recent: [] };
+        return { user: u.user, cleaner: null, open: null, properties: [] as PropertyLite[], recent: [] };
       const { data: open } = await supabase
         .from("time_entries")
         .select("id, property_id, clock_in_at, break_minutes, break_started_at, status, properties(name)")
@@ -37,7 +83,7 @@ function MePage() {
         .maybeSingle();
       const { data: properties } = await supabase
         .from("properties")
-        .select("id, name, qr_token")
+        .select("id, name, qr_token, latitude, longitude, geofence_radius_m")
         .order("name");
       const { data: recent } = await supabase
         .from("time_entries")
@@ -46,11 +92,36 @@ function MePage() {
         .not("clock_out_at", "is", null)
         .order("clock_in_at", { ascending: false })
         .limit(5);
-      return { user: u.user, cleaner, open, properties: properties ?? [], recent: recent ?? [] };
+      return {
+        user: u.user,
+        cleaner,
+        open,
+        properties: (properties ?? []) as PropertyLite[],
+        recent: recent ?? [],
+      };
     },
   });
 
   const [propertyId, setPropertyId] = useState<string>("");
+
+  const selectedProperty = useMemo<PropertyLite | null>(() => {
+    const list = ctx.data?.properties ?? [];
+    return list.find((p) => p.id === propertyId) ?? null;
+  }, [ctx.data?.properties, propertyId]);
+
+  const distance =
+    selectedProperty && selectedProperty.latitude != null && selectedProperty.longitude != null && geo.coords
+      ? distanceM(geo.coords.lat, geo.coords.lng, selectedProperty.latitude, selectedProperty.longitude)
+      : null;
+
+  const hasCoords = !!(selectedProperty && selectedProperty.latitude != null && selectedProperty.longitude != null);
+  const radius = selectedProperty?.geofence_radius_m ?? 150;
+  // If property has no coords configured, we cannot enforce — allow with a warning.
+  const withinGeofence = !selectedProperty
+    ? false
+    : !hasCoords
+      ? true
+      : distance != null && distance <= radius;
 
   async function signOut() {
     await qc.cancelQueries();
@@ -63,10 +134,22 @@ function MePage() {
     mutationFn: async () => {
       const c = ctx.data?.cleaner;
       if (!c) throw new Error("Hesabın bir temizlikçi kaydına bağlı değil. Lütfen yöneticinle iletişime geç.");
-      if (!propertyId) throw new Error("Lokasyon seç");
+      if (!selectedProperty) throw new Error("Lokasyon seç");
+      if (hasCoords) {
+        if (geo.pending) throw new Error("Konum alınıyor, lütfen bekle…");
+        if (!geo.coords) throw new Error("Konum izni gerekli. Tarayıcı ayarlarından izin ver.");
+        if (distance == null || distance > radius) {
+          throw new Error(
+            `Lokasyona yeterince yakın değilsin (${distance != null ? Math.round(distance) : "?"} m, izin verilen ${radius} m).`,
+          );
+        }
+      }
       const { error } = await supabase.from("time_entries").insert({
         cleaner_id: c.id,
-        property_id: propertyId,
+        property_id: selectedProperty.id,
+        clock_in_lat: geo.coords?.lat ?? null,
+        clock_in_lng: geo.coords?.lng ?? null,
+        clock_in_accuracy_m: geo.coords?.accuracy ?? null,
         source: "manual",
       });
       if (error) throw error;
@@ -125,6 +208,8 @@ function MePage() {
         .from("time_entries")
         .update({
           clock_out_at: now.toISOString(),
+          clock_out_lat: geo.coords?.lat ?? null,
+          clock_out_lng: geo.coords?.lng ?? null,
           break_started_at: null,
           break_minutes: (open.break_minutes ?? 0) + addMin,
           status: "completed",
@@ -209,9 +294,42 @@ function MePage() {
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
+
+            {selectedProperty && (
+              <div className="text-xs">
+                {geo.pending ? (
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Konum alınıyor…
+                  </span>
+                ) : geo.error ? (
+                  <span className="inline-flex items-center gap-1.5 text-destructive">
+                    <AlertTriangle className="w-3.5 h-3.5" /> {geo.error} — Tarayıcı konum iznini ver.
+                  </span>
+                ) : !hasCoords ? (
+                  <span className="inline-flex items-center gap-1.5 text-warning">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Bu lokasyon için koordinat tanımlı değil; mesafe kontrolü yapılamıyor.
+                  </span>
+                ) : withinGeofence ? (
+                  <span className="inline-flex items-center gap-1.5 text-success">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Lokasyondasın ({distance != null ? Math.round(distance) : "?"} m / izin {radius} m).
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-destructive">
+                    <MapPin className="w-3.5 h-3.5" />
+                    Lokasyona uzaktasın ({distance != null ? Math.round(distance) : "?"} m / izin {radius} m). Başlatma engellendi.
+                  </span>
+                )}
+              </div>
+            )}
+
             <button
               onClick={() => start.mutate()}
-              disabled={start.isPending || !propertyId}
+              disabled={
+                start.isPending ||
+                !propertyId ||
+                (hasCoords && (geo.pending || !geo.coords || !withinGeofence))
+              }
               className="w-full px-3 py-4 rounded-xl bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Play className="w-5 h-5" /> Başlat
