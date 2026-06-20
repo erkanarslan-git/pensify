@@ -18,6 +18,8 @@ function distanceM(lat1: number, lng1: number, lat2: number, lng2: number) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+const MAX_GEOFENCE_ACCURACY_M = 2000;
+
 type Reading = { lat: number; lng: number; accuracy: number; ts: number };
 
 function useGeoWatch() {
@@ -87,14 +89,14 @@ function GeoTestPage() {
         ? distanceM(geo.reading.lat, geo.reading.lng, p.latitude!, p.longitude!)
         : null;
       const acc = geo.reading?.accuracy ?? 0;
-      const accBuffer = Math.min(acc, 500);
-      const effective = dist != null ? Math.max(0, dist - accBuffer) : null;
+      const effective = dist != null ? Math.max(0, dist - acc) : null;
       // Intersection: circles overlap iff dist <= radius + accuracy
       const intersects = dist != null ? dist <= radius + acc : false;
       // Fully inside the geofence (no doubt)
       const fullyInside = dist != null ? dist + acc <= radius : false;
-      const accepted = !hasCoords ? null : effective != null && effective <= radius;
-      return { p, hasCoords, radius, dist, acc, effective, intersects, fullyInside, accepted };
+      const accuracyTooLow = acc > MAX_GEOFENCE_ACCURACY_M;
+      const accepted = !hasCoords ? null : intersects && !accuracyTooLow;
+      return { p, hasCoords, radius, dist, acc, effective, intersects, fullyInside, accuracyTooLow, accepted };
     });
   }, [q.data, geo.reading]);
 
@@ -138,7 +140,7 @@ function GeoTestPage() {
           ) : null}
           {geo.reading && (
             <div className="text-xs text-muted-foreground mt-3">
-              Kabul kuralı: <code>mesafe − min(doğruluk, 500m) ≤ geofence yarıçapı</code>
+              Kabul kuralı: <code>mesafe ≤ geofence yarıçapı + doğruluk</code>. Doğruluk üst sınırı: ±{MAX_GEOFENCE_ACCURACY_M} m.
             </div>
           )}
         </section>
