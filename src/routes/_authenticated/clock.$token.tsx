@@ -82,19 +82,30 @@ function ClockPage() {
     },
   });
 
+  const hasPropCoords =
+    ctx?.property?.latitude != null && ctx.property?.longitude != null;
   const distance =
-    ctx?.property?.latitude != null && ctx.property?.longitude != null && geo.coords
-      ? distanceM(geo.coords.lat, geo.coords.lng, ctx.property.latitude, ctx.property.longitude)
+    hasPropCoords && geo.coords
+      ? distanceM(geo.coords.lat, geo.coords.lng, ctx!.property.latitude!, ctx!.property.longitude!)
       : null;
-  const withinGeofence =
-    ctx?.property && (ctx.property.latitude == null || ctx.property.longitude == null || distance === null
-      ? true
-      : distance <= ctx.property.geofence_radius_m);
+  const radius = ctx?.property?.geofence_radius_m ?? 150;
+  // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
+  // Cap accuracy buffer at 500m to prevent IP-level false positives.
+  const accuracyBuffer = Math.min(geo.coords?.accuracy ?? 0, 500);
+  const effectiveDistance = distance != null ? Math.max(0, distance - accuracyBuffer) : null;
+  // If property has no coords configured, can't enforce — allow.
+  // If property has coords, require a fresh location AND effective distance within radius.
+  const withinGeofence = !hasPropCoords
+    ? true
+    : geo.coords != null && effectiveDistance != null && effectiveDistance <= radius;
 
   const start = useMutation({
     mutationFn: async () => {
       if (!ctx?.cleaner) throw new Error(t("timeTracking.noCleanerLink"));
-      if (!withinGeofence) throw new Error(t("timeTracking.outOfGeofence"));
+      if (hasPropCoords) {
+        if (geo.pending || !geo.coords) throw new Error(t("timeTracking.gettingLocation"));
+        if (!withinGeofence) throw new Error(t("timeTracking.outOfGeofence"));
+      }
       // Auto-close any open shift at a different property
       if (ctx.openShift) {
         await supabase
@@ -196,12 +207,14 @@ function ClockPage() {
               <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("timeTracking.gettingLocation")}</span>
             ) : geo.error ? (
               <span className="text-destructive text-xs">{geo.error}</span>
-            ) : distance == null ? (
+            ) : !hasPropCoords ? (
               <Badge tone="muted">{t("timeTracking.noPropertyCoords")}</Badge>
+            ) : distance == null ? (
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("timeTracking.gettingLocation")}</span>
             ) : withinGeofence ? (
-              <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> {t("timeTracking.inRange", { d: Math.round(distance) })}</Badge>
+              <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> ~{Math.round(distance)} m · izin {radius} m · doğruluk ±{Math.round(geo.coords!.accuracy)} m</Badge>
             ) : (
-              <Badge tone="destructive"><AlertTriangle className="w-3 h-3" /> {t("timeTracking.outOfRange", { d: Math.round(distance), max: ctx.property.geofence_radius_m })}</Badge>
+              <Badge tone="destructive"><AlertTriangle className="w-3 h-3" /> ~{Math.round(distance)} m · izin {radius} m · doğruluk ±{Math.round(geo.coords!.accuracy)} m</Badge>
             )}
           </div>
         </Section>
@@ -237,7 +250,7 @@ function ClockPage() {
             )}
             <button
               onClick={() => start.mutate()}
-              disabled={start.isPending || !withinGeofence}
+              disabled={start.isPending || (hasPropCoords && (geo.pending || !geo.coords || !withinGeofence))}
               className="w-full px-3 py-4 rounded-md bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Play className="w-5 h-5" /> {t("timeTracking.start")}

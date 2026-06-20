@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useMemo, useState } from "react";
-import { Loader2, MapPin, CheckCircle2, XCircle, AlertTriangle, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Loader2, CheckCircle2, XCircle, AlertTriangle, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/geo-test")({
   head: () => ({ meta: [{ title: "Geofence Test — Pensify" }] }),
@@ -253,8 +253,8 @@ function Badge({
   children,
 }: {
   tone: "ok" | "warn" | "bad";
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  icon: ReactNode;
+  children: ReactNode;
 }) {
   const cls =
     tone === "ok"
