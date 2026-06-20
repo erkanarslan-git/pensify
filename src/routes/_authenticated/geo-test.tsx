@@ -95,7 +95,7 @@ function GeoTestPage() {
       // Fully inside the geofence (no doubt)
       const fullyInside = dist != null ? dist + acc <= radius : false;
       const accuracyTooLow = acc > MAX_GEOFENCE_ACCURACY_M;
-      const accepted = !hasCoords ? null : intersects && !accuracyTooLow;
+      const accepted = !hasCoords || !geo.reading ? null : intersects && !accuracyTooLow;
       return { p, hasCoords, radius, dist, acc, effective, intersects, fullyInside, accuracyTooLow, accepted };
     });
   }, [q.data, geo.reading]);
@@ -183,7 +183,7 @@ function GeoTestPage() {
                     <div className="shrink-0">
                       {r.accepted === null ? (
                         <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
-                          Koord. yok
+                          {!r.hasCoords ? "Koord. yok" : "Konum bekleniyor"}
                         </Badge>
                       ) : r.accepted ? (
                         r.fullyInside ? (
