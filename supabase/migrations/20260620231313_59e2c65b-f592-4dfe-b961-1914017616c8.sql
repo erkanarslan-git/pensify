@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS protect_time_entries_payment_fields_trg ON public.time_entries;
