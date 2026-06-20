@@ -184,6 +184,7 @@ function RoomsPage() {
         room={editing}
         propertyId={creating?.propertyId}
         properties={properties}
+        cleaners={cleaners}
         onClose={() => { setEditing(null); setCreating(null); }}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
