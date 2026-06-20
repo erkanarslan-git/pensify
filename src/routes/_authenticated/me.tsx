@@ -116,12 +116,16 @@ function MePage() {
 
   const hasCoords = !!(selectedProperty && selectedProperty.latitude != null && selectedProperty.longitude != null);
   const radius = selectedProperty?.geofence_radius_m ?? 150;
+  // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
+  // Cap accuracy buffer at 500m to prevent IP-level (very low accuracy) false positives.
+  const accuracyBuffer = Math.min(geo.coords?.accuracy ?? 0, 500);
+  const effectiveDistance = distance != null ? Math.max(0, distance - accuracyBuffer) : null;
   // If property has no coords configured, we cannot enforce — allow with a warning.
   const withinGeofence = !selectedProperty
     ? false
     : !hasCoords
       ? true
-      : distance != null && distance <= radius;
+      : effectiveDistance != null && effectiveDistance <= radius;
 
   async function signOut() {
     await qc.cancelQueries();
