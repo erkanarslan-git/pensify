@@ -162,6 +162,9 @@ function RoomsPage() {
                                     </button>
                                   </div>
                                 </div>
+                                <div className="mt-2 text-[11px] text-muted-foreground truncate" title="Varsayılan temizlikçi">
+                                  🧹 {cleaners.find((c) => c.id === r.default_cleaner_id)?.full_name ?? <span className="italic text-amber-600">atanmamış</span>}
+                                </div>
                               </div>
                             );
                           })}
