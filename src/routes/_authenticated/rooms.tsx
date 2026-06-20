@@ -247,6 +247,7 @@ function RoomDialog({
       floor: f,
       status,
       notes: notes.trim() || null,
+      default_cleaner_id: defaultCleanerId || null,
     };
     const { error } = room
       ? await supabase.from("rooms").update(payload).eq("id", room.id)
