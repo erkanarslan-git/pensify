@@ -21,6 +21,7 @@ import { Route as AuthenticatedReservationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
 import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
@@ -97,6 +98,11 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
+  id: '/geo-test',
+  path: '/geo-test',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
   id: '/cleaning',
   path: '/cleaning',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
+  '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
+  '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/_authenticated/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
+  '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
+    | '/geo-test'
     | '/me'
     | '/notifications'
     | '/request-access'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
+    | '/geo-test'
     | '/me'
     | '/notifications'
     | '/request-access'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/_authenticated/channel-sync'
     | '/_authenticated/cleaners'
     | '/_authenticated/cleaning'
+    | '/_authenticated/geo-test'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
     | '/_authenticated/request-access'
@@ -414,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/geo-test': {
+      id: '/_authenticated/geo-test'
+      path: '/geo-test'
+      fullPath: '/geo-test'
+      preLoaderRoute: typeof AuthenticatedGeoTestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cleaning': {
       id: '/_authenticated/cleaning'
       path: '/cleaning'
@@ -507,6 +526,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChannelSyncRoute: typeof AuthenticatedChannelSyncRoute
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
+  AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
@@ -528,6 +548,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChannelSyncRoute: AuthenticatedChannelSyncRoute,
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
+  AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
