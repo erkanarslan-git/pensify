@@ -207,12 +207,14 @@ function ClockPage() {
               <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("timeTracking.gettingLocation")}</span>
             ) : geo.error ? (
               <span className="text-destructive text-xs">{geo.error}</span>
-            ) : distance == null ? (
+            ) : !hasPropCoords ? (
               <Badge tone="muted">{t("timeTracking.noPropertyCoords")}</Badge>
+            ) : distance == null ? (
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("timeTracking.gettingLocation")}</span>
             ) : withinGeofence ? (
-              <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> {t("timeTracking.inRange", { d: Math.round(distance) })}</Badge>
+              <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> ~{Math.round(distance)} m · izin {radius} m · doğruluk ±{Math.round(geo.coords!.accuracy)} m</Badge>
             ) : (
-              <Badge tone="destructive"><AlertTriangle className="w-3 h-3" /> {t("timeTracking.outOfRange", { d: Math.round(distance), max: ctx.property.geofence_radius_m })}</Badge>
+              <Badge tone="destructive"><AlertTriangle className="w-3 h-3" /> ~{Math.round(distance)} m · izin {radius} m · doğruluk ±{Math.round(geo.coords!.accuracy)} m</Badge>
             )}
           </div>
         </Section>
