@@ -116,12 +116,16 @@ function MePage() {
 
   const hasCoords = !!(selectedProperty && selectedProperty.latitude != null && selectedProperty.longitude != null);
   const radius = selectedProperty?.geofence_radius_m ?? 150;
+  // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
+  // Cap accuracy buffer at 500m to prevent IP-level (very low accuracy) false positives.
+  const accuracyBuffer = Math.min(geo.coords?.accuracy ?? 0, 500);
+  const effectiveDistance = distance != null ? Math.max(0, distance - accuracyBuffer) : null;
   // If property has no coords configured, we cannot enforce — allow with a warning.
   const withinGeofence = !selectedProperty
     ? false
     : !hasCoords
       ? true
-      : distance != null && distance <= radius;
+      : effectiveDistance != null && effectiveDistance <= radius;
 
   async function signOut() {
     await qc.cancelQueries();
@@ -138,9 +142,9 @@ function MePage() {
       if (hasCoords) {
         if (geo.pending) throw new Error("Konum alınıyor, lütfen bekle…");
         if (!geo.coords) throw new Error("Konum izni gerekli. Tarayıcı ayarlarından izin ver.");
-        if (distance == null || distance > radius) {
+        if (effectiveDistance == null || effectiveDistance > radius) {
           throw new Error(
-            `Lokasyona yeterince yakın değilsin (${distance != null ? Math.round(distance) : "?"} m, izin verilen ${radius} m).`,
+            `Lokasyona yeterince yakın değilsin (~${distance != null ? Math.round(distance) : "?"} m, izin ${radius} m, konum doğruluğu ±${Math.round(geo.coords.accuracy)} m).`,
           );
         }
       }
@@ -312,12 +316,12 @@ function MePage() {
                 ) : withinGeofence ? (
                   <span className="inline-flex items-center gap-1.5 text-success">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Lokasyondasın ({distance != null ? Math.round(distance) : "?"} m / izin {radius} m).
+                    Lokasyondasın (~{distance != null ? Math.round(distance) : "?"} m, izin {radius} m, doğruluk ±{geo.coords ? Math.round(geo.coords.accuracy) : "?"} m).
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-destructive">
                     <MapPin className="w-3.5 h-3.5" />
-                    Lokasyona uzaktasın ({distance != null ? Math.round(distance) : "?"} m / izin {radius} m). Başlatma engellendi.
+                    Lokasyona uzaktasın (~{distance != null ? Math.round(distance) : "?"} m, izin {radius} m, doğruluk ±{geo.coords ? Math.round(geo.coords.accuracy) : "?"} m).
                   </span>
                 )}
               </div>
