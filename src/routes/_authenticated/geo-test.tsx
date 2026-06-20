@@ -18,6 +18,8 @@ function distanceM(lat1: number, lng1: number, lat2: number, lng2: number) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+const MAX_GEOFENCE_ACCURACY_M = 2000;
+
 type Reading = { lat: number; lng: number; accuracy: number; ts: number };
 
 function useGeoWatch() {
@@ -87,14 +89,14 @@ function GeoTestPage() {
         ? distanceM(geo.reading.lat, geo.reading.lng, p.latitude!, p.longitude!)
         : null;
       const acc = geo.reading?.accuracy ?? 0;
-      const accBuffer = Math.min(acc, 500);
-      const effective = dist != null ? Math.max(0, dist - accBuffer) : null;
+      const effective = dist != null ? Math.max(0, dist - acc) : null;
       // Intersection: circles overlap iff dist <= radius + accuracy
       const intersects = dist != null ? dist <= radius + acc : false;
       // Fully inside the geofence (no doubt)
       const fullyInside = dist != null ? dist + acc <= radius : false;
-      const accepted = !hasCoords ? null : effective != null && effective <= radius;
-      return { p, hasCoords, radius, dist, acc, effective, intersects, fullyInside, accepted };
+      const accuracyTooLow = acc > MAX_GEOFENCE_ACCURACY_M;
+      const accepted = !hasCoords || !geo.reading ? null : intersects && !accuracyTooLow;
+      return { p, hasCoords, radius, dist, acc, effective, intersects, fullyInside, accuracyTooLow, accepted };
     });
   }, [q.data, geo.reading]);
 
@@ -138,7 +140,7 @@ function GeoTestPage() {
           ) : null}
           {geo.reading && (
             <div className="text-xs text-muted-foreground mt-3">
-              Kabul kuralı: <code>mesafe − min(doğruluk, 500m) ≤ geofence yarıçapı</code>
+              Kabul kuralı: <code>mesafe ≤ geofence yarıçapı + doğruluk</code>. Doğruluk üst sınırı: ±{MAX_GEOFENCE_ACCURACY_M} m.
             </div>
           )}
         </section>
@@ -181,7 +183,7 @@ function GeoTestPage() {
                     <div className="shrink-0">
                       {r.accepted === null ? (
                         <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
-                          Koord. yok
+                          {!r.hasCoords ? "Koord. yok" : "Konum bekleniyor"}
                         </Badge>
                       ) : r.accepted ? (
                         r.fullyInside ? (
@@ -193,6 +195,10 @@ function GeoTestPage() {
                             Kesişim (kabul)
                           </Badge>
                         )
+                      ) : r.accuracyTooLow ? (
+                        <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
+                          Doğruluk düşük
+                        </Badge>
                       ) : r.intersects ? (
                         <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
                           Sınırda (red)
@@ -315,8 +321,8 @@ function Diagram({
         className="w-full h-auto border border-border rounded-xl bg-muted/20"
       >
         {/* Geofence */}
-        <circle cx={cx} cy={cy} r={rGeo} fill="hsl(var(--success) / 0.15)" stroke="hsl(var(--success))" strokeWidth="1.5" />
-        <circle cx={cx} cy={cy} r="3" fill="hsl(var(--success))" />
+        <circle cx={cx} cy={cy} r={rGeo} fill="var(--success)" fillOpacity="0.15" stroke="var(--success)" strokeWidth="1.5" />
+        <circle cx={cx} cy={cy} r="3" fill="var(--success)" />
         <text x={cx + 6} y={cy - 6} className="text-[10px]" fill="currentColor">
           Lokasyon
         </text>
@@ -326,12 +332,13 @@ function Diagram({
           cx={userX}
           cy={userY}
           r={rAcc}
-          fill="hsl(var(--primary) / 0.15)"
-          stroke="hsl(var(--primary))"
+          fill="var(--primary)"
+          fillOpacity="0.15"
+          stroke="var(--primary)"
           strokeWidth="1.5"
           strokeDasharray="4 3"
         />
-        <circle cx={userX} cy={userY} r="3" fill="hsl(var(--primary))" />
+        <circle cx={userX} cy={userY} r="3" fill="var(--primary)" />
         <text x={userX + 6} y={userY - 6} className="text-[10px]" fill="currentColor">
           Sen
         </text>
@@ -371,6 +378,7 @@ function Details({
     effective: number | null;
     intersects: boolean;
     fullyInside: boolean;
+    accuracyTooLow: boolean;
     accepted: boolean | null;
   };
 }) {
@@ -389,7 +397,7 @@ function Details({
       <Stat label="Tamamen içeride?" value={row.fullyInside ? "Evet" : "Hayır"} />
       <Stat
         label="Sonuç"
-        value={row.accepted === null ? "—" : row.accepted ? "Kabul" : "Red"}
+        value={row.accepted === null ? "—" : row.accepted ? "Kabul" : row.accuracyTooLow ? "Doğruluk düşük" : "Red"}
         tone={row.accepted === null ? "warn" : row.accepted ? "ok" : "bad"}
       />
     </div>

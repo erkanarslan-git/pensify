@@ -23,6 +23,8 @@ function distanceM(lat1: number, lng1: number, lat2: number, lng2: number) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+const MAX_GEOFENCE_ACCURACY_M = 2000;
+
 function useGeolocation() {
   const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,14 +92,13 @@ function ClockPage() {
       : null;
   const radius = ctx?.property?.geofence_radius_m ?? 150;
   // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
-  // Cap accuracy buffer at 500m to prevent IP-level false positives.
-  const accuracyBuffer = Math.min(geo.coords?.accuracy ?? 0, 500);
-  const effectiveDistance = distance != null ? Math.max(0, distance - accuracyBuffer) : null;
+  const accuracy = geo.coords?.accuracy ?? 0;
+  const accuracyTooLow = accuracy > MAX_GEOFENCE_ACCURACY_M;
   // If property has no coords configured, can't enforce — allow.
   // If property has coords, require a fresh location AND effective distance within radius.
   const withinGeofence = !hasPropCoords
     ? true
-    : geo.coords != null && effectiveDistance != null && effectiveDistance <= radius;
+    : geo.coords != null && distance != null && distance <= radius + accuracy && !accuracyTooLow;
 
   const start = useMutation({
     mutationFn: async () => {

@@ -45,6 +45,7 @@ export const ROUTE_ACL: RouteAcl[] = [
   { path: "/channel-sync", roles: ["owner", "admin"] },
   { path: "/settings", roles: ["owner", "admin"] },
   { path: "/me", roles: ["owner", "admin", "manager", "reception", "cleaner"] },
+  { path: "/geo-test", roles: ["owner", "admin", "manager", "reception", "cleaner"] },
   { path: "/clock", roles: ["owner", "admin", "manager", "reception", "cleaner"] },
   { path: "/request-access", roles: ["owner", "admin", "manager", "reception", "cleaner"] }, // any auth user
 ];
