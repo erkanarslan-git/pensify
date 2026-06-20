@@ -142,9 +142,9 @@ function MePage() {
       if (hasCoords) {
         if (geo.pending) throw new Error("Konum alınıyor, lütfen bekle…");
         if (!geo.coords) throw new Error("Konum izni gerekli. Tarayıcı ayarlarından izin ver.");
-        if (distance == null || distance > radius) {
+        if (effectiveDistance == null || effectiveDistance > radius) {
           throw new Error(
-            `Lokasyona yeterince yakın değilsin (${distance != null ? Math.round(distance) : "?"} m, izin verilen ${radius} m).`,
+            `Lokasyona yeterince yakın değilsin (~${distance != null ? Math.round(distance) : "?"} m, izin ${radius} m, konum doğruluğu ±${Math.round(geo.coords.accuracy)} m).`,
           );
         }
       }
