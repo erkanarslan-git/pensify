@@ -250,7 +250,7 @@ function ClockPage() {
             )}
             <button
               onClick={() => start.mutate()}
-              disabled={start.isPending || !withinGeofence}
+              disabled={start.isPending || (hasPropCoords && (geo.pending || !geo.coords || !withinGeofence))}
               className="w-full px-3 py-4 rounded-md bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Play className="w-5 h-5" /> {t("timeTracking.start")}
