@@ -253,8 +253,8 @@ function Badge({
   children,
 }: {
   tone: "ok" | "warn" | "bad";
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  icon: ReactNode;
+  children: ReactNode;
 }) {
   const cls =
     tone === "ok"
