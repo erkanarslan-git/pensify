@@ -193,12 +193,13 @@ function RoomsPage() {
 }
 
 function RoomDialog({
-  open, room, propertyId, properties, onClose, onSaved,
+  open, room, propertyId, properties, cleaners, onClose, onSaved,
 }: {
   open: boolean;
   room: Room | null;
   propertyId?: string;
   properties: Property[];
+  cleaners: Cleaner[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -208,6 +209,7 @@ function RoomDialog({
   const [status, setStatus] = useState<RoomStatus>("available");
   const [propId, setPropId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [defaultCleanerId, setDefaultCleanerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -219,6 +221,7 @@ function RoomDialog({
       setStatus(room.status);
       setPropId(room.property_id);
       setNotes(room.notes ?? "");
+      setDefaultCleanerId(room.default_cleaner_id ?? "");
     } else {
       setNumber("");
       setCapacity(2);
@@ -226,6 +229,7 @@ function RoomDialog({
       setStatus("available");
       setPropId(propertyId ?? properties[0]?.id ?? "");
       setNotes("");
+      setDefaultCleanerId("");
     }
   }, [open, room, propertyId, properties]);
 
