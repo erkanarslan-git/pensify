@@ -93,7 +93,6 @@ function ClockPage() {
   const radius = ctx?.property?.geofence_radius_m ?? 150;
   // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
   const accuracy = geo.coords?.accuracy ?? 0;
-  const effectiveDistance = distance != null ? Math.max(0, distance - accuracy) : null;
   const accuracyTooLow = accuracy > MAX_GEOFENCE_ACCURACY_M;
   // If property has no coords configured, can't enforce — allow.
   // If property has coords, require a fresh location AND effective distance within radius.
