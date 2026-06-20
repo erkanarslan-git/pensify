@@ -316,12 +316,12 @@ function MePage() {
                 ) : withinGeofence ? (
                   <span className="inline-flex items-center gap-1.5 text-success">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Lokasyondasın ({distance != null ? Math.round(distance) : "?"} m / izin {radius} m).
+                    Lokasyondasın (~{distance != null ? Math.round(distance) : "?"} m, izin {radius} m, doğruluk ±{geo.coords ? Math.round(geo.coords.accuracy) : "?"} m).
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-destructive">
                     <MapPin className="w-3.5 h-3.5" />
-                    Lokasyona uzaktasın ({distance != null ? Math.round(distance) : "?"} m / izin {radius} m). Başlatma engellendi.
+                    Lokasyona uzaktasın (~{distance != null ? Math.round(distance) : "?"} m, izin {radius} m, doğruluk ±{geo.coords ? Math.round(geo.coords.accuracy) : "?"} m).
                   </span>
                 )}
               </div>
