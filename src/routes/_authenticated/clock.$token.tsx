@@ -82,19 +82,30 @@ function ClockPage() {
     },
   });
 
+  const hasPropCoords =
+    ctx?.property?.latitude != null && ctx.property?.longitude != null;
   const distance =
-    ctx?.property?.latitude != null && ctx.property?.longitude != null && geo.coords
-      ? distanceM(geo.coords.lat, geo.coords.lng, ctx.property.latitude, ctx.property.longitude)
+    hasPropCoords && geo.coords
+      ? distanceM(geo.coords.lat, geo.coords.lng, ctx!.property.latitude!, ctx!.property.longitude!)
       : null;
-  const withinGeofence =
-    ctx?.property && (ctx.property.latitude == null || ctx.property.longitude == null || distance === null
-      ? true
-      : distance <= ctx.property.geofence_radius_m);
+  const radius = ctx?.property?.geofence_radius_m ?? 150;
+  // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
+  // Cap accuracy buffer at 500m to prevent IP-level false positives.
+  const accuracyBuffer = Math.min(geo.coords?.accuracy ?? 0, 500);
+  const effectiveDistance = distance != null ? Math.max(0, distance - accuracyBuffer) : null;
+  // If property has no coords configured, can't enforce — allow.
+  // If property has coords, require a fresh location AND effective distance within radius.
+  const withinGeofence = !hasPropCoords
+    ? true
+    : geo.coords != null && effectiveDistance != null && effectiveDistance <= radius;
 
   const start = useMutation({
     mutationFn: async () => {
       if (!ctx?.cleaner) throw new Error(t("timeTracking.noCleanerLink"));
-      if (!withinGeofence) throw new Error(t("timeTracking.outOfGeofence"));
+      if (hasPropCoords) {
+        if (geo.pending || !geo.coords) throw new Error(t("timeTracking.gettingLocation"));
+        if (!withinGeofence) throw new Error(t("timeTracking.outOfGeofence"));
+      }
       // Auto-close any open shift at a different property
       if (ctx.openShift) {
         await supabase
