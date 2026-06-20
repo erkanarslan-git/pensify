@@ -52,6 +52,7 @@ function RoomsPage() {
   const [cities, setCities] = useState<City[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [filter, setFilter] = useState<RoomStatus | "all">("all");
   const [editing, setEditing] = useState<Room | null>(null);
   const [creating, setCreating] = useState<{ propertyId: string } | null>(null);
@@ -59,15 +60,17 @@ function RoomsPage() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: ci }, { data: pr }, { data: rm }] = await Promise.all([
+      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }] = await Promise.all([
         supabase.from("cities").select("id,name").order("name"),
         supabase.from("properties").select("id,name,city_id").order("name"),
-        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes")
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
+        supabase.from("cleaners").select("id,full_name,active").order("full_name"),
       ]);
       setCities((ci ?? []) as City[]);
       setProperties((pr ?? []) as Property[]);
       setRooms((rm ?? []) as Room[]);
+      setCleaners((cl ?? []) as Cleaner[]);
     })();
   }, [refreshKey]);
 
