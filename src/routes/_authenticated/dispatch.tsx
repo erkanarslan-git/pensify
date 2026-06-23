@@ -251,6 +251,37 @@ function DispatchPage() {
   );
 }
 
+function ActionBtn({
+  icon: Icon, label, onClick, disabled, tone,
+}: { icon: any; label: string; onClick: () => void; disabled?: boolean; tone?: "success" | "warning" }) {
+  const toneCls =
+    tone === "success" ? "border-success/40 text-success hover:bg-success/10"
+    : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/10"
+    : "border-border hover:bg-accent";
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition ${toneCls} disabled:opacity-40 disabled:cursor-not-allowed`}
+    >
+      <Icon className="w-3 h-3" /> {label}
+    </button>
+  );
+}
+
+function TaskStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { tone: "muted" | "info" | "success" | "warning" | "destructive"; label: string }> = {
+    pending: { tone: "muted", label: "pending" },
+    accepted: { tone: "info", label: "accepted" },
+    in_progress: { tone: "info", label: "in_progress" },
+    completed: { tone: "success", label: "completed" },
+    problem: { tone: "destructive", label: "problem" },
+  };
+  const m = map[status] ?? { tone: "muted" as const, label: status };
+  return <Badge tone={m.tone}>{m.label}</Badge>;
+}
+
+
 function Kpi({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
