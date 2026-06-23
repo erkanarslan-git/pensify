@@ -17,7 +17,15 @@
     "timeTracking": "Zaman takibi",
     "team": "Ekip & roller",
     "settings": "Ayarlar",
-    "channelSync": "Kanal Senkronizasyonu"
+    "channelSync": "Kanal Senkronizasyonu",
+    "actionCenter": "Eylem Merkezi",
+    "groups": {
+      "overview": "Genel Bakış",
+      "bookings": "Rezervasyon",
+      "places": "Mekânlar",
+      "cleaning": "Temizlik",
+      "admin": "Yönetim"
+    }
   },
   "common": {
     "today": "Bugün",

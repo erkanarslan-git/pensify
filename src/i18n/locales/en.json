@@ -17,7 +17,15 @@
     "timeTracking": "Time tracking",
     "team": "Team & roles",
     "settings": "Settings",
-    "channelSync": "Channel Sync"
+    "channelSync": "Channel Sync",
+    "actionCenter": "Action Center",
+    "groups": {
+      "overview": "Overview",
+      "bookings": "Bookings",
+      "places": "Places",
+      "cleaning": "Cleaning",
+      "admin": "Admin"
+    }
   },
   "common": {
     "today": "Today",
