@@ -138,10 +138,44 @@ function DispatchPage() {
                     <Badge tone="success">{counts.completed} bitti</Badge>
                   </div>
                   {tasks.length > 0 && (
-                    <ul className="text-xs text-muted-foreground space-y-0.5">
-                      {tasks.slice(0, 5).map((t: any, i: number) => (
-                        <li key={t.id}>
-                          {i + 1}. {t.properties?.name} - Oda {t.rooms?.number} · {t.status}
+                    <ul className="space-y-1.5 pt-1">
+                      {tasks.slice(0, 6).map((t: any, i: number) => (
+                        <li key={t.id} className="rounded-lg border border-border bg-muted/30 px-2.5 py-2 text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate">
+                              <span className="text-muted-foreground">{i + 1}.</span>{" "}
+                              <span className="font-medium">{t.properties?.name}</span> · Oda {t.rooms?.number}
+                            </span>
+                            <TaskStatusBadge status={t.status} />
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            <ActionBtn
+                              icon={Check}
+                              label="Accept"
+                              disabled={reply.isPending || ["accepted", "in_progress", "completed"].includes(t.status)}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "accept", taskId: t.id })}
+                            />
+                            <ActionBtn
+                              icon={Play}
+                              label="Start"
+                              disabled={reply.isPending || ["in_progress", "completed"].includes(t.status)}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "start", taskId: t.id })}
+                            />
+                            <ActionBtn
+                              icon={CheckCircle2}
+                              label="Complete"
+                              tone="success"
+                              disabled={reply.isPending || t.status === "completed"}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "complete", taskId: t.id })}
+                            />
+                            <ActionBtn
+                              icon={AlertTriangle}
+                              label="Problem"
+                              tone="warning"
+                              disabled={reply.isPending || t.status === "problem"}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "problem", taskId: t.id })}
+                            />
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -155,10 +189,14 @@ function DispatchPage() {
                         <Eye className="w-3.5 h-3.5 mr-1" /> Mesajı gör
                       </Button>
                     )}
+                    <Button size="sm" variant="ghost" onClick={() => runDemo.mutate(c.id)} disabled={runDemo.isPending || tasks.length === 0}>
+                      <PlayCircle className="w-3.5 h-3.5 mr-1" /> Demo akışı
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => setReplyOpen({ cleanerId: c.id, name: c.full_name })} disabled={!msg}>
-                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> Cevap simüle et
+                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> Metin cevap
                     </Button>
                   </div>
+
                 </div>
               );
             })}
