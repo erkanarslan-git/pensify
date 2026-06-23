@@ -196,8 +196,8 @@ export function AppShell({ title, subtitle, actions, children }: {
           </div>
         )}
       </div>
-      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${mini ? "px-2" : "px-3"}`}>
       <nav className={`flex-1 py-3 overflow-y-auto ${mini ? "px-2 space-y-2" : "px-3 space-y-4"}`}>
+
         {visibleGroups.map((group, gi) => (
           <div key={group.labelKey} className="space-y-0.5">
             {!mini ? (
