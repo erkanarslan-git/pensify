@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { dispatchMorningTasks, getTodayDispatch, simulateReply, saveDispatchSettings } from "@/lib/dispatch.functions";
-import { Send, RefreshCw, Settings as Cog, Eye, MessageSquare } from "lucide-react";
+import { dispatchMorningTasks, getTodayDispatch, simulateReply, saveDispatchSettings, runDemoScenario } from "@/lib/dispatch.functions";
+import { Send, RefreshCw, Settings as Cog, Eye, MessageSquare, PlayCircle, Check, Play, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({ meta: [{ title: "Görev Dağıtımı — Pensify" }] }),
@@ -37,10 +38,22 @@ function DispatchPage() {
     onError: (e: any) => toast.error(e.message),
   });
   const reply = useMutation({
-    mutationFn: (v: { cleanerId: string; text: string }) => replyFn({ data: v }),
+    mutationFn: (v: { cleanerId: string; text?: string; action?: "accept" | "start" | "complete" | "problem"; taskId?: string }) =>
+      replyFn({ data: v }),
     onSuccess: (r: any) => {
-      if (r.applied) toast.success(`Uygulandı (${r.parsed})`);
-      else toast.warning(`Anlaşılmadı (${r.parsed})`);
+      if (r.applied) toast.success(`${r.parsed}: görev → ${r.taskStatus}${r.roomStatus ? `, oda → ${r.roomStatus}` : ""}`);
+      else toast.warning(`Uygulanmadı (${r.parsed}${r.error ? `: ${r.error}` : ""})`);
+      qc.invalidateQueries({ queryKey: ["dispatch"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const demoFn = useServerFn(runDemoScenario);
+  const runDemo = useMutation({
+    mutationFn: (cleanerId?: string) => demoFn({ data: { cleanerId, reset: true } }),
+    onSuccess: (r: any) => {
+      if (!r.ok) { toast.error(`Demo: ${r.error}`); return; }
+      const ok = r.steps.filter((s: any) => s.result.applied).length;
+      toast.success(`Demo tamamlandı — ${ok}/${r.steps.length} adım uygulandı`);
       qc.invalidateQueries({ queryKey: ["dispatch"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -49,6 +62,7 @@ function DispatchPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewBody, setPreviewBody] = useState<string | null>(null);
   const [replyOpen, setReplyOpen] = useState<{ cleanerId: string; name: string } | null>(null);
+
 
   if (isLoading) return <AppShell title="Görev Dağıtımı">Yükleniyor…</AppShell>;
   if (!data) return null;
@@ -81,11 +95,15 @@ function DispatchPage() {
           <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
             <Cog className="w-4 h-4 mr-1" /> Ayarlar
           </Button>
+          <Button variant="outline" size="sm" onClick={() => runDemo.mutate(undefined)} disabled={runDemo.isPending}>
+            <PlayCircle className="w-4 h-4 mr-1" /> {runDemo.isPending ? "Çalışıyor…" : "Demo senaryosu"}
+          </Button>
           <Button size="sm" onClick={() => sendAll.mutate()} disabled={sendAll.isPending}>
             <Send className="w-4 h-4 mr-1" /> Herkese şimdi gönder
           </Button>
         </>
       }
+
     >
       <div className="space-y-4">
         <div className="grid sm:grid-cols-3 gap-3">
@@ -120,10 +138,44 @@ function DispatchPage() {
                     <Badge tone="success">{counts.completed} bitti</Badge>
                   </div>
                   {tasks.length > 0 && (
-                    <ul className="text-xs text-muted-foreground space-y-0.5">
-                      {tasks.slice(0, 5).map((t: any, i: number) => (
-                        <li key={t.id}>
-                          {i + 1}. {t.properties?.name} - Oda {t.rooms?.number} · {t.status}
+                    <ul className="space-y-1.5 pt-1">
+                      {tasks.slice(0, 6).map((t: any, i: number) => (
+                        <li key={t.id} className="rounded-lg border border-border bg-muted/30 px-2.5 py-2 text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate">
+                              <span className="text-muted-foreground">{i + 1}.</span>{" "}
+                              <span className="font-medium">{t.properties?.name}</span> · Oda {t.rooms?.number}
+                            </span>
+                            <TaskStatusBadge status={t.status} />
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            <ActionBtn
+                              icon={Check}
+                              label="Accept"
+                              disabled={reply.isPending || ["accepted", "in_progress", "completed"].includes(t.status)}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "accept", taskId: t.id })}
+                            />
+                            <ActionBtn
+                              icon={Play}
+                              label="Start"
+                              disabled={reply.isPending || ["in_progress", "completed"].includes(t.status)}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "start", taskId: t.id })}
+                            />
+                            <ActionBtn
+                              icon={CheckCircle2}
+                              label="Complete"
+                              tone="success"
+                              disabled={reply.isPending || t.status === "completed"}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "complete", taskId: t.id })}
+                            />
+                            <ActionBtn
+                              icon={AlertTriangle}
+                              label="Problem"
+                              tone="warning"
+                              disabled={reply.isPending || t.status === "problem"}
+                              onClick={() => reply.mutate({ cleanerId: c.id, action: "problem", taskId: t.id })}
+                            />
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -137,10 +189,14 @@ function DispatchPage() {
                         <Eye className="w-3.5 h-3.5 mr-1" /> Mesajı gör
                       </Button>
                     )}
+                    <Button size="sm" variant="ghost" onClick={() => runDemo.mutate(c.id)} disabled={runDemo.isPending || tasks.length === 0}>
+                      <PlayCircle className="w-3.5 h-3.5 mr-1" /> Demo akışı
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => setReplyOpen({ cleanerId: c.id, name: c.full_name })} disabled={!msg}>
-                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> Cevap simüle et
+                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> Metin cevap
                     </Button>
                   </div>
+
                 </div>
               );
             })}
@@ -194,6 +250,37 @@ function DispatchPage() {
     </AppShell>
   );
 }
+
+function ActionBtn({
+  icon: Icon, label, onClick, disabled, tone,
+}: { icon: any; label: string; onClick: () => void; disabled?: boolean; tone?: "success" | "warning" }) {
+  const toneCls =
+    tone === "success" ? "border-success/40 text-success hover:bg-success/10"
+    : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/10"
+    : "border-border hover:bg-accent";
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition ${toneCls} disabled:opacity-40 disabled:cursor-not-allowed`}
+    >
+      <Icon className="w-3 h-3" /> {label}
+    </button>
+  );
+}
+
+function TaskStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { tone: "muted" | "info" | "success" | "warning" | "destructive"; label: string }> = {
+    pending: { tone: "muted", label: "pending" },
+    accepted: { tone: "info", label: "accepted" },
+    in_progress: { tone: "info", label: "in_progress" },
+    completed: { tone: "success", label: "completed" },
+    problem: { tone: "destructive", label: "problem" },
+  };
+  const m = map[status] ?? { tone: "muted" as const, label: status };
+  return <Badge tone={m.tone}>{m.label}</Badge>;
+}
+
 
 function Kpi({ label, value }: { label: string; value: number | string }) {
   return (
