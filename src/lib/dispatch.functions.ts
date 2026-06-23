@@ -3,7 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const PUBLIC_BASE = "https://project--c3bce140-98e6-40ed-a35c-6ad0fa40d481.lovable.app";
 
-type SettingsMap = Record<string, unknown>;
+type SettingsMap = Record<string, any>;
 
 async function loadSettings(supabase: any): Promise<SettingsMap> {
   const { data } = await supabase.from("app_settings").select("key,value");
