@@ -95,11 +95,15 @@ function DispatchPage() {
           <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
             <Cog className="w-4 h-4 mr-1" /> Ayarlar
           </Button>
+          <Button variant="outline" size="sm" onClick={() => runDemo.mutate(undefined)} disabled={runDemo.isPending}>
+            <PlayCircle className="w-4 h-4 mr-1" /> {runDemo.isPending ? "Çalışıyor…" : "Demo senaryosu"}
+          </Button>
           <Button size="sm" onClick={() => sendAll.mutate()} disabled={sendAll.isPending}>
             <Send className="w-4 h-4 mr-1" /> Herkese şimdi gönder
           </Button>
         </>
       }
+
     >
       <div className="space-y-4">
         <div className="grid sm:grid-cols-3 gap-3">
