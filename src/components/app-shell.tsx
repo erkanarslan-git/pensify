@@ -123,7 +123,9 @@ export function AppShell({ title, subtitle, actions, children }: {
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
   const perms = usePermissions();
-  const visibleNav = navItems.filter((item) => canAccessRoute(item.to, perms.roles));
+  const visibleGroups = navGroups
+    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles)) }))
+    .filter((g) => g.items.length > 0);
   const primaryRole: AppRole | null = perms.roles.includes("owner")
     ? "owner"
     : perms.roles.includes("admin")
