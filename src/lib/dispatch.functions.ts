@@ -178,7 +178,8 @@ export const simulateReply = createServerFn({ method: "POST" })
           .select("id, property_id, cleaner_id, status")
           .eq("id", taskId)
           .maybeSingle();
-        if (task) {
+        if (task && task.cleaner_id) {
+          const cleanerIdNN: string = task.cleaner_id;
           try {
             if (parsed === "start") {
               // open shift if none
