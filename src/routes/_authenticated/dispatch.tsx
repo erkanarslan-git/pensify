@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { dispatchMorningTasks, getTodayDispatch, simulateReply, saveDispatchSettings } from "@/lib/dispatch.functions";
-import { Send, RefreshCw, Settings as Cog, Eye, MessageSquare } from "lucide-react";
+import { dispatchMorningTasks, getTodayDispatch, simulateReply, saveDispatchSettings, runDemoScenario } from "@/lib/dispatch.functions";
+import { Send, RefreshCw, Settings as Cog, Eye, MessageSquare, PlayCircle, Check, Play, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({ meta: [{ title: "Görev Dağıtımı — Pensify" }] }),
