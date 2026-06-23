@@ -178,20 +178,20 @@ export const simulateReply = createServerFn({ method: "POST" })
           .select("id, property_id, cleaner_id, status")
           .eq("id", taskId)
           .maybeSingle();
-        if (task && task.cleaner_id) {
-          const cleanerIdNN: string = task.cleaner_id;
+        if (task && cleanerIdNN) {
+          const cleanerIdNN: string = cleanerIdNN;
           try {
             if (parsed === "start") {
               // open shift if none
               const { data: openShift } = await context.supabase
                 .from("time_entries")
                 .select("id")
-                .eq("cleaner_id", task.cleaner_id)
+                .eq("cleaner_id", cleanerIdNN)
                 .is("clock_out_at", null)
                 .maybeSingle();
               if (!openShift) {
                 const { error } = await context.supabase.from("time_entries").insert({
-                  cleaner_id: task.cleaner_id,
+                  cleaner_id: cleanerIdNN,
                   property_id: task.property_id,
                   source: "whatsapp",
                 });
@@ -203,7 +203,7 @@ export const simulateReply = createServerFn({ method: "POST" })
               const { data: openShift } = await context.supabase
                 .from("time_entries")
                 .select("id, break_minutes, break_started_at")
-                .eq("cleaner_id", task.cleaner_id)
+                .eq("cleaner_id", cleanerIdNN)
                 .is("clock_out_at", null)
                 .maybeSingle();
               if (openShift) {
