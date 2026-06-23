@@ -100,7 +100,11 @@ function DispatchPage() {
               const tasks = tasksByCleaner.get(c.id) ?? [];
               const msg = msgByCleaner.get(c.id);
               const counts = { pending: 0, in_progress: 0, completed: 0 };
-              for (const t of tasks) (counts as any)[t.status] = ((counts as any)[t.status] ?? 0) + 1;
+              for (const t of tasks) {
+                // "accepted" tasks (cleaner acknowledged but not started) count as pending in the UI
+                const key = t.status === "accepted" ? "pending" : t.status;
+                (counts as any)[key] = ((counts as any)[key] ?? 0) + 1;
+              }
               return (
                 <div key={c.id} className="rounded-xl border border-border p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
