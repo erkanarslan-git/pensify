@@ -197,29 +197,42 @@ export function AppShell({ title, subtitle, actions, children }: {
         )}
       </div>
       <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${mini ? "px-2" : "px-3"}`}>
-        {visibleNav.map((item) => {
-          const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onNavigate}
-              title={mini ? t(item.labelKey) : undefined}
-              className={`flex items-center rounded-xl text-sm transition-all ${
-                mini ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-3"
-              } ${
-                active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              {!mini && <span className="truncate">{t(item.labelKey)}</span>}
-            </Link>
-          );
-        })}
+      <nav className={`flex-1 py-3 overflow-y-auto ${mini ? "px-2 space-y-2" : "px-3 space-y-4"}`}>
+        {visibleGroups.map((group, gi) => (
+          <div key={group.labelKey} className="space-y-0.5">
+            {!mini ? (
+              <div className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                {t(group.labelKey)}
+              </div>
+            ) : gi > 0 ? (
+              <div className="mx-2 my-1 border-t border-sidebar-border/60" />
+            ) : null}
+            {group.items.map((item) => {
+              const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={onNavigate}
+                  title={mini ? t(item.labelKey) : undefined}
+                  className={`flex items-center rounded-xl text-sm transition-all ${
+                    mini ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
+                  } ${
+                    active
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {!mini && <span className="truncate">{t(item.labelKey)}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
+
       <div className={`border-t border-sidebar-border ${mini ? "p-2" : "p-3"}`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
