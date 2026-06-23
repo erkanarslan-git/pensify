@@ -41,22 +41,50 @@ import {
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 
 type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; exact?: boolean };
-const navItems: NavItem[] = [
-  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
-  { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
-  { to: "/rooms", labelKey: "nav.rooms", icon: BedDouble },
-  { to: "/cleaning", labelKey: "nav.cleaning", icon: Sparkles },
-  { to: "/cleaners", labelKey: "nav.cleaners", icon: Users },
-  { to: "/dispatch", labelKey: "nav.dispatch", icon: Send },
-  { to: "/notifications", labelKey: "nav.notifications", icon: Bell },
-  { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
-  { to: "/properties", labelKey: "nav.properties", icon: Building2 },
-  { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
-  { to: "/team", labelKey: "nav.team", icon: Shield },
-  { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
-  { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },
+type NavGroup = { labelKey: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    labelKey: "nav.groups.overview",
+    items: [
+      { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
+      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    labelKey: "nav.groups.bookings",
+    items: [
+      { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
+      { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
+      { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
+    ],
+  },
+  {
+    labelKey: "nav.groups.places",
+    items: [
+      { to: "/properties", labelKey: "nav.properties", icon: Building2 },
+      { to: "/rooms", labelKey: "nav.rooms", icon: BedDouble },
+    ],
+  },
+  {
+    labelKey: "nav.groups.cleaning",
+    items: [
+      { to: "/cleaning", labelKey: "nav.cleaning", icon: Sparkles },
+      { to: "/cleaners", labelKey: "nav.cleaners", icon: Users },
+      { to: "/dispatch", labelKey: "nav.dispatch", icon: Send },
+    ],
+  },
+  {
+    labelKey: "nav.groups.admin",
+    items: [
+      { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
+      { to: "/team", labelKey: "nav.team", icon: Shield },
+      { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },
+    ],
+  },
 ];
+
 
 
 
@@ -95,7 +123,9 @@ export function AppShell({ title, subtitle, actions, children }: {
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
   const perms = usePermissions();
-  const visibleNav = navItems.filter((item) => canAccessRoute(item.to, perms.roles));
+  const visibleGroups = navGroups
+    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles)) }))
+    .filter((g) => g.items.length > 0);
   const primaryRole: AppRole | null = perms.roles.includes("owner")
     ? "owner"
     : perms.roles.includes("admin")
@@ -166,30 +196,43 @@ export function AppShell({ title, subtitle, actions, children }: {
           </div>
         )}
       </div>
-      <nav className={`flex-1 py-4 space-y-0.5 overflow-y-auto ${mini ? "px-2" : "px-3"}`}>
-        {visibleNav.map((item) => {
-          const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onNavigate}
-              title={mini ? t(item.labelKey) : undefined}
-              className={`flex items-center rounded-xl text-sm transition-all ${
-                mini ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-3"
-              } ${
-                active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              {!mini && <span className="truncate">{t(item.labelKey)}</span>}
-            </Link>
-          );
-        })}
+      <nav className={`flex-1 py-3 overflow-y-auto ${mini ? "px-2 space-y-2" : "px-3 space-y-4"}`}>
+
+        {visibleGroups.map((group, gi) => (
+          <div key={group.labelKey} className="space-y-0.5">
+            {!mini ? (
+              <div className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+                {t(group.labelKey)}
+              </div>
+            ) : gi > 0 ? (
+              <div className="mx-2 my-1 border-t border-sidebar-border/60" />
+            ) : null}
+            {group.items.map((item) => {
+              const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={onNavigate}
+                  title={mini ? t(item.labelKey) : undefined}
+                  className={`flex items-center rounded-xl text-sm transition-all ${
+                    mini ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
+                  } ${
+                    active
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {!mini && <span className="truncate">{t(item.labelKey)}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
+
       <div className={`border-t border-sidebar-border ${mini ? "p-2" : "p-3"}`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
