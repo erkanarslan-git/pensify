@@ -1,85 +1,66 @@
+## Hedef
 
-# Pensify — Büyük Güncelleme Planı
+Temizlikçi WhatsApp chat ekranını kaldır. Yerine her sabah ayarlanan saatte her temizlikçiye o günkü sorumlu olduğu odaların listesi (simüle WhatsApp mesajı + kısa link) gitsin. Temizlikçi link tıklayarak veya `1`/`2` cevabıyla başla/bitir yapabilsin. Admin için manuel tetikleme arka kapısı.
 
-Bu çok kapsamlı bir iş. Tek seferde değil, **4 aşamada** teslim edeceğim. Her aşama bağımsız test edilebilir.
+İsim önerisi: **"Görev Dağıtımı" (Task Dispatch)** — sayfa adı `/dispatch`.
 
----
+## Yapılacaklar
 
-## Aşama 1 — Rebrand + Veri Modeli + Audit Log (DB temeli)
+### 1. Ayarlar
+`app_settings` tablosu (key/value JSON) ekle. Anahtarlar:
+- `dispatch.morning_time` → "08:00"
+- `dispatch.timezone` → "Europe/Istanbul"
+- `dispatch.enabled` → true
+- `dispatch.message_template` → Türkçe varsayılan şablon
 
-**Frontend**
-- Tüm "StayFlow" → **Pensify**: `app-shell.tsx`, `__root.tsx` title/meta, `auth.tsx`, üç i18n dosyası (de/en/tr).
+Ayarlar sayfasına "Görev Dağıtımı" sekmesi: saat, zaman dilimi, aç/kapa, şablon önizleme.
 
-**Veritabanı (migration)** — gerçek tablolar (artık demo değil):
-- `cities`, `properties` (lat/lng + adres + qr_token unique), `rooms`, `cleaners`
-- `reservations` — kanal (`booking|airbnb|check24|woocommerce|phone|direct`), kim girdi (`created_by`), `external_id`, `ical_uid`
-- `cleaning_tasks`
-- `time_entries` — temizlikçi shift'leri (clock_in, clock_in_lat/lng, break_minutes, clock_out, status, manual_override_by, note)
-- `audit_logs` — global. Trigger ile her INSERT/UPDATE/DELETE'i `actor`, `entity`, `entity_id`, `action`, `diff` (jsonb) ile yazar.
-- `channel_integrations` — pension başına iCal URL'leri + WooCommerce store URL + sync durumu
-- 6 pensiyon seed: Bünde (Borriestr., Carl-Diem-Str., Vinckestr.), Löhne (Löhnerstr.), Bielefeld (Senner Hellweg), Osnabrück (Klarastr.). Eski demo şehir/pensiyonlar silinir, demo oda/rezervasyon yapısı korunur (yeni pension'lara taşınır).
-- Roller: mevcut `owner` + `admin`, `manager`, `cleaner` eklenir.
-- RLS: owner/admin tüm satırları görür; cleaner sadece kendi `time_entries` ve atandığı `cleaning_tasks`'ı görür/günceller; manager pension-scoped.
+### 2. Veri modeli
+Yeni tablo `dispatch_messages` (her gönderilen WhatsApp simülasyon mesajı):
+- cleaner_id, sent_at, scheduled_for (date), trigger ('auto'|'manual'|'resend'), task_ids (uuid[]), body (text), status ('queued'|'sent'|'delivered'|'failed'), provider ('simulation')
 
-## Aşama 2 — Kanal Entegrasyonları
+Yeni tablo `dispatch_replies` (cleaner'ın `1`/`2` cevapları için günlük):
+- cleaner_id, received_at, raw_text, parsed_action ('start'|'end'|'unknown'), task_id, applied (bool)
 
-**Gerçekçi uyarı:** Booking.com ve Airbnb için **canlı çift yönlü API**, partner/channel-manager onayı ister (haftalar sürer, ticari sözleşme şart). Bu yüzden iki katmanlı kurarım:
+`cleaning_tasks` zaten var; sadece bunlara linkliyoruz.
 
-1. **Şimdi çalışan kısım**
-   - **Booking.com & Airbnb**: iCal import server function — pension başına URL kaydedilir, `/api/public/cron/ical-sync` her 30 dk poll eder (pg_cron tetikler). Rezervasyonlar `external_id` ile upsert; iptal/değişim handle edilir.
-   - **WooCommerce**: connector kurulu — REST API ile ürün=oda, sipariş=rezervasyon iki yönlü sync.
-   - **Check24 & Telefon**: hızlı manuel ekleme formu + kanal etiketi.
+### 3. Server fonksiyonları (`src/lib/dispatch.functions.ts`)
+- `dispatchMorningTasks()` — herkese veya tek cleaner_id'ye bugünün pending görevlerini grupla, mesaj oluştur, `dispatch_messages` yaz. Admin only.
+- `resendForCleaner(cleanerId)` — manuel yeniden gönder.
+- `getTodayDispatch()` — admin paneli için bugünkü dağılım + her cleaner'ın görev/durum sayıları.
+- `simulateReply(cleanerId, text)` — `1`/`2` cevabını işle: aktif görev üzerinde clock_in/clock_out tetikle.
 
-2. **API hazır altyapı**
-   - `channel_integrations` tablosunda credential alanları (api_key, hotel_id, refresh_token) hazır.
-   - Adapter pattern: `src/lib/channels/{booking,airbnb,woocommerce}.server.ts` — şimdilik iCal/REST, partner onayı gelince aynı interface'in altı doldurulur.
+### 4. Cron (pg_cron)
+- Her dakika çalışan tek cron, `app_settings.dispatch.morning_time` ile karşılaştırıp gün başına 1 kez `/api/public/hooks/dispatch-morning` çağırır.
+- Public route handler: anon apikey kontrolü, `dispatchMorningTasks()` mantığını çalıştırır.
 
-Her import kim/ne zaman/hangi kanal olarak **audit_logs**'a yazılır.
+### 5. UI değişiklikleri
+- `/whatsapp` sayfası **silinir**, sidebar'dan kaldırılır.
+- Yeni `/dispatch` sayfası (admin/owner only):
+  - Üstte "Bugün gönderim durumu" (saat, kaç cleaner, kaç görev)
+  - Cleaner kartları: ad, atanan oda sayısı, durum rozetleri (pending/in_progress/done), "Şimdi tekrar gönder" butonu
+  - "Tüm temizlikçilere şimdi gönder" butonu (manuel arka kapı)
+  - Gönderilen mesajların önizlemesi (modal): şablon + örnek link
+- Cleaner için chat YOK. WhatsApp mesajı varsayımı: kısa link `clock.$token` mevcut sayfaya yönlenir (zaten var). Numaralı cevap simülasyonu admin panelinden test edilebilir.
 
-## Aşama 3 — Detaylı Filtreler (Calendar öncelikli)
+### 6. WhatsApp şablonu (simülasyon metni)
+```
+Günaydın {ad}! Bugün {N} oda temizliğin var:
 
-**Calendar** (`/_authenticated/calendar`) — tam yeniden yazım:
-- Sticky filter bar: Şehir → Pension → Oda (kademeli), kanal multi-select, tarih aralığı (1 hafta / 2 hafta / ay), arama.
-- 3 view: **Liste** (mobil), **Timeline** (oda × gün grid — mevcut, geliştirilmiş), **Aylık** (klasik takvim).
-- Filter state URL search params'ta (paylaşılabilir link) — TanStack zodValidator + fallback.
-- Hücreye tıkla → yan panel: rezervasyon detayı, kanal rozeti, audit timeline (kim ne zaman değiştirdi).
-- Renk kodu: kanal bazlı.
+1. {Pansiyon} - Oda {no}  → {link}
+2. {Pansiyon} - Oda {no}  → {link}
+...
 
-**Diğer listeler** (`reservations`, `rooms`, `properties`, `cleaning`, `cleaners`):
-- Ortak `<DataFilterBar>` komponenti: arama + pension scope + duruma göre chip filtreler + tarih.
-- Boş durum + sonuç sayısı.
+Başlatmak için oda numarasından önce "1 ", bitirmek için "2 " yaz.
+Örn: "1 3" = 3. odayı başlat.
+```
 
-## Aşama 4 — QR'lı Temizlikçi Zaman Takibi
+### Teknik notlar
+- Mevcut `clock.$token` rotası ve `time_entries` mantığı korunur — link tıklama yolu zaten çalışıyor.
+- Numaralı cevap → `simulateReply` → cleaner'ın o gün gönderilen `dispatch_messages.task_ids[index-1]` görevini bulur, `time_entries`'a clock_in/clock_out yazar.
+- Yeni tablolarda `service_role` + role bazlı RLS (admin/owner full, cleaner sadece kendi `dispatch_messages` SELECT).
+- Cron noktasında `dispatch.morning_time` HH:MM Europe/Istanbul → UTC karşılaştırması SQL `now() AT TIME ZONE` ile.
 
-**Pension tarafı**
-- Her pension için yazdırılabilir QR kart sayfası (`/_authenticated/properties/$id/qr`) — büyük QR + pension adı + adres. URL: `https://app/clock/{qr_token}`.
-
-**Temizlikçi akışı** (`/clock/$token` — auth gerekli, mobil-first)
-1. Token doğrulanır → pension bulunur.
-2. **Geolocation**: tarayıcı izin → 300m içinde mi? Değilse "Bu lokasyonda görünmüyorsunuz" + admin'e manuel başvuru butonu.
-3. Açık shift var mı kontrol → duruma göre tek büyük buton:
-   - **Çalışmaya Başla** (yeni shift, lat/lng kaydet)
-   - **Ara Ver / Devam Et** (break toggle, dakika sayar)
-   - **Bitir** (clock_out, toplam süre gösterilir, başka pension'a gidebilir)
-4. Aynı kullanıcı başka pension QR'ı okutursa: aktif shift'i otomatik kapat + uyarı, yeni shift başlat.
-5. Aynı QR aynı kullanıcıda açık shift varken → "Başla" pasif, sadece Ara/Bitir.
-
-**Yönetici tarafı** (`/_authenticated/time-tracking`)
-- Tüm shift'ler tablosu, filtre: kişi/pension/tarih aralığı/durum (aktif, tamamlanmış, manuel).
-- **Manuel ekleme/edit**: unutulan giriş, devralma (admin başka birinin açık shift'ini kapatır), düzeltme — hepsi audit_log'a actor ile.
-- **Ödeme raporu**: kişi seç + tarih aralığı (hafta/ay/yıl/custom) → toplam saat, pension dağılımı, CSV/PDF export, "ödendi" işaretleme (`paid_at`, `paid_by`, `paid_amount`).
-- Harita: shift'in clock_in noktasını gösterir (suistimal tespiti).
-
----
-
-## Teknik notlar (geliştirici)
-- Tüm DB değişiklikleri tek migration (Aşama 1) + iCal cron job migration (Aşama 2).
-- Server functions: `requireSupabaseAuth` ile; admin işlemleri `has_role` check'li.
-- iCal parse: `node-ical` worker uyumlu mu kontrol → değilse minimal regex parser.
-- Geolocation: Haversine formülü, accuracy >100m ise kullanıcıyı uyar ama kabul et (300m tolerans buffer veriyor).
-- pg_cron: `/api/public/cron/ical-sync` 30dk, `/api/public/cron/auto-close-shifts` 6 saatte bir (24h üstü açık shift'leri otomatik kapatır + audit'e işaret).
-
-## Sıralama önerim
-Aşama 1 → onay → 2 → 3 → 4. Ya da hepsini ardışık çalayım, sen sonunda kontrol et. **Hangisini istersin?**
-
-Migration onayı her aşama başında ayrıca soracağım.
+### Bu adımda kapsam dışı
+- Gerçek Twilio/Meta WhatsApp entegrasyonu (sağlayıcı seçildiğinde tek dosya değişikliği: `provider` alanı ve `sendViaProvider()` helper).
+- Mola (`break`) WhatsApp cevabı — şimdilik sadece start/end. Mola hala link üzerinden mevcut clock sayfasından yapılır.
