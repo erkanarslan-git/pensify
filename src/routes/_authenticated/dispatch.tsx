@@ -38,10 +38,22 @@ function DispatchPage() {
     onError: (e: any) => toast.error(e.message),
   });
   const reply = useMutation({
-    mutationFn: (v: { cleanerId: string; text: string }) => replyFn({ data: v }),
+    mutationFn: (v: { cleanerId: string; text?: string; action?: "accept" | "start" | "complete" | "problem"; taskId?: string }) =>
+      replyFn({ data: v }),
     onSuccess: (r: any) => {
-      if (r.applied) toast.success(`Uygulandı (${r.parsed})`);
-      else toast.warning(`Anlaşılmadı (${r.parsed})`);
+      if (r.applied) toast.success(`${r.parsed}: görev → ${r.taskStatus}${r.roomStatus ? `, oda → ${r.roomStatus}` : ""}`);
+      else toast.warning(`Uygulanmadı (${r.parsed}${r.error ? `: ${r.error}` : ""})`);
+      qc.invalidateQueries({ queryKey: ["dispatch"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const demoFn = useServerFn(runDemoScenario);
+  const runDemo = useMutation({
+    mutationFn: (cleanerId?: string) => demoFn({ data: { cleanerId, reset: true } }),
+    onSuccess: (r: any) => {
+      if (!r.ok) { toast.error(`Demo: ${r.error}`); return; }
+      const ok = r.steps.filter((s: any) => s.result.applied).length;
+      toast.success(`Demo tamamlandı — ${ok}/${r.steps.length} adım uygulandı`);
       qc.invalidateQueries({ queryKey: ["dispatch"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -50,6 +62,7 @@ function DispatchPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewBody, setPreviewBody] = useState<string | null>(null);
   const [replyOpen, setReplyOpen] = useState<{ cleanerId: string; name: string } | null>(null);
+
 
   if (isLoading) return <AppShell title="Görev Dağıtımı">Yükleniyor…</AppShell>;
   if (!data) return null;
