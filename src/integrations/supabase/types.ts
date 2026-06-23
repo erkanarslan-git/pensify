@@ -47,6 +47,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -381,6 +402,120 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatch_messages: {
+        Row: {
+          body: string
+          cleaner_id: string
+          created_at: string
+          error: string | null
+          id: string
+          provider: string
+          scheduled_for: string
+          sent_at: string
+          sent_by: string | null
+          status: string
+          task_ids: string[]
+          trigger: string
+        }
+        Insert: {
+          body: string
+          cleaner_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider?: string
+          scheduled_for: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          task_ids?: string[]
+          trigger: string
+        }
+        Update: {
+          body?: string
+          cleaner_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider?: string
+          scheduled_for?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          task_ids?: string[]
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_messages_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatch_replies: {
+        Row: {
+          applied: boolean
+          applied_error: string | null
+          cleaner_id: string
+          id: string
+          message_id: string | null
+          parsed_action: string | null
+          raw_text: string
+          received_at: string
+          received_via: string
+          task_id: string | null
+        }
+        Insert: {
+          applied?: boolean
+          applied_error?: string | null
+          cleaner_id: string
+          id?: string
+          message_id?: string | null
+          parsed_action?: string | null
+          raw_text: string
+          received_at?: string
+          received_via?: string
+          task_id?: string | null
+        }
+        Update: {
+          applied?: boolean
+          applied_error?: string | null
+          cleaner_id?: string
+          id?: string
+          message_id?: string | null
+          parsed_action?: string | null
+          raw_text?: string
+          received_at?: string
+          received_via?: string
+          task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_replies_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_replies_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_replies_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "cleaning_tasks"
             referencedColumns: ["id"]
           },
         ]

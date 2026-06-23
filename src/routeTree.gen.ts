@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -22,6 +21,7 @@ import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authen
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
+import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
 import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
@@ -32,6 +32,7 @@ import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authentic
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
 import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
+import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/public/hooks/dispatch-morning'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 
@@ -47,11 +48,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
-  id: '/whatsapp',
-  path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTimeTrackingRoute =
@@ -101,6 +97,11 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
 const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
   id: '/geo-test',
   path: '/geo-test',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDispatchRoute = AuthenticatedDispatchRouteImport.update({
+  id: '/dispatch',
+  path: '/dispatch',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
@@ -156,6 +157,12 @@ const ApiPublicSyncManualRoute = ApiPublicSyncManualRouteImport.update({
   path: '/api/public/sync/manual',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksDispatchMorningRoute =
+  ApiPublicHooksDispatchMorningRouteImport.update({
+    id: '/api/public/hooks/dispatch-morning',
+    path: '/api/public/hooks/dispatch-morning',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedPropertiesIdQrRoute =
   AuthenticatedPropertiesIdQrRouteImport.update({
     id: '/properties/$id/qr',
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
+  '/dispatch': typeof AuthenticatedDispatchRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -186,10 +194,10 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
-  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
   '/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
+  '/dispatch': typeof AuthenticatedDispatchRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -211,11 +220,11 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
-  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
@@ -230,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/channel-sync': typeof AuthenticatedChannelSyncRoute
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
+  '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
   '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -239,11 +249,11 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
-  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
+    | '/dispatch'
     | '/geo-test'
     | '/me'
     | '/notifications'
@@ -268,10 +279,10 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/time-tracking'
-    | '/whatsapp'
     | '/clock/$token'
     | '/properties/'
     | '/properties/$id/qr'
+    | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/channel-sync'
     | '/cleaners'
     | '/cleaning'
+    | '/dispatch'
     | '/geo-test'
     | '/me'
     | '/notifications'
@@ -293,11 +305,11 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/time-tracking'
-    | '/whatsapp'
     | '/'
     | '/clock/$token'
     | '/properties'
     | '/properties/$id/qr'
+    | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
@@ -311,6 +323,7 @@ export interface FileRouteTypes {
     | '/_authenticated/channel-sync'
     | '/_authenticated/cleaners'
     | '/_authenticated/cleaning'
+    | '/_authenticated/dispatch'
     | '/_authenticated/geo-test'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
@@ -320,11 +333,11 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
-    | '/_authenticated/whatsapp'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
+    | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
@@ -334,6 +347,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksDispatchMorningRoute: typeof ApiPublicHooksDispatchMorningRoute
   ApiPublicSyncManualRoute: typeof ApiPublicSyncManualRoute
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
   ApiPublicWebhooksBookingRoute: typeof ApiPublicWebhooksBookingRoute
@@ -361,13 +375,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/whatsapp': {
-      id: '/_authenticated/whatsapp'
-      path: '/whatsapp'
-      fullPath: '/whatsapp'
-      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/time-tracking': {
@@ -431,6 +438,13 @@ declare module '@tanstack/react-router' {
       path: '/geo-test'
       fullPath: '/geo-test'
       preLoaderRoute: typeof AuthenticatedGeoTestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dispatch': {
+      id: '/_authenticated/dispatch'
+      path: '/dispatch'
+      fullPath: '/dispatch'
+      preLoaderRoute: typeof AuthenticatedDispatchRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cleaning': {
@@ -503,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSyncManualRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/dispatch-morning': {
+      id: '/api/public/hooks/dispatch-morning'
+      path: '/api/public/hooks/dispatch-morning'
+      fullPath: '/api/public/hooks/dispatch-morning'
+      preLoaderRoute: typeof ApiPublicHooksDispatchMorningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/properties/$id/qr': {
       id: '/_authenticated/properties/$id/qr'
       path: '/properties/$id/qr'
@@ -526,6 +547,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChannelSyncRoute: typeof AuthenticatedChannelSyncRoute
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
+  AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
   AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -535,7 +557,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
-  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
   AuthenticatedPropertiesIndexRoute: typeof AuthenticatedPropertiesIndexRoute
@@ -548,6 +569,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChannelSyncRoute: AuthenticatedChannelSyncRoute,
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
+  AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
   AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -557,7 +579,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
-  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
   AuthenticatedPropertiesIndexRoute: AuthenticatedPropertiesIndexRoute,
@@ -570,6 +591,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksDispatchMorningRoute: ApiPublicHooksDispatchMorningRoute,
   ApiPublicSyncManualRoute: ApiPublicSyncManualRoute,
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,
   ApiPublicWebhooksBookingRoute: ApiPublicWebhooksBookingRoute,
