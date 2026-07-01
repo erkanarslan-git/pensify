@@ -3,14 +3,25 @@ import { AppShell, Section, Kpi } from "@/components/app-shell";
 import { reservations, rooms, cleaningTasks, sourceColors } from "@/lib/demo-data";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 import { useTranslation } from "react-i18next";
+import { useState, useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Pensify" }] }),
   component: AnalyticsPage,
 });
 
+type RangeKey = "7" | "30" | "90" | "365";
+const RANGES: { key: RangeKey; label: string; days: number; bucket: "day" | "week" | "month" }[] = [
+  { key: "7", label: "7 Tage", days: 7, bucket: "day" },
+  { key: "30", label: "30 Tage", days: 30, bucket: "day" },
+  { key: "90", label: "90 Tage", days: 90, bucket: "week" },
+  { key: "365", label: "12 Monate", days: 365, bucket: "month" },
+];
+
 function AnalyticsPage() {
   const { t } = useTranslation();
+  const [rangeKey, setRangeKey] = useState<RangeKey>("7");
+  const range = RANGES.find((r) => r.key === rangeKey)!;
   const occupied = rooms.filter((r) => r.status === "occupied" || r.status === "checkout_today").length;
   const occupancyRate = Math.round((occupied / rooms.length) * 100);
   const completion = cleaningTasks.length > 0
