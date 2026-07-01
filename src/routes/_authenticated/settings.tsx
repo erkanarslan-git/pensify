@@ -1,11 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouterState, useNavigate } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush } from "lucide-react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText } from "lucide-react";
 import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-color";
 import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
@@ -19,11 +20,27 @@ const LANGS = [
   { code: "tr", label: "Türkçe" },
 ];
 
-type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security";
+type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
+
+const TAB_PATHS: Record<TabKey, string> = {
+  general: "/settings",
+  language: "/settings",
+  notifications: "/settings",
+  email: "/settings",
+  company: "/settings",
+  appearance: "/settings",
+  channels: "/settings",
+  security: "/settings",
+  logs: "/settings/logs",
+};
+
 
 function SettingsPage() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [tab, setTab] = useState<TabKey>("general");
+
   const [channelColors, setChannelColors] = useState<Record<ActiveChannel, string>>(DEFAULT_CHANNEL_COLORS);
 
   // Persisted prefs (local for now — backend can be wired later)
@@ -60,7 +77,14 @@ function SettingsPage() {
     { key: "appearance", label: "Darstellung", icon: Palette },
     { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
     { key: "security", label: "Sicherheit", icon: Shield },
+    { key: "logs", label: "Audit Logs", icon: ScrollText },
   ];
+
+  useEffect(() => {
+    if (pathname === "/settings/logs") setTab("logs");
+    else setTab("general");
+  }, [pathname]);
+
 
   function updateColor(ch: ActiveChannel, color: string) {
     const next = { ...channelColors, [ch]: color };
@@ -83,13 +107,20 @@ function SettingsPage() {
             return (
               <button
                 key={x.key}
-                onClick={() => setTab(x.key)}
+                onClick={() => {
+                  if (x.key === "logs") navigate({ to: "/settings/logs" });
+                  else {
+                    setTab(x.key);
+                    if (pathname === "/settings/logs") navigate({ to: "/settings" });
+                  }
+                }}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "bg-accent font-medium" : "hover:bg-accent/50 text-muted-foreground"}`}
               >
                 <Icon className="w-4 h-4" /> {x.label}
               </button>
             );
           })}
+
         </aside>
 
         <div className="space-y-4">
