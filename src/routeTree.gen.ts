@@ -30,6 +30,7 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
+import { Route as AuthenticatedSettingsLogsRouteImport } from './routes/_authenticated/settings.logs'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
@@ -148,6 +149,12 @@ const AuthenticatedPropertiesIndexRoute =
     path: '/properties/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsLogsRoute =
+  AuthenticatedSettingsLogsRouteImport.update({
+    id: '/logs',
+    path: '/logs',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
   id: '/clock/$token',
   path: '/clock/$token',
@@ -204,11 +211,12 @@ export interface FileRoutesByFullPath {
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
@@ -232,12 +240,13 @@ export interface FileRoutesByTo {
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
@@ -263,12 +272,13 @@ export interface FileRoutesById {
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/time-tracking'
     | '/api/chat'
     | '/clock/$token'
+    | '/settings/logs'
     | '/properties/'
     | '/properties/$id/qr'
     | '/api/public/hooks/dispatch-morning'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/'
     | '/clock/$token'
+    | '/settings/logs'
     | '/properties'
     | '/properties/$id/qr'
     | '/api/public/hooks/dispatch-morning'
@@ -359,6 +371,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
+    | '/_authenticated/settings/logs'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
     | '/api/public/hooks/dispatch-morning'
@@ -528,6 +541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPropertiesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/logs': {
+      id: '/_authenticated/settings/logs'
+      path: '/logs'
+      fullPath: '/settings/logs'
+      preLoaderRoute: typeof AuthenticatedSettingsLogsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/clock/$token': {
       id: '/_authenticated/clock/$token'
       path: '/clock/$token'
@@ -580,6 +600,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsLogsRoute: typeof AuthenticatedSettingsLogsRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsLogsRoute: AuthenticatedSettingsLogsRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiRoute: typeof AuthenticatedAiRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
@@ -594,7 +627,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -617,7 +650,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
@@ -642,3 +675,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

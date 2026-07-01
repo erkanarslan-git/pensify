@@ -1,17 +1,80 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Section } from "@/components/app-shell";
+import { createFileRoute, useRouterState, Outlet } from "@tanstack/react-router";
+import { AppShell } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush } from "lucide-react";
-import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-color";
-import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
-import { Button } from "@/components/ui/button";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
-  component: SettingsPage,
+  component: SettingsLayout,
 });
 
+type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
+
+const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
+  { key: "general", label: "Allgemein", icon: Globe },
+  { key: "language", label: "Sprache", icon: Languages },
+  { key: "notifications", label: "Benachrichtigungen", icon: Bell },
+  { key: "email", label: "E-Mail", icon: Mail },
+  { key: "company", label: "Unternehmen", icon: Building2 },
+  { key: "appearance", label: "Darstellung", icon: Palette },
+  { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
+  { key: "security", label: "Sicherheit", icon: Shield },
+  { key: "logs", label: "Audit Logs", icon: ScrollText },
+];
+
+function SettingsLayout() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [activeTab, setActiveTab] = useState<TabKey>("general");
+
+  useEffect(() => {
+    if (pathname === "/settings/logs") setActiveTab("logs");
+    else setActiveTab("general");
+  }, [pathname]);
+
+  const isChildRoute = pathname !== "/settings";
+
+  return (
+    <AppShell title="Einstellungen" subtitle="Sprache, Benachrichtigungen, E-Mail und mehr">
+      <div className="grid lg:grid-cols-[220px_1fr] gap-4">
+        <aside className="rounded-xl border border-border bg-card p-2 h-fit">
+          {tabs.map((x) => {
+            const Icon = x.icon;
+            const active = activeTab === x.key;
+            return (
+              <button
+                key={x.key}
+                onClick={() => {
+                  if (x.key === "logs") {
+                    navigate({ to: "/settings/logs" });
+                  } else {
+                    setActiveTab(x.key);
+                    if (isChildRoute) navigate({ to: "/settings" });
+                  }
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "bg-accent font-medium" : "hover:bg-accent/50 text-muted-foreground"}`}
+              >
+                <Icon className="w-4 h-4" /> {x.label}
+              </button>
+            );
+          })}
+        </aside>
+
+        <div className="space-y-4">
+          {isChildRoute ? <Outlet /> : <SettingsIndexContent activeTab={activeTab} setActiveTab={setActiveTab} />}
+        </div>
+      </div>
+    </AppShell>
+  );
+}
+
+import { Section } from "@/components/app-shell";
+import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-color";
+import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
+import { Button } from "@/components/ui/button";
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
@@ -19,14 +82,10 @@ const LANGS = [
   { code: "tr", label: "Türkçe" },
 ];
 
-type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security";
-
-function SettingsPage() {
+function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; setActiveTab: (t: TabKey) => void }) {
   const { t, i18n } = useTranslation();
-  const [tab, setTab] = useState<TabKey>("general");
   const [channelColors, setChannelColors] = useState<Record<ActiveChannel, string>>(DEFAULT_CHANNEL_COLORS);
 
-  // Persisted prefs (local for now — backend can be wired later)
   const [emailNotif, setEmailNotif] = useState(true);
   const [browserNotif, setBrowserNotif] = useState(true);
   const [whatsappNotif, setWhatsappNotif] = useState(false);
@@ -51,17 +110,6 @@ function SettingsPage() {
 
   const save = (k: string, v: string) => localStorage.setItem(`pensify.settings.${k}`, v);
 
-  const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
-    { key: "general", label: "Allgemein", icon: Globe },
-    { key: "language", label: "Sprache", icon: Languages },
-    { key: "notifications", label: "Benachrichtigungen", icon: Bell },
-    { key: "email", label: "E-Mail", icon: Mail },
-    { key: "company", label: "Unternehmen", icon: Building2 },
-    { key: "appearance", label: "Darstellung", icon: Palette },
-    { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
-    { key: "security", label: "Sicherheit", icon: Shield },
-  ];
-
   function updateColor(ch: ActiveChannel, color: string) {
     const next = { ...channelColors, [ch]: color };
     setChannelColors(next);
@@ -72,123 +120,100 @@ function SettingsPage() {
     saveChannelColors(DEFAULT_CHANNEL_COLORS);
   }
 
-
   return (
-    <AppShell title="Einstellungen" subtitle="Sprache, Benachrichtigungen, E-Mail und mehr">
-      <div className="grid lg:grid-cols-[220px_1fr] gap-4">
-        <aside className="rounded-xl border border-border bg-card p-2 h-fit">
-          {tabs.map((x) => {
-            const Icon = x.icon;
-            const active = tab === x.key;
-            return (
-              <button
-                key={x.key}
-                onClick={() => setTab(x.key)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "bg-accent font-medium" : "hover:bg-accent/50 text-muted-foreground"}`}
-              >
-                <Icon className="w-4 h-4" /> {x.label}
-              </button>
-            );
-          })}
-        </aside>
+    <>
+      {activeTab === "general" && (
+        <Section title="Allgemein">
+          <p className="text-sm text-muted-foreground">
+            Hauptsprache der Anwendung ist Deutsch. Weitere Optionen findest du in den anderen Reitern.
+          </p>
+        </Section>
+      )}
 
-        <div className="space-y-4">
-          {tab === "general" && (
-            <Section title="Allgemein">
-              <p className="text-sm text-muted-foreground">
-                Hauptsprache der Anwendung ist Deutsch. Weitere Optionen findest du in den anderen Reitern.
-              </p>
-            </Section>
-          )}
+      {activeTab === "language" && (
+        <Section title="Sprache der Oberfläche">
+          <div className="grid sm:grid-cols-3 gap-2 max-w-md">
+            {LANGS.map((l) => {
+              const active = i18n.resolvedLanguage === l.code;
+              return (
+                <button
+                  key={l.code}
+                  onClick={() => i18n.changeLanguage(l.code)}
+                  className={`px-3 py-2 rounded-lg border text-sm ${active ? "border-primary bg-primary/10 font-medium" : "border-border hover:bg-accent"}`}
+                >
+                  {l.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">{t("common.language")}: <strong>{i18n.resolvedLanguage}</strong></p>
+        </Section>
+      )}
 
-          {tab === "language" && (
-            <Section title="Sprache der Oberfläche">
-              <div className="grid sm:grid-cols-3 gap-2 max-w-md">
-                {LANGS.map((l) => {
-                  const active = i18n.resolvedLanguage === l.code;
-                  return (
-                    <button
-                      key={l.code}
-                      onClick={() => i18n.changeLanguage(l.code)}
-                      className={`px-3 py-2 rounded-lg border text-sm ${active ? "border-primary bg-primary/10 font-medium" : "border-border hover:bg-accent"}`}
-                    >
-                      {l.label}
-                    </button>
-                  );
-                })}
+      {activeTab === "notifications" && (
+        <Section title="Benachrichtigungen">
+          <div className="space-y-3 max-w-md">
+            <Toggle label="E-Mail Benachrichtigungen" value={emailNotif} onChange={(v) => { setEmailNotif(v); save("emailNotif", v ? "1" : "0"); }} />
+            <Toggle label="Browser-Benachrichtigungen" value={browserNotif} onChange={(v) => { setBrowserNotif(v); save("browserNotif", v ? "1" : "0"); }} />
+            <Toggle label="WhatsApp-Benachrichtigungen" value={whatsappNotif} onChange={(v) => { setWhatsappNotif(v); save("whatsappNotif", v ? "1" : "0"); }} />
+          </div>
+        </Section>
+      )}
+
+      {activeTab === "email" && (
+        <Section title="E-Mail Versand">
+          <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
+            <Field label="Absender (Von)" value={emailFrom} onChange={(v) => { setEmailFrom(v); save("emailFrom", v); }} placeholder="buchung@meinepension.de" />
+            <Field label="Antwort an" value={emailReply} onChange={(v) => { setEmailReply(v); save("emailReply", v); }} placeholder="kontakt@meinepension.de" />
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">Diese Adressen werden für Buchungs-Bestätigungen und Benachrichtigungen verwendet.</p>
+        </Section>
+      )}
+
+      {activeTab === "company" && (
+        <Section title="Unternehmen">
+          <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
+            <Field label="Firmenname" value={companyName} onChange={(v) => { setCompanyName(v); save("companyName", v); }} />
+            <Field label="USt-IdNr." value={companyTax} onChange={(v) => { setCompanyTax(v); save("companyTax", v); }} />
+            <Field label="Anschrift" value={companyAddress} onChange={(v) => { setCompanyAddress(v); save("companyAddress", v); }} className="sm:col-span-2" />
+          </div>
+        </Section>
+      )}
+
+      {activeTab === "appearance" && (
+        <Section title="Darstellung">
+          <p className="text-sm text-muted-foreground">Hell/Dunkel-Modus kannst du oben rechts in der Kopfzeile umschalten.</p>
+        </Section>
+      )}
+
+      {activeTab === "channels" && (
+        <Section title="Kanal-Farben">
+          <p className="text-sm text-muted-foreground mb-4">Diese Farben werden im Kalender als linke Randmarkierung und in der Legende verwendet.</p>
+          <div className="space-y-2 max-w-md">
+            {ACTIVE_CHANNELS.map((ch) => (
+              <div key={ch} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border">
+                <span className="inline-block w-4 h-4 rounded" style={{ background: channelColors[ch] }} />
+                <span className="text-sm flex-1">{sourceLabel(ch)}</span>
+                <input
+                  type="color"
+                  value={channelColors[ch]}
+                  onChange={(e) => updateColor(ch, e.target.value)}
+                  className="w-10 h-8 rounded border border-border bg-transparent cursor-pointer"
+                />
+                <code className="text-xs text-muted-foreground w-20">{channelColors[ch]}</code>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">{t("common.language")}: <strong>{i18n.resolvedLanguage}</strong></p>
-            </Section>
-          )}
+            ))}
+            <Button variant="outline" size="sm" onClick={resetColors}>Auf Standard zurücksetzen</Button>
+          </div>
+        </Section>
+      )}
 
-          {tab === "notifications" && (
-            <Section title="Benachrichtigungen">
-              <div className="space-y-3 max-w-md">
-                <Toggle label="E-Mail Benachrichtigungen" value={emailNotif} onChange={(v) => { setEmailNotif(v); save("emailNotif", v ? "1" : "0"); }} />
-                <Toggle label="Browser-Benachrichtigungen" value={browserNotif} onChange={(v) => { setBrowserNotif(v); save("browserNotif", v ? "1" : "0"); }} />
-                <Toggle label="WhatsApp-Benachrichtigungen" value={whatsappNotif} onChange={(v) => { setWhatsappNotif(v); save("whatsappNotif", v ? "1" : "0"); }} />
-              </div>
-            </Section>
-          )}
-
-          {tab === "email" && (
-            <Section title="E-Mail Versand">
-              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
-                <Field label="Absender (Von)" value={emailFrom} onChange={(v) => { setEmailFrom(v); save("emailFrom", v); }} placeholder="buchung@meinepension.de" />
-                <Field label="Antwort an" value={emailReply} onChange={(v) => { setEmailReply(v); save("emailReply", v); }} placeholder="kontakt@meinepension.de" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-3">Diese Adressen werden für Buchungs-Bestätigungen und Benachrichtigungen verwendet.</p>
-            </Section>
-          )}
-
-          {tab === "company" && (
-            <Section title="Unternehmen">
-              <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
-                <Field label="Firmenname" value={companyName} onChange={(v) => { setCompanyName(v); save("companyName", v); }} />
-                <Field label="USt-IdNr." value={companyTax} onChange={(v) => { setCompanyTax(v); save("companyTax", v); }} />
-                <Field label="Anschrift" value={companyAddress} onChange={(v) => { setCompanyAddress(v); save("companyAddress", v); }} className="sm:col-span-2" />
-              </div>
-            </Section>
-          )}
-
-          {tab === "appearance" && (
-            <Section title="Darstellung">
-              <p className="text-sm text-muted-foreground">Hell/Dunkel-Modus kannst du oben rechts in der Kopfzeile umschalten.</p>
-            </Section>
-          )}
-
-          {tab === "channels" && (
-            <Section title="Kanal-Farben">
-              <p className="text-sm text-muted-foreground mb-4">Diese Farben werden im Kalender als linke Randmarkierung und in der Legende verwendet.</p>
-              <div className="space-y-2 max-w-md">
-                {ACTIVE_CHANNELS.map((ch) => (
-                  <div key={ch} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border">
-                    <span className="inline-block w-4 h-4 rounded" style={{ background: channelColors[ch] }} />
-                    <span className="text-sm flex-1">{sourceLabel(ch)}</span>
-                    <input
-                      type="color"
-                      value={channelColors[ch]}
-                      onChange={(e) => updateColor(ch, e.target.value)}
-                      className="w-10 h-8 rounded border border-border bg-transparent cursor-pointer"
-                    />
-                    <code className="text-xs text-muted-foreground w-20">{channelColors[ch]}</code>
-                  </div>
-                ))}
-                <Button variant="outline" size="sm" onClick={resetColors}>Auf Standard zurücksetzen</Button>
-              </div>
-            </Section>
-          )}
-
-
-
-          {tab === "security" && (
-            <Section title="Sicherheit">
-              <p className="text-sm text-muted-foreground">Passwort ändern und Zwei-Faktor-Authentifizierung folgen in Kürze.</p>
-            </Section>
-          )}
-        </div>
-      </div>
-    </AppShell>
+      {activeTab === "security" && (
+        <Section title="Sicherheit">
+          <p className="text-sm text-muted-foreground">Passwort ändern und Zwei-Faktor-Authentifizierung folgen in Kürze.</p>
+        </Section>
+      )}
+    </>
   );
 }
 
