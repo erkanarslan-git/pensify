@@ -19,6 +19,7 @@
     "settings": "Settings",
     "channelSync": "Channel Sync",
     "actionCenter": "Action Center",
+    "aiAssistant": "AI Assistant",
     "groups": {
       "overview": "Overview",
       "bookings": "Bookings",

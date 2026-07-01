@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -27,6 +28,7 @@ import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
@@ -49,6 +51,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTimeTrackingRoute =
   AuthenticatedTimeTrackingRouteImport.update({
@@ -130,6 +137,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAiRoute = AuthenticatedAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPropertiesIndexRoute =
   AuthenticatedPropertiesIndexRouteImport.update({
     id: '/properties/',
@@ -179,6 +191,7 @@ const ApiPublicIcalRoomsRoomIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/ai': typeof AuthenticatedAiRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/channel-sync': typeof AuthenticatedChannelSyncRoute
@@ -194,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
+  '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -205,6 +219,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/ai': typeof AuthenticatedAiRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/channel-sync': typeof AuthenticatedChannelSyncRoute
@@ -220,6 +235,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
+  '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
@@ -234,6 +250,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/ai': typeof AuthenticatedAiRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/channel-sync': typeof AuthenticatedChannelSyncRoute
@@ -249,6 +266,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
+  '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
@@ -264,6 +282,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/ai'
     | '/analytics'
     | '/calendar'
     | '/channel-sync'
@@ -279,6 +298,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/time-tracking'
+    | '/api/chat'
     | '/clock/$token'
     | '/properties/'
     | '/properties/$id/qr'
@@ -290,6 +310,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/ai'
     | '/analytics'
     | '/calendar'
     | '/channel-sync'
@@ -305,6 +326,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/time-tracking'
+    | '/api/chat'
     | '/'
     | '/clock/$token'
     | '/properties'
@@ -318,6 +340,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/ai'
     | '/_authenticated/analytics'
     | '/_authenticated/calendar'
     | '/_authenticated/channel-sync'
@@ -333,6 +356,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
+    | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
     | '/_authenticated/properties/'
@@ -347,6 +371,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
   ApiPublicHooksDispatchMorningRoute: typeof ApiPublicHooksDispatchMorningRoute
   ApiPublicSyncManualRoute: typeof ApiPublicSyncManualRoute
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
@@ -376,6 +401,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/time-tracking': {
       id: '/_authenticated/time-tracking'
@@ -482,6 +514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ai': {
+      id: '/_authenticated/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AuthenticatedAiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/properties/': {
       id: '/_authenticated/properties/'
       path: '/properties'
@@ -542,6 +581,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAiRoute: typeof AuthenticatedAiRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChannelSyncRoute: typeof AuthenticatedChannelSyncRoute
@@ -564,6 +604,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAiRoute: AuthenticatedAiRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedChannelSyncRoute: AuthenticatedChannelSyncRoute,
@@ -591,6 +632,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
   ApiPublicHooksDispatchMorningRoute: ApiPublicHooksDispatchMorningRoute,
   ApiPublicSyncManualRoute: ApiPublicSyncManualRoute,
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,

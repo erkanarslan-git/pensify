@@ -1,66 +1,63 @@
-## Hedef
+# Pensify AI Asistan (Dahili)
 
-Temizlikçi WhatsApp chat ekranını kaldır. Yerine her sabah ayarlanan saatte her temizlikçiye o günkü sorumlu olduğu odaların listesi (simüle WhatsApp mesajı + kısa link) gitsin. Temizlikçi link tıklayarak veya `1`/`2` cevabıyla başla/bitir yapabilsin. Admin için manuel tetikleme arka kapısı.
+Sadece giriş yapmış Admin/Owner/Manager rolleri için erişilebilir bir sohbet asistanı. Model çağrıları sunucuda, veriler sunucudaki güvenli araçlarla (tool calling) çekilir — böylece kullanıcı hiçbir gizli veri veya API anahtarı görmez, RLS bypass edilmez.
 
-İsim önerisi: **"Görev Dağıtımı" (Task Dispatch)** — sayfa adı `/dispatch`.
+## Kullanım senaryoları
+- "3 numaralı oda 15 Ağustos'ta boş mu?"
+- "Ekim ayı doluluk oranımız nedir?"
+- "Son 12 ayı değerlendir, en zayıf ve en güçlü aylar hangileri?"
+- "Önümüzdeki yıl için fiyat/kanal önerileri"
+- "Bu hafta temizlik yükü hangi pansiyonda yoğun?"
 
-## Yapılacaklar
+## Mimari
 
-### 1. Ayarlar
-`app_settings` tablosu (key/value JSON) ekle. Anahtarlar:
-- `dispatch.morning_time` → "08:00"
-- `dispatch.timezone` → "Europe/Istanbul"
-- `dispatch.enabled` → true
-- `dispatch.message_template` → Türkçe varsayılan şablon
-
-Ayarlar sayfasına "Görev Dağıtımı" sekmesi: saat, zaman dilimi, aç/kapa, şablon önizleme.
-
-### 2. Veri modeli
-Yeni tablo `dispatch_messages` (her gönderilen WhatsApp simülasyon mesajı):
-- cleaner_id, sent_at, scheduled_for (date), trigger ('auto'|'manual'|'resend'), task_ids (uuid[]), body (text), status ('queued'|'sent'|'delivered'|'failed'), provider ('simulation')
-
-Yeni tablo `dispatch_replies` (cleaner'ın `1`/`2` cevapları için günlük):
-- cleaner_id, received_at, raw_text, parsed_action ('start'|'end'|'unknown'), task_id, applied (bool)
-
-`cleaning_tasks` zaten var; sadece bunlara linkliyoruz.
-
-### 3. Server fonksiyonları (`src/lib/dispatch.functions.ts`)
-- `dispatchMorningTasks()` — herkese veya tek cleaner_id'ye bugünün pending görevlerini grupla, mesaj oluştur, `dispatch_messages` yaz. Admin only.
-- `resendForCleaner(cleanerId)` — manuel yeniden gönder.
-- `getTodayDispatch()` — admin paneli için bugünkü dağılım + her cleaner'ın görev/durum sayıları.
-- `simulateReply(cleanerId, text)` — `1`/`2` cevabını işle: aktif görev üzerinde clock_in/clock_out tetikle.
-
-### 4. Cron (pg_cron)
-- Her dakika çalışan tek cron, `app_settings.dispatch.morning_time` ile karşılaştırıp gün başına 1 kez `/api/public/hooks/dispatch-morning` çağırır.
-- Public route handler: anon apikey kontrolü, `dispatchMorningTasks()` mantığını çalıştırır.
-
-### 5. UI değişiklikleri
-- `/whatsapp` sayfası **silinir**, sidebar'dan kaldırılır.
-- Yeni `/dispatch` sayfası (admin/owner only):
-  - Üstte "Bugün gönderim durumu" (saat, kaç cleaner, kaç görev)
-  - Cleaner kartları: ad, atanan oda sayısı, durum rozetleri (pending/in_progress/done), "Şimdi tekrar gönder" butonu
-  - "Tüm temizlikçilere şimdi gönder" butonu (manuel arka kapı)
-  - Gönderilen mesajların önizlemesi (modal): şablon + örnek link
-- Cleaner için chat YOK. WhatsApp mesajı varsayımı: kısa link `clock.$token` mevcut sayfaya yönlenir (zaten var). Numaralı cevap simülasyonu admin panelinden test edilebilir.
-
-### 6. WhatsApp şablonu (simülasyon metni)
-```
-Günaydın {ad}! Bugün {N} oda temizliğin var:
-
-1. {Pansiyon} - Oda {no}  → {link}
-2. {Pansiyon} - Oda {no}  → {link}
-...
-
-Başlatmak için oda numarasından önce "1 ", bitirmek için "2 " yaz.
-Örn: "1 3" = 3. odayı başlat.
+```text
+UI (/ai, _authenticated)
+  └─ useChat  →  POST /api/chat (server route, streamText)
+                     ├─ requireSupabaseAuth (Manager+ kontrolü)
+                     ├─ Lovable AI Gateway (google/gemini-3-flash-preview)
+                     └─ Tools (server-side, aynı user'ın supabase client'ı):
+                        - check_room_availability(room?, property?, from, to)
+                        - list_free_rooms(from, to, property?)
+                        - occupancy_stats(from, to, groupBy: day|month|property)
+                        - revenue_stats(from, to, groupBy)
+                        - cleaning_workload(from, to)
+                        - top_channels(from, to)
+                        - yearly_review(year)
 ```
 
-### Teknik notlar
-- Mevcut `clock.$token` rotası ve `time_entries` mantığı korunur — link tıklama yolu zaten çalışıyor.
-- Numaralı cevap → `simulateReply` → cleaner'ın o gün gönderilen `dispatch_messages.task_ids[index-1]` görevini bulur, `time_entries`'a clock_in/clock_out yazar.
-- Yeni tablolarda `service_role` + role bazlı RLS (admin/owner full, cleaner sadece kendi `dispatch_messages` SELECT).
-- Cron noktasında `dispatch.morning_time` HH:MM Europe/Istanbul → UTC karşılaştırması SQL `now() AT TIME ZONE` ile.
+Tool'lar SQL yerine mevcut `reservations`, `rooms`, `properties`, `cleaning_tasks`, `time_entries` tablolarından okunur; hesaplamalar (doluluk = dolu gece / (oda × gün)) sunucuda yapılır. Model yalnızca bu tool'ların döndürdüğü küçük, agrege JSON'u görür — ham müşteri PII'sı model'e gitmez.
 
-### Bu adımda kapsam dışı
-- Gerçek Twilio/Meta WhatsApp entegrasyonu (sağlayıcı seçildiğinde tek dosya değişikliği: `provider` alanı ve `sendViaProvider()` helper).
-- Mola (`break`) WhatsApp cevabı — şimdilik sadece start/end. Mola hala link üzerinden mevcut clock sayfasından yapılır.
+## Güvenlik
+- Route: `src/routes/_authenticated/ai.tsx` (mevcut auth gate).
+- API: `src/routes/api/chat.ts` — handler içinde `supabase.auth.getUser()` + `has_role('admin'|'owner'|'manager')`; değilse 403.
+- `LOVABLE_API_KEY` yalnızca sunucuda, `process.env` üzerinden.
+- Tool'lardaki tüm sorgular kullanıcının kendi Supabase client'ıyla → RLS geçerli. Servis rolü kullanılmaz.
+- `ROUTE_ACL`'e `/ai: ["owner","admin","manager"]` eklenir; menüde sadece bu rollere görünür.
+- Reception ve Cleaner rolleri asistana erişemez.
+
+## UI
+- Yan menü "Yönetim" grubuna "AI Asistan" (Sparkles ikon).
+- Tek sayfa sohbet: mesaj listesi + input + "Örnek sorular" chip'leri (yukarıdaki senaryolar).
+- Streaming yanıt (AI SDK `useChat` + `DefaultChatTransport`).
+- Alt bilgi: "Yanıtlar mevcut rezervasyon/oda verinize dayanır."
+
+## Model & Maliyet
+- Varsayılan: `google/gemini-3-flash-preview` (hızlı + ucuz, tool calling destekli).
+- Kredi Lovable AI Gateway üzerinden düşülür; 402/429 hatalarında kullanıcıya net toast.
+
+## Kapsam dışı (şimdilik)
+- Sohbet geçmişinin veritabanına kalıcı kaydı — ilk sürüm oturum-içi (localStorage tabanlı, kullanıcı başına).
+- Sesli giriş, çoklu dil optimizasyonu.
+- Otomatik fiyat güncelleme aksiyonları (yalnızca öneri metni).
+
+## Teknik değişiklikler
+1. `src/lib/ai-gateway.server.ts` — Lovable Gateway provider helper.
+2. `src/lib/ai-tools.server.ts` — tool tanımları (Zod input) + sorgu fonksiyonları.
+3. `src/routes/api/chat.ts` — `streamText` + tools + rol kontrolü.
+4. `src/routes/_authenticated/ai.tsx` — sohbet UI.
+5. `src/lib/permissions.ts` — `/ai` ACL + menü grubu güncellemesi.
+6. `src/components/app-shell.tsx` — menüye "AI Asistan".
+7. Paket: `ai`, `@ai-sdk/react`, `@ai-sdk/openai-compatible`, `zod` (mevcut).
+
+Onaylarsan bu sırayla kurarım.
