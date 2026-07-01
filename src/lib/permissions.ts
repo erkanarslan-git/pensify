@@ -39,6 +39,7 @@ export const ROUTE_ACL: RouteAcl[] = [
   { path: "/dispatch", roles: ["owner", "admin", "manager"] },
   { path: "/notifications", roles: ["owner", "admin", "manager", "reception", "cleaner"] },
   { path: "/analytics", roles: ["owner", "admin"] },
+  { path: "/ai", roles: ["owner", "admin", "manager"] },
   { path: "/properties", roles: ["owner", "admin"] },
   { path: "/time-tracking", roles: ["owner", "admin"] },
   { path: "/team", roles: ["owner", "admin"] },

@@ -48,6 +48,7 @@ const navGroups: NavGroup[] = [
     labelKey: "nav.groups.overview",
     items: [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
       { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
       { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
     ],
