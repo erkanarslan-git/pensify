@@ -982,9 +982,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_property_qr: {
+        Args: { _id: string }
+        Returns: {
+          address: string
+          city_name: string
+          geofence_radius_m: number
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          qr_token: string
+        }[]
+      }
       admin_link_cleaner: {
         Args: { _cleaner_id: string; _user_id: string }
         Returns: undefined
+      }
+      admin_list_cleaner_rates: {
+        Args: never
+        Returns: {
+          hourly_rate: number
+          id: string
+        }[]
+      }
+      admin_list_property_qr_tokens: {
+        Args: never
+        Returns: {
+          id: string
+          qr_token: string
+        }[]
       }
       admin_list_users: {
         Args: never
@@ -995,6 +1022,15 @@ export type Database = {
           roles: Database["public"]["Enums"]["app_role"][]
           user_id: string
         }[]
+      }
+      admin_mark_time_entry_paid: {
+        Args: {
+          _amount: number
+          _entry_id: string
+          _period_end: string
+          _period_start: string
+        }
+        Returns: undefined
       }
       admin_remove_role: {
         Args: {
@@ -1025,6 +1061,28 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      list_my_clock_properties: {
+        Args: never
+        Returns: {
+          geofence_radius_m: number
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          qr_token: string
+        }[]
+      }
+      resolve_clock_property: {
+        Args: { _token: string }
+        Returns: {
+          address: string
+          geofence_radius_m: number
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+        }[]
       }
     }
     Enums: {

@@ -55,7 +55,7 @@ async function buildAndSendForCleaner(
   const dayEnd = `${scheduledFor}T23:59:59Z`;
   const { data: tasks } = await supabase
     .from("cleaning_tasks")
-    .select("id, room_id, property_id, status, due_at, rooms:room_id (number), properties:property_id (name, qr_token)")
+    .select("id, room_id, property_id, status, due_at, rooms:room_id (number), properties:property_id (name)")
     .eq("cleaner_id", cleanerId)
     .in("status", ["pending", "accepted", "in_progress"])
     .gte("due_at", dayStart)
@@ -64,10 +64,16 @@ async function buildAndSendForCleaner(
 
   if (!tasks || tasks.length === 0) return { cleanerId, skipped: true, reason: "no_tasks" };
 
+  const { data: tokenRows } = await supabase.rpc("admin_list_property_qr_tokens");
+  const tokenMap = new Map<string, string | null>(
+    ((tokenRows ?? []) as Array<{ id: string; qr_token: string | null }>).map((r) => [r.id, r.qr_token]),
+  );
   const items = tasks.map((t: any) => ({
     propertyName: t.properties?.name ?? "—",
     roomNumber: t.rooms?.number ?? "—",
-    link: t.properties?.qr_token ? `${PUBLIC_BASE}/clock/${t.properties.qr_token}` : `${PUBLIC_BASE}/me`,
+    link: t.property_id && tokenMap.get(t.property_id)
+      ? `${PUBLIC_BASE}/clock/${tokenMap.get(t.property_id)}`
+      : `${PUBLIC_BASE}/me`,
   }));
   const body = renderMessage(template, cleaner.full_name ?? "", items);
 

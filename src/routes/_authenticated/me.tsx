@@ -83,10 +83,7 @@ function MePage() {
         .eq("cleaner_id", cleaner.id)
         .is("clock_out_at", null)
         .maybeSingle();
-      const { data: properties } = await supabase
-        .from("properties")
-        .select("id, name, qr_token, latitude, longitude, geofence_radius_m")
-        .order("name");
+      const { data: properties } = await supabase.rpc("list_my_clock_properties");
       const { data: recent } = await supabase
         .from("time_entries")
         .select("id, clock_in_at, clock_out_at, break_minutes, properties(name)")
