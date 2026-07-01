@@ -32,7 +32,7 @@ type CleanerRow = {
   phone: string | null;
   email: string | null;
   active: boolean;
-  hourly_rate: number | null;
+  hourly_rate?: number | null;
   notes: string | null;
 };
 
@@ -53,12 +53,21 @@ function CleanersPage() {
   const cleaners = useQuery({
     queryKey: ["cleaners"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cleaners")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const [{ data, error }, ratesRes] = await Promise.all([
+        supabase
+          .from("cleaners")
+          .select("id,user_id,full_name,phone,email,active,notes,created_at,updated_at")
+          .order("created_at", { ascending: false }),
+        supabase.rpc("admin_list_cleaner_rates"),
+      ]);
       if (error) throw error;
-      return data as CleanerRow[];
+      const rateMap = new Map<string, number | null>();
+      if (!ratesRes.error && Array.isArray(ratesRes.data)) {
+        for (const r of ratesRes.data as { id: string; hourly_rate: number | null }[]) {
+          rateMap.set(r.id, r.hourly_rate);
+        }
+      }
+      return (data ?? []).map((c) => ({ ...c, hourly_rate: rateMap.get(c.id) ?? null })) as CleanerRow[];
     },
   });
 
