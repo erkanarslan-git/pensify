@@ -55,7 +55,7 @@ function CleanersPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cleaners")
-        .select("*")
+        .select("id,user_id,full_name,phone,email,active,notes,created_at,updated_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as CleanerRow[];
