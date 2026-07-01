@@ -1,9 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { convertToModelMessages, streamText, stepCountIs, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  generateText,
+  stepCountIs,
+  tool as aiTool,
+  type UIMessage,
+} from "ai";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { buildAiTools } from "@/lib/ai-tools.server";
+import { buildPrivacyMap } from "@/lib/ai-privacy.server";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -18,7 +27,6 @@ export const Route = createFileRoute("/api/chat")({
         const lovableKey = process.env.LOVABLE_API_KEY;
         if (!lovableKey) return new Response("LOVABLE_API_KEY missing", { status: 500 });
 
-        // Build a Supabase client that acts as the calling user (RLS applies).
         const supabase = createClient<Database>(supabaseUrl, supabasePublishable, {
           global: { headers: { Authorization: `Bearer ${token}` } },
           auth: { persistSession: false, autoRefreshToken: false },
@@ -27,19 +35,46 @@ export const Route = createFileRoute("/api/chat")({
         const { data: userData, error: userErr } = await supabase.auth.getUser(token);
         if (userErr || !userData.user) return new Response("Unauthorized", { status: 401 });
 
-        // Role gate: only owner/admin/manager
         const roleChecks = await Promise.all(
           (["owner", "admin", "manager"] as const).map((r) =>
             supabase.rpc("has_role", { _user_id: userData.user!.id, _role: r }),
           ),
         );
-        const allowed = roleChecks.some((r) => r.data === true);
-        if (!allowed) return new Response("Forbidden", { status: 403 });
+        if (!roleChecks.some((r) => r.data === true)) return new Response("Forbidden", { status: 403 });
 
         const body = (await request.json()) as { messages?: UIMessage[] };
-        if (!Array.isArray(body.messages)) {
-          return new Response("Messages required", { status: 400 });
+        if (!Array.isArray(body.messages)) return new Response("Messages required", { status: 400 });
+
+        // ---------- Privacy layer ----------
+        const privacy = await buildPrivacyMap(supabase);
+
+        // Wrap tools: deanonymize inputs before running, anonymize outputs.
+        const rawTools = buildAiTools(supabase);
+        const wrappedTools: Record<string, unknown> = {};
+        for (const [name, def] of Object.entries(rawTools)) {
+          const t = def as any;
+          wrappedTools[name] = aiTool({
+            description: t.description,
+            inputSchema: t.inputSchema,
+            execute: async (input: any, opts: any) => {
+              try {
+                const real = privacy.deanonymizeJson(input);
+                const result = await t.execute(real, opts);
+                return privacy.anonymizeJson(result);
+              } catch (e: any) {
+                return { error: e?.message ?? "tool error" };
+              }
+            },
+          });
         }
+
+        // Anonymize user-visible message content before sending upstream.
+        const anonMessages: UIMessage[] = body.messages.map((m) => ({
+          ...m,
+          parts: m.parts.map((p: any) =>
+            p?.type === "text" ? { ...p, text: privacy.anonymizeText(String(p.text ?? "")) } : p,
+          ),
+        }));
 
         const gateway = createLovableAiGatewayProvider(lovableKey);
         const model = gateway("google/gemini-3-flash-preview");
@@ -48,26 +83,51 @@ export const Route = createFileRoute("/api/chat")({
         const system = `Sen Pensify pansiyon işletme sisteminin dahili AI asistanısın.
 Kullanıcının rolü: yönetici (owner/admin/manager).
 Bugünün tarihi: ${today}.
-Görevin: doluluk, boş oda, ciro, kanal dağılımı, temizlik yükü ve yıllık değerlendirme sorularını verilen tool'ları çağırarak yanıtlamak.
 
-Kurallar:
-- Tarih aralığı gerektiren tüm sorularda tool çağırmadan önce eksik tarihleri makul biçimde tamamla (örn. "bu yıl" → ${today.slice(0, 4)}-01-01 → ${today.slice(0, 4)}-12-31).
+GİZLİLİK KURALLARI (çok önemli):
+- Sistemdeki gerçek isimler dış modele hiç gönderilmez. Bunun yerine gizlilik kodları görürsün:
+  • Misafirler: PSN_G01, PSN_G02, ...
+  • Pansiyonlar: PSN_P01, PSN_P02, ...
+  • Şehirler:   PSN_C01, PSN_C02, ...
+  • Personel:   PSN_K01, PSN_K02, ...
+- ${privacy.tokenGlossary()}
+- Bu kodları ASLA çevirme, kısaltma, yorumlama veya değiştirme. Cevabında olduğu gibi kullan; sistem sunum aşamasında gerçek isimlere dönüştürecek.
+- Kullanıcının yazdığı isim de senin gördüğünde bu kodlara çevrilmiş olabilir. Tool çağrılarında bu kodları aynen ilet.
+
+Görevin: doluluk, boş oda, ciro, kanal dağılımı, temizlik yükü, yıllık değerlendirme ve "X misafir hangi odada?" gibi soruları tool'ları çağırarak yanıtlamak.
+
+Diğer kurallar:
+- Tarih aralığı için eksikleri makul biçimde tamamla (örn. "bu yıl" → ${today.slice(0, 4)}-01-01 → ${today.slice(0, 4)}-12-31).
 - "to" tarihi rezervasyonda dahil değildir (checkout günü).
-- Oda numarası geçen sorularda önce check_room_availability veya list_rooms kullan.
-- Ciro/doluluk/oran gibi rakamları asla tahmin etme; tool sonucundan al.
-- Kısa, madde imli, Türkçe yanıtla. Yüzdeleri % ile ver, para birimini € olarak yaz.
-- Öneri istendiğinde önce ilgili tool'u çağır (yearly_review veya occupancy_stats), sonra veriye dayanan somut 3-5 öneri sun.
-- Kişisel misafir bilgisi (isim/e-posta) yayma; gerekmedikçe misafir adı gösterme.`;
+- "X hangi odada kalıyor?" sorularında find_guest_room tool'unu kullan.
+- Rakamları tahmin etme; tool sonucundan al. Kısa, madde imli, Türkçe yanıtla. Yüzde %, para €.`;
 
-        const result = streamText({
-          model,
-          system,
-          messages: await convertToModelMessages(body.messages),
-          tools: buildAiTools(supabase),
-          stopWhen: stepCountIs(12),
-        });
+        // Run the model with tools (non-streaming so we can safely
+        // de-anonymize the final text without breaking multi-chunk tokens).
+        const originalId = body.messages[body.messages.length - 1]?.id;
+        try {
+          const result = await generateText({
+            model,
+            system,
+            messages: await convertToModelMessages(anonMessages),
+            tools: wrappedTools as any,
+            stopWhen: stepCountIs(12),
+          });
+          const finalText = privacy.deanonymizeText(result.text ?? "");
 
-        return result.toUIMessageStreamResponse({ originalMessages: body.messages });
+          const stream = createUIMessageStream({
+            originalMessages: body.messages,
+            execute: ({ writer }) => {
+              const id = originalId ?? crypto.randomUUID();
+              writer.write({ type: "text-start", id });
+              writer.write({ type: "text-delta", id, delta: finalText || "…" });
+              writer.write({ type: "text-end", id });
+            },
+          });
+          return createUIMessageStreamResponse({ stream });
+        } catch (e: any) {
+          return new Response(e?.message ?? "AI error", { status: 500 });
+        }
       },
     },
   },

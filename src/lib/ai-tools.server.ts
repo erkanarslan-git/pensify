@@ -364,5 +364,66 @@ export function buildAiTools(supabase: SupabaseClient) {
         };
       },
     }),
+
+    find_guest_room: tool({
+      description:
+        "Belirli bir misafirin verilen tarihte (varsayılan bugün) hangi odada / pansiyonda kaldığını bulur. Gizlilik kodu (PSN_G##) veya kısmi isim/soyisim ile çağrılabilir.",
+      inputSchema: z.object({
+        guestName: z.string().describe("Misafir adı veya gizlilik kodu"),
+        onDate: z.string().nullable().describe("YYYY-MM-DD; boşsa bugün"),
+      }),
+      execute: async ({ guestName, onDate }) => {
+        const day = onDate ?? new Date().toISOString().slice(0, 10);
+        const term = (guestName ?? "").trim();
+        if (!term) return { found: false, reason: "İsim verilmedi" };
+        const { data, error } = await supabase
+          .from("reservations")
+          .select(
+            "id, guest_name, check_in, check_out, channel, status, rooms:room_id(number), properties:property_id(name)",
+          )
+          .neq("status", "cancelled")
+          .ilike("guest_name", `%${term}%`)
+          .lte("check_in", day)
+          .gt("check_out", day);
+        if (error) return { error: error.message, found: false };
+        const rows = (data as any[]) ?? [];
+        if (rows.length === 0) {
+          const { data: upcoming } = await supabase
+            .from("reservations")
+            .select(
+              "id, guest_name, check_in, check_out, channel, status, rooms:room_id(number), properties:property_id(name)",
+            )
+            .neq("status", "cancelled")
+            .ilike("guest_name", `%${term}%`)
+            .gt("check_in", day)
+            .order("check_in", { ascending: true })
+            .limit(3);
+          return {
+            found: false,
+            onDate: day,
+            reason: "Bu tarihte konaklamıyor",
+            upcoming: ((upcoming as any[]) ?? []).map((r) => ({
+              guest: r.guest_name,
+              room: r.rooms?.number,
+              property: r.properties?.name,
+              check_in: r.check_in,
+              check_out: r.check_out,
+            })),
+          };
+        }
+        return {
+          found: true,
+          onDate: day,
+          stays: rows.map((r) => ({
+            guest: r.guest_name,
+            room: r.rooms?.number,
+            property: r.properties?.name,
+            check_in: r.check_in,
+            check_out: r.check_out,
+            channel: r.channel,
+          })),
+        };
+      },
+    }),
   };
 }
