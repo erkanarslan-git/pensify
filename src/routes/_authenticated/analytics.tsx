@@ -87,7 +87,23 @@ function AnalyticsPage() {
   }, [range]);
 
   return (
-    <AppShell title={t("pages.analytics.title")} subtitle="Operational performance">
+    <AppShell
+      title={t("pages.analytics.title")}
+      subtitle="Operational performance"
+      actions={
+        <div className="inline-flex rounded-md border border-input bg-card overflow-hidden">
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              onClick={() => setRangeKey(r.key)}
+              className={`px-3 py-2 text-sm ${rangeKey === r.key ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/50"}`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      }
+    >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Kpi label="Occupancy rate" value={`${occupancyRate}%`} accent="primary" />
         <Kpi label="Cleaning completion" value={`${completion}%`} accent="success" />
