@@ -7,6 +7,7 @@ import {
 import { useState, useMemo } from "react";
 import { Search, Plus, Table as TableIcon, Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { NewReservationDialog } from "@/components/new-reservation-dialog";
 
 export const Route = createFileRoute("/_authenticated/reservations")({
   head: () => ({ meta: [{ title: "Reservations — Pensify" }] }),
