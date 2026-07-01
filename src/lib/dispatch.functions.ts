@@ -357,10 +357,10 @@ export const runDemoScenario = createServerFn({ method: "POST" })
       if (!rooms || rooms.length === 0) return { ok: false, error: "no_rooms" };
       const dueBase = new Date(`${scheduledFor}T09:00:00Z`).toISOString();
       const inserts = rooms.map((r: any, i: number) => ({
-        cleaner_id: cleanerId,
+        cleaner_id: cleanerId as string,
         room_id: r.id,
         property_id: r.property_id,
-        status: "pending",
+        status: "pending" as const,
         due_at: new Date(new Date(dueBase).getTime() + i * 3600 * 1000).toISOString(),
       }));
       await context.supabase.from("cleaning_tasks").insert(inserts);
