@@ -96,9 +96,9 @@ function AnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 mt-6">
-        <Section title="Occupancy — last 7 days">
+        <Section title="Occupancy — ${range.label}">
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={last7}>
+            <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} unit="%" />
@@ -122,9 +122,9 @@ function AnalyticsPage() {
           </ResponsiveContainer>
         </Section>
 
-        <Section title="Revenue (demo) — last 7 days">
+        <Section title="Revenue (demo) — ${range.label}">
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={last7}>
+            <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} />
