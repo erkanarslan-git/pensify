@@ -62,7 +62,7 @@ Kurallar:
         const result = streamText({
           model,
           system,
-          messages: convertToModelMessages(body.messages),
+          messages: await convertToModelMessages(body.messages),
           tools: buildAiTools(supabase),
           stopWhen: stepCountIs(12),
         });
