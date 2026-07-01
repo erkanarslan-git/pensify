@@ -329,16 +329,56 @@ export const runDemoScenario = createServerFn({ method: "POST" })
         .limit(1);
       cleanerId = rows?.[0]?.cleaner_id ?? null;
     }
-    if (!cleanerId) return { ok: false, error: "no_tasks_today" };
+    // Fallback: pick any active cleaner so demo can seed tasks
+    if (!cleanerId) {
+      const { data: c } = await context.supabase
+        .from("cleaners")
+        .select("id")
+        .eq("active", true)
+        .limit(1);
+      cleanerId = c?.[0]?.id ?? null;
+    }
+    if (!cleanerId) return { ok: false, error: "no_active_cleaner" };
 
-    const { data: tasks } = await context.supabase
+    let { data: tasks } = await context.supabase
       .from("cleaning_tasks")
       .select("id, room_id, status, rooms:room_id (number)")
       .eq("cleaner_id", cleanerId)
       .gte("due_at", dayStart)
       .lte("due_at", dayEnd)
       .order("due_at", { ascending: true });
+
+    // Auto-seed two pending tasks for today if none exist, so demo always works
+    if (!tasks || tasks.length === 0) {
+      const { data: rooms } = await context.supabase
+        .from("rooms")
+        .select("id, number, property_id")
+        .limit(2);
+      if (!rooms || rooms.length === 0) return { ok: false, error: "no_rooms" };
+      const dueBase = new Date(`${scheduledFor}T09:00:00Z`).toISOString();
+      const inserts = rooms.map((r: any, i: number) => ({
+        cleaner_id: cleanerId,
+        room_id: r.id,
+        property_id: r.property_id,
+        status: "pending",
+        due_at: new Date(new Date(dueBase).getTime() + i * 3600 * 1000).toISOString(),
+      }));
+      await context.supabase.from("cleaning_tasks").insert(inserts);
+      // reset room statuses
+      for (const r of rooms) {
+        await context.supabase.from("rooms").update({ status: "cleaning_required" }).eq("id", r.id);
+      }
+      const reload = await context.supabase
+        .from("cleaning_tasks")
+        .select("id, room_id, status, rooms:room_id (number)")
+        .eq("cleaner_id", cleanerId)
+        .gte("due_at", dayStart)
+        .lte("due_at", dayEnd)
+        .order("due_at", { ascending: true });
+      tasks = reload.data ?? [];
+    }
     if (!tasks || tasks.length === 0) return { ok: false, error: "no_tasks_for_cleaner" };
+
 
     // Optional: reset to a known starting point
     if (data.reset) {
