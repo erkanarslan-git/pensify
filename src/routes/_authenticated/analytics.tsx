@@ -36,17 +36,55 @@ function AnalyticsPage() {
     }, {}),
   ).map(([name, value]) => ({ name, value }));
 
-  const last7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    const iso = d.toISOString().slice(0, 10);
-    const occ = reservations.filter((r) => r.checkIn <= iso && r.checkOut > iso).length;
-    return {
-      day: d.toLocaleDateString(undefined, { weekday: "short" }),
-      occupancy: Math.round((occ / rooms.length) * 100),
-      revenue: reservations.filter((r) => r.checkIn === iso).reduce((s, r) => s + r.revenue, 0),
-    };
-  });
+  const series = useMemo(() => {
+    const buckets: { key: string; label: string; start: Date; end: Date }[] = [];
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (range.bucket === "day") {
+      for (let i = range.days - 1; i >= 0; i--) {
+        const d = new Date(now); d.setDate(d.getDate() - i);
+        const end = new Date(d); end.setDate(end.getDate() + 1);
+        buckets.push({
+          key: d.toISOString().slice(0, 10),
+          label: range.days <= 7
+            ? d.toLocaleDateString(undefined, { weekday: "short" })
+            : d.toLocaleDateString(undefined, { day: "2-digit", month: "short" }),
+          start: d, end,
+        });
+      }
+    } else if (range.bucket === "week") {
+      const weeks = Math.ceil(range.days / 7);
+      for (let i = weeks - 1; i >= 0; i--) {
+        const end = new Date(now); end.setDate(end.getDate() - i * 7 + 1);
+        const start = new Date(end); start.setDate(start.getDate() - 7);
+        buckets.push({
+          key: start.toISOString().slice(0, 10),
+          label: start.toLocaleDateString(undefined, { day: "2-digit", month: "short" }),
+          start, end,
+        });
+      }
+    } else {
+      const months = Math.ceil(range.days / 30);
+      for (let i = months - 1; i >= 0; i--) {
+        const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        buckets.push({
+          key: start.toISOString().slice(0, 7),
+          label: start.toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
+          start, end,
+        });
+      }
+    }
+    return buckets.map((b) => {
+      const startIso = b.start.toISOString().slice(0, 10);
+      const endIso = b.end.toISOString().slice(0, 10);
+      const occ = reservations.filter((r) => r.checkIn < endIso && r.checkOut > startIso).length;
+      const rev = reservations
+        .filter((r) => r.checkIn >= startIso && r.checkIn < endIso)
+        .reduce((s, r) => s + r.revenue, 0);
+      return { day: b.label, occupancy: Math.round((occ / Math.max(rooms.length, 1)) * 100), revenue: rev };
+    });
+  }, [range]);
 
   return (
     <AppShell title={t("pages.analytics.title")} subtitle="Operational performance">
