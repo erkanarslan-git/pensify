@@ -96,7 +96,7 @@ function AnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 mt-6">
-        <Section title="Occupancy — ${range.label}">
+        <Section title={`Belegung — ${range.label}`}>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -122,7 +122,7 @@ function AnalyticsPage() {
           </ResponsiveContainer>
         </Section>
 
-        <Section title="Revenue (demo) — ${range.label}">
+        <Section title={`Umsatz (Demo) — ${range.label}`}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
