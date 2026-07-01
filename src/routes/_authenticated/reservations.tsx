@@ -7,6 +7,7 @@ import {
 import { useState, useMemo } from "react";
 import { Search, Plus, Table as TableIcon, Building2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { NewReservationDialog } from "@/components/new-reservation-dialog";
 
 export const Route = createFileRoute("/_authenticated/reservations")({
   head: () => ({ meta: [{ title: "Reservations — Pensify" }] }),
@@ -20,6 +21,7 @@ function ReservationsPage() {
   const [view, setView] = useState<"table" | "property">("table");
   const [q, setQ] = useState("");
   const [src, setSrc] = useState<ReservationSource | "all">("all");
+  const [newOpen, setNewOpen] = useState(false);
 
   const filtered = useMemo(
     () =>
@@ -34,8 +36,11 @@ function ReservationsPage() {
   return (
     <AppShell title={t("pages.reservations.title")} subtitle={t("pages.reservations.subtitle", { count: reservations.length })}
       actions={
-        <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">
-          <Plus className="w-4 h-4" /> New
+        <button
+          onClick={() => setNewOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
+        >
+          <Plus className="w-4 h-4" /> Neu
         </button>
       }
     >
@@ -151,6 +156,7 @@ function ReservationsPage() {
           ))}
         </div>
       )}
+      <NewReservationDialog open={newOpen} onOpenChange={setNewOpen} />
     </AppShell>
   );
 }

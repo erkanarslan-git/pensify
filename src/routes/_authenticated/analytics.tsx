@@ -3,14 +3,25 @@ import { AppShell, Section, Kpi } from "@/components/app-shell";
 import { reservations, rooms, cleaningTasks, sourceColors } from "@/lib/demo-data";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 import { useTranslation } from "react-i18next";
+import { useState, useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Pensify" }] }),
   component: AnalyticsPage,
 });
 
+type RangeKey = "7" | "30" | "90" | "365";
+const RANGES: { key: RangeKey; label: string; days: number; bucket: "day" | "week" | "month" }[] = [
+  { key: "7", label: "7 Tage", days: 7, bucket: "day" },
+  { key: "30", label: "30 Tage", days: 30, bucket: "day" },
+  { key: "90", label: "90 Tage", days: 90, bucket: "week" },
+  { key: "365", label: "12 Monate", days: 365, bucket: "month" },
+];
+
 function AnalyticsPage() {
   const { t } = useTranslation();
+  const [rangeKey, setRangeKey] = useState<RangeKey>("7");
+  const range = RANGES.find((r) => r.key === rangeKey)!;
   const occupied = rooms.filter((r) => r.status === "occupied" || r.status === "checkout_today").length;
   const occupancyRate = Math.round((occupied / rooms.length) * 100);
   const completion = cleaningTasks.length > 0
@@ -25,20 +36,74 @@ function AnalyticsPage() {
     }, {}),
   ).map(([name, value]) => ({ name, value }));
 
-  const last7 = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    const iso = d.toISOString().slice(0, 10);
-    const occ = reservations.filter((r) => r.checkIn <= iso && r.checkOut > iso).length;
-    return {
-      day: d.toLocaleDateString(undefined, { weekday: "short" }),
-      occupancy: Math.round((occ / rooms.length) * 100),
-      revenue: reservations.filter((r) => r.checkIn === iso).reduce((s, r) => s + r.revenue, 0),
-    };
-  });
+  const series = useMemo(() => {
+    const buckets: { key: string; label: string; start: Date; end: Date }[] = [];
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (range.bucket === "day") {
+      for (let i = range.days - 1; i >= 0; i--) {
+        const d = new Date(now); d.setDate(d.getDate() - i);
+        const end = new Date(d); end.setDate(end.getDate() + 1);
+        buckets.push({
+          key: d.toISOString().slice(0, 10),
+          label: range.days <= 7
+            ? d.toLocaleDateString(undefined, { weekday: "short" })
+            : d.toLocaleDateString(undefined, { day: "2-digit", month: "short" }),
+          start: d, end,
+        });
+      }
+    } else if (range.bucket === "week") {
+      const weeks = Math.ceil(range.days / 7);
+      for (let i = weeks - 1; i >= 0; i--) {
+        const end = new Date(now); end.setDate(end.getDate() - i * 7 + 1);
+        const start = new Date(end); start.setDate(start.getDate() - 7);
+        buckets.push({
+          key: start.toISOString().slice(0, 10),
+          label: start.toLocaleDateString(undefined, { day: "2-digit", month: "short" }),
+          start, end,
+        });
+      }
+    } else {
+      const months = Math.ceil(range.days / 30);
+      for (let i = months - 1; i >= 0; i--) {
+        const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        buckets.push({
+          key: start.toISOString().slice(0, 7),
+          label: start.toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
+          start, end,
+        });
+      }
+    }
+    return buckets.map((b) => {
+      const startIso = b.start.toISOString().slice(0, 10);
+      const endIso = b.end.toISOString().slice(0, 10);
+      const occ = reservations.filter((r) => r.checkIn < endIso && r.checkOut > startIso).length;
+      const rev = reservations
+        .filter((r) => r.checkIn >= startIso && r.checkIn < endIso)
+        .reduce((s, r) => s + r.revenue, 0);
+      return { day: b.label, occupancy: Math.round((occ / Math.max(rooms.length, 1)) * 100), revenue: rev };
+    });
+  }, [range]);
 
   return (
-    <AppShell title={t("pages.analytics.title")} subtitle="Operational performance">
+    <AppShell
+      title={t("pages.analytics.title")}
+      subtitle="Operational performance"
+      actions={
+        <div className="inline-flex rounded-md border border-input bg-card overflow-hidden">
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              onClick={() => setRangeKey(r.key)}
+              className={`px-3 py-2 text-sm ${rangeKey === r.key ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/50"}`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      }
+    >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Kpi label="Occupancy rate" value={`${occupancyRate}%`} accent="primary" />
         <Kpi label="Cleaning completion" value={`${completion}%`} accent="success" />
@@ -47,9 +112,9 @@ function AnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 mt-6">
-        <Section title="Occupancy — last 7 days">
+        <Section title={`Belegung — ${range.label}`}>
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={last7}>
+            <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} unit="%" />
@@ -73,9 +138,9 @@ function AnalyticsPage() {
           </ResponsiveContainer>
         </Section>
 
-        <Section title="Revenue (demo) — last 7 days">
+        <Section title={`Umsatz (Demo) — ${range.label}`}>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={last7}>
+            <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} />
