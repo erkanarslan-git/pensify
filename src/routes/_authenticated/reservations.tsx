@@ -156,6 +156,7 @@ function ReservationsPage() {
           ))}
         </div>
       )}
+      <NewReservationDialog open={newOpen} onOpenChange={setNewOpen} />
     </AppShell>
   );
 }
