@@ -24,7 +24,8 @@ function overlapNights(
 async function fetchRooms(supabase: SupabaseClient, propertyId?: string) {
   let q = supabase.from("rooms").select("id, number, capacity, property_id, properties:property_id(name)");
   if (propertyId) q = q.eq("property_id", propertyId);
-  const { data } = await q;
+  const { data, error } = await q;
+  if (error) throw new Error(`Odalar okunamadı: ${error.message}`);
   return data ?? [];
 }
 
@@ -42,7 +43,8 @@ async function fetchReservations(
     .lt("check_in", to)
     .gt("check_out", from);
   if (propertyId) q = q.eq("property_id", propertyId);
-  const { data } = await q;
+  const { data, error } = await q;
+  if (error) throw new Error(`Rezervasyonlar okunamadı: ${error.message}`);
   return data ?? [];
 }
 
@@ -55,7 +57,11 @@ export function buildAiTools(supabase: SupabaseClient) {
         "Kullanıcının pansiyonlarını listeler. Oda/pansiyon adı geçen sorularda önce bunu çağır ki id eşleştirmesi yapabilesin.",
       inputSchema: z.object({}),
       execute: async () => {
-        const { data } = await supabase.from("properties").select("id, name, city");
+        const { data, error } = await supabase
+          .from("properties")
+          .select("id, name, address, city_id")
+          .order("name");
+        if (error) return { error: error.message, properties: [] };
         return { properties: data ?? [] };
       },
     }),
