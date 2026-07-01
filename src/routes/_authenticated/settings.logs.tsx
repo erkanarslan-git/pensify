@@ -52,12 +52,12 @@ function AuditLogsContent() {
         title="Filter"
         action={
           <div className="flex items-center gap-2 flex-wrap">
-            <Select value={entity} onValueChange={(v) => { setEntity(v); setPage(0); }} disabled={entitiesLoading}>
+            <Select value={entity || "__all__"} onValueChange={(v) => { setEntity(v === "__all__" ? "" : v); setPage(0); }} disabled={entitiesLoading}>
               <SelectTrigger className="w-40 text-sm">
                 <SelectValue placeholder="Entität" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle Entitäten</SelectItem>
+                <SelectItem value="__all__">Alle Entitäten</SelectItem>
                 {(entities ?? []).map((e) => (
                   <SelectItem key={e} value={e}>
                     {e}
@@ -65,12 +65,12 @@ function AuditLogsContent() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={action} onValueChange={(v) => { setAction(v); setPage(0); }}>
+            <Select value={action || "__all__"} onValueChange={(v) => { setAction(v === "__all__" ? "" : v); setPage(0); }}>
               <SelectTrigger className="w-36 text-sm">
                 <SelectValue placeholder="Aktion" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle Aktionen</SelectItem>
+                <SelectItem value="__all__">Alle Aktionen</SelectItem>
                 <SelectItem value="INSERT">Erstellen</SelectItem>
                 <SelectItem value="UPDATE">Ändern</SelectItem>
                 <SelectItem value="DELETE">Löschen</SelectItem>
