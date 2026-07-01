@@ -73,8 +73,14 @@ function TimeTrackingPage() {
   const { data: cleaners = [] } = useQuery({
     queryKey: ["cleaners-list"],
     queryFn: async () => {
-      const { data } = await supabase.from("cleaners").select("id, full_name, hourly_rate").order("full_name");
-      return data ?? [];
+      const [{ data: list }, { data: rates }] = await Promise.all([
+        supabase.from("cleaners").select("id, full_name").order("full_name"),
+        supabase.rpc("admin_list_cleaner_rates"),
+      ]);
+      const rateMap = new Map<string, number | null>(
+        ((rates ?? []) as Array<{ id: string; hourly_rate: number | null }>).map((r) => [r.id, r.hourly_rate]),
+      );
+      return (list ?? []).map((c) => ({ ...c, hourly_rate: rateMap.get(c.id) ?? null }));
     },
   });
   const { data: properties = [] } = useQuery({
@@ -91,7 +97,7 @@ function TimeTrackingPage() {
       let q = supabase
         .from("time_entries")
         .select(
-          "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, break_started_at, status, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name, hourly_rate), properties(name)",
+          "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, break_started_at, status, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name), properties(name)",
         )
         .gte("clock_in_at", `${from}T00:00:00`)
         .lte("clock_in_at", `${to}T23:59:59`)
@@ -101,7 +107,14 @@ function TimeTrackingPage() {
       if (unpaidOnly) q = q.is("paid_at", null);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as unknown as Entry[];
+      const rows = (data ?? []) as unknown as Array<Omit<Entry, "cleaners"> & { cleaners: { full_name: string } | null }>;
+      const rateMap = new Map<string, number | null>(
+        (cleaners ?? []).map((c) => [c.id, c.hourly_rate]),
+      );
+      return rows.map((r) => ({
+        ...r,
+        cleaners: r.cleaners ? { full_name: r.cleaners.full_name, hourly_rate: rateMap.get(r.cleaner_id) ?? null } : null,
+      })) as Entry[];
     },
   });
 
@@ -128,17 +141,12 @@ function TimeTrackingPage() {
         ? Math.max(0, Math.round((new Date(entry.clock_out_at).getTime() - new Date(entry.clock_in_at).getTime()) / 60000) - (entry.break_minutes ?? 0))
         : 0;
       const amount = ((min / 60) * (entry.cleaners?.hourly_rate ?? 0)).toFixed(2);
-      const { data: user } = await supabase.auth.getUser();
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          paid_at: new Date().toISOString(),
-          paid_by: user.user?.id ?? null,
-          paid_amount: Number(amount),
-          payment_period_start: from,
-          payment_period_end: to,
-        })
-        .eq("id", entry.id);
+      const { error } = await supabase.rpc("admin_mark_time_entry_paid", {
+        _entry_id: entry.id,
+        _amount: Number(amount),
+        _period_start: from,
+        _period_end: to,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

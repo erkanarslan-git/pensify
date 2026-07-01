@@ -62,12 +62,10 @@ function ClockPage() {
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("Not authenticated");
-      const { data: prop, error: pe } = await supabase
-        .from("properties")
-        .select("id, name, address, latitude, longitude, geofence_radius_m")
-        .eq("qr_token", token)
-        .maybeSingle();
+      const { data: propRows, error: pe } = await supabase
+        .rpc("resolve_clock_property", { _token: token });
       if (pe) throw pe;
+      const prop = Array.isArray(propRows) ? propRows[0] : propRows;
       if (!prop) throw new Error(t("timeTracking.unknownQr"));
       const { data: cleaner } = await supabase
         .from("cleaners")

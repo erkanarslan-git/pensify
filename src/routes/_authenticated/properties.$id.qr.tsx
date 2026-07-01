@@ -18,13 +18,11 @@ function QrCardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["property-qr", id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("id, name, address, qr_token, geofence_radius_m, latitude, longitude, cities(name)")
-        .eq("id", id)
-        .single();
+      const { data, error } = await supabase.rpc("admin_get_property_qr", { _id: id });
       if (error) throw error;
-      return data;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) throw new Error("not_found");
+      return row;
     },
   });
 
@@ -48,7 +46,7 @@ function QrCardPage() {
         <Section title={data.name}>
           <div className="text-xs text-muted-foreground flex items-center gap-1 mb-4">
             <MapPin className="w-3 h-3" /> {data.address}
-            {data.cities && <span> · {(data.cities as { name: string }).name}</span>}
+            {data.city_name && <span> · {data.city_name}</span>}
           </div>
           <div className="bg-white p-4 rounded-lg flex items-center justify-center">
             <QRCodeSVG value={url} size={400} level="M" marginSize={2} className="w-full max-w-[400px] h-auto" />
