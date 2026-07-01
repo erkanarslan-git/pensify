@@ -32,7 +32,7 @@ type CleanerRow = {
   phone: string | null;
   email: string | null;
   active: boolean;
-  hourly_rate: number | null;
+  hourly_rate?: number | null;
   notes: string | null;
 };
 
