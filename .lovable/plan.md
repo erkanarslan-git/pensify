@@ -1,63 +1,82 @@
-# Pensify AI Asistan (Dahili)
+# Canlıya Çıkış Öncesi Kapsamlı Test Planı
 
-Sadece giriş yapmış Admin/Owner/Manager rolleri için erişilebilir bir sohbet asistanı. Model çağrıları sunucuda, veriler sunucudaki güvenli araçlarla (tool calling) çekilir — böylece kullanıcı hiçbir gizli veri veya API anahtarı görmez, RLS bypass edilmez.
+Amaç: Backend (RLS, RPC, tetikleyiciler), frontend (light + dark mod, tüm ana sayfalar), rol bazlı erişim ve güvenlik açıklarını sistematik olarak taramak ve kritik bulguları düzeltmek.
 
-## Kullanım senaryoları
-- "3 numaralı oda 15 Ağustos'ta boş mu?"
-- "Ekim ayı doluluk oranımız nedir?"
-- "Son 12 ayı değerlendir, en zayıf ve en güçlü aylar hangileri?"
-- "Önümüzdeki yıl için fiyat/kanal önerileri"
-- "Bu hafta temizlik yükü hangi pansiyonda yoğun?"
+## Faz 1 — Otomatik Güvenlik & SQL Taramaları
 
-## Mimari
+1. **Supabase Linter** çalıştır (`supabase--linter`) — RLS eksik, güvensiz view, mutable search_path, expose edilen tablo/kolon.
+2. **Security Scanner** çalıştır (`security--run_security_scan` + `security--get_scan_results`) — Wiz/Lovable tarafındaki bulguları çek.
+3. **Grants matrisi** — her `public` tablo için `authenticated`, `anon`, `service_role` yetkilerini `information_schema.role_table_grants` üzerinden doğrula. Beklenmedik `anon` erişimi flag'le.
+4. **Column-level revokes** — hassas kolonlar (`hourly_rate`, `qr_token`, `ical_feed_token`, `paid_*`, `email`, tel, adres) hâlâ `authenticated` rolüne kapalı mı? Regresyon kontrolü.
+5. **RLS policy inceleme** — 20 tablo için politikaları oku, `USING (true)` / `WITH CHECK (true)` gibi izin fazlası kalıpları raporla.
+6. **Fonksiyon güvenliği** — tüm `SECURITY DEFINER` fonksiyonların `search_path` set edilmiş mi ve caller-authorization içeriyor mu (has_role kontrolü)?
 
-```text
-UI (/ai, _authenticated)
-  └─ useChat  →  POST /api/chat (server route, streamText)
-                     ├─ requireSupabaseAuth (Manager+ kontrolü)
-                     ├─ Lovable AI Gateway (google/gemini-3-flash-preview)
-                     └─ Tools (server-side, aynı user'ın supabase client'ı):
-                        - check_room_availability(room?, property?, from, to)
-                        - list_free_rooms(from, to, property?)
-                        - occupancy_stats(from, to, groupBy: day|month|property)
-                        - revenue_stats(from, to, groupBy)
-                        - cleaning_workload(from, to)
-                        - top_channels(from, to)
-                        - yearly_review(year)
-```
+## Faz 2 — Backend Fonksiyonel Testleri (psql)
 
-Tool'lar SQL yerine mevcut `reservations`, `rooms`, `properties`, `cleaning_tasks`, `time_entries` tablolarından okunur; hesaplamalar (doluluk = dolu gece / (oda × gün)) sunucuda yapılır. Model yalnızca bu tool'ların döndürdüğü küçük, agrege JSON'u görür — ham müşteri PII'sı model'e gitmez.
+Her rol için ayrı test tokenıyla (owner, admin, manager, reception, cleaner, anonim) aşağıdaki senaryolar:
+- Reservations CRUD (bugünkü + geçmiş tarih)
+- Cleaning task oluşturma / atama / status güncelleme
+- Time entries: start / pause / resume / end + payment field koruması
+- Access request akışı (yeni kullanıcı → admin onayı)
+- QR token & ical feed token erişimi (sadece RPC üzerinden)
+- Overlap engelleme trigger'ı, past-reservation trigger'ı, audit log yazımı
 
-## Güvenlik
-- Route: `src/routes/_authenticated/ai.tsx` (mevcut auth gate).
-- API: `src/routes/api/chat.ts` — handler içinde `supabase.auth.getUser()` + `has_role('admin'|'owner'|'manager')`; değilse 403.
-- `LOVABLE_API_KEY` yalnızca sunucuda, `process.env` üzerinden.
-- Tool'lardaki tüm sorgular kullanıcının kendi Supabase client'ıyla → RLS geçerli. Servis rolü kullanılmaz.
-- `ROUTE_ACL`'e `/ai: ["owner","admin","manager"]` eklenir; menüde sadece bu rollere görünür.
-- Reception ve Cleaner rolleri asistana erişemez.
+Sonuçlar bir tabloya (beklenen vs gerçek) yazılır.
 
-## UI
-- Yan menü "Yönetim" grubuna "AI Asistan" (Sparkles ikon).
-- Tek sayfa sohbet: mesaj listesi + input + "Örnek sorular" chip'leri (yukarıdaki senaryolar).
-- Streaming yanıt (AI SDK `useChat` + `DefaultChatTransport`).
-- Alt bilgi: "Yanıtlar mevcut rezervasyon/oda verinize dayanır."
+## Faz 3 — Frontend Tarama (Playwright, headless Chromium)
 
-## Model & Maliyet
-- Varsayılan: `google/gemini-3-flash-preview` (hızlı + ucuz, tool calling destekli).
-- Kredi Lovable AI Gateway üzerinden düşülür; 402/429 hatalarında kullanıcıya net toast.
+Her ana route için hem **light** hem **dark** modda ekran görüntüsü ve konsol/network hata taraması:
 
-## Kapsam dışı (şimdilik)
-- Sohbet geçmişinin veritabanına kalıcı kaydı — ilk sürüm oturum-içi (localStorage tabanlı, kullanıcı başına).
-- Sesli giriş, çoklu dil optimizasyonu.
-- Otomatik fiyat güncelleme aksiyonları (yalnızca öneri metni).
+Routes: `/auth`, `/`, `/calendar`, `/reservations`, `/rooms`, `/cleaning`, `/cleaners`, `/dispatch`, `/notifications`, `/ai`, `/properties`, `/time-tracking`, `/team`, `/channel-sync`, `/settings`, `/me`, `/geo-test`, `/request-access`.
 
-## Teknik değişiklikler
-1. `src/lib/ai-gateway.server.ts` — Lovable Gateway provider helper.
-2. `src/lib/ai-tools.server.ts` — tool tanımları (Zod input) + sorgu fonksiyonları.
-3. `src/routes/api/chat.ts` — `streamText` + tools + rol kontrolü.
-4. `src/routes/_authenticated/ai.tsx` — sohbet UI.
-5. `src/lib/permissions.ts` — `/ai` ACL + menü grubu güncellemesi.
-6. `src/components/app-shell.tsx` — menüye "AI Asistan".
-7. Paket: `ai`, `@ai-sdk/react`, `@ai-sdk/openai-compatible`, `zod` (mevcut).
+Her sayfada kontrol:
+- Console error / warning
+- Failed network request (>=400)
+- Boş liste durumu (data var mı, RLS yüzünden mi boş?)
+- Kritik butonlar tıklanabilir mi
+- Dark modda kontrast, hardcoded renk (`text-white`, `bg-black`, `#hex`) sızıntısı
 
-Onaylarsan bu sırayla kurarım.
+## Faz 4 — Rol Bazlı E2E Akışlar (Playwright + Supabase session inject)
+
+Beş rol için ayrı hesap oluşturup ana akışları koştur:
+1. **Owner** — tam erişim doğrulaması
+2. **Admin** — team yönetimi, access request onayı
+3. **Manager** — geçmiş rezervasyon düzenleme, cleaning atama
+4. **Reception** — sadece güncel rezervasyon, geçmişte engel
+5. **Cleaner** — sadece `/me`, `/cleaning`, `/clock`; diğerleri 403/redirect
+
+Her rol için yasak route'ların gerçekten yönlendirdiğini doğrula.
+
+## Faz 5 — Statik Kod Taraması
+
+- `rg` ile hardcoded renk: `text-white|bg-black|bg-\[#|text-\[#`
+- `rg` ile `select("*")` çağrıları (kolon revoke edilmiş tablolarda bomba)
+- `rg` ile `dangerouslySetInnerHTML`, `eval(`, `new Function(`
+- `rg` ile `process.env` client bundle'a sızıntısı
+- `bun run build` — üretim build hatasız mı
+
+## Faz 6 — Bulguların Raporlanması & Düzeltme
+
+Her faz sonunda bulgular şu formatta:
+- **Kritik** (güvenlik/veri sızıntısı) → derhal düzelt
+- **Yüksek** (fonksiyonel bug) → düzelt
+- **Orta** (UX, kontrast) → düzelt
+- **Düşük** (kozmetik) → not al, kullanıcıya bildir
+
+Her düzeltmeden sonra ilgili test yeniden koşulur.
+
+## Teslimatlar
+
+- Faz 1-2 sonuç raporu (metin)
+- Faz 3 için light/dark ekran görüntüleri (`/tmp/browser/audit/`)
+- Faz 4 rol matrisi (beklenen vs gerçek)
+- Düzeltilmiş dosyaların özeti
+- Kalan riskler ve canlıya çıkış öncesi manuel doğrulanması gerekenler
+
+## Tahmini Süre & Kredi
+
+Yaklaşık 15-25 tool çağrısı; büyük çoğunluğu paralel çalıştırılabilir. Kritik bulgu sayısına göre ek düzeltme turları gerekebilir.
+
+---
+
+**Onaylarsan Faz 1 ile başlıyorum. Belirli bir role veya sayfaya öncelik vermek ister misin (örn. sadece güvenlik + cleaner akışı)?**
