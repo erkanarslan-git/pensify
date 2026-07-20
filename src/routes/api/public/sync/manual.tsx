@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/public/sync/manual")({
                 property_id: i.property_id,
                 guest_name: guestName,
                 guests_count: 1,
-                check_in: ev.start,
+                check_in: startDate,
                 check_out: ev.end,
                 channel: i.channel,
                 status: "confirmed" as any,
