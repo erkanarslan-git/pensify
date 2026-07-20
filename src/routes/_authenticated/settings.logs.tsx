@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { ChevronLeft, ChevronRight, FileText, Eye, Info } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings/logs")({
@@ -62,7 +62,9 @@ function AuditLogsContent() {
   }
 
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="space-y-4">
+
       <Section
         title="Audit-Protokoll"
         action={
@@ -196,7 +198,9 @@ function AuditLogsContent() {
 
       <LogDetailDialog id={openId} onClose={() => setOpenId(null)} />
     </div>
+    </TooltipProvider>
   );
+
 }
 
 function shortId(id: string) {
