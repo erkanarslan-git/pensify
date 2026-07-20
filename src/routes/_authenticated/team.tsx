@@ -307,7 +307,100 @@ function TeamPage() {
           </table>
         </div>
       </div>
+
+      <CreateUserDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={async (payload) => {
+          await createFn({ data: payload });
+          qc.invalidateQueries({ queryKey: ["admin-users"] });
+          toast.success("Benutzer angelegt");
+          setCreateOpen(false);
+        }}
+      />
     </AppShell>
+  );
+}
+
+function ResetPasswordButton({ onSubmit }: { onSubmit: (pw: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState("");
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" title="Passwort zurücksetzen"><KeyRound className="w-3.5 h-3.5" /></Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>Neues Passwort setzen</DialogTitle></DialogHeader>
+        <input type="text" value={pw} onChange={(e) => setPw(e.target.value)}
+          placeholder="Mind. 8 Zeichen"
+          className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button disabled={pw.length < 8} onClick={() => { onSubmit(pw); setOpen(false); setPw(""); }}>Speichern</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CreateUserDialog({ open, onOpenChange, onCreate }: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onCreate: (p: { email: string; password: string; full_name?: string; role?: AppRole }) => Promise<void>;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<AppRole | "none">("reception");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    setBusy(true);
+    try {
+      await onCreate({ email, password, full_name: fullName || undefined, role: role === "none" ? undefined : role });
+      setEmail(""); setPassword(""); setFullName(""); setRole("reception");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Neuen Benutzer anlegen</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Voller Name</span>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">E-Mail *</span>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Passwort * (mind. 8 Zeichen)</span>
+            <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Startrolle</span>
+            <Select value={role} onValueChange={(v) => setRole(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Keine Rolle</SelectItem>
+                {ALL_ROLES.filter((r) => r !== "owner").map((r) => (
+                  <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button disabled={busy || !email || password.length < 8} onClick={submit}>Anlegen</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
