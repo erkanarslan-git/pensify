@@ -158,7 +158,7 @@ function CleaningPage() {
                       ))}
                     </select>
                   ) : (
-                    <span className={`font-medium ${unassigned ? "text-amber-600 italic" : ""}`}>
+                    <span className={`font-medium ${unassigned ? "text-amber-600 dark:text-amber-400 italic" : ""}`}>
                       {cleaner?.full_name ?? "atanmamış"}
                     </span>
                   )}
