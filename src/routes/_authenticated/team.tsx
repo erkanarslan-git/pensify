@@ -174,23 +174,36 @@ function TeamPage() {
       )}
 
       {/* Users table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden mt-4">
+      <div className="flex items-center justify-between mt-4 mb-2">
+        <div className="text-sm font-semibold">Benutzer ({users.data?.length ?? 0})</div>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>
+          <UserPlus className="w-3.5 h-3.5 mr-1" /> Neuer Benutzer
+        </Button>
+      </div>
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
               <th className="text-left p-3">Benutzer</th>
               <th className="text-left p-3">E-Mail</th>
+              <th className="text-left p-3">Status</th>
               <th className="text-left p-3">Rollen</th>
-              <th className="text-right p-3 w-64">Aktion</th>
+              <th className="text-right p-3 w-[380px]">Aktion</th>
             </tr>
           </thead>
           <tbody>
             {users.data?.map((u: any) => {
               const missing = ALL_ROLES.filter((r) => !u.roles.includes(r));
+              const isBanned = !!u.banned_until && new Date(u.banned_until) > new Date();
               return (
-                <tr key={u.user_id} className="border-t border-border">
+                <tr key={u.user_id} className={`border-t border-border ${isBanned ? "opacity-60" : ""}`}>
                   <td className="p-3 font-medium">{u.full_name || "—"}</td>
                   <td className="p-3 text-muted-foreground">{u.email}</td>
+                  <td className="p-3">
+                    {isBanned
+                      ? <Badge tone="destructive">Gesperrt</Badge>
+                      : <Badge tone="success">Aktiv</Badge>}
+                  </td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">
                       {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
@@ -208,7 +221,7 @@ function TeamPage() {
                     </div>
                   </td>
                   <td className="p-3 text-right">
-                    <div className="flex justify-end gap-1">
+                    <div className="flex justify-end gap-1 flex-wrap">
                       <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
                       {missing.length > 0 && (
                         adding?.userId === u.user_id ? (
@@ -227,6 +240,15 @@ function TeamPage() {
                           </Button>
                         )
                       )}
+                      <Button size="sm" variant="outline" title={isBanned ? "Freigeben" : "Sperren"}
+                        onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
+                        {isBanned ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                      </Button>
+                      <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
+                      <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
+                        onClick={() => { if (confirm(`"${u.full_name || u.email}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) deleteUser.mutate(u.user_id); }}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
