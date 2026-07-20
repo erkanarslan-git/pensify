@@ -29,6 +29,7 @@ const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"
 
 function TeamPage() {
   const qc = useQueryClient();
+  const { userId: currentUserId } = usePermissions();
   const [adding, setAdding] = useState<{ userId: string; role: AppRole } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const createFn = useServerFn(adminCreateUser);
