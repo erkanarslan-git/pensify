@@ -1,10 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
-import {
-  reservations as demoReservations,
-  rooms as demoRooms,
-  properties as demoProperties,
-} from "@/lib/demo-data";
+import { useEffect, useState, useMemo, useRef } from "react";
+
 import { useEffect, useState, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
