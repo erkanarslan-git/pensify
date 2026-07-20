@@ -382,6 +382,18 @@ function CalendarPage() {
                   const occupant = filteredReservations.find(
                     (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                   );
+                  const prevIso = dIdx > 0 ? iso(days[dIdx - 1]) : null;
+                  const isOccupantStart =
+                    !!occupant &&
+                    (prevIso === null || !(occupant.checkIn <= prevIso && occupant.checkOut > prevIso));
+                  let span = 1;
+                  if (isOccupantStart && occupant) {
+                    for (let k = dIdx + 1; k < days.length; k++) {
+                      const kIso = iso(days[k]);
+                      if (occupant.checkIn <= kIso && occupant.checkOut > kIso) span++;
+                      else break;
+                    }
+                  }
                   const isFocused = rowIdx === focus.row && dIdx === focus.col;
                   const past = isPastDate(dIso);
                   const pastStyle = past
@@ -397,7 +409,7 @@ function CalendarPage() {
                       style={pastStyle}
                       className={`border-b border-l border-border h-12 relative group ${past ? "bg-muted/30" : ""} ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
                     >
-                      {occupant ? (
+                      {occupant && isOccupantStart ? (
                         (() => {
                           const c = guestColor(occupant.guestName);
                           const sc = sourceColor(occupant.source);
@@ -405,8 +417,13 @@ function CalendarPage() {
                           const occPast = isPastDate(occupant.checkIn);
                           return (
                             <div
-                              className={`absolute inset-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden ${occPast && !canCreatePast ? "opacity-70" : ""}`}
-                              style={{ background: c.bg, color: c.fg, borderLeft: `3px solid ${sc}` }}
+                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 ${occPast && !canCreatePast ? "opacity-70" : ""}`}
+                              style={{
+                                width: `calc(${span} * 100% - 8px)`,
+                                background: c.bg,
+                                color: c.fg,
+                                borderLeft: `3px solid ${sc}`,
+                              }}
                               title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
                             >
                               <span className="truncate">{label}</span>
@@ -422,7 +439,7 @@ function CalendarPage() {
                             </div>
                           );
                         })()
-                      ) : (
+                      ) : occupant ? null : (
                         canCreate && (!past || canCreatePast) && (
                           <button
                             onClick={(e) => {
