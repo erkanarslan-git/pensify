@@ -284,12 +284,41 @@ function CalendarPage() {
           placeholder="Zimmer-Nr…"
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
         />
-        <input
-          value={guestQ}
-          onChange={(e) => setGuestQ(e.target.value)}
-          placeholder="Gast oder Buchungs-Code…"
-          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
-        />
+        <div className="relative">
+          <input
+            value={guestQ}
+            onChange={(e) => { setGuestQ(e.target.value); setSuggestOpen(true); }}
+            onFocus={() => setSuggestOpen(true)}
+            onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
+            placeholder="Gast oder Buchungs-Code…"
+            className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
+          />
+          {suggestOpen && searchQ && suggestions.length > 0 && (
+            <div className="absolute left-0 top-full mt-1 w-80 max-h-72 overflow-auto rounded-md border border-border bg-popover shadow-lg z-50">
+              {suggestions.map((s) => (
+                <button
+                  key={s.res.id}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => goToReservation(s.res)}
+                  className="w-full text-left px-3 py-2 hover:bg-accent border-b border-border/50 last:border-b-0 flex items-center gap-2"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: sourceColor(s.res.source) }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{s.res.guestName}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {s.propertyName} · #{s.roomNumber} · {s.res.checkIn} → {s.res.checkOut}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          {suggestOpen && searchQ && suggestions.length === 0 && (
+            <div className="absolute left-0 top-full mt-1 w-80 rounded-md border border-border bg-popover shadow-lg z-50 px-3 py-2 text-xs text-muted-foreground">
+              Keine Treffer
+            </div>
+          )}
+        </div>
         <input
           type="date"
           value={iso(start)}
