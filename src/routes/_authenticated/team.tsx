@@ -242,12 +242,15 @@ function TeamPage() {
                           </Button>
                         )
                       )}
-                      <Button size="sm" variant="outline" title={isBanned ? "Freigeben" : "Sperren"}
+                      <Button size="sm" variant="outline" title={u.user_id === currentUserId ? "Eigenes Konto — nicht möglich" : (isBanned ? "Freigeben" : "Sperren")}
+                        disabled={u.user_id === currentUserId || banUser.isPending}
                         onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
                         {isBanned ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                       </Button>
                       <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
                       <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
+                        disabled={u.user_id === currentUserId}
+                        title={u.user_id === currentUserId ? "Eigenes Konto — nicht möglich" : "Löschen"}
                         onClick={() => { if (confirm(`"${u.full_name || u.email}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) deleteUser.mutate(u.user_id); }}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
