@@ -199,6 +199,7 @@ function ChannelSyncPage() {
               onToggle={toggleEnabled}
               onDelete={deleteIntegration}
               onSync={manualSync}
+              onUpdate={updateIntegration}
             />
           ))}
         </TabsContent>
