@@ -198,7 +198,9 @@ function AuditLogsContent() {
 
       <LogDetailDialog id={openId} onClose={() => setOpenId(null)} />
     </div>
+    </TooltipProvider>
   );
+
 }
 
 function shortId(id: string) {
