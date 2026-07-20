@@ -460,7 +460,7 @@ function CalendarPage() {
                           const occPast = isPastDate(occupant.checkIn);
                           return (
                             <div
-                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 ${occPast && !canCreatePast ? "opacity-70" : ""}`}
+                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
                               style={{
                                 width: `calc(${span} * 100% - 8px)`,
                                 background: c.bg,
