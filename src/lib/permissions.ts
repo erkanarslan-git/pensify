@@ -15,7 +15,7 @@ export type Permission = { key: string; label: string; group: string; defaultRol
 export const PERMISSIONS: Permission[] = [
   { key: "view_calendar", label: "Kalender ansehen", group: "Buchungen", defaultRoles: ["owner", "admin", "manager", "reception", "cleaner"] },
   { key: "create_reservation", label: "Buchungen erstellen / bearbeiten", group: "Buchungen", defaultRoles: ["owner", "admin", "manager", "reception"] },
-  { key: "create_past_reservation", label: "Vergangene Buchungen erstellen / bearbeiten", group: "Buchungen", defaultRoles: ["owner", "admin", "manager"] },
+  { key: "create_past_reservation", label: "Abgelaufene Buchungen bearbeiten / löschen", group: "Buchungen", defaultRoles: ["owner", "admin"] },
   { key: "delete_reservation", label: "Buchungen löschen", group: "Buchungen", defaultRoles: ["owner", "admin"] },
   { key: "manage_rooms", label: "Zimmer & Pensionen verwalten", group: "Stammdaten", defaultRoles: ["owner", "admin"] },
   { key: "assign_cleaning", label: "Reinigung zuweisen", group: "Reinigung", defaultRoles: ["owner", "admin", "manager"] },
