@@ -285,6 +285,20 @@ function ChannelCard({
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bulkParsed, setBulkParsed] = useState<{ name: string; url: string; propertyId: string; roomId?: string }[]>([]);
+  const [editing, setEditing] = useState<Integration | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPropertyId, setEditPropertyId] = useState("");
+  const [editRoomId, setEditRoomId] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const editRooms = rooms.filter((r) => r.property_id === editPropertyId);
+
+  function openEdit(row: Integration) {
+    setEditing(row);
+    setEditName(row.name ?? "");
+    setEditPropertyId(row.property_id);
+    setEditRoomId(row.room_id ?? "");
+    setEditUrl(row.ical_url ?? "");
+  }
 
   const roomsForProp = rooms.filter((r) => r.property_id === propertyId);
 
