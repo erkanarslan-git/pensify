@@ -91,7 +91,7 @@ function ChannelSyncPage() {
 
   async function bulkAdd(channel: Channel, rows: { name: string; url: string; propertyId: string; roomId?: string }[]): Promise<void> {
     const valid = rows.filter((r) => r.propertyId && r.url);
-    if (valid.length === 0) return toast.error("Eşleştirilebilir satır yok");
+    if (valid.length === 0) { toast.error("Eşleştirilebilir satır yok"); return; }
     const { error, data } = await supabase.from("channel_integrations").insert(
       valid.map((r) => ({
         channel,
@@ -103,7 +103,7 @@ function ChannelSyncPage() {
         direction: "both" as const,
       })),
     ).select("id");
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`${data?.length ?? 0} kayıt eklendi`);
   }
 
