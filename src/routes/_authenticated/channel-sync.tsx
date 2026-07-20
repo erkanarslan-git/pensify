@@ -35,19 +35,22 @@ function ChannelSyncPage() {
   const [jobs, setJobs] = useState<SyncJob[]>([]);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [properties, setProperties] = useState<{ id: string; name: string }[]>([]);
+  const [rooms, setRooms] = useState<{ id: string; number: string; property_id: string }[]>([]);
   const [syncing, setSyncing] = useState(false);
 
   async function loadAll() {
-    const [i, j, c, p] = await Promise.all([
+    const [i, j, c, p, r] = await Promise.all([
       supabase.from("channel_integrations").select("*").order("created_at", { ascending: false }),
       supabase.from("sync_jobs").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("conflict_alerts").select("*").eq("status", "open").order("created_at", { ascending: false }),
       supabase.from("properties").select("id,name").order("name"),
+      supabase.from("rooms").select("id,number,property_id").order("number"),
     ]);
     setIntegrations((i.data ?? []) as Integration[]);
     setJobs((j.data ?? []) as SyncJob[]);
     setConflicts((c.data ?? []) as Conflict[]);
     setProperties(p.data ?? []);
+    setRooms(r.data ?? []);
   }
 
   useEffect(() => {
@@ -63,19 +66,45 @@ function ChannelSyncPage() {
 
   async function toggleEnabled(row: Integration, enabled: boolean) {
     const { error } = await supabase.from("channel_integrations").update({ enabled }).eq("id", row.id);
-    if (error) toast.error(error.message); else toast.success("Updated");
+    if (error) toast.error(error.message); else toast.success("Aktualisiert");
   }
 
-  async function addIntegration(channel: Channel, propertyId: string, icalUrl: string) {
-    if (!propertyId) return toast.error("Select a property");
+  async function deleteIntegration(row: Integration) {
+    if (!confirm(`"${row.name ?? row.ical_url ?? row.channel}" gerçekten silinsin mi?`)) return;
+    const { error } = await supabase.from("channel_integrations").delete().eq("id", row.id);
+    if (error) toast.error(error.message); else toast.success("Silindi");
+  }
+
+  async function addIntegration(channel: Channel, propertyId: string, icalUrl: string, name?: string, roomId?: string) {
+    if (!propertyId) return toast.error("Bir mülk seçin");
     const { error } = await supabase.from("channel_integrations").insert({
       channel,
       property_id: propertyId,
+      room_id: roomId || null,
+      name: name || null,
       ical_url: icalUrl || null,
       enabled: true,
       direction: "both",
     });
-    if (error) toast.error(error.message); else toast.success("Channel connected");
+    if (error) toast.error(error.message); else toast.success("Kanal bağlandı");
+  }
+
+  async function bulkAdd(channel: Channel, rows: { name: string; url: string; propertyId: string; roomId?: string }[]) {
+    const valid = rows.filter((r) => r.propertyId && r.url);
+    if (valid.length === 0) return toast.error("Eşleştirilebilir satır yok");
+    const { error, data } = await supabase.from("channel_integrations").insert(
+      valid.map((r) => ({
+        channel,
+        property_id: r.propertyId,
+        room_id: r.roomId || null,
+        name: r.name || null,
+        ical_url: r.url,
+        enabled: true,
+        direction: "both" as const,
+      })),
+    ).select("id");
+    if (error) return toast.error(error.message);
+    toast.success(`${data?.length ?? 0} kayıt eklendi`);
   }
 
   async function manualSync(row?: Integration) {
