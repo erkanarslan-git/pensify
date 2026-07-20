@@ -89,7 +89,7 @@ function ChannelSyncPage() {
     if (error) toast.error(error.message); else toast.success("Kanal bağlandı");
   }
 
-  async function bulkAdd(channel: Channel, rows: { name: string; url: string; propertyId: string; roomId?: string }[]) {
+  async function bulkAdd(channel: Channel, rows: { name: string; url: string; propertyId: string; roomId?: string }[]): Promise<void> {
     const valid = rows.filter((r) => r.propertyId && r.url);
     if (valid.length === 0) return toast.error("Eşleştirilebilir satır yok");
     const { error, data } = await supabase.from("channel_integrations").insert(
