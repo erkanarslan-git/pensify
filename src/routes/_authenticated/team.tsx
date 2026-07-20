@@ -112,6 +112,22 @@ function TeamPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => { await deleteFn({ data: { userId } }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success("Benutzer gelöscht"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const banUser = useMutation({
+    mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => { await banFn({ data: { userId, banned } }); },
+    onSuccess: (_d, v) => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(v.banned ? "Benutzer gesperrt" : "Benutzer aktiviert"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const resetPw = useMutation({
+    mutationFn: async ({ userId, password }: { userId: string; password: string }) => { await resetPwFn({ data: { userId, password } }); },
+    onSuccess: () => toast.success("Passwort zurückgesetzt"),
+    onError: (e: any) => toast.error(e.message),
+  });
+
   // Effective role-permission lookup: override → default
   const rolePerm = (role: AppRole, key: string): boolean => {
     const o = rolePermsQ.data?.find((r: any) => r.role === role && r.permission === key);
