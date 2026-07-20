@@ -57,7 +57,9 @@ export const Route = createFileRoute("/api/public/sync/manual")({
             let jobConflicts = 0;
 
             for (const ev of events) {
-              if (ev.end <= today || ev.start < today) continue; // skip past
+              if (ev.end <= today) continue; // skip fully-past events, keep ongoing
+              // Clip a block that started in the past so the trigger doesn't reject it.
+              const startDate = ev.start < today ? today : ev.start;
               const summary = (ev.summary ?? "").trim();
               // Airbnb iCal anonymises everything as "Airbnb (Not available)" —
               // it covers both real guest bookings and manual host blocks. Treat
