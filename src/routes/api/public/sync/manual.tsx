@@ -57,33 +57,37 @@ export const Route = createFileRoute("/api/public/sync/manual")({
             let jobConflicts = 0;
 
             for (const ev of events) {
-              if (ev.end <= today || ev.start < today) continue; // skip past
+              if (ev.end <= today) continue; // skip fully-past events, keep ongoing
+              // Clip a block that started in the past so the trigger doesn't reject it.
+              const startDate = ev.start < today ? today : ev.start;
               const summary = (ev.summary ?? "").trim();
-              // Skip Airbnb "Not available" placeholder blocks — they represent
-              // internal blocks with no real booking. Keep confirmed reservations.
-              const isBlock = /not available/i.test(summary);
-              const guestName = isBlock
-                ? "Airbnb Blockierung"
-                : summary.replace(/^reserved:?\s*/i, "").slice(0, 120) || "Airbnb Buchung";
+              // Airbnb iCal anonymises everything as "Airbnb (Not available)" —
+              // it covers both real guest bookings and manual host blocks. Treat
+              // them all as "occupied" so the calendar shows the room as booked.
+              // Real guest names/emails are only available via the Airbnb API.
+              const isReservedTag = /reserved|reservation/i.test(summary);
+              const guestName = isReservedTag
+                ? summary.replace(/^reserved:?\s*/i, "").slice(0, 120) || "Airbnb Gast"
+                : "Airbnb belegt";
 
               const row = {
                 room_id: i.room_id,
                 property_id: i.property_id,
                 guest_name: guestName,
                 guests_count: 1,
-                check_in: ev.start,
+                check_in: startDate,
                 check_out: ev.end,
                 channel: i.channel,
-                status: (isBlock ? "tentative" : "confirmed") as any,
+                status: "confirmed" as any,
                 revenue: 0,
                 external_id: ev.uid,
                 ical_uid: ev.uid,
-                notes: `Auto-imported from ${i.name ?? i.channel} on ${new Date().toISOString().slice(0, 10)}`,
+                notes: `Airbnb • ${i.name ?? "Feed"} • ${ev.start} → ${ev.end}`,
               };
 
               const { error: upErr } = await supabaseAdmin
                 .from("reservations")
-                .upsert(row, { onConflict: "channel,external_id" });
+                .upsert(row, { onConflict: "channel,room_id,external_id" });
 
               if (upErr) {
                 if (/overlap/i.test(upErr.message)) {
