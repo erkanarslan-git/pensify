@@ -502,6 +502,7 @@ function CalendarPage() {
           </div>
         </ScrollableGrid>
         </div>
+        </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
