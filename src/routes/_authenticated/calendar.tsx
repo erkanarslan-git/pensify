@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
-import { useEffect, useState, useMemo, useRef } from "react";
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick } from "lucide-react";
