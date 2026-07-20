@@ -452,7 +452,7 @@ function CalendarPage() {
                         (() => {
                           const c = guestColor(occupant.guestName);
                           const sc = sourceColor(occupant.source);
-                          const label = occupant.guestName.split(" ")[0];
+                          const label = span >= 2 ? occupant.guestName : occupant.guestName.split(" ")[0];
                           const occPast = isPastDate(occupant.checkIn);
                           return (
                             <div
