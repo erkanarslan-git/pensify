@@ -24,7 +24,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -45,10 +45,16 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success(t("auth.signedUp"));
-        // If email confirm disabled, session is set → go to dashboard
         const { data } = await supabase.auth.getSession();
         if (data.session) navigate({ to: "/" });
         else toast.message(t("auth.checkEmail"));
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success(t("auth.resetEmailSent"));
+        setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -76,6 +82,7 @@ function AuthPage() {
     if (result.redirected) return;
     navigate({ to: "/" });
   }
+
 
   const langs = [
     { code: "de", label: "DE" },
@@ -126,21 +133,30 @@ function AuthPage() {
 
         <div className="flex-1 grid place-items-center px-6 pb-12">
           <div className="w-full max-w-sm">
-            <div className="flex gap-1 p-1 bg-muted rounded-xl mb-6">
-              {(["signin", "signup"] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    mode === m
-                      ? "bg-card text-foreground shadow-soft"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {m === "signin" ? t("auth.signInTab") : t("auth.signUpTab")}
-                </button>
-              ))}
-            </div>
+            {mode !== "forgot" && (
+              <div className="flex gap-1 p-1 bg-muted rounded-xl mb-6">
+                {(["signin", "signup"] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMode(m)}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      mode === m
+                        ? "bg-card text-foreground shadow-soft"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {m === "signin" ? t("auth.signInTab") : t("auth.signUpTab")}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {mode === "forgot" && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold">{t("auth.forgotTitle")}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{t("auth.forgotSubtitle")}</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3">
               {mode === "signup" && (
@@ -167,45 +183,75 @@ function AuthPage() {
                   className="mt-1 w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm"
                 />
               </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t("common.password")}</label>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t("auth.passwordPlaceholder")}
-                  className="mt-1 w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm"
-                />
-              </div>
+              {mode !== "forgot" && (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground">{t("common.password")}</label>
+                    {mode === "signin" && (
+                      <button
+                        type="button"
+                        onClick={() => setMode("forgot")}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        {t("auth.forgotLink")}
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t("auth.passwordPlaceholder")}
+                    className="mt-1 w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm"
+                  />
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={busy}
                 className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 disabled:opacity-60 shadow-soft"
               >
                 {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                {mode === "signin" ? t("common.signIn") : t("auth.createAccount")}
+                {mode === "signin"
+                  ? t("common.signIn")
+                  : mode === "signup"
+                    ? t("auth.createAccount")
+                    : t("auth.sendResetEmail")}
               </button>
+              {mode === "forgot" && (
+                <button
+                  type="button"
+                  onClick={() => setMode("signin")}
+                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground py-1"
+                >
+                  {t("auth.backToSignIn")}
+                </button>
+              )}
             </form>
 
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("common.or")}</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
+            {mode !== "forgot" && (
+              <>
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("common.or")}</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
 
-            <button
-              onClick={handleGoogle}
-              disabled={busy}
-              className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border bg-card font-medium text-sm hover:bg-accent disabled:opacity-60"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path fill="#EA4335" d="M12 11v3.2h5.4c-.2 1.4-1.7 4-5.4 4-3.3 0-5.9-2.7-5.9-6s2.6-6 5.9-6c1.8 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.7 14.5 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.1-1.2H12z"/>
-              </svg>
-              {t("common.continueWithGoogle")}
-            </button>
+                <button
+                  onClick={handleGoogle}
+                  disabled={busy}
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border bg-card font-medium text-sm hover:bg-accent disabled:opacity-60"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#EA4335" d="M12 11v3.2h5.4c-.2 1.4-1.7 4-5.4 4-3.3 0-5.9-2.7-5.9-6s2.6-6 5.9-6c1.8 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.7 14.5 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.1-1.2H12z"/>
+                  </svg>
+                  {t("common.continueWithGoogle")}
+                </button>
+              </>
+            )}
 
             <p className="mt-6 text-center text-xs text-muted-foreground">
               {t("auth.termsHint")}
@@ -216,3 +262,4 @@ function AuthPage() {
     </div>
   );
 }
+
