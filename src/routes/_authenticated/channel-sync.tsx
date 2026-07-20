@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCw, Plus, AlertTriangle, Link as LinkIcon, Activity, Upload, Trash2 } from "lucide-react";
+import { RefreshCw, Plus, AlertTriangle, Link as LinkIcon, Activity, Upload, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +73,11 @@ function ChannelSyncPage() {
     if (!confirm(`"${row.name ?? row.ical_url ?? row.channel}" gerçekten silinsin mi?`)) return;
     const { error } = await supabase.from("channel_integrations").delete().eq("id", row.id);
     if (error) toast.error(error.message); else toast.success("Silindi");
+  }
+
+  async function updateIntegration(row: Integration, patch: { name?: string | null; property_id?: string; room_id?: string | null; ical_url?: string | null }) {
+    const { error } = await supabase.from("channel_integrations").update(patch).eq("id", row.id);
+    if (error) toast.error(error.message); else toast.success("Güncellendi");
   }
 
   async function addIntegration(channel: Channel, propertyId: string, icalUrl: string, name?: string, roomId?: string) {
@@ -194,6 +199,7 @@ function ChannelSyncPage() {
               onToggle={toggleEnabled}
               onDelete={deleteIntegration}
               onSync={manualSync}
+              onUpdate={updateIntegration}
             />
           ))}
         </TabsContent>
@@ -259,7 +265,7 @@ function matchProperty(name: string, properties: { id: string; name: string }[])
 }
 
 function ChannelCard({
-  channel, rows, properties, rooms, onAdd, onBulkAdd, onToggle, onDelete, onSync,
+  channel, rows, properties, rooms, onAdd, onBulkAdd, onToggle, onDelete, onSync, onUpdate,
 }: {
   channel: { id: Channel; label: string };
   rows: Integration[];
@@ -270,6 +276,7 @@ function ChannelCard({
   onToggle: (row: Integration, e: boolean) => void;
   onDelete: (row: Integration) => void;
   onSync: (row: Integration) => void;
+  onUpdate: (row: Integration, patch: { name?: string | null; property_id?: string; room_id?: string | null; ical_url?: string | null }) => Promise<void>;
 }) {
   const [propertyId, setPropertyId] = useState("");
   const [roomId, setRoomId] = useState("");
@@ -278,6 +285,20 @@ function ChannelCard({
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [bulkParsed, setBulkParsed] = useState<{ name: string; url: string; propertyId: string; roomId?: string }[]>([]);
+  const [editing, setEditing] = useState<Integration | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPropertyId, setEditPropertyId] = useState("");
+  const [editRoomId, setEditRoomId] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const editRooms = rooms.filter((r) => r.property_id === editPropertyId);
+
+  function openEdit(row: Integration) {
+    setEditing(row);
+    setEditName(row.name ?? "");
+    setEditPropertyId(row.property_id);
+    setEditRoomId(row.room_id ?? "");
+    setEditUrl(row.ical_url ?? "");
+  }
 
   const roomsForProp = rooms.filter((r) => r.property_id === propertyId);
 
@@ -423,12 +444,18 @@ function ChannelCard({
         {rows.map((r) => {
           const prop = properties.find((p) => p.id === r.property_id);
           const room = r.room_id ? rooms.find((x) => x.id === r.room_id) : null;
+          const missingRoom = !r.room_id;
           return (
-            <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-md border border-border">
+            <div key={r.id} className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-md border ${missingRoom ? "border-amber-500/60 bg-amber-500/5" : "border-border"}`}>
               <div className="text-sm min-w-0 flex-1">
-                <div className="font-medium truncate">
-                  {r.name ?? prop?.name ?? r.property_id}
-                  {room && <span className="ml-2 text-xs text-muted-foreground">Oda {room.number}</span>}
+                <div className="font-medium truncate flex items-center gap-2">
+                  <span className="truncate">{r.name ?? prop?.name ?? r.property_id}</span>
+                  {room && <span className="text-xs text-muted-foreground">Oda {room.number}</span>}
+                  {missingRoom && (
+                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" /> Oda atanmadı — senkron atlanır
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   <span className="text-foreground/70">{prop?.name}</span>
@@ -447,7 +474,10 @@ function ChannelCard({
                   <Switch checked={!!r.enabled} onCheckedChange={(v) => onToggle(r, v)} />
                   <span>{r.enabled ? "Aktif" : "Pasif"}</span>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => onSync(r)}>
+                <Button size="sm" variant="outline" onClick={() => openEdit(r)}>
+                  <Pencil className="w-3.5 h-3.5 mr-1.5" /> Düzenle
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => onSync(r)} disabled={missingRoom}>
                   <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Senkr.
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => onDelete(r)}>
@@ -458,6 +488,66 @@ function ChannelCard({
           );
         })}
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Bağlantıyı düzenle</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-muted-foreground">İlan adı</label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Mülk</label>
+              <select
+                value={editPropertyId}
+                onChange={(e) => { setEditPropertyId(e.target.value); setEditRoomId(""); }}
+                className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-sm"
+              >
+                {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Oda (senkron için zorunlu)</label>
+              <select
+                value={editRoomId}
+                onChange={(e) => setEditRoomId(e.target.value)}
+                className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-sm"
+              >
+                <option value="">— Seçin —</option>
+                {editRooms.map((r) => <option key={r.id} value={r.id}>Oda {r.number}</option>)}
+              </select>
+              {editRooms.length === 0 && (
+                <p className="text-xs text-amber-600 mt-1">Bu mülkte tanımlı oda yok. Önce Odalar sayfasından ekleyin.</p>
+              )}
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">iCal URL</label>
+              <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} className="mt-1 font-mono text-xs" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>İptal</Button>
+            <Button
+              onClick={async () => {
+                if (!editing) return;
+                await onUpdate(editing, {
+                  name: editName || null,
+                  property_id: editPropertyId,
+                  room_id: editRoomId || null,
+                  ical_url: editUrl || null,
+                });
+                setEditing(null);
+              }}
+            >
+              Kaydet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <div className="grid gap-2 p-3 rounded-md bg-muted/40 md:grid-cols-[1fr_1fr_2fr_auto] items-end">
         <div>
