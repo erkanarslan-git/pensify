@@ -188,8 +188,11 @@ function ChannelSyncPage() {
               channel={ch}
               rows={grouped.get(ch.id) ?? []}
               properties={properties}
+              rooms={rooms}
               onAdd={addIntegration}
+              onBulkAdd={bulkAdd}
               onToggle={toggleEnabled}
+              onDelete={deleteIntegration}
               onSync={manualSync}
             />
           ))}
