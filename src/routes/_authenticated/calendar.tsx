@@ -67,6 +67,7 @@ function CalendarPage() {
   const [showHelp, setShowHelp] = useState(false);
   const [pendingPast, setPendingPast] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const gridFocusRef = useRef<HTMLDivElement>(null);
+  const [gridFocused, setGridFocused] = useState(false);
   useEffect(() => {
     // Auto-focus calendar grid so keyboard navigation works immediately
     const t = setTimeout(() => gridFocusRef.current?.focus({ preventScroll: true }), 50);
