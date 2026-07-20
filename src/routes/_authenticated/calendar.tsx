@@ -140,13 +140,10 @@ function CalendarPage() {
     })();
   }, [refreshKey]);
 
-  // Pick supabase data when available, otherwise demo fallback
-  const useReal = realRooms.length > 0;
-  const properties: UnifiedProperty[] = useReal ? realProperties : demoProperties.map((p) => ({ id: p.id, name: p.name }));
-  const rooms: UnifiedRoom[] = useReal ? realRooms : demoRooms.map((r) => ({ id: r.id, number: r.number, propertyId: r.propertyId }));
-  const reservations: UnifiedRes[] = useReal
-    ? realReservations
-    : demoReservations.map((r) => ({ id: r.id, realId: null, roomId: r.roomId, guestName: r.guestName, source: r.source, checkIn: r.checkIn, checkOut: r.checkOut }));
+  const properties: UnifiedProperty[] = realProperties;
+  const rooms: UnifiedRoom[] = realRooms;
+  const reservations: UnifiedRes[] = realReservations;
+
 
   const days: Date[] = useMemo(
     () =>
