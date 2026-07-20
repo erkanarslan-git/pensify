@@ -75,6 +75,22 @@ function CalendarPage() {
     return () => clearTimeout(t);
   }, []);
 
+  // Global shortcut: press "G" (or Escape) anywhere to refocus the calendar grid
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      const inField = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable;
+      if (inField && e.key !== "Escape") return;
+      if (e.key === "g" || e.key === "G" || e.key === "Escape") {
+        e.preventDefault();
+        gridFocusRef.current?.focus({ preventScroll: true });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   // Helper: is given iso date strictly before today?
   const todayIsoStr = new Date().toISOString().slice(0, 10);
   const isPastDate = (dIso: string) => dIso < todayIsoStr;
