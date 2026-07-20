@@ -6,7 +6,8 @@ import {
   properties as demoProperties,
 } from "@/lib/demo-data";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
@@ -66,6 +67,7 @@ function CalendarPage() {
   const [showHelp, setShowHelp] = useState(false);
   const [pendingPast, setPendingPast] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
   const gridFocusRef = useRef<HTMLDivElement>(null);
+  const [gridFocused, setGridFocused] = useState(false);
   useEffect(() => {
     // Auto-focus calendar grid so keyboard navigation works immediately
     const t = setTimeout(() => gridFocusRef.current?.focus({ preventScroll: true }), 50);
@@ -321,9 +323,12 @@ function CalendarPage() {
 
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
+        <TooltipProvider delayDuration={150}>
         <div
           ref={gridFocusRef}
           tabIndex={0}
+          onFocus={() => setGridFocused(true)}
+          onBlur={() => setGridFocused(false)}
           onKeyDown={onGridKeyDown}
           className="outline-none focus:ring-2 focus:ring-primary/30 rounded-md"
         >
@@ -331,7 +336,26 @@ function CalendarPage() {
           <div className="min-w-[900px] px-5">
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Zimmer</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
+                <span>Zimmer</span>
+                {!gridFocused && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => gridFocusRef.current?.focus()}
+                        className="inline-flex items-center justify-center w-5 h-5 rounded text-primary hover:bg-primary/10 animate-pulse"
+                        aria-label="Tastatur-Navigation aktivieren"
+                      >
+                        <MousePointerClick className="w-3.5 h-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-[220px] text-xs">
+                      Klick auf den Kalender, um die Tastatur-Navigation zu aktivieren (Pfeiltasten, Enter, ?).
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               {days.map((d, dIdx) => {
                 const isToday = iso(d) === today;
                 const isFocusCol = dIdx === focus.col;
@@ -363,14 +387,29 @@ function CalendarPage() {
                         #{r.number}
 
                         {r.needsCleaning && !r.issue && (
-                          <span title="Reinigung ausstehend" className="inline-flex">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex cursor-help">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              Reinigung ausstehend
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                         {r.issue && (
-                          <span title={r.issue} className="inline-flex">
-                            <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex cursor-help">
+                                <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[240px] text-xs">
+                              <div className="font-semibold mb-0.5">Problem gemeldet</div>
+                              <div className="text-muted-foreground">{r.issue}</div>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </div>
                       <div className="text-[11px] text-muted-foreground truncate">{p.name}</div>
@@ -463,6 +502,7 @@ function CalendarPage() {
           </div>
         </ScrollableGrid>
         </div>
+        </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
