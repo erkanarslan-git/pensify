@@ -2,18 +2,21 @@ import { createFileRoute, useRouterState, Outlet } from "@tanstack/react-router"
 import { AppShell } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText } from "lucide-react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText, User as UserIcon } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
   component: SettingsLayout,
 });
 
-type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
+type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
 
 const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
   { key: "general", label: "Allgemein", icon: Globe },
+  { key: "profile", label: "Profil", icon: UserIcon },
   { key: "language", label: "Sprache", icon: Languages },
   { key: "notifications", label: "Benachrichtigungen", icon: Bell },
   { key: "email", label: "E-Mail", icon: Mail },
@@ -208,12 +211,115 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
         </Section>
       )}
 
-      {activeTab === "security" && (
-        <Section title="Sicherheit">
-          <p className="text-sm text-muted-foreground">Passwort ändern und Zwei-Faktor-Authentifizierung folgen in Kürze.</p>
-        </Section>
-      )}
+      {activeTab === "profile" && <ProfileTab />}
+
+      {activeTab === "security" && <SecurityTab />}
     </>
+  );
+}
+
+function ProfileTab() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [locale, setLocale] = useState("de");
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return;
+      setEmail(u.user.email ?? "");
+      const { data: p } = await supabase.from("profiles").select("full_name, avatar_url, locale").eq("id", u.user.id).maybeSingle();
+      setFullName(p?.full_name ?? "");
+      setAvatarUrl(p?.avatar_url ?? "");
+      setLocale(p?.locale ?? "de");
+      setLoading(false);
+    })();
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Nicht angemeldet");
+      const { error } = await supabase.from("profiles").upsert({
+        id: u.user.id, full_name: fullName, avatar_url: avatarUrl || null, locale, updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      toast.success("Profil gespeichert");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally { setSaving(false); }
+  }
+
+  if (loading) return <Section title="Profil"><p className="text-sm text-muted-foreground">Lade…</p></Section>;
+
+  return (
+    <Section title="Mein Profil">
+      <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">E-Mail</span>
+          <input value={email} disabled className="px-3 py-2 rounded-md border border-input bg-muted text-sm text-muted-foreground" />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">Voller Name</span>
+          <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+        </label>
+        <label className="grid gap-1 sm:col-span-2">
+          <span className="text-xs text-muted-foreground">Avatar-URL</span>
+          <input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://…" className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">Sprache</span>
+          <select value={locale} onChange={(e) => setLocale(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+          </select>
+        </label>
+      </div>
+      <div className="mt-4">
+        <Button onClick={save} disabled={saving}>Speichern</Button>
+      </div>
+    </Section>
+  );
+}
+
+function SecurityTab() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function change() {
+    if (pw.length < 8) return toast.error("Mindestens 8 Zeichen");
+    if (pw !== pw2) return toast.error("Passwörter stimmen nicht überein");
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) throw error;
+      toast.success("Passwort geändert");
+      setPw(""); setPw2("");
+    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+  }
+
+  return (
+    <Section title="Sicherheit">
+      <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">Neues Passwort</span>
+          <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+        </label>
+        <label className="grid gap-1">
+          <span className="text-xs text-muted-foreground">Neues Passwort (wiederholen)</span>
+          <input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+        </label>
+      </div>
+      <div className="mt-4">
+        <Button onClick={change} disabled={busy}>Passwort ändern</Button>
+      </div>
+    </Section>
   );
 }
 

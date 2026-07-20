@@ -5,15 +5,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Shield, Plus, X, CheckCircle2, XCircle, Inbox } from "lucide-react";
+import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound } from "lucide-react";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { ALL_ROLES, ROLE_LABEL, PERMISSIONS, type AppRole } from "@/lib/permissions";
+import { adminCreateUser, adminDeleteUser, adminSetUserBanned, adminResetUserPassword } from "@/lib/admin-users.functions";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Team — Pensify" }] }),
@@ -27,6 +29,11 @@ const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"
 function TeamPage() {
   const qc = useQueryClient();
   const [adding, setAdding] = useState<{ userId: string; role: AppRole } | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const createFn = useServerFn(adminCreateUser);
+  const deleteFn = useServerFn(adminDeleteUser);
+  const banFn = useServerFn(adminSetUserBanned);
+  const resetPwFn = useServerFn(adminResetUserPassword);
 
   const users = useQuery({
     queryKey: ["admin-users"],
@@ -105,6 +112,22 @@ function TeamPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => { await deleteFn({ data: { userId } }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success("Benutzer gelöscht"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const banUser = useMutation({
+    mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => { await banFn({ data: { userId, banned } }); },
+    onSuccess: (_d, v) => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(v.banned ? "Benutzer gesperrt" : "Benutzer aktiviert"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const resetPw = useMutation({
+    mutationFn: async ({ userId, password }: { userId: string; password: string }) => { await resetPwFn({ data: { userId, password } }); },
+    onSuccess: () => toast.success("Passwort zurückgesetzt"),
+    onError: (e: any) => toast.error(e.message),
+  });
+
   // Effective role-permission lookup: override → default
   const rolePerm = (role: AppRole, key: string): boolean => {
     const o = rolePermsQ.data?.find((r: any) => r.role === role && r.permission === key);
@@ -151,23 +174,36 @@ function TeamPage() {
       )}
 
       {/* Users table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden mt-4">
+      <div className="flex items-center justify-between mt-4 mb-2">
+        <div className="text-sm font-semibold">Benutzer ({users.data?.length ?? 0})</div>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>
+          <UserPlus className="w-3.5 h-3.5 mr-1" /> Neuer Benutzer
+        </Button>
+      </div>
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
               <th className="text-left p-3">Benutzer</th>
               <th className="text-left p-3">E-Mail</th>
+              <th className="text-left p-3">Status</th>
               <th className="text-left p-3">Rollen</th>
-              <th className="text-right p-3 w-64">Aktion</th>
+              <th className="text-right p-3 w-[380px]">Aktion</th>
             </tr>
           </thead>
           <tbody>
             {users.data?.map((u: any) => {
               const missing = ALL_ROLES.filter((r) => !u.roles.includes(r));
+              const isBanned = !!u.banned_until && new Date(u.banned_until) > new Date();
               return (
-                <tr key={u.user_id} className="border-t border-border">
+                <tr key={u.user_id} className={`border-t border-border ${isBanned ? "opacity-60" : ""}`}>
                   <td className="p-3 font-medium">{u.full_name || "—"}</td>
                   <td className="p-3 text-muted-foreground">{u.email}</td>
+                  <td className="p-3">
+                    {isBanned
+                      ? <Badge tone="destructive">Gesperrt</Badge>
+                      : <Badge tone="success">Aktiv</Badge>}
+                  </td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">
                       {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
@@ -185,7 +221,7 @@ function TeamPage() {
                     </div>
                   </td>
                   <td className="p-3 text-right">
-                    <div className="flex justify-end gap-1">
+                    <div className="flex justify-end gap-1 flex-wrap">
                       <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
                       {missing.length > 0 && (
                         adding?.userId === u.user_id ? (
@@ -204,6 +240,15 @@ function TeamPage() {
                           </Button>
                         )
                       )}
+                      <Button size="sm" variant="outline" title={isBanned ? "Freigeben" : "Sperren"}
+                        onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
+                        {isBanned ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                      </Button>
+                      <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
+                      <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
+                        onClick={() => { if (confirm(`"${u.full_name || u.email}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) deleteUser.mutate(u.user_id); }}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -262,7 +307,100 @@ function TeamPage() {
           </table>
         </div>
       </div>
+
+      <CreateUserDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={async (payload) => {
+          await createFn({ data: payload });
+          qc.invalidateQueries({ queryKey: ["admin-users"] });
+          toast.success("Benutzer angelegt");
+          setCreateOpen(false);
+        }}
+      />
     </AppShell>
+  );
+}
+
+function ResetPasswordButton({ onSubmit }: { onSubmit: (pw: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState("");
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" title="Passwort zurücksetzen"><KeyRound className="w-3.5 h-3.5" /></Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>Neues Passwort setzen</DialogTitle></DialogHeader>
+        <input type="text" value={pw} onChange={(e) => setPw(e.target.value)}
+          placeholder="Mind. 8 Zeichen"
+          className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button disabled={pw.length < 8} onClick={() => { onSubmit(pw); setOpen(false); setPw(""); }}>Speichern</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CreateUserDialog({ open, onOpenChange, onCreate }: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onCreate: (p: { email: string; password: string; full_name?: string; role?: AppRole }) => Promise<void>;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<AppRole | "none">("reception");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    setBusy(true);
+    try {
+      await onCreate({ email, password, full_name: fullName || undefined, role: role === "none" ? undefined : role });
+      setEmail(""); setPassword(""); setFullName(""); setRole("reception");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Neuen Benutzer anlegen</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Voller Name</span>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">E-Mail *</span>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Passwort * (mind. 8 Zeichen)</span>
+            <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Startrolle</span>
+            <Select value={role} onValueChange={(v) => setRole(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Keine Rolle</SelectItem>
+                {ALL_ROLES.filter((r) => r !== "owner").map((r) => (
+                  <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button disabled={busy || !email || password.length < 8} onClick={submit}>Anlegen</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
