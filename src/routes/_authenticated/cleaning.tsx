@@ -150,7 +150,7 @@ function CleaningPage() {
                     <select
                       value={task.cleaner_id ?? ""}
                       onChange={(e) => reassign(task.id, e.target.value)}
-                      className={`text-xs px-2 py-1 rounded-md border bg-card max-w-[60%] ${unassigned ? "border-amber-400 text-amber-700" : "border-input"}`}
+                      className={`text-xs px-2 py-1 rounded-md border bg-card max-w-[60%] ${unassigned ? "border-amber-400 text-amber-700 dark:border-amber-500/60 dark:text-amber-300" : "border-input"}`}
                     >
                       <option value="">— atanmamış —</option>
                       {cleaners.filter((c) => c.active || c.id === task.cleaner_id).map((c) => (
