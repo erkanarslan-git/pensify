@@ -233,7 +233,7 @@ function ChannelCard({
                   {" · "}
                   {r.last_sync_at ? `Last: ${new Date(r.last_sync_at).toLocaleString()}` : "Never synced"}
                   {" · "}
-                  <span className={r.last_sync_status === "success" ? "text-emerald-600" : r.last_sync_status === "error" ? "text-destructive" : ""}>
+                  <span className={r.last_sync_status === "success" ? "text-emerald-600 dark:text-emerald-400" : r.last_sync_status === "error" ? "text-destructive" : ""}>
                     {r.last_sync_status ?? "—"}
                   </span>
                 </div>

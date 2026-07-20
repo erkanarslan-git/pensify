@@ -150,7 +150,7 @@ function CleaningPage() {
                     <select
                       value={task.cleaner_id ?? ""}
                       onChange={(e) => reassign(task.id, e.target.value)}
-                      className={`text-xs px-2 py-1 rounded-md border bg-card max-w-[60%] ${unassigned ? "border-amber-400 text-amber-700" : "border-input"}`}
+                      className={`text-xs px-2 py-1 rounded-md border bg-card max-w-[60%] ${unassigned ? "border-amber-400 text-amber-700 dark:border-amber-500/60 dark:text-amber-300" : "border-input"}`}
                     >
                       <option value="">— atanmamış —</option>
                       {cleaners.filter((c) => c.active || c.id === task.cleaner_id).map((c) => (
@@ -158,7 +158,7 @@ function CleaningPage() {
                       ))}
                     </select>
                   ) : (
-                    <span className={`font-medium ${unassigned ? "text-amber-600 italic" : ""}`}>
+                    <span className={`font-medium ${unassigned ? "text-amber-600 dark:text-amber-400 italic" : ""}`}>
                       {cleaner?.full_name ?? "atanmamış"}
                     </span>
                   )}
@@ -194,7 +194,7 @@ function CleaningPage() {
                   </button>
                 )}
                 {!cleaner && canAssign && (
-                  <span className="text-[11px] text-amber-600 inline-flex items-center gap-1 ml-auto">
+                  <span className="text-[11px] text-amber-600 dark:text-amber-400 inline-flex items-center gap-1 ml-auto">
                     <UserCog className="w-3 h-3" /> Reinigungskraft zuweisen
                   </span>
                 )}
