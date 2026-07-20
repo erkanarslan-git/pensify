@@ -265,7 +265,7 @@ function matchProperty(name: string, properties: { id: string; name: string }[])
 }
 
 function ChannelCard({
-  channel, rows, properties, rooms, onAdd, onBulkAdd, onToggle, onDelete, onSync,
+  channel, rows, properties, rooms, onAdd, onBulkAdd, onToggle, onDelete, onSync, onUpdate,
 }: {
   channel: { id: Channel; label: string };
   rows: Integration[];
@@ -276,6 +276,7 @@ function ChannelCard({
   onToggle: (row: Integration, e: boolean) => void;
   onDelete: (row: Integration) => void;
   onSync: (row: Integration) => void;
+  onUpdate: (row: Integration, patch: { name?: string | null; property_id?: string; room_id?: string | null; ical_url?: string | null }) => Promise<void>;
 }) {
   const [propertyId, setPropertyId] = useState("");
   const [roomId, setRoomId] = useState("");
