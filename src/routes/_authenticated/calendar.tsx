@@ -155,13 +155,15 @@ function CalendarPage() {
     });
   }, [propertyId, roomQ, rooms]);
 
+  const searchQ = guestQ.trim().toLowerCase();
   const filteredReservations = useMemo(() => {
-    const q = guestQ.trim().toLowerCase();
-    if (!q) return reservations;
+    if (!searchQ) return reservations;
     return reservations.filter((r) =>
-      r.guestName.toLowerCase().includes(q) || (r.realId ?? r.id).toLowerCase().includes(q),
+      r.guestName.toLowerCase().includes(searchQ) || (r.realId ?? r.id).toLowerCase().includes(searchQ),
     );
-  }, [guestQ, reservations]);
+  }, [searchQ, reservations]);
+  const matchesSearch = (r: UnifiedRes) =>
+    !!searchQ && (r.guestName.toLowerCase().includes(searchQ) || (r.realId ?? r.id).toLowerCase().includes(searchQ));
 
   // Flat ordered list of rooms (matches render order) for keyboard nav
   const flatRooms = useMemo(() => {
@@ -418,9 +420,11 @@ function CalendarPage() {
                 );
                 days.forEach((d, dIdx) => {
                   const dIso = iso(d);
-                  const occupant = filteredReservations.find(
+                  const occupant = reservations.find(
                     (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                   );
+                  const isMatch = occupant ? matchesSearch(occupant) : false;
+                  const dim = !!searchQ && !!occupant && !isMatch;
                   const prevIso = dIdx > 0 ? iso(days[dIdx - 1]) : null;
                   const isOccupantStart =
                     !!occupant &&
@@ -456,7 +460,7 @@ function CalendarPage() {
                           const occPast = isPastDate(occupant.checkIn);
                           return (
                             <div
-                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 ${occPast && !canCreatePast ? "opacity-70" : ""}`}
+                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
                               style={{
                                 width: `calc(${span} * 100% - 8px)`,
                                 background: c.bg,
