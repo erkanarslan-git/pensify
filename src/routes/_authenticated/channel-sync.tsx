@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCw, Plus, AlertTriangle, Link as LinkIcon, Activity, Upload, Trash2 } from "lucide-react";
+import { RefreshCw, Plus, AlertTriangle, Link as LinkIcon, Activity, Upload, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
