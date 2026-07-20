@@ -266,13 +266,13 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
             <div>
               <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Vorher</div>
               <pre className="text-xs p-3 rounded-md bg-muted/60 border border-border overflow-auto max-h-64 whitespace-pre-wrap">
-{JSON.stringify(data.diff?.old ?? null, null, 2)}
+{JSON.stringify((data.diff as any)?.old ?? null, null, 2)}
               </pre>
             </div>
             <div>
               <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Nachher</div>
               <pre className="text-xs p-3 rounded-md bg-muted/60 border border-border overflow-auto max-h-64 whitespace-pre-wrap">
-{JSON.stringify(data.diff?.new ?? null, null, 2)}
+{JSON.stringify((data.diff as any)?.new ?? null, null, 2)}
               </pre>
             </div>
           </div>
