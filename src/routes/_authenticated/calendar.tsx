@@ -485,7 +485,7 @@ function CalendarPage() {
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-[240px] text-xs">
                               <div className="font-semibold mb-0.5">Problem gemeldet</div>
-                              <div className="text-muted-foreground">{r.issue}</div>
+                              <div className="opacity-90 whitespace-pre-wrap break-words">{r.issue || "Keine Details angegeben"}</div>
                             </TooltipContent>
                           </Tooltip>
                         )}
