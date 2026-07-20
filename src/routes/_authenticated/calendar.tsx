@@ -166,6 +166,36 @@ function CalendarPage() {
   const matchesSearch = (r: UnifiedRes) =>
     !!searchQ && (r.guestName.toLowerCase().includes(searchQ) || (r.realId ?? r.id).toLowerCase().includes(searchQ));
 
+  const suggestions = useMemo(() => {
+    if (!searchQ) return [];
+    return filteredReservations.slice(0, 12).map((res) => {
+      const room = rooms.find((rm) => rm.id === res.roomId);
+      const prop = properties.find((p) => p.id === room?.propertyId);
+      return { res, roomNumber: room?.number ?? "?", propertyName: prop?.name ?? "—" };
+    });
+  }, [filteredReservations, rooms, properties, searchQ]);
+
+  function goToReservation(res: UnifiedRes) {
+    // Shift calendar so check-in is visible near the left edge
+    const target = new Date(res.checkIn);
+    target.setDate(target.getDate() - 2);
+    setStart(startOfDay(target));
+    // If reservation's room is in a specific property, switch filter to it
+    const room = rooms.find((rm) => rm.id === res.roomId);
+    if (room) {
+      if (propertyId !== "all" && propertyId !== room.propertyId) setPropertyId(room.propertyId);
+      setRoomQ("");
+    }
+    setSuggestOpen(false);
+    setGuestQ("");
+    // Focus grid + move focus to that row (best-effort — flatRooms recomputes on next render)
+    setTimeout(() => {
+      gridFocusRef.current?.focus({ preventScroll: false });
+      const rowIdx = flatRooms.findIndex((fr) => fr.room.id === res.roomId);
+      if (rowIdx >= 0) setFocus({ row: rowIdx, col: 2 });
+    }, 50);
+  }
+
   // Flat ordered list of rooms (matches render order) for keyboard nav
   const flatRooms = useMemo(() => {
     const out: { room: UnifiedRoom; property: UnifiedProperty }[] = [];
