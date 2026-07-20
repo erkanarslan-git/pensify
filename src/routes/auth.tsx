@@ -24,7 +24,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -45,10 +45,16 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success(t("auth.signedUp"));
-        // If email confirm disabled, session is set → go to dashboard
         const { data } = await supabase.auth.getSession();
         if (data.session) navigate({ to: "/" });
         else toast.message(t("auth.checkEmail"));
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success(t("auth.resetEmailSent"));
+        setMode("signin");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -76,6 +82,7 @@ function AuthPage() {
     if (result.redirected) return;
     navigate({ to: "/" });
   }
+
 
   const langs = [
     { code: "de", label: "DE" },
