@@ -420,9 +420,11 @@ function CalendarPage() {
                 );
                 days.forEach((d, dIdx) => {
                   const dIso = iso(d);
-                  const occupant = filteredReservations.find(
+                  const occupant = reservations.find(
                     (res) => res.roomId === r.id && res.checkIn <= dIso && res.checkOut > dIso,
                   );
+                  const isMatch = occupant ? matchesSearch(occupant) : false;
+                  const dim = !!searchQ && !!occupant && !isMatch;
                   const prevIso = dIdx > 0 ? iso(days[dIdx - 1]) : null;
                   const isOccupantStart =
                     !!occupant &&
