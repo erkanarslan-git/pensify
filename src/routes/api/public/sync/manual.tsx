@@ -92,11 +92,10 @@ export const Route = createFileRoute("/api/public/sync/manual")({
                     room_id: i.room_id,
                     property_id: i.property_id,
                     incoming_channel: i.channel,
-                    incoming_external_id: ev.uid,
                     check_in: ev.start,
                     check_out: ev.end,
                     status: "open",
-                    details: { summary, integration_id: i.id, error: upErr.message } as any,
+                    incoming_payload: { summary, uid: ev.uid, integration_id: i.id, error: upErr.message } as any,
                   });
                 } else {
                   throw upErr;
