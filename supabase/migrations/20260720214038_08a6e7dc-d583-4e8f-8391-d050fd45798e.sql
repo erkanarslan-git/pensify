@@ -1,0 +1,2 @@
+ALTER TABLE public.channel_integrations DROP CONSTRAINT IF EXISTS channel_integrations_property_id_channel_key;
+CREATE UNIQUE INDEX IF NOT EXISTS channel_integrations_ical_url_uniq ON public.channel_integrations (ical_url) WHERE ical_url IS NOT NULL;
