@@ -12,10 +12,11 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
 });
 
-type TabKey = "general" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
+type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
 
 const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
   { key: "general", label: "Allgemein", icon: Globe },
+  { key: "profile", label: "Profil", icon: UserIcon },
   { key: "language", label: "Sprache", icon: Languages },
   { key: "notifications", label: "Benachrichtigungen", icon: Bell },
   { key: "email", label: "E-Mail", icon: Mail },
