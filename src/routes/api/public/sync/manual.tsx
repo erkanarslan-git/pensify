@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/public/sync/manual")({
             let jobConflicts = 0;
 
             for (const ev of events) {
-              if (ev.end <= today) continue; // skip past
+              if (ev.end <= today || ev.start < today) continue; // skip past
               const summary = (ev.summary ?? "").trim();
               // Skip Airbnb "Not available" placeholder blocks — they represent
               // internal blocks with no real booking. Keep confirmed reservations.
