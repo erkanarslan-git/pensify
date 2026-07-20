@@ -75,6 +75,11 @@ function ChannelSyncPage() {
     if (error) toast.error(error.message); else toast.success("Silindi");
   }
 
+  async function updateIntegration(row: Integration, patch: { name?: string | null; property_id?: string; room_id?: string | null; ical_url?: string | null }) {
+    const { error } = await supabase.from("channel_integrations").update(patch).eq("id", row.id);
+    if (error) toast.error(error.message); else toast.success("Güncellendi");
+  }
+
   async function addIntegration(channel: Channel, propertyId: string, icalUrl: string, name?: string, roomId?: string) {
     if (!propertyId) return toast.error("Bir mülk seçin");
     const { error } = await supabase.from("channel_integrations").insert({
