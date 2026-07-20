@@ -155,13 +155,15 @@ function CalendarPage() {
     });
   }, [propertyId, roomQ, rooms]);
 
+  const searchQ = guestQ.trim().toLowerCase();
   const filteredReservations = useMemo(() => {
-    const q = guestQ.trim().toLowerCase();
-    if (!q) return reservations;
+    if (!searchQ) return reservations;
     return reservations.filter((r) =>
-      r.guestName.toLowerCase().includes(q) || (r.realId ?? r.id).toLowerCase().includes(q),
+      r.guestName.toLowerCase().includes(searchQ) || (r.realId ?? r.id).toLowerCase().includes(searchQ),
     );
-  }, [guestQ, reservations]);
+  }, [searchQ, reservations]);
+  const matchesSearch = (r: UnifiedRes) =>
+    !!searchQ && (r.guestName.toLowerCase().includes(searchQ) || (r.realId ?? r.id).toLowerCase().includes(searchQ));
 
   // Flat ordered list of rooms (matches render order) for keyboard nav
   const flatRooms = useMemo(() => {
