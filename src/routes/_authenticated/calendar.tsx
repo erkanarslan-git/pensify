@@ -323,9 +323,12 @@ function CalendarPage() {
 
 
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
+        <TooltipProvider delayDuration={150}>
         <div
           ref={gridFocusRef}
           tabIndex={0}
+          onFocus={() => setGridFocused(true)}
+          onBlur={() => setGridFocused(false)}
           onKeyDown={onGridKeyDown}
           className="outline-none focus:ring-2 focus:ring-primary/30 rounded-md"
         >
@@ -333,7 +336,26 @@ function CalendarPage() {
           <div className="min-w-[900px] px-5">
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border">Zimmer</div>
+              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
+                <span>Zimmer</span>
+                {!gridFocused && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => gridFocusRef.current?.focus()}
+                        className="inline-flex items-center justify-center w-5 h-5 rounded text-primary hover:bg-primary/10 animate-pulse"
+                        aria-label="Tastatur-Navigation aktivieren"
+                      >
+                        <MousePointerClick className="w-3.5 h-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-[220px] text-xs">
+                      Klick auf den Kalender, um die Tastatur-Navigation zu aktivieren (Pfeiltasten, Enter, ?).
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               {days.map((d, dIdx) => {
                 const isToday = iso(d) === today;
                 const isFocusCol = dIdx === focus.col;
@@ -365,14 +387,29 @@ function CalendarPage() {
                         #{r.number}
 
                         {r.needsCleaning && !r.issue && (
-                          <span title="Reinigung ausstehend" className="inline-flex">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex cursor-help">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              Reinigung ausstehend
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                         {r.issue && (
-                          <span title={r.issue} className="inline-flex">
-                            <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex cursor-help">
+                                <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[240px] text-xs">
+                              <div className="font-semibold mb-0.5">Problem gemeldet</div>
+                              <div className="text-muted-foreground">{r.issue}</div>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </div>
                       <div className="text-[11px] text-muted-foreground truncate">{p.name}</div>
