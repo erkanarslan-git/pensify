@@ -161,7 +161,22 @@
     "signedUp": "Hesap oluşturuldu",
     "signOutSuccess": "Çıkış yapıldı",
     "invalidCredentials": "Geçersiz bilgiler",
-    "termsHint": "Devam ederek koşulları kabul edersiniz."
+    "termsHint": "Devam ederek koşulları kabul edersiniz.",
+    "forgotLink": "Şifremi unuttum?",
+    "forgotTitle": "Şifreyi sıfırla",
+    "forgotSubtitle": "Şifreni sıfırlaman için sana bir bağlantı göndereceğiz.",
+    "sendResetEmail": "Sıfırlama linki gönder",
+    "resetEmailSent": "Sıfırlama e-postası gönderildi. Gelen kutunu kontrol et.",
+    "backToSignIn": "Girişe dön",
+    "resetTitle": "Yeni şifre belirle",
+    "resetSubtitle": "Yeni şifreni gir.",
+    "resetInvalidLink": "Geçersiz veya süresi dolmuş bağlantı. Lütfen yenisini iste.",
+    "newPassword": "Yeni şifre",
+    "confirmPassword": "Şifreyi onayla",
+    "updatePassword": "Şifreyi güncelle",
+    "passwordUpdated": "Şifre başarıyla güncellendi.",
+    "passwordsDoNotMatch": "Şifreler eşleşmiyor.",
+    "passwordTooShort": "Şifre en az 6 karakter olmalı."
   },
   "status": {
     "available": "Müsait",

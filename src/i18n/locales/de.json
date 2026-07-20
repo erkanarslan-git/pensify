@@ -161,7 +161,22 @@
     "signedUp": "Konto erstellt",
     "signOutSuccess": "Abgemeldet",
     "invalidCredentials": "Ungültige Zugangsdaten",
-    "termsHint": "Mit Fortfahren akzeptierst du unsere Bedingungen."
+    "termsHint": "Mit Fortfahren akzeptierst du unsere Bedingungen.",
+    "forgotLink": "Passwort vergessen?",
+    "forgotTitle": "Passwort zurücksetzen",
+    "forgotSubtitle": "Wir senden dir einen Link zum Zurücksetzen deines Passworts.",
+    "sendResetEmail": "Link senden",
+    "resetEmailSent": "E-Mail zum Zurücksetzen gesendet. Prüfe dein Postfach.",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "resetTitle": "Neues Passwort setzen",
+    "resetSubtitle": "Gib dein neues Passwort ein.",
+    "resetInvalidLink": "Ungültiger oder abgelaufener Link. Bitte fordere einen neuen Link an.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "updatePassword": "Passwort aktualisieren",
+    "passwordUpdated": "Passwort erfolgreich aktualisiert.",
+    "passwordsDoNotMatch": "Passwörter stimmen nicht überein.",
+    "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein."
   },
   "status": {
     "available": "Verfügbar",

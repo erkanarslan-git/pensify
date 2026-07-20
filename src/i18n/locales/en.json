@@ -161,7 +161,22 @@
     "signedUp": "Account created",
     "signOutSuccess": "Signed out",
     "invalidCredentials": "Invalid credentials",
-    "termsHint": "By continuing you agree to our terms."
+    "termsHint": "By continuing you agree to our terms.",
+    "forgotLink": "Forgot password?",
+    "forgotTitle": "Reset password",
+    "forgotSubtitle": "We'll send you a link to reset your password.",
+    "sendResetEmail": "Send reset link",
+    "resetEmailSent": "Reset email sent. Check your inbox.",
+    "backToSignIn": "Back to sign in",
+    "resetTitle": "Set a new password",
+    "resetSubtitle": "Enter your new password.",
+    "resetInvalidLink": "Invalid or expired link. Please request a new one.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "updatePassword": "Update password",
+    "passwordUpdated": "Password updated successfully.",
+    "passwordsDoNotMatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 6 characters."
   },
   "status": {
     "available": "Available",
