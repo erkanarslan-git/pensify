@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROLES, ROLE_LABEL, PERMISSIONS, type AppRole } from "@/lib/permissions";
 import { adminCreateUser, adminDeleteUser, adminSetUserBanned, adminResetUserPassword } from "@/lib/admin-users.functions";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Team — Pensify" }] }),
