@@ -428,8 +428,8 @@ function CalendarPage() {
                         <MousePointerClick className="w-3.5 h-3.5" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-[220px] text-xs">
-                      Klick auf den Kalender, um die Tastatur-Navigation zu aktivieren (Pfeiltasten, Enter, ?).
+                    <TooltipContent side="right" className="max-w-[240px] text-xs">
+                      Drücke <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">G</kbd> (oder klicke hier), um die Tastatur-Navigation zu aktivieren. Danach: Pfeiltasten, Enter, ?
                     </TooltipContent>
                   </Tooltip>
                 )}
