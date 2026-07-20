@@ -356,13 +356,14 @@ export function Badge({ tone, children }: {
   children: ReactNode;
 }) {
   const map: Record<string, string> = {
-    success: "bg-success/15 text-success-foreground border-success/30",
-    info: "bg-info/15 text-info-foreground border-info/30",
-    warning: "bg-warning/20 text-warning-foreground border-warning/30",
-    destructive: "bg-destructive/10 text-destructive border-destructive/20",
+    success: "bg-success/15 text-success-foreground dark:text-success border-success/30",
+    info: "bg-info/15 text-info-foreground dark:text-info border-info/30",
+    warning: "bg-warning/20 text-warning-foreground dark:text-warning border-warning/40",
+    destructive: "bg-destructive/10 text-destructive border-destructive/30",
     muted: "bg-muted text-muted-foreground border-border",
-    primary: "bg-primary/10 text-primary border-primary/20",
+    primary: "bg-primary/15 text-primary border-primary/30 dark:text-primary",
   };
+
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${map[tone]}`}>
       {children}
