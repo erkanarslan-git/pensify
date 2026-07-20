@@ -75,6 +75,22 @@ function CalendarPage() {
     return () => clearTimeout(t);
   }, []);
 
+  // Global shortcut: press "G" (or Escape) anywhere to refocus the calendar grid
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      const inField = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable;
+      if (inField && e.key !== "Escape") return;
+      if (e.key === "g" || e.key === "G" || e.key === "Escape") {
+        e.preventDefault();
+        gridFocusRef.current?.focus({ preventScroll: true });
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   // Helper: is given iso date strictly before today?
   const todayIsoStr = new Date().toISOString().slice(0, 10);
   const isPastDate = (dIso: string) => dIso < todayIsoStr;
@@ -412,8 +428,8 @@ function CalendarPage() {
                         <MousePointerClick className="w-3.5 h-3.5" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-[220px] text-xs">
-                      Klick auf den Kalender, um die Tastatur-Navigation zu aktivieren (Pfeiltasten, Enter, ?).
+                    <TooltipContent side="right" className="max-w-[240px] text-xs">
+                      Drücke <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">G</kbd> (oder klicke hier), um die Tastatur-Navigation zu aktivieren. Danach: Pfeiltasten, Enter, ?
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -469,7 +485,7 @@ function CalendarPage() {
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-[240px] text-xs">
                               <div className="font-semibold mb-0.5">Problem gemeldet</div>
-                              <div className="text-muted-foreground">{r.issue}</div>
+                              <div className="opacity-90 whitespace-pre-wrap break-words">{r.issue || "Keine Details angegeben"}</div>
                             </TooltipContent>
                           </Tooltip>
                         )}
