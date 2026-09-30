@@ -69,7 +69,7 @@ function DispatchPage() {
 
   const s = data.settings as Record<string, any>;
   const morningTime = s["dispatch.morning_time"] || "08:00";
-  const timezone = s["dispatch.timezone"] || "Europe/Istanbul";
+  const timezone = s["dispatch.timezone"] || "Europe/Berlin";
   const enabled = s["dispatch.enabled"] === true;
 
   // group tasks per cleaner
