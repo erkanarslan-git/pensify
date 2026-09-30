@@ -16,7 +16,7 @@ export async function handleChannelWebhook(request: Request, channel: "booking" 
   if (rateLimited(`wh:${channel}:${clientIp(request)}`, 30, 60_000)) return jsonError(429, "rate_limited");
 
   const testSecret = process.env["CHANNEL_WEBHOOK_TEST_SECRET"];
-  if (!testSecret) return jsonError(503, "not_configured");
+  if (!testSecret) return jsonError(403, "not_configured"); // 4xx: intentionally disabled, not a server fault
 
   const provided = request.headers.get("x-webhook-secret") ?? "";
   if (!provided || !safeEqual(provided, testSecret)) return jsonError(401, "unauthorized");
