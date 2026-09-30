@@ -150,7 +150,13 @@ SELECT pg_temp.eq((SELECT count(*) FROM public.integration_outbox WHERE event='r
   AND property_id='d0000000-0000-0000-0000-0000000000a1'), 1, 'price change enqueues property-scoped outbox event');
 SELECT pg_temp.eq((SELECT count(*) FROM public.integration_outbox WHERE payload ? 'guest_name'), 0, 'outbox never carries guest names');
 
--- ---------- Clock-in location override is audited and needs a reason ----------
+-- ---------- Clock-in location override: managers only, reason required ----------
+DO $$ BEGIN
+  UPDATE public.properties SET clock_without_location = true, clock_without_location_reason = 'x' WHERE id='d0000000-0000-0000-0000-0000000000a1';
+  RAISE EXCEPTION 'FAIL B user set override on A property';
+EXCEPTION WHEN insufficient_privilege THEN RAISE NOTICE 'PASS other-tenant user cannot set clock override';
+END $$;
+SELECT pg_temp.as_user('aaaaaaaa-0000-0000-0000-000000000001');
 DO $$ BEGIN
   UPDATE public.properties SET clock_without_location = true WHERE id='d0000000-0000-0000-0000-0000000000a1';
   RAISE EXCEPTION 'FAIL override without reason';
