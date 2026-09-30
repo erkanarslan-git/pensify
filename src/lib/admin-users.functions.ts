@@ -1,15 +1,27 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireOrgRole, ADMIN_ROLES, MANAGER_ROLES } from "@/lib/org-auth.server";
 import { z } from "zod";
 
 const ROLES = ["owner", "admin", "manager", "reception", "cleaner"] as const;
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
-  const [{ data: isAdmin }, { data: isOwner }] = await Promise.all([
-    ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
-    ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "owner" }),
+  try { return await requireOrgRole(ctx.supabase, ADMIN_ROLES); }
+  catch { throw new Error("Forbidden"); }
+}
+
+// Target user must belong to (or have requested access to) the caller's organization.
+async function assertTargetInOrg(admin: any, orgId: string, userId: string) {
+  const [{ data: m }, { data: r }] = await Promise.all([
+    admin.from("organization_members").select("id").eq("organization_id", orgId).eq("user_id", userId).maybeSingle(),
+    admin.from("access_requests").select("id").eq("organization_id", orgId).eq("user_id", userId).limit(1).maybeSingle(),
   ]);
-  if (!isAdmin && !isOwner) throw new Error("Forbidden");
+  if (!m && !r) throw new Error("Forbidden");
+}
+
+async function orgOwners(admin: any, orgId: string): Promise<string[]> {
+  const { data } = await admin.from("organization_members").select("user_id").eq("organization_id", orgId).eq("role", "owner").eq("active", true);
+  return (data ?? []).map((r: any) => r.user_id);
 }
 
 export const adminCreateUser = createServerFn({ method: "POST" })

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireOrgRole, ADMIN_ROLES, MANAGER_ROLES } from "@/lib/org-auth.server";
 
 const PUBLIC_BASE = "https://project--c3bce140-98e6-40ed-a35c-6ad0fa40d481.lovable.app";
 
@@ -13,9 +14,8 @@ async function loadSettings(supabase: any): Promise<SettingsMap> {
 }
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-  const { data: owner } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "owner" });
-  if (!data && !owner) throw new Error("Forbidden");
+  try { return await requireOrgRole(context.supabase, MANAGER_ROLES); }
+  catch { throw new Error("Forbidden"); }
 }
 
 function todayISO(tz: string): string {

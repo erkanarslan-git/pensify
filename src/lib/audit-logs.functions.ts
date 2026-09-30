@@ -1,19 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireOrgRole, ADMIN_ROLES, MANAGER_ROLES } from "@/lib/org-auth.server";
 
 async function requireAdmin(context: { supabase: any; userId: string }) {
-  const { data: isOwner } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "owner",
-  });
-  const { data: isAdmin } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (!isOwner && !isAdmin) {
-    throw new Response("Forbidden", { status: 403 });
-  }
+  try { return await requireOrgRole(context.supabase, ADMIN_ROLES); }
+  catch { throw new Response("Forbidden", { status: 403 }); }
 }
 
 export const listAuditLogs = createServerFn({ method: "GET" })
