@@ -395,6 +395,8 @@ export type Database = {
           external_room_id: string | null
           id: string
           organization_id: string
+          property_id: string | null
+          property_mapping_id: string | null
           rate_plan_id: string | null
           room_type_id: string
           sync_enabled: boolean
@@ -406,6 +408,8 @@ export type Database = {
           external_room_id?: string | null
           id?: string
           organization_id: string
+          property_id?: string | null
+          property_mapping_id?: string | null
           rate_plan_id?: string | null
           room_type_id: string
           sync_enabled?: boolean
@@ -417,6 +421,8 @@ export type Database = {
           external_room_id?: string | null
           id?: string
           organization_id?: string
+          property_id?: string | null
+          property_mapping_id?: string | null
           rate_plan_id?: string | null
           room_type_id?: string
           sync_enabled?: boolean
@@ -427,6 +433,20 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_room_mappings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_room_mappings_property_mapping_id_fkey"
+            columns: ["property_mapping_id"]
+            isOneToOne: false
+            referencedRelation: "channel_property_mappings"
             referencedColumns: ["id"]
           },
           {
@@ -986,6 +1006,7 @@ export type Database = {
           min_stay: number | null
           organization_id: string
           price: number
+          property_id: string | null
           rate_plan_id: string
         }
         Insert: {
@@ -997,6 +1018,7 @@ export type Database = {
           min_stay?: number | null
           organization_id: string
           price: number
+          property_id?: string | null
           rate_plan_id: string
         }
         Update: {
@@ -1008,6 +1030,7 @@ export type Database = {
           min_stay?: number | null
           organization_id?: string
           price?: number
+          property_id?: string | null
           rate_plan_id?: string
         }
         Relationships: [
@@ -1016,6 +1039,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "occupancy_rates_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
           {
@@ -1214,6 +1244,7 @@ export type Database = {
           min_stay: number
           name: string
           organization_id: string
+          property_id: string | null
           room_type_id: string
         }
         Insert: {
@@ -1226,6 +1257,7 @@ export type Database = {
           min_stay?: number
           name: string
           organization_id: string
+          property_id?: string | null
           room_type_id: string
         }
         Update: {
@@ -1238,6 +1270,7 @@ export type Database = {
           min_stay?: number
           name?: string
           organization_id?: string
+          property_id?: string | null
           room_type_id?: string
         }
         Relationships: [
@@ -1246,6 +1279,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_plans_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
           {
@@ -1420,6 +1460,7 @@ export type Database = {
           id: string
           name: string
           organization_id: string
+          property_id: string | null
           size_sqm: number | null
         }
         Insert: {
@@ -1432,6 +1473,7 @@ export type Database = {
           id?: string
           name: string
           organization_id: string
+          property_id?: string | null
           size_sqm?: number | null
         }
         Update: {
@@ -1444,6 +1486,7 @@ export type Database = {
           id?: string
           name?: string
           organization_id?: string
+          property_id?: string | null
           size_sqm?: number | null
         }
         Relationships: [
@@ -1452,6 +1495,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_types_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]

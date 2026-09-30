@@ -15,24 +15,33 @@ interface TypeRow {
 
 const input = "w-full px-2 py-1.5 rounded-md border border-input bg-card text-sm";
 
+interface PropertyOpt { id: string; name: string; organization_id: string }
+
 export function RoomTypesDialog({
-  open, organizationId, onClose, onSaved,
-}: { open: boolean; organizationId: string | null; onClose: () => void; onSaved: () => void }) {
+  open, properties, onClose, onSaved,
+}: { open: boolean; properties: PropertyOpt[]; onClose: () => void; onSaved: () => void }) {
+  const [propertyId, setPropertyId] = useState("");
+  const organizationId = properties.find((p) => p.id === propertyId)?.organization_id ?? null;
   const [rows, setRows] = useState<TypeRow[]>([]);
   const [draft, setDraft] = useState({ name: "", capacity: 2, price: "" });
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (open && !properties.some((p) => p.id === propertyId)) setPropertyId(properties[0]?.id ?? "");
+  }, [open, properties, propertyId]);
+
   const load = async () => {
+    if (!propertyId) { setRows([]); return; }
     const [{ data: types }, { data: plans }] = await Promise.all([
-      supabase.from("room_types").select("id,name,code,capacity").order("name"),
-      supabase.from("rate_plans").select("id,room_type_id,base_price,active,created_at").eq("active", true).order("created_at"),
+      supabase.from("room_types").select("id,name,code,capacity").eq("property_id", propertyId).order("name"),
+      supabase.from("rate_plans").select("id,room_type_id,base_price,active,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
     ]);
     setRows((types ?? []).map((t) => {
       const p = (plans ?? []).find((x) => x.room_type_id === t.id);
       return { ...t, planId: p?.id ?? null, price: p ? String(p.base_price) : "" };
     }));
   };
-  useEffect(() => { if (open) load(); }, [open]);
+  useEffect(() => { if (open) load(); }, [open, propertyId]);
 
   const savePrice = async (r: TypeRow) => {
     const price = Number(r.price);
@@ -58,7 +67,7 @@ export function RoomTypesDialog({
     setBusy(true);
     const code = draft.name.trim().toUpperCase().replace(/[^A-Z0-9]+/g, "-").slice(0, 20) || "TYPE";
     const { data: t, error } = await supabase.from("room_types").insert({
-      organization_id: organizationId, name: draft.name.trim(), code,
+      organization_id: organizationId, property_id: propertyId, name: draft.name.trim(), code,
       capacity: draft.capacity, base_occupancy: draft.capacity, active: true,
     }).select("id").single();
     if (!error && t) {
@@ -79,9 +88,12 @@ export function RoomTypesDialog({
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Zimmertypen & Preise</DialogTitle>
-          <DialogDescription>Preis pro Nacht. Neue Buchungen übernehmen ihn automatisch.</DialogDescription>
+          <DialogDescription>Pro Haus: Zimmertypen und Preis pro Nacht. Neue Buchungen übernehmen ihn automatisch.</DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
+          <select value={propertyId} onChange={(e) => setPropertyId(e.target.value)} className={input}>
+            {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
           <div className="grid grid-cols-[1fr_70px_100px_36px] gap-2 text-[11px] text-muted-foreground uppercase">
             <span>Name</span><span>Pers.</span><span>€ / Nacht</span><span />
           </div>

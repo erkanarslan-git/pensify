@@ -26,8 +26,8 @@ INSERT INTO public.properties(id, organization_id, city_id, name, address) VALUE
  ('d0000000-0000-0000-0000-0000000000a1','a0000000-0000-0000-0000-00000000000a','c0000000-0000-0000-0000-00000000000a','PA1','x'),
  ('d0000000-0000-0000-0000-0000000000a2','a0000000-0000-0000-0000-00000000000a','c0000000-0000-0000-0000-00000000000a','PA2','x'),
  ('d0000000-0000-0000-0000-0000000000b1','b0000000-0000-0000-0000-00000000000b','c0000000-0000-0000-0000-00000000000b','PB1','x');
-INSERT INTO public.room_types(id, organization_id, name, code, capacity) VALUES
- ('f0000000-0000-0000-0000-0000000000a1','a0000000-0000-0000-0000-00000000000a','Doppel','DZ',2);
+INSERT INTO public.room_types(id, organization_id, property_id, name, code, capacity) VALUES
+ ('f0000000-0000-0000-0000-0000000000a1','a0000000-0000-0000-0000-00000000000a','d0000000-0000-0000-0000-0000000000a1','Doppel','DZ',2);
 INSERT INTO public.rate_plans(id, organization_id, room_type_id, name, code, base_price) VALUES
  ('f1000000-0000-0000-0000-0000000000a1','a0000000-0000-0000-0000-00000000000a','f0000000-0000-0000-0000-0000000000a1','Standard','STD',100);
 INSERT INTO public.occupancy_rates(organization_id, rate_plan_id, date, guest_count, price) VALUES

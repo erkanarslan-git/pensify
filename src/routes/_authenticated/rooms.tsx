@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/rooms")({
 type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
 
 interface Property { id: string; name: string; city_id: string | null; organization_id: string }
-interface RoomType { id: string; name: string }
+interface RoomType { id: string; name: string; property_id: string | null }
 interface City { id: string; name: string }
 interface Cleaner { id: string; full_name: string; active: boolean }
 interface Room {
@@ -71,7 +71,7 @@ function RoomsPage() {
         supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
-        supabase.from("room_types").select("id,name").order("name"),
+        supabase.from("room_types").select("id,name,property_id").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
       setRoomTypes((rt ?? []) as RoomType[]);
@@ -207,7 +207,7 @@ function RoomsPage() {
       />
       <RoomTypesDialog
         open={typesOpen}
-        organizationId={properties[0]?.organization_id ?? null}
+        properties={properties}
         onClose={() => setTypesOpen(false)}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
@@ -297,7 +297,7 @@ function RoomDialog({
         <div className="space-y-3">
           <div>
             <label className="text-xs text-muted-foreground">Lokasyon</label>
-            <select value={propId} onChange={(e) => setPropId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
+            <select value={propId} onChange={(e) => { setPropId(e.target.value); setRoomTypeId(""); }} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
               {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
@@ -327,7 +327,7 @@ function RoomDialog({
             <label className="text-xs text-muted-foreground">Zimmertyp (Preis)</label>
             <select value={roomTypeId} onChange={(e) => setRoomTypeId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
               <option value="">— kein Typ —</option>
-              {roomTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              {roomTypes.filter((t) => t.property_id === propId).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
           <div>

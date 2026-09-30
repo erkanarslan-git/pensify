@@ -6,8 +6,8 @@ import type { Database } from "@/integrations/supabase/types";
  * Sends pending channel-manager events per WuBook account and property connection.
  * Auth: x-cron-secret checked against private.cron_secrets ("channel-outbox").
  * One account (credentials) per organization; many channel_property_mappings, each linking a
- * Pensify property to its WuBook property code. Property-scoped events go to that mapping only;
- * org-wide events (rates) fan out to every enabled mapping.
+ * Pensify property to its WuBook property code. Every event (availability, rates, restrictions,
+ * reservation_price) carries property_id and goes only to that property's mapping.
  * LIVE_CALLS_ENABLED is false: every row is marked "dry_run" and WuBook is never contacted.
  */
 const BATCH = 100;
@@ -51,8 +51,8 @@ export const Route = createFileRoute("/api/public/hooks/channel-outbox")({
             .lte("next_attempt_at", new Date().toISOString())
             .order("created_at")
             .limit(BATCH);
-          // property-scoped rows for unmapped properties stay pending until that property is connected
-          const due = (rows ?? []).filter((r) => !r.property_id || mapped.has(r.property_id));
+          // every event is property-scoped; rows for unconnected houses stay pending (never fanned out)
+          const due = (rows ?? []).filter((r) => r.property_id && mapped.has(r.property_id));
           if (!due.length) continue;
 
           if (!LIVE_CALLS_ENABLED || acc.dry_run) {
