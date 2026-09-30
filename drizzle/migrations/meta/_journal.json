@@ -71,6 +71,13 @@
       "when": 1790771494381,
       "tag": "0009_cleaning_task_transitions",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790771594566,
+      "tag": "0010_room_operational_status_view",
+      "breakpoints": true
     }
   ]
 }

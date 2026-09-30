@@ -258,6 +258,13 @@ export type Database = {
             foreignKeyName: "channel_integrations_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "channel_integrations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -475,6 +482,13 @@ export type Database = {
             foreignKeyName: "cleaning_tasks_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "cleaning_tasks_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -550,6 +564,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conflict_alerts_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
           },
           {
             foreignKeyName: "conflict_alerts_room_id_fkey"
@@ -1137,6 +1158,13 @@ export type Database = {
             foreignKeyName: "reservations_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "reservations_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -1376,6 +1404,13 @@ export type Database = {
             foreignKeyName: "sync_jobs_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "sync_jobs_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -1542,7 +1577,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      room_operational_status: {
+        Row: {
+          organization_id: string | null
+          property_id: string | null
+          room_id: string | null
+          status: Database["public"]["Enums"]["room_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_organization_fk"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rooms_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       active_organization_id: { Args: never; Returns: string }
