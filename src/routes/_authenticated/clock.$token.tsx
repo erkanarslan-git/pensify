@@ -23,7 +23,7 @@ function distanceM(lat1: number, lng1: number, lat2: number, lng2: number) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-const MAX_GEOFENCE_ACCURACY_M = 2000;
+const MAX_GEOFENCE_ACCURACY_M = 200;
 
 function useGeolocation() {
   const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
