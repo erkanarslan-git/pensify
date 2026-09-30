@@ -49,7 +49,8 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-morning")({
         for (const r of settingsRows ?? []) s[r.key] = r.value;
 
         const enabled = s["dispatch.enabled"] === true;
-        const tz = s["dispatch.timezone"] || "Europe/Berlin";
+        const { data: org } = await supabase.from("organizations").select("timezone").order("created_at").limit(1).maybeSingle();
+        const tz = s["dispatch.timezone"] || org?.timezone || "Europe/Berlin";
         const target = s["dispatch.morning_time"] || "08:00";
         const template = s["dispatch.message_template"] || "Günaydın {ad}!\n{liste}";
         const lastRun = s["dispatch.last_run_date"] || "";
