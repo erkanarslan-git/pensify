@@ -5,6 +5,7 @@ import { Users, Plus, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RoomTypesDialog } from "@/components/room-types-dialog";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,8 @@ export const Route = createFileRoute("/_authenticated/rooms")({
 
 type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
 
-interface Property { id: string; name: string; city_id: string | null }
+interface Property { id: string; name: string; city_id: string | null; organization_id: string }
+interface RoomType { id: string; name: string }
 interface City { id: string; name: string }
 interface Cleaner { id: string; full_name: string; active: boolean }
 interface Room {
@@ -32,6 +34,7 @@ interface Room {
   floor: number | null;
   notes: string | null;
   default_cleaner_id: string | null;
+  room_type_id: string | null;
 }
 
 const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
@@ -57,16 +60,20 @@ function RoomsPage() {
   const [editing, setEditing] = useState<Room | null>(null);
   const [creating, setCreating] = useState<{ propertyId: string } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+  const [typesOpen, setTypesOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }] = await Promise.all([
+      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }, { data: rt }] = await Promise.all([
         supabase.from("cities").select("id,name").order("name"),
-        supabase.from("properties").select("id,name,city_id").order("name"),
-        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id")
+        supabase.from("properties").select("id,name,city_id,organization_id").order("name"),
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
+        supabase.from("room_types").select("id,name").order("name"),
       ]);
+      setRoomTypes((rt ?? []) as RoomType[]);
       setCities((ci ?? []) as City[]);
       setProperties((pr ?? []) as Property[]);
       setRooms((rm ?? []) as Room[]);
@@ -89,6 +96,12 @@ function RoomsPage() {
       subtitle={`${rooms.length} oda · ${properties.length} lokasyon`}
     >
       <div className="flex flex-wrap gap-2 mb-4">
+        <button
+          onClick={() => setTypesOpen(true)}
+          className="px-3 py-1.5 rounded-full text-xs font-medium border border-primary text-primary hover:bg-primary/10"
+        >
+          Zimmertypen & Preise
+        </button>
         <button
           onClick={() => setFilter("all")}
           className={`px-3 py-1.5 rounded-full text-xs font-medium border ${filter === "all" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
@@ -185,7 +198,14 @@ function RoomsPage() {
         propertyId={creating?.propertyId}
         properties={properties}
         cleaners={cleaners}
+        roomTypes={roomTypes}
         onClose={() => { setEditing(null); setCreating(null); }}
+        onSaved={() => setRefreshKey((k) => k + 1)}
+      />
+      <RoomTypesDialog
+        open={typesOpen}
+        organizationId={properties[0]?.organization_id ?? null}
+        onClose={() => setTypesOpen(false)}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
     </AppShell>
@@ -193,13 +213,14 @@ function RoomsPage() {
 }
 
 function RoomDialog({
-  open, room, propertyId, properties, cleaners, onClose, onSaved,
+  open, room, propertyId, properties, cleaners, roomTypes, onClose, onSaved,
 }: {
   open: boolean;
   room: Room | null;
   propertyId?: string;
   properties: Property[];
   cleaners: Cleaner[];
+  roomTypes: RoomType[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -211,6 +232,7 @@ function RoomDialog({
   const [notes, setNotes] = useState("");
   const [defaultCleanerId, setDefaultCleanerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [roomTypeId, setRoomTypeId] = useState<string>("");
 
   useEffect(() => {
     if (!open) return;
@@ -222,6 +244,7 @@ function RoomDialog({
       setPropId(room.property_id);
       setNotes(room.notes ?? "");
       setDefaultCleanerId(room.default_cleaner_id ?? "");
+      setRoomTypeId(room.room_type_id ?? "");
     } else {
       setNumber("");
       setCapacity(2);
@@ -230,6 +253,7 @@ function RoomDialog({
       setPropId(propertyId ?? properties[0]?.id ?? "");
       setNotes("");
       setDefaultCleanerId("");
+      setRoomTypeId("");
     }
   }, [open, room, propertyId, properties]);
 
@@ -248,6 +272,8 @@ function RoomDialog({
       status,
       notes: notes.trim() || null,
       default_cleaner_id: defaultCleanerId || null,
+      room_type_id: roomTypeId || null,
+      organization_id: properties.find((p) => p.id === propId)?.organization_id,
     };
     const { error } = room
       ? await supabase.from("rooms").update(payload).eq("id", room.id)
@@ -292,6 +318,13 @@ function RoomDialog({
               {(Object.keys(statusMeta) as RoomStatus[]).map((s) => (
                 <option key={s} value={s}>{statusMeta[s].label}</option>
               ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Zimmertyp (Preis)</label>
+            <select value={roomTypeId} onChange={(e) => setRoomTypeId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
+              <option value="">— kein Typ —</option>
+              {roomTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
           <div>
