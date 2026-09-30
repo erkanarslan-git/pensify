@@ -1404,6 +1404,10 @@ export type Database = {
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       default_organization_id: { Args: never; Returns: string }
+      has_organization_permission: {
+        Args: { _org: string; _permission: string }
+        Returns: boolean
+      }
       has_organization_role: {
         Args: {
           _org: string
