@@ -470,3 +470,60 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
     </Dialog>
   );
 }
+
+function PropertyAccessDialog({ userId, userName }: { userId: string; userName: string }) {
+  const [open, setOpen] = useState(false);
+  const [sel, setSel] = useState<Set<string> | null>(null);
+  const qc = useQueryClient();
+  const props = useQuery({
+    queryKey: ["team-properties"], enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("properties").select("id,name").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const current = useQuery({
+    queryKey: ["member-props", userId], enabled: open,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("admin_get_member_properties", { _user_id: userId });
+      if (error) throw error;
+      const s = new Set<string>((data ?? []).map((r: any) => r.property_id));
+      setSel(s);
+      return s;
+    },
+  });
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await (supabase as any).rpc("admin_set_member_properties", { _user_id: userId, _property_ids: Array.from(sel ?? []) });
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["member-props", userId] }); toast.success("Zuweisung gespeichert"); setOpen(false); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const toggle = (id: string) => setSel((s) => { const n = new Set(s ?? []); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost" title="Zugewiesene Häuser">Häuser</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Häuser für {userName}</DialogTitle></DialogHeader>
+        <p className="text-xs text-muted-foreground">Rezeption und Objektleitung sehen nur die hier ausgewählten Häuser. Reinigungskräfte sehen zusätzlich Häuser mit zugewiesenen Aufgaben.</p>
+        <div className="max-h-[50vh] overflow-y-auto space-y-1">
+          {(props.isLoading || current.isLoading) && <div className="text-sm text-muted-foreground">Lädt…</div>}
+          {props.data?.map((p: any) => (
+            <label key={p.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <input type="checkbox" checked={sel?.has(p.id) ?? false} onChange={() => toggle(p.id)} />
+              <span className="text-sm">{p.name}</span>
+            </label>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button disabled={save.isPending || !sel} onClick={() => save.mutate()}>Speichern</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
