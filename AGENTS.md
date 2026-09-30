@@ -1,0 +1,3 @@
+- Tenancy: every tenant-owned table has organization_id (default public.default_organization_id()); authorize via is_organization_member / has_organization_role / can_access_property. Why: tenant isolation must be enforced in the database, not the UI.
+- Legacy user_roles stays the app's role source for now; trigger user_roles_sync_org mirrors it into organization_members (manager→operations_manager). Why: zero-downtime migration.
+- Cron endpoints authenticate with a secret held in private.cron_secrets, checked via verify_cron_secret (service_role only). Why: the publishable key is public.
