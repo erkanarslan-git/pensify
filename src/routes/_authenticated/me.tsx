@@ -146,13 +146,13 @@ function MePage() {
           );
         }
       }
-      const { error } = await supabase.from("time_entries").insert({
-        cleaner_id: c.id,
-        property_id: selectedProperty.id,
-        clock_in_lat: geo.coords?.lat ?? null,
-        clock_in_lng: geo.coords?.lng ?? null,
-        clock_in_accuracy_m: geo.coords?.accuracy ?? null,
-        source: "manual",
+      const { error } = await supabase.rpc("clock_start", {
+        _property_id: selectedProperty.id,
+        _token: null,
+        _lat: geo.coords?.lat ?? null,
+        _lng: geo.coords?.lng ?? null,
+        _accuracy: geo.coords?.accuracy ?? null,
+        _source: "manual",
       });
       if (error) throw error;
     },
@@ -167,28 +167,8 @@ function MePage() {
     mutationFn: async () => {
       const open = ctx.data?.open;
       if (!open) return;
-      const now = new Date();
-      if (open.break_started_at) {
-        const addMin = Math.max(
-          0,
-          Math.round((now.getTime() - new Date(open.break_started_at).getTime()) / 60000),
-        );
-        const { error } = await supabase
-          .from("time_entries")
-          .update({
-            break_started_at: null,
-            break_minutes: (open.break_minutes ?? 0) + addMin,
-            status: "active",
-          })
-          .eq("id", open.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("time_entries")
-          .update({ break_started_at: now.toISOString(), status: "on_break" })
-          .eq("id", open.id);
-        if (error) throw error;
-      }
+      const { error } = await supabase.rpc("clock_toggle_break", { _entry_id: open.id });
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["me-shift"] }),
     onError: (e: Error) => toast.error(e.message),
@@ -198,25 +178,11 @@ function MePage() {
     mutationFn: async () => {
       const open = ctx.data?.open;
       if (!open) return;
-      const now = new Date();
-      let addMin = 0;
-      if (open.break_started_at) {
-        addMin = Math.max(
-          0,
-          Math.round((now.getTime() - new Date(open.break_started_at).getTime()) / 60000),
-        );
-      }
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          clock_out_at: now.toISOString(),
-          clock_out_lat: geo.coords?.lat ?? null,
-          clock_out_lng: geo.coords?.lng ?? null,
-          break_started_at: null,
-          break_minutes: (open.break_minutes ?? 0) + addMin,
-          status: "completed",
-        })
-        .eq("id", open.id);
+      const { error } = await supabase.rpc("clock_stop", {
+        _entry_id: open.id,
+        _lat: geo.coords?.lat ?? null,
+        _lng: geo.coords?.lng ?? null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
