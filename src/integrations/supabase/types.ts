@@ -406,6 +406,33 @@ export type Database = {
           },
         ]
       }
+      cron_executions: {
+        Row: {
+          detail: Json | null
+          finished_at: string | null
+          id: string
+          job: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          detail?: Json | null
+          finished_at?: string | null
+          id?: string
+          job: string
+          started_at?: string
+          status: string
+        }
+        Update: {
+          detail?: Json | null
+          finished_at?: string | null
+          id?: string
+          job?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       dispatch_messages: {
         Row: {
           body: string
@@ -1084,6 +1111,10 @@ export type Database = {
           longitude: number
           name: string
         }[]
+      }
+      verify_cron_secret: {
+        Args: { _name: string; _value: string }
+        Returns: boolean
       }
     }
     Enums: {
