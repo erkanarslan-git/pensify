@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -63,6 +63,11 @@ function CalendarPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [pendingPast, setPendingPast] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
+  // Drag-to-move: while dragging, dragDelta previews the shift; on release it becomes pendingMove awaiting OK/cancel.
+  const [dragDelta, setDragDelta] = useState<{ resId: string; days: number } | null>(null);
+  const [pendingMove, setPendingMove] = useState<{ res: UnifiedRes; checkIn: string; checkOut: string } | null>(null);
+  const [savingMove, setSavingMove] = useState(false);
+  const dragRef = useRef<{ res: UnifiedRes; startX: number; cellW: number } | null>(null);
   const gridFocusRef = useRef<HTMLDivElement>(null);
   const [gridFocused, setGridFocused] = useState(false);
   useEffect(() => {
