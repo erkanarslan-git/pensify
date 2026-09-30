@@ -58,6 +58,8 @@ SELECT pg_temp.eq((SELECT count(*) FROM public.reservations WHERE external_id='X
 -- Service-role style context (no user) gets NO default organization
 SELECT pg_temp.eq((SELECT count(*) FROM (SELECT public.default_organization_id() AS o) s WHERE o IS NULL), 1, 'no default org without user');
 
+-- fake test users have no auth.users row; audit FK would reject them (rolled back anyway)
+ALTER TABLE public.app_settings DISABLE TRIGGER audit_trg;
 SET LOCAL ROLE authenticated;
 
 -- ---------- Tenant A admin ----------
