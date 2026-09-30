@@ -1,0 +1,1 @@
+ALTER FUNCTION public.reservation_integrity() SECURITY DEFINER;

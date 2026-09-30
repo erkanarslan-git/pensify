@@ -36,19 +36,6 @@ INSERT INTO public.occupancy_rates(organization_id, rate_plan_id, date, guest_co
 INSERT INTO public.rooms(id, organization_id, property_id, number, capacity, room_type_id) VALUES
  ('e0000000-0000-0000-0000-0000000000a1','a0000000-0000-0000-0000-00000000000a','d0000000-0000-0000-0000-0000000000a1','1',4,'f0000000-0000-0000-0000-0000000000a1');
 
--- ---------- Guest-count pricing ----------
-SELECT pg_temp.eq(public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 1), 220, 'quote 1 guest uses any-guest date price + base');
-SELECT pg_temp.eq(public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 2), 250, 'quote 2 guests uses guest-specific date price');
-DO $$ BEGIN
-  PERFORM public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 3);
-  RAISE EXCEPTION 'FAIL quote above room type capacity';
-EXCEPTION WHEN check_violation THEN RAISE NOTICE 'PASS quote rejects guests above room type capacity (type 2 overrides room 4)';
-END $$;
-DO $$ BEGIN
-  PERFORM public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 0);
-  RAISE EXCEPTION 'FAIL quote with 0 guests';
-EXCEPTION WHEN raise_exception THEN RAISE NOTICE 'PASS quote rejects 0 guests';
-END $$;
 DO $$ BEGIN
   INSERT INTO public.occupancy_rates(organization_id, rate_plan_id, date, guest_count, price)
   VALUES ('a0000000-0000-0000-0000-00000000000a','f1000000-0000-0000-0000-0000000000a1', current_date+10, 2, 99);
@@ -86,6 +73,19 @@ ALTER TABLE public.channel_property_mappings DISABLE TRIGGER audit_trg;
 SET LOCAL ROLE authenticated;
 
 SELECT pg_temp.as_user('aaaaaaaa-0000-0000-0000-000000000001');
+-- ---------- Guest-count pricing ----------
+SELECT pg_temp.eq(public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 1), 220, 'quote 1 guest uses any-guest date price + base');
+SELECT pg_temp.eq(public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 2), 250, 'quote 2 guests uses guest-specific date price');
+DO $$ BEGIN
+  PERFORM public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 3);
+  RAISE EXCEPTION 'FAIL quote above room type capacity';
+EXCEPTION WHEN check_violation THEN RAISE NOTICE 'PASS quote rejects guests above room type capacity (type 2 overrides room 4)';
+END $$;
+DO $$ BEGIN
+  PERFORM public.quote_room_price('e0000000-0000-0000-0000-0000000000a1', current_date+10, current_date+12, 0);
+  RAISE EXCEPTION 'FAIL quote with 0 guests';
+EXCEPTION WHEN raise_exception THEN RAISE NOTICE 'PASS quote rejects 0 guests';
+END $$;
 INSERT INTO public.channel_property_mappings(organization_id, account_id, property_id, external_property_code) VALUES
  ('a0000000-0000-0000-0000-00000000000a','a1000000-0000-0000-0000-00000000000a','d0000000-0000-0000-0000-0000000000a1','WB-1001'),
  ('a0000000-0000-0000-0000-00000000000a','a1000000-0000-0000-0000-00000000000a','d0000000-0000-0000-0000-0000000000a2','WB-1002');
