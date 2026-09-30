@@ -70,9 +70,8 @@ function CleaningPage() {
   const getCleaner = (id: string | null) => (id ? cleaners.find((c) => c.id === id) : undefined);
 
   const update = async (id: string, status: CleaningStatus) => {
-    const { error } = await supabase.from("cleaning_tasks")
-      .update({ status, completed_at: status === "completed" ? new Date().toISOString() : null })
-      .eq("id", id);
+    // Server checks the allowed status step and updates the room status too.
+    const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(error.message); return; }
     toast.success(`Görev: ${statusMeta[status].label}`);
     setRefreshKey((k) => k + 1);
