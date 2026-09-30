@@ -24,13 +24,13 @@ export function usePermissions(): PermissionsState {
       const user = ures?.user ?? null;
       if (!user) return { userId: null, roles: [] as AppRole[], rolePerms: [] as RolePermRow[], userPerms: [] as UserPermRow[] };
       const [{ data: rolesData }, { data: rolePerms }, { data: userPerms }] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        supabase.rpc("my_app_roles"),
         (supabase as any).from("role_permissions").select("role,permission,allowed"),
         (supabase as any).from("user_permissions").select("permission,allowed").eq("user_id", user.id),
       ]);
       return {
         userId: user.id,
-        roles: (rolesData ?? []).map((r: { role: AppRole }) => r.role),
+        roles: ((rolesData ?? []) as AppRole[]),
         rolePerms: (rolePerms ?? []) as RolePermRow[],
         userPerms: (userPerms ?? []) as UserPermRow[],
       };

@@ -94,7 +94,9 @@ function TeamPage() {
 
   const setRolePerm = useMutation({
     mutationFn: async ({ role, permission, allowed }: { role: AppRole; permission: string; allowed: boolean }) => {
-      const { error } = await (supabase as any).from("role_permissions").upsert({ role, permission, allowed, updated_at: new Date().toISOString() });
+      const { data: orgId } = await supabase.rpc("active_organization_id");
+      if (!orgId) throw new Error("Keine eindeutige Organisation");
+      const { error } = await (supabase as any).from("role_permissions").upsert({ organization_id: orgId, role, permission, allowed, updated_at: new Date().toISOString() }, { onConflict: "organization_id,role,permission" });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["role-perms"] }),
@@ -426,7 +428,9 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
     if (allowed === null) {
       await (supabase as any).from("user_permissions").delete().eq("user_id", userId).eq("permission", permission);
     } else {
-      await (supabase as any).from("user_permissions").upsert({ user_id: userId, permission, allowed, updated_at: new Date().toISOString() });
+      const { data: orgId } = await supabase.rpc("active_organization_id");
+      if (!orgId) throw new Error("Keine eindeutige Organisation");
+      await (supabase as any).from("user_permissions").upsert({ organization_id: orgId, user_id: userId, permission, allowed, updated_at: new Date().toISOString() }, { onConflict: "organization_id,user_id,permission" });
     }
     onChange();
   }
