@@ -2,7 +2,7 @@
 
 ## Adım 1–4 düzeltmeleri (inceleme sonrası)
 - [x] .gitignore: .env ve .env.* yok sayılıyor, .env.example hariç. Geçmişte .env yalnızca herkese açık anahtarlar içeriyordu (URL, publishable key, proje kimliği); gizli anahtar yok.
-- [ ] .env dosyasını Git takibinden çıkarmak: GitHub tarafında `git rm --cached .env` komutunun çalıştırılması gerekiyor (engel: Git işlemlerini platform yönetiyor).
+- [x] .env dosyası Git takibinden çıkarıldı (kullanıcı GitHub tarafında kaldırdı).
 - [x] Paket yöneticisi Bun olarak belirlendi, package-lock.json kaldırıldı; temiz `bun install --frozen-lockfile` ve production build geçti.
 - [x] Tek migration yolu belgelendi (AGENTS.md).
 - [x] Yetki yalnızca organization_members.role'e dayanıyor; global rol eşitlemesi kaldırıldı.
@@ -17,7 +17,7 @@
 
 ## Sonraki adımlar (düzeltmeler kabul edilince)
 - [x] Personel için mülk atama ekranı (Team → Häuser)
-- [ ] Adım 5: room_types, rate_plans, occupancy_rates, kanal eşleştirme tabloları
+- [x] Adım 5: room_types, rate_plans, occupancy_rates, channel_room_mappings (tenant-scoped unique, same-org trigger, RLS) — migration 0005 uygulandı
 - [ ] Adım 6: Atomik rezervasyon RPC + fiyat alanları + integration_outbox
 - [ ] Adım 7: Sunucu tarafı QR/konum doğrulama, QR hash/rotasyon
 - [ ] Adım 8: Temizlik görevi durum geçiş RPC'leri
