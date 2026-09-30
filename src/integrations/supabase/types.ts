@@ -1721,6 +1721,13 @@ export type Database = {
           name: string
         }[]
       }
+      transition_cleaning_task: {
+        Args: {
+          _task_id: string
+          _to: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Returns: Database["public"]["Enums"]["cleaning_status"]
+      }
       verify_cron_secret: {
         Args: { _name: string; _value: string }
         Returns: boolean

@@ -174,7 +174,7 @@ async function applyAction(
 
   try {
     if (action === "accept") {
-      await supabase.from("cleaning_tasks").update({ status: "accepted" }).eq("id", task.id);
+      await transition(supabase, task.id, "accepted");
       return { applied: true, taskStatus: "accepted" };
     }
 
@@ -195,8 +195,7 @@ async function applyAction(
         });
         if (error) throw error;
       }
-      await supabase.from("cleaning_tasks").update({ status: "in_progress" }).eq("id", task.id);
-      if (roomId) await supabase.from("rooms").update({ status: "cleaning_in_progress" }).eq("id", roomId);
+      await transition(supabase, task.id, "in_progress");
       return { applied: true, taskStatus: "in_progress", roomStatus: "cleaning_in_progress" };
     }
 
@@ -224,17 +223,12 @@ async function applyAction(
           })
           .eq("id", openShift.id);
       }
-      await supabase
-        .from("cleaning_tasks")
-        .update({ status: "completed", completed_at: new Date().toISOString() })
-        .eq("id", task.id);
-      if (roomId) await supabase.from("rooms").update({ status: "cleaned" }).eq("id", roomId);
+      await transition(supabase, task.id, "completed");
       return { applied: true, taskStatus: "completed", roomStatus: "cleaned" };
     }
 
     if (action === "problem") {
-      await supabase.from("cleaning_tasks").update({ status: "problem" }).eq("id", task.id);
-      if (roomId) await supabase.from("rooms").update({ status: "maintenance" }).eq("id", roomId);
+      await transition(supabase, task.id, "problem");
       return { applied: true, taskStatus: "problem", roomStatus: "maintenance" };
     }
 
@@ -242,6 +236,11 @@ async function applyAction(
   } catch (e: any) {
     return { applied: false, error: e.message };
   }
+}
+
+async function transition(supabase: any, taskId: string, to: string) {
+  const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: taskId, _to: to });
+  if (error) throw error;
 }
 
 async function resolveTaskFromText(
