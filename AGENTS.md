@@ -1,3 +1,9 @@
-- Tenancy: every tenant-owned table has organization_id (default public.default_organization_id()); authorize via is_organization_member / has_organization_role / can_access_property. Why: tenant isolation must be enforced in the database, not the UI.
-- Legacy user_roles stays the app's role source for now; trigger user_roles_sync_org mirrors it into organization_members (manager→operations_manager). Why: zero-downtime migration.
-- Cron endpoints authenticate with a secret held in private.cron_secrets, checked via verify_cron_secret (service_role only). Why: the publishable key is public.
+- Tenancy: tenant tables carry organization_id; RLS checks the row's org via has_organization_role / is_org_admin / has_organization_permission / can_access_property. Why: isolation lives in the database.
+- Roles come only from organization_members.role (one row per org+user); user_roles/has_role are deprecated. Why: global roles must not span tenants.
+- default_organization_id() returns an org only for exactly one active membership, else NULL; server code writes organization_id explicitly via src/lib/org-auth.server.ts. Why: fail closed.
+- Property access: owner/admin/ops_manager all; property_manager/reception via member_property_access; cleaners via assigned tasks. Why: least privilege.
+- Settings, permissions, iCal URLs, external reservation ids are unique per organization. Why: tenants reuse keys.
+- Cron endpoints use private.cron_secrets and loop per active organization. Why: no implicit tenant.
+- Bun 1.3.x + bun.lock only; CI: bun install --frozen-lockfile && bun run build. Why: one lockfile.
+- Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
+- supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
