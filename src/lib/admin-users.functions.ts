@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { requireOrgRole, ADMIN_ROLES, MANAGER_ROLES } from "@/lib/org-auth.server";
+import { requireOrgRole, ADMIN_ROLES } from "@/lib/org-auth.server";
 import { z } from "zod";
 
 const ROLES = ["owner", "admin", "manager", "reception", "cleaner"] as const;
@@ -35,7 +35,7 @@ export const adminCreateUser = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const { orgId } = await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
@@ -47,7 +47,9 @@ export const adminCreateUser = createServerFn({ method: "POST" })
     const uid = created.user?.id;
     if (!uid) throw new Error("User creation failed");
     if (data.role) {
-      await supabaseAdmin.from("user_roles").insert({ user_id: uid, role: data.role }).select();
+      const orgRole = data.role === "manager" ? "operations_manager" : data.role;
+      if (orgRole === "owner") throw new Error("Inhaber kann nur über die Rollenverwaltung vergeben werden.");
+      await supabaseAdmin.from("organization_members").insert({ organization_id: orgId, user_id: uid, role: orgRole as any });
     }
     return { id: uid };
   });
@@ -56,13 +58,14 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { userId: string }) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const { orgId } = await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("Du kannst dich nicht selbst löschen.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Prevent deleting the last owner
-    const { data: owners } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "owner");
-    const isOwner = (owners ?? []).some((r: any) => r.user_id === data.userId);
-    if (isOwner && (owners ?? []).length <= 1) throw new Error("Letzten Inhaber kann man nicht löschen.");
+    await assertTargetInOrg(supabaseAdmin, orgId, data.userId);
+    const owners = await orgOwners(supabaseAdmin, orgId);
+    const isOwner = owners.includes(data.userId);
+    if (isOwner && owners.length <= 1) throw new Error("Letzten Inhaber kann man nicht löschen.");
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -74,13 +77,14 @@ export const adminSetUserBanned = createServerFn({ method: "POST" })
     z.object({ userId: z.string().uuid(), banned: z.boolean() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const { orgId } = await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("Du kannst dich nicht selbst sperren.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertTargetInOrg(supabaseAdmin, orgId, data.userId);
     if (data.banned) {
-      const { data: owners } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "owner");
-      const isOwner = (owners ?? []).some((r: any) => r.user_id === data.userId);
-      if (isOwner && (owners ?? []).length <= 1) throw new Error("Letzten Inhaber kann man nicht sperren.");
+      const owners = await orgOwners(supabaseAdmin, orgId);
+      const isOwner = owners.includes(data.userId);
+      if (isOwner && owners.length <= 1) throw new Error("Letzten Inhaber kann man nicht sperren.");
     }
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
       ban_duration: data.banned ? "876000h" : "none",
@@ -95,8 +99,9 @@ export const adminResetUserPassword = createServerFn({ method: "POST" })
     z.object({ userId: z.string().uuid(), password: z.string().min(8) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const { orgId } = await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await assertTargetInOrg(supabaseAdmin, orgId, data.userId);
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, { password: data.password });
     if (error) throw new Error(error.message);
     return { ok: true };

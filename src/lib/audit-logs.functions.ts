@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { requireOrgRole, ADMIN_ROLES, MANAGER_ROLES } from "@/lib/org-auth.server";
+import { requireOrgRole, ADMIN_ROLES } from "@/lib/org-auth.server";
 
 async function requireAdmin(context: { supabase: any; userId: string }) {
   try { return await requireOrgRole(context.supabase, ADMIN_ROLES); }
