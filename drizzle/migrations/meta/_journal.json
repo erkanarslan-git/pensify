@@ -43,6 +43,13 @@
       "when": 1790771081939,
       "tag": "0005_step5_room_types_rate_plans_channel_mapping",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790771148610,
+      "tag": "0006_create_booking_atomic",
+      "breakpoints": true
     }
   ]
 }
