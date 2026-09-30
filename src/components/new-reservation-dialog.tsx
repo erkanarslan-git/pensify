@@ -159,45 +159,24 @@ export function NewReservationDialog({
     }
 
     setSaving(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id ?? null;
-
-    let bookingId: string | null = null;
-    const { data: bk, error: bkErr } = await supabase
-      .from("bookings")
-      .insert({
-        primary_guest_name: guestName.trim(),
-        primary_guest_email: guestEmail.trim() || null,
-        primary_guest_phone: guestPhone.trim() || null,
+    // One database transaction: booking + all rooms succeed together or not at all.
+    const { error } = await supabase.rpc("create_booking_with_reservations", {
+      _booking: {
+        guest_name: guestName.trim(),
+        guest_email: guestEmail.trim(),
+        guest_phone: guestPhone.trim(),
         channel,
-        notes: notes.trim() || null,
-        created_by: userId,
-      })
-      .select("id")
-      .single();
-    if (bkErr) {
-      setSaving(false);
-      toast.error("Buchung konnte nicht erstellt werden", { description: bkErr.message });
-      return;
-    }
-    bookingId = bk?.id ?? null;
-
-    const rows = lines.map((l) => ({
-      booking_id: bookingId,
-      property_id: l.propertyId,
-      room_id: l.roomId,
-      guest_name: guestName.trim(),
-      guest_email: guestEmail.trim() || null,
-      guest_phone: guestPhone.trim() || null,
-      guests_count: l.guestsCount,
-      check_in: l.checkIn,
-      check_out: l.checkOut,
-      channel,
-      revenue: l.revenue,
-      notes: notes.trim() || null,
-      created_by: userId,
-    }));
-    const { error } = await supabase.from("reservations").insert(rows);
+        notes: notes.trim(),
+      },
+      _lines: lines.map((l) => ({
+        property_id: l.propertyId,
+        room_id: l.roomId,
+        guests_count: l.guestsCount,
+        check_in: l.checkIn,
+        check_out: l.checkOut,
+        revenue: l.revenue,
+      })),
+    });
     setSaving(false);
 
     if (error) {
