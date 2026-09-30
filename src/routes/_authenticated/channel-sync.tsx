@@ -125,8 +125,15 @@ function ChannelSyncPage() {
           payload: { manual: true } as any,
         });
       }
-      const res = await fetch("/api/public/sync/manual", { method: "POST" });
+      const { data: sess } = await supabase.auth.getSession();
+      const res = await fetch("/api/public/sync/manual", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sess.session?.access_token ?? ""}` },
+      });
       const json = await res.json();
+      if (res.status === 429) throw new Error("Bitte 1 Minute warten, bevor du erneut synchronisierst.");
+      if (res.status === 401 || res.status === 403) throw new Error("Keine Berechtigung für Kanal-Sync.");
+      if (!res.ok) throw new Error("Sync fehlgeschlagen.");
       await supabase.from("channel_integrations").update({
         last_sync_at: new Date().toISOString(), last_sync_status: "success", last_sync_error: null,
       }).eq("id", row?.id ?? "00000000-0000-0000-0000-000000000000");
