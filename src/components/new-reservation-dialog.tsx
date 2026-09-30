@@ -238,8 +238,8 @@ export function NewReservationDialog({
         {/* Body */}
         <div className="px-6 py-6 space-y-6">
           {/* Guest information */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-full space-y-2">
               <Label htmlFor="guestName" className="text-xs text-muted-foreground uppercase tracking-wider">
                 Gastname *
               </Label>
@@ -329,8 +329,8 @@ export function NewReservationDialog({
                     key={l.uid}
                     className="rounded-xl border border-border bg-card p-4 space-y-4"
                   >
-                    <div className="grid grid-cols-12 gap-3 items-end">
-                      <div className="col-span-3 space-y-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
+                      <div className="col-span-2 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
                           Pension
                         </Label>
@@ -350,7 +350,7 @@ export function NewReservationDialog({
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-2 space-y-1.5">
+                      <div className="col-span-1 sm:col-span-2 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
                           Zimmer
                         </Label>
@@ -370,7 +370,7 @@ export function NewReservationDialog({
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-3 space-y-1.5">
+                      <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
                           Check-In
                         </Label>
@@ -381,7 +381,7 @@ export function NewReservationDialog({
                           className="bg-background"
                         />
                       </div>
-                      <div className="col-span-3 space-y-1.5">
+                      <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
                           Check-Out
                         </Label>
@@ -406,8 +406,8 @@ export function NewReservationDialog({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-3 pt-4 border-t border-border">
-                      <div className="col-span-3 space-y-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-4 border-t border-border">
+                      <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
                           Gäste
                         </Label>
@@ -421,7 +421,7 @@ export function NewReservationDialog({
                           className="bg-background"
                         />
                       </div>
-                      <div className="col-span-9 space-y-1.5">
+                      <div className="col-span-1 sm:col-span-9 space-y-1.5">
                         <Label className="text-xs text-muted-foreground uppercase tracking-wider">
                           Betrag (€)
                         </Label>
@@ -443,7 +443,7 @@ export function NewReservationDialog({
                         )}
                       </div>
                       {l.listPrice != null && l.revenue !== l.listPrice && (
-                        <div className="col-span-12 space-y-1.5">
+                        <div className="col-span-full space-y-1.5">
                           <Label className="text-xs text-muted-foreground uppercase tracking-wider">
                             Begründung für Preisänderung *
                           </Label>
