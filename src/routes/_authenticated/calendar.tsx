@@ -216,6 +216,10 @@ function CalendarPage() {
   const rooms: UnifiedRoom[] = realRooms;
   const reservations: UnifiedRes[] = realReservations;
 
+  const moveConflict = pendingMove
+    ? reservations.some((r) => r.id !== pendingMove.res.id && r.roomId === pendingMove.res.roomId && r.checkIn < pendingMove.checkOut && r.checkOut > pendingMove.checkIn)
+    : false;
+
 
   const days: Date[] = useMemo(
     () =>
