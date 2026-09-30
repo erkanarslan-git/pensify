@@ -301,6 +301,11 @@ function CalendarPage() {
   }, [flatRooms.length, days.length]);
 
   const onGridKeyDown = (e: React.KeyboardEvent) => {
+    if (pendingMove) {
+      if (e.key === "Enter") { e.preventDefault(); confirmMove(); }
+      if (e.key === "Escape") { e.preventDefault(); setPendingMove(null); }
+      return;
+    }
     if (newRes || editId) return;
     const tag = (e.target as HTMLElement).tagName;
     if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
@@ -602,18 +607,22 @@ function CalendarPage() {
                           const c = guestColor(occupant.guestName);
                           const sc = sourceColor(occupant.source);
                           const label = span >= 2 ? occupant.guestName : occupant.guestName.split(" ")[0];
-                          const occPast = isPastDate(occupant.checkIn);
-                          return (
-                            <div
-                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
-                              style={{
-                                width: `calc(${span} * 100% - 8px)`,
-                                background: c.bg,
-                                color: c.fg,
-                                borderLeft: `3px solid ${sc}`,
-                              }}
-                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
-                            >
+                           const occPast = isPastDate(occupant.checkIn);
+                           const draggable = !!occupant.realId && (!occPast || canCreatePast);
+                           const dragDays = dragDelta?.resId === occupant.id ? dragDelta.days : 0;
+                           return (
+                             <div
+                               onMouseDown={draggable ? (e) => startMoveDrag(e, occupant) : undefined}
+                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
+                               style={{
+                                 width: `calc(${span} * 100% - 8px)`,
+                                 left: dragDays !== 0 ? `calc(0.25rem + ${dragDays * 100}%)` : undefined,
+                                 background: c.bg,
+                                 color: c.fg,
+                                 borderLeft: `3px solid ${sc}`,
+                               }}
+                               title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? "\nZiehen zum Verschieben" : ""}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
+                             >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
                                 <button
