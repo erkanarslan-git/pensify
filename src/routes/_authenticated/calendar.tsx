@@ -625,8 +625,9 @@ function CalendarPage() {
                              >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
+                                 <button
+                                   onMouseDown={(e) => e.stopPropagation()}
+                                   onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
                                   className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
                                   title={occPast && !canCreatePast ? "Ansehen" : "Bearbeiten"}
                                 >
@@ -671,6 +672,32 @@ function CalendarPage() {
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
+
+      {pendingMove && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg shadow-xl px-4 py-3 flex flex-wrap items-center gap-3 max-w-[95vw]">
+          <div className="text-sm">
+            <span className="font-medium">{pendingMove.res.guestName}</span>
+            <span className="text-muted-foreground"> · {pendingMove.res.checkIn} → {pendingMove.res.checkOut} wird zu </span>
+            <span className="font-medium">{pendingMove.checkIn} → {pendingMove.checkOut}</span>
+            {moveConflict && <span className="block text-destructive text-xs mt-0.5">Konflikt: Zimmer in diesem Zeitraum bereits belegt</span>}
+          </div>
+          <button
+            onClick={confirmMove}
+            disabled={savingMove || moveConflict}
+            className="w-9 h-9 rounded-md bg-success text-success-foreground grid place-items-center hover:opacity-90 disabled:opacity-50"
+            title="Verschieben bestätigen (Enter)"
+          >
+            <Check className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setPendingMove(null)}
+            className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
+            title="Abbrechen (Esc)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <NewReservationDialog
         open={!!newRes}
@@ -734,7 +761,8 @@ function CalendarPage() {
               <ul className="space-y-1 list-disc list-inside">
                 <li>Klick auf Zelle: auswählen</li>
                 <li>Klick auf <Plus className="inline w-3 h-3" />: neue Buchung</li>
-                <li>Ziehen: horizontal scrollen</li>
+                 <li>Buchung ziehen: verschieben — dann mit <Check className="inline w-3 h-3" /> bestätigen oder <X className="inline w-3 h-3" /> verwerfen</li>
+                 <li>Ziehen im Leerraum: horizontal scrollen</li>
               </ul>
             </div>
           </div>
