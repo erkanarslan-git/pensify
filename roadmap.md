@@ -13,7 +13,7 @@
 - [x] Manuel senkronizasyon organizasyona özel: yetki kontrolü, sorgular, yazmalar ve bekleme süresi.
 - [x] Sabah dispatch'i her organizasyonu ayrı işliyor: ayarlar, saat dilimi, kayıtlar.
 - [x] SQL izolasyon testleri (supabase/tests/tenant_isolation.sql) geçti; testler dispatch ve sync kapsamını SQL düzeyinde kapsamıyor, sync canlı çağrıyla doğrulandı.
-- [ ] Dispatch'in organizasyon kapsamı çalışırken test edilmedi (engel: cron secret değeri sandbox'ta yok).
+- [ ] Dispatch canlı testi — ertelendi: kullanıcı anahtarları daha sonra verecek
 
 ## Sonraki adımlar (düzeltmeler kabul edilince)
 - [x] Personel için mülk atama ekranı (Team → Häuser)
