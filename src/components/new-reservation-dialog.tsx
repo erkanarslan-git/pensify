@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -112,6 +112,25 @@ export function NewReservationDialog({
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Auto-fill price from the room's rate plan whenever room or dates change.
+  // Manual edits to the price stay until room/dates change again.
+  const quotedKeys = useRef<Record<string, string>>({});
+  const priceKey = lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}`).join(",");
+  useEffect(() => {
+    lines.forEach(async (l) => {
+      const key = `${l.roomId}|${l.checkIn}|${l.checkOut}`;
+      if (!l.roomId || l.checkOut <= l.checkIn || quotedKeys.current[l.uid] === key) return;
+      quotedKeys.current[l.uid] = key;
+      const { data } = await supabase.rpc("quote_room_price", {
+        _room_id: l.roomId, _check_in: l.checkIn, _check_out: l.checkOut,
+      });
+      if (data != null && quotedKeys.current[l.uid] === key) {
+        setLines((ls) => ls.map((x) => (x.uid === l.uid ? { ...x, revenue: Number(data) } : x)));
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceKey]);
 
   const updateLine = (id: string, patch: Partial<RoomLine>) => {
     setLines((ls) =>
