@@ -1,0 +1,2 @@
+ALTER TABLE public.integration_outbox DROP CONSTRAINT integration_outbox_property_id_fkey;
+ALTER TABLE public.integration_outbox ADD CONSTRAINT integration_outbox_property_id_fkey FOREIGN KEY (property_id) REFERENCES public.properties(id) ON DELETE CASCADE;
