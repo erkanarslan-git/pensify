@@ -1233,6 +1233,7 @@ export type Database = {
           number: string
           organization_id: string
           property_id: string
+          room_type_id: string | null
           status: Database["public"]["Enums"]["room_status"]
           updated_at: string
         }
@@ -1247,6 +1248,7 @@ export type Database = {
           number: string
           organization_id?: string
           property_id: string
+          room_type_id?: string | null
           status?: Database["public"]["Enums"]["room_status"]
           updated_at?: string
         }
@@ -1261,6 +1263,7 @@ export type Database = {
           number?: string
           organization_id?: string
           property_id?: string
+          room_type_id?: string | null
           status?: Database["public"]["Enums"]["room_status"]
           updated_at?: string
         }
@@ -1284,6 +1287,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rooms_room_type_id_fkey"
+            columns: ["room_type_id"]
+            isOneToOne: false
+            referencedRelation: "room_types"
             referencedColumns: ["id"]
           },
         ]
@@ -1672,6 +1682,10 @@ export type Database = {
       org_to_app_role: {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      quote_room_price: {
+        Args: { _check_in: string; _check_out: string; _room_id: string }
+        Returns: number
       }
       request_access: {
         Args: {
