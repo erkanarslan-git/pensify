@@ -17,7 +17,7 @@
 
 ## Sonraki adımlar (düzeltmeler kabul edilince)
 - [x] Personel için mülk atama ekranı (Team → Häuser)
-- [ ] Adım 5: room_types, rate_plans, occupancy_rates, kanal eşleştirme tabloları
+- [x] Adım 5: room_types, rate_plans, occupancy_rates, channel_room_mappings (tenant-scoped unique, same-org trigger, RLS) — migration 0005 uygulandı
 - [ ] Adım 6: Atomik rezervasyon RPC + fiyat alanları + integration_outbox
 - [ ] Adım 7: Sunucu tarafı QR/konum doğrulama, QR hash/rotasyon
 - [ ] Adım 8: Temizlik görevi durum geçiş RPC'leri
