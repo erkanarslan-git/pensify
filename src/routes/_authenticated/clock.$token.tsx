@@ -109,9 +109,9 @@ function ClockPage() {
       const { error } = await supabase.rpc("clock_start", {
         _property_id: ctx.property.id,
         _token: token,
-        _lat: geo.coords?.lat ?? null,
-        _lng: geo.coords?.lng ?? null,
-        _accuracy: geo.coords?.accuracy ?? null,
+        _lat: (geo.coords?.lat ?? null) as unknown as number,
+        _lng: (geo.coords?.lng ?? null) as unknown as number,
+        _accuracy: (geo.coords?.accuracy ?? null) as unknown as number,
         _source: "qr",
       });
       if (error) throw error;
@@ -142,8 +142,8 @@ function ClockPage() {
       if (!ctx?.openShift) return;
       const { error } = await supabase.rpc("clock_stop", {
         _entry_id: ctx.openShift.id,
-        _lat: geo.coords?.lat ?? null,
-        _lng: geo.coords?.lng ?? null,
+        _lat: (geo.coords?.lat ?? null) as unknown as number,
+        _lng: (geo.coords?.lng ?? null) as unknown as number,
       });
       if (error) throw error;
     },
