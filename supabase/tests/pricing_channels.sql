@@ -70,6 +70,7 @@ END $$;
 -- users have no auth.users row; audit FK would reject them (rolled back anyway)
 ALTER TABLE public.reservations DISABLE TRIGGER audit_trg;
 ALTER TABLE public.channel_property_mappings DISABLE TRIGGER audit_trg;
+ALTER TABLE public.cleaning_tasks DISABLE TRIGGER audit_trg;
 SET LOCAL ROLE authenticated;
 
 SELECT pg_temp.as_user('aaaaaaaa-0000-0000-0000-000000000001');
