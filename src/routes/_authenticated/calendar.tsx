@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick, Check } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -63,6 +63,11 @@ function CalendarPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [showHelp, setShowHelp] = useState(false);
   const [pendingPast, setPendingPast] = useState<{ date: string; propertyId?: string; roomNumber?: string } | null>(null);
+  // Drag-to-move: while dragging, dragDelta previews the shift; on release it becomes pendingMove awaiting OK/cancel.
+  const [dragDelta, setDragDelta] = useState<{ resId: string; days: number } | null>(null);
+  const [pendingMove, setPendingMove] = useState<{ res: UnifiedRes; checkIn: string; checkOut: string } | null>(null);
+  const [savingMove, setSavingMove] = useState(false);
+  const dragRef = useRef<{ res: UnifiedRes; startX: number; cellW: number } | null>(null);
   const gridFocusRef = useRef<HTMLDivElement>(null);
   const [gridFocused, setGridFocused] = useState(false);
   useEffect(() => {
@@ -105,6 +110,73 @@ function CalendarPage() {
     setNewRes(payload);
   }
 
+  // ---------- Drag to move a stay ----------
+  const addDaysIso = (dIso: string, n: number) => {
+    const d = new Date(dIso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  };
+
+  function startMoveDrag(e: React.MouseEvent, res: UnifiedRes) {
+    if (!res.realId || e.button !== 0) return;
+    if (isPastDate(res.checkIn) && !canCreatePast) return;
+    const cell = (e.currentTarget as HTMLElement).parentElement;
+    const cellW = cell?.getBoundingClientRect().width ?? 60;
+    dragRef.current = { res, startX: e.clientX, cellW };
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const days = Math.round((e.clientX - d.startX) / d.cellW);
+      setDragDelta(days === 0 ? null : { resId: d.res.id, days });
+    };
+    const onUp = () => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      setDragDelta((cur) => {
+        if (d && cur && cur.days !== 0) {
+          const newIn = addDaysIso(d.res.checkIn, cur.days);
+          const newOut = addDaysIso(d.res.checkOut, cur.days);
+          if (isPastDate(newIn) && !canCreatePast) {
+            toast.error("Vergangene Buchungen", { description: "Verschieben in die Vergangenheit nur für Manager/Admin/Inhaber." });
+          } else {
+            setPendingMove({ res: d.res, checkIn: newIn, checkOut: newOut });
+          }
+        }
+        return null;
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canCreatePast]);
+
+  async function confirmMove() {
+    if (!pendingMove?.res.realId) return;
+    if (moveConflict) {
+      toast.error("Konflikt", { description: "Das Zimmer ist in diesem Zeitraum bereits belegt." });
+      return;
+    }
+    setSavingMove(true);
+    const { error } = await supabase
+      .from("reservations")
+      .update({ check_in: pendingMove.checkIn, check_out: pendingMove.checkOut })
+      .eq("id", pendingMove.res.realId);
+    setSavingMove(false);
+    if (error) {
+      toast.error("Verschieben fehlgeschlagen", { description: error.message });
+      return;
+    }
+    toast.success("Buchung verschoben");
+    setPendingMove(null);
+    setRefreshKey((k) => k + 1);
+  }
+
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
   const [realRooms, setRealRooms] = useState<UnifiedRoom[]>([]);
@@ -143,6 +215,10 @@ function CalendarPage() {
   const properties: UnifiedProperty[] = realProperties;
   const rooms: UnifiedRoom[] = realRooms;
   const reservations: UnifiedRes[] = realReservations;
+
+  const moveConflict = pendingMove
+    ? reservations.some((r) => r.id !== pendingMove.res.id && r.roomId === pendingMove.res.roomId && r.checkIn < pendingMove.checkOut && r.checkOut > pendingMove.checkIn)
+    : false;
 
 
   const days: Date[] = useMemo(
@@ -225,6 +301,11 @@ function CalendarPage() {
   }, [flatRooms.length, days.length]);
 
   const onGridKeyDown = (e: React.KeyboardEvent) => {
+    if (pendingMove) {
+      if (e.key === "Enter") { e.preventDefault(); confirmMove(); }
+      if (e.key === "Escape") { e.preventDefault(); setPendingMove(null); }
+      return;
+    }
     if (newRes || editId) return;
     const tag = (e.target as HTMLElement).tagName;
     if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
@@ -526,22 +607,27 @@ function CalendarPage() {
                           const c = guestColor(occupant.guestName);
                           const sc = sourceColor(occupant.source);
                           const label = span >= 2 ? occupant.guestName : occupant.guestName.split(" ")[0];
-                          const occPast = isPastDate(occupant.checkIn);
-                          return (
-                            <div
-                              className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
-                              style={{
-                                width: `calc(${span} * 100% - 8px)`,
-                                background: c.bg,
-                                color: c.fg,
-                                borderLeft: `3px solid ${sc}`,
-                              }}
-                              title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
-                            >
+                           const occPast = isPastDate(occupant.checkIn);
+                           const draggable = !!occupant.realId && (!occPast || canCreatePast);
+                           const dragDays = dragDelta?.resId === occupant.id ? dragDelta.days : 0;
+                           return (
+                             <div
+                               onMouseDown={draggable ? (e) => startMoveDrag(e, occupant) : undefined}
+                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
+                               style={{
+                                 width: `calc(${span} * 100% - 8px)`,
+                                 left: dragDays !== 0 ? `calc(0.25rem + ${dragDays * 100}%)` : undefined,
+                                 background: c.bg,
+                                 color: c.fg,
+                                 borderLeft: `3px solid ${sc}`,
+                               }}
+                               title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? "\nZiehen zum Verschieben" : ""}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
+                             >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
+                                 <button
+                                   onMouseDown={(e) => e.stopPropagation()}
+                                   onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
                                   className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
                                   title={occPast && !canCreatePast ? "Ansehen" : "Bearbeiten"}
                                 >
@@ -586,6 +672,32 @@ function CalendarPage() {
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
+
+      {pendingMove && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg shadow-xl px-4 py-3 flex flex-wrap items-center gap-3 max-w-[95vw]">
+          <div className="text-sm">
+            <span className="font-medium">{pendingMove.res.guestName}</span>
+            <span className="text-muted-foreground"> · {pendingMove.res.checkIn} → {pendingMove.res.checkOut} wird zu </span>
+            <span className="font-medium">{pendingMove.checkIn} → {pendingMove.checkOut}</span>
+            {moveConflict && <span className="block text-destructive text-xs mt-0.5">Konflikt: Zimmer in diesem Zeitraum bereits belegt</span>}
+          </div>
+          <button
+            onClick={confirmMove}
+            disabled={savingMove || moveConflict}
+            className="w-9 h-9 rounded-md bg-success text-success-foreground grid place-items-center hover:opacity-90 disabled:opacity-50"
+            title="Verschieben bestätigen (Enter)"
+          >
+            <Check className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setPendingMove(null)}
+            className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
+            title="Abbrechen (Esc)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <NewReservationDialog
         open={!!newRes}
@@ -649,7 +761,8 @@ function CalendarPage() {
               <ul className="space-y-1 list-disc list-inside">
                 <li>Klick auf Zelle: auswählen</li>
                 <li>Klick auf <Plus className="inline w-3 h-3" />: neue Buchung</li>
-                <li>Ziehen: horizontal scrollen</li>
+                 <li>Buchung ziehen: verschieben — dann mit <Check className="inline w-3 h-3" /> bestätigen oder <X className="inline w-3 h-3" /> verwerfen</li>
+                 <li>Ziehen im Leerraum: horizontal scrollen</li>
               </ul>
             </div>
           </div>

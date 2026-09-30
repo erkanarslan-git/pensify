@@ -168,8 +168,8 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
               </div>
             )}
             <fieldset disabled={readOnly} className={readOnly ? "opacity-90" : ""}>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <label className="col-span-2 grid gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <label className="col-span-full grid gap-1">
                 <span className="text-xs text-muted-foreground">Misafir adı *</span>
                 <input value={r.guest_name} onChange={(e) => update("guest_name", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
@@ -231,7 +231,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 )}
               </label>
               {r.list_price != null && Number(r.revenue) !== Number(r.list_price) && (
-                <label className="col-span-2 grid gap-1">
+                <label className="col-span-full grid gap-1">
                   <span className="text-xs text-muted-foreground">Begründung für Preisänderung *</span>
                   <input value={r.discount_reason ?? ""} onChange={(e) => update("discount_reason", e.target.value)}
                     className="px-3 py-2 rounded-md border border-input bg-card" />
@@ -247,7 +247,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <input value={r.guest_phone ?? ""} onChange={(e) => update("guest_phone", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
-              <label className="col-span-2 grid gap-1">
+              <label className="col-span-full grid gap-1">
                 <span className="text-xs text-muted-foreground">Notlar</span>
                 <textarea value={r.notes ?? ""} onChange={(e) => update("notes", e.target.value)} rows={2}
                   className="px-3 py-2 rounded-md border border-input bg-card resize-none" />

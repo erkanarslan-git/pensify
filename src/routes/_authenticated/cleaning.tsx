@@ -172,18 +172,26 @@ function CleaningPage() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-1.5">
-                <button onClick={() => update(task.id, "accepted")} className="text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-accent inline-flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Akzeptieren
-                </button>
-                <button onClick={() => update(task.id, "in_progress")} className="text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-accent inline-flex items-center gap-1">
-                  <Play className="w-3 h-3" /> Starten
-                </button>
-                <button onClick={() => update(task.id, "completed")} className="text-xs px-2.5 py-1.5 rounded-md bg-success text-success-foreground hover:opacity-90 inline-flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Fertig
-                </button>
-                <button onClick={() => update(task.id, "problem")} className="text-xs px-2.5 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5 inline-flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" /> Problem
-                </button>
+                {task.status === "pending" && (
+                  <button onClick={() => update(task.id, "accepted")} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Akzeptieren
+                  </button>
+                )}
+                {(task.status === "accepted" || task.status === "problem") && (
+                  <button onClick={() => update(task.id, "in_progress")} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
+                    <Play className="w-3 h-3" /> Starten
+                  </button>
+                )}
+                {task.status === "in_progress" && (
+                  <button onClick={() => update(task.id, "completed")} className="text-xs px-2.5 py-1.5 rounded-md bg-success text-success-foreground hover:opacity-90 inline-flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Fertig
+                  </button>
+                )}
+                {task.status !== "completed" && task.status !== "problem" && (
+                  <button onClick={() => update(task.id, "problem")} className="text-xs px-2.5 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5 inline-flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Problem
+                  </button>
+                )}
                 {cleaner && (
                   <button
                     onClick={() => toast.info(`WhatsApp → ${cleaner.full_name}`)}
