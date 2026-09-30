@@ -65,18 +65,21 @@ function RoomsPage() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }, { data: rt }] = await Promise.all([
+      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }, { data: rt }, { data: live }] = await Promise.all([
         supabase.from("cities").select("id,name").order("name"),
         supabase.from("properties").select("id,name,city_id,organization_id").order("name"),
         supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
         supabase.from("room_types").select("id,name").order("name"),
+        supabase.from("room_operational_status").select("room_id,status"),
       ]);
       setRoomTypes((rt ?? []) as RoomType[]);
       setCities((ci ?? []) as City[]);
       setProperties((pr ?? []) as Property[]);
-      setRooms((rm ?? []) as Room[]);
+      // Show the live status worked out from bookings + cleaning tasks.
+      const liveMap = new Map((live ?? []).map((x) => [x.room_id, x.status]));
+      setRooms(((rm ?? []) as Room[]).map((r) => ({ ...r, status: (liveMap.get(r.id) ?? r.status) as RoomStatus })));
       setCleaners((cl ?? []) as Cleaner[]);
     })();
   }, [refreshKey]);
