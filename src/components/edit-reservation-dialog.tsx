@@ -34,6 +34,8 @@ interface Reservation {
   channel: Channel;
   status: Status;
   revenue: number;
+  list_price: number | null;
+  discount_reason: string | null;
   notes: string | null;
   created_by: string | null;
   created_at: string;
@@ -125,6 +127,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       channel: r.channel,
       status: r.status,
       revenue: r.revenue,
+      discount_reason: r.discount_reason?.trim() || null,
       notes: r.notes?.trim() || null,
     }).eq("id", r.id);
     setSaving(false);
@@ -223,7 +226,17 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <input type="number" min={0} step="0.01" value={r.revenue}
                   onChange={(e) => update("revenue", Math.max(0, +e.target.value || 0))}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
+                {r.list_price != null && (
+                  <span className="text-[11px] text-muted-foreground">Berechnet: €{Number(r.list_price).toFixed(2)}</span>
+                )}
               </label>
+              {r.list_price != null && Number(r.revenue) !== Number(r.list_price) && (
+                <label className="col-span-2 grid gap-1">
+                  <span className="text-xs text-muted-foreground">Begründung für Preisänderung *</span>
+                  <input value={r.discount_reason ?? ""} onChange={(e) => update("discount_reason", e.target.value)}
+                    className="px-3 py-2 rounded-md border border-input bg-card" />
+                </label>
+              )}
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">E-posta</span>
                 <input value={r.guest_email ?? ""} onChange={(e) => update("guest_email", e.target.value)}
