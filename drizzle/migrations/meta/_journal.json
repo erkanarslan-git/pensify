@@ -57,6 +57,13 @@
       "when": 1790771206500,
       "tag": "0007_room_type_link_and_quote",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790771414630,
+      "tag": "0008_server_side_clock_rpcs",
+      "breakpoints": true
     }
   ]
 }
