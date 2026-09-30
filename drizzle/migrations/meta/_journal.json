@@ -99,6 +99,13 @@
       "when": 1790772876608,
       "tag": "0013_reservation_integrity_security_definer",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790772948057,
+      "tag": "0014_quote_room_price_definer_with_access_check",
+      "breakpoints": true
     }
   ]
 }
