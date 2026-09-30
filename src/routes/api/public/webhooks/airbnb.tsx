@@ -1,20 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { handleChannelWebhook } from "@/lib/channel-webhook.server";
 
+// Airbnb placeholder. Disabled until real WuBook/provider auth exists.
 export const Route = createFileRoute("/api/public/webhooks/airbnb")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
-        let body: unknown = null;
-        try { body = await request.json(); } catch { /* ignore */ }
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin.from("sync_jobs").insert({
-          channel: "airbnb",
-          direction: "import",
-          status: "pending",
-          payload: { source: "webhook", body: body as any },
-        });
-        return Response.json({ ok: true, mock: true });
-      },
+      POST: async ({ request }) => handleChannelWebhook(request, "airbnb"),
     },
   },
 });
