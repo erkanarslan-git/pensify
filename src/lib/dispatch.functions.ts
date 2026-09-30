@@ -1,21 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireOrgRole, ADMIN_ROLES } from "@/lib/org-auth.server";
 
 const PUBLIC_BASE = "https://project--c3bce140-98e6-40ed-a35c-6ad0fa40d481.lovable.app";
 
 type SettingsMap = Record<string, any>;
 
-async function loadSettings(supabase: any): Promise<SettingsMap> {
-  const { data } = await supabase.from("app_settings").select("key,value");
+async function loadSettings(supabase: any, orgId: string): Promise<SettingsMap> {
+  const { data } = await supabase.from("app_settings").select("key,value").eq("organization_id", orgId);
   const m: SettingsMap = {};
   for (const r of data ?? []) m[r.key] = r.value;
   return m;
 }
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-  const { data: owner } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "owner" });
-  if (!data && !owner) throw new Error("Forbidden");
+  try { return await requireOrgRole(context.supabase, ADMIN_ROLES); }
+  catch { throw new Error("Forbidden"); }
 }
 
 function todayISO(tz: string): string {
@@ -45,7 +45,7 @@ async function buildAndSendForCleaner(
   // get cleaner
   const { data: cleaner } = await supabase
     .from("cleaners")
-    .select("id, full_name, phone, active")
+    .select("id, full_name, phone, active, organization_id")
     .eq("id", cleanerId)
     .maybeSingle();
   if (!cleaner || !cleaner.active) return { cleanerId, skipped: true, reason: "inactive" };
@@ -78,6 +78,7 @@ async function buildAndSendForCleaner(
   const body = renderMessage(template, cleaner.full_name ?? "", items);
 
   const { error } = await supabase.from("dispatch_messages").insert({
+    organization_id: cleaner.organization_id,
     cleaner_id: cleanerId,
     scheduled_for: scheduledFor,
     trigger,
@@ -97,15 +98,15 @@ export const dispatchMorningTasks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { cleanerIds?: string[]; trigger?: "auto" | "manual" | "resend" }) => d)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const settings = await loadSettings(context.supabase);
+    const { orgId } = await assertAdmin(context);
+    const settings = await loadSettings(context.supabase, orgId);
     const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const template = (settings["dispatch.message_template"] as string) || "Günaydın {ad}!\n{liste}";
     const scheduledFor = todayISO(tz);
 
     let cleanerIds = data.cleanerIds;
     if (!cleanerIds || cleanerIds.length === 0) {
-      const { data: rows } = await context.supabase.from("cleaners").select("id").eq("active", true);
+      const { data: rows } = await context.supabase.from("cleaners").select("id").eq("organization_id", orgId).eq("active", true);
       cleanerIds = (rows ?? []).map((r: any) => r.id);
     }
 
@@ -123,8 +124,8 @@ export const dispatchMorningTasks = createServerFn({ method: "POST" })
 export const getTodayDispatch = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
-    const settings = await loadSettings(context.supabase);
+    const { orgId } = await assertAdmin(context);
+    const settings = await loadSettings(context.supabase, orgId);
     const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const scheduledFor = todayISO(tz);
     const dayStart = `${scheduledFor}T00:00:00Z`;
@@ -132,7 +133,7 @@ export const getTodayDispatch = createServerFn({ method: "GET" })
 
     const { data: cleaners } = await context.supabase
       .from("cleaners")
-      .select("id, full_name, phone, active")
+      .select("id, full_name, phone, active, organization_id")
       .eq("active", true)
       .order("full_name");
 
@@ -162,7 +163,7 @@ async function applyAction(
 ): Promise<{ applied: boolean; error?: string; roomStatus?: string; taskStatus?: string }> {
   const { data: task, error: te } = await supabase
     .from("cleaning_tasks")
-    .select("id, room_id, property_id, cleaner_id, status")
+    .select("id, room_id, property_id, cleaner_id, status, organization_id")
     .eq("id", taskId)
     .maybeSingle();
   if (te) return { applied: false, error: te.message };
@@ -187,6 +188,7 @@ async function applyAction(
         .maybeSingle();
       if (!openShift) {
         const { error } = await supabase.from("time_entries").insert({
+          organization_id: task.organization_id,
           cleaner_id: cleanerId,
           property_id: task.property_id,
           source: "whatsapp",
@@ -270,8 +272,8 @@ export const simulateReply = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { cleanerId: string; text?: string; action?: ActionKind; taskId?: string }) => d)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const settings = await loadSettings(context.supabase);
+    const { orgId } = await assertAdmin(context);
+    const settings = await loadSettings(context.supabase, orgId);
     const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const scheduledFor = todayISO(tz);
 
@@ -292,6 +294,7 @@ export const simulateReply = createServerFn({ method: "POST" })
     }
 
     await context.supabase.from("dispatch_replies").insert({
+      organization_id: orgId,
       cleaner_id: data.cleanerId,
       raw_text: data.text ?? `[button:${action ?? "unknown"}]`,
       parsed_action: parsed,
@@ -310,8 +313,8 @@ export const runDemoScenario = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { cleanerId?: string; reset?: boolean }) => d)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const settings = await loadSettings(context.supabase);
+    const { orgId } = await assertAdmin(context);
+    const settings = await loadSettings(context.supabase, orgId);
     const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const scheduledFor = todayISO(tz);
     const dayStart = `${scheduledFor}T00:00:00Z`;
@@ -357,6 +360,7 @@ export const runDemoScenario = createServerFn({ method: "POST" })
       if (!rooms || rooms.length === 0) return { ok: false, error: "no_rooms" };
       const dueBase = new Date(`${scheduledFor}T09:00:00Z`).toISOString();
       const inserts = rooms.map((r: any, i: number) => ({
+        organization_id: orgId,
         cleaner_id: cleanerId as string,
         room_id: r.id,
         property_id: r.property_id,
@@ -416,6 +420,7 @@ export const runDemoScenario = createServerFn({ method: "POST" })
 
     // Log the run
     await context.supabase.from("dispatch_replies").insert({
+      organization_id: orgId,
       cleaner_id: cleanerId,
       raw_text: `[demo-scenario steps=${steps.length}]`,
       parsed_action: "demo",
@@ -432,7 +437,7 @@ export const saveDispatchSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { morningTime?: string; timezone?: string; enabled?: boolean; template?: string }) => d)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    const { orgId } = await assertAdmin(context);
     const rows: { key: string; value: any }[] = [];
     if (data.morningTime !== undefined) rows.push({ key: "dispatch.morning_time", value: data.morningTime });
     if (data.timezone !== undefined) rows.push({ key: "dispatch.timezone", value: data.timezone });
@@ -441,7 +446,7 @@ export const saveDispatchSettings = createServerFn({ method: "POST" })
     for (const r of rows) {
       const { error } = await context.supabase
         .from("app_settings")
-        .upsert({ key: r.key, value: r.value, updated_by: context.userId, updated_at: new Date().toISOString() });
+        .upsert({ organization_id: orgId, key: r.key, value: r.value, updated_by: context.userId, updated_at: new Date().toISOString() }, { onConflict: "organization_id,key" });
       if (error) throw error;
     }
     return { ok: true };

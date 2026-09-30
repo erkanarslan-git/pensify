@@ -8,11 +8,9 @@ export const Route = createFileRoute("/_authenticated")({
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
 
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id);
-    const roleList = (roles ?? []).map((r) => r.role as AppRole);
+    // Roles come from the user's single active organization membership (fail closed).
+    const { data: roles } = await supabase.rpc("my_app_roles");
+    const roleList = ((roles ?? []) as AppRole[]);
     const path = location.pathname;
     const hasAnyRole = roleList.length > 0;
 

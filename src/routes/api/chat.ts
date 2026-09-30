@@ -1,3 +1,4 @@
+import { requireOrgRole, MANAGER_ROLES } from "@/lib/org-auth.server";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   convertToModelMessages,
@@ -35,12 +36,11 @@ export const Route = createFileRoute("/api/chat")({
         const { data: userData, error: userErr } = await supabase.auth.getUser(token);
         if (userErr || !userData.user) return new Response("Unauthorized", { status: 401 });
 
-        const roleChecks = await Promise.all(
-          (["owner", "admin", "manager"] as const).map((r) =>
-            supabase.rpc("has_role", { _user_id: userData.user!.id, _role: r }),
-          ),
-        );
-        if (!roleChecks.some((r) => r.data === true)) return new Response("Forbidden", { status: 403 });
+        try {
+          await requireOrgRole(supabase, MANAGER_ROLES);
+        } catch {
+          return new Response("Forbidden", { status: 403 });
+        }
 
         const body = (await request.json()) as { messages?: UIMessage[] };
         if (!Array.isArray(body.messages)) return new Response("Messages required", { status: 400 });

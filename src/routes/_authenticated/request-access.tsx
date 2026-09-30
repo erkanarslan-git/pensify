@@ -22,9 +22,7 @@ function RequestAccessPage() {
     const { data: ures } = await supabase.auth.getUser();
     const uid = ures?.user?.id;
     if (!uid) { toast.error("Nicht angemeldet"); setSubmitting(false); return; }
-    const { error } = await (supabase as any)
-      .from("access_requests")
-      .insert({ user_id: uid, requested_role: role, message: message.trim() || null, status: "pending" });
+    const { error } = await supabase.rpc("request_access", { _message: message.trim() || "", _role: role });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
     setSent(true);

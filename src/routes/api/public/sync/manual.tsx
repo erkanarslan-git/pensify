@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { parseICal } from "@/services/channels/ical";
 import { jsonError } from "@/lib/http-security.server";
+import { requireOrgPermission, OrgAuthError } from "@/lib/org-auth.server";
 
 const COOLDOWN_MS = 60_000;
 
 // Verifies the caller's Supabase access token server-side and checks the
 // manage_integrations permission (owner always; admin by default; explicit
 // user/role overrides respected). Browser-supplied roles are never trusted.
-async function authorize(request: Request): Promise<{ userId: string; email: string | null } | Response> {
+async function authorize(request: Request): Promise<{ userId: string; orgId: string; email: string | null } | Response> {
   const auth = request.headers.get("authorization") ?? "";
   if (!auth.startsWith("Bearer ")) return jsonError(401, "unauthorized");
   const token = auth.slice(7);
@@ -22,22 +23,13 @@ async function authorize(request: Request): Promise<{ userId: string; email: str
   const userId = data?.claims?.sub;
   if (error || !userId) return jsonError(401, "unauthorized");
 
-  const role = async (r: string) =>
-    (await userClient.rpc("has_role", { _user_id: userId, _role: r as never })).data === true;
-  const isOwner = await role("owner");
-  if (!isOwner) {
-    const { data: up } = await userClient
-      .from("user_permissions").select("allowed").eq("user_id", userId).eq("permission", "manage_integrations").maybeSingle();
-    let allowed = up ? up.allowed : await role("admin");
-    if (!up && !allowed) {
-      const { data: roles } = await userClient.from("user_roles").select("role").eq("user_id", userId);
-      const { data: rp } = await userClient.from("role_permissions").select("role,allowed").eq("permission", "manage_integrations");
-      const mine = new Set((roles ?? []).map((r) => r.role as string));
-      allowed = (rp ?? []).some((r) => mine.has(r.role as string) && r.allowed);
-    }
-    if (!allowed) return jsonError(403, "forbidden");
+  let orgId: string;
+  try {
+    ({ orgId } = await requireOrgPermission(userClient, "manage_integrations"));
+  } catch (e) {
+    return jsonError(e instanceof OrgAuthError ? e.status : 403, e instanceof OrgAuthError ? e.message : "forbidden");
   }
-  return { userId, email: (data.claims.email as string | undefined) ?? null };
+  return { userId, orgId, email: (data.claims.email as string | undefined) ?? null };
 }
 
 // Real iCal importer. Fetches every enabled channel_integrations row that has
@@ -56,13 +48,14 @@ export const Route = createFileRoute("/api/public/sync/manual")({
         const since = new Date(Date.now() - COOLDOWN_MS).toISOString();
         const { count: recent } = await supabaseAdmin
           .from("audit_logs").select("id", { count: "exact", head: true })
-          .eq("entity", "manual_sync").gte("created_at", since);
+          .eq("entity", "manual_sync").eq("organization_id", who.orgId).gte("created_at", since);
         if ((recent ?? 0) > 0) return jsonError(429, "cooldown");
         const startedAt = new Date().toISOString();
 
         const { data: integrations, error: intErr } = await supabaseAdmin
           .from("channel_integrations")
           .select("id,channel,property_id,room_id,ical_url,name,enabled,direction")
+          .eq("organization_id", who.orgId)
           .eq("enabled", true)
           .not("ical_url", "is", null);
         if (intErr) return jsonError(500, "internal_error");
@@ -80,6 +73,7 @@ export const Route = createFileRoute("/api/public/sync/manual")({
           const { data: job } = await supabaseAdmin
             .from("sync_jobs")
             .insert({
+              organization_id: who.orgId,
               channel: i.channel,
               direction: "import",
               property_id: i.property_id,
@@ -120,6 +114,7 @@ export const Route = createFileRoute("/api/public/sync/manual")({
                 : "Airbnb belegt";
 
               const row = {
+                organization_id: who.orgId,
                 room_id: i.room_id,
                 property_id: i.property_id,
                 guest_name: guestName,
@@ -136,12 +131,13 @@ export const Route = createFileRoute("/api/public/sync/manual")({
 
               const { error: upErr } = await supabaseAdmin
                 .from("reservations")
-                .upsert(row, { onConflict: "channel,room_id,external_id" });
+                .upsert(row, { onConflict: "organization_id,channel,room_id,external_id" });
 
               if (upErr) {
                 if (/overlap/i.test(upErr.message)) {
                   jobConflicts++;
                   await supabaseAdmin.from("conflict_alerts").insert({
+                    organization_id: who.orgId,
                     room_id: i.room_id,
                     property_id: i.property_id,
                     incoming_channel: i.channel,
@@ -166,13 +162,13 @@ export const Route = createFileRoute("/api/public/sync/manual")({
                 status: "success",
                 completed_at: new Date().toISOString(),
                 result: { events: events.length, imported: jobImported, conflicts: jobConflicts } as any,
-              }).eq("id", job.id);
+              }).eq("id", job.id).eq("organization_id", who.orgId);
             }
             await supabaseAdmin.from("channel_integrations").update({
               last_sync_at: new Date().toISOString(),
               last_sync_status: "success",
               last_sync_error: null,
-            }).eq("id", i.id);
+            }).eq("id", i.id).eq("organization_id", who.orgId);
           } catch (e: any) {
             failed++;
             const msg = String(e?.message ?? e).slice(0, 500);
@@ -181,22 +177,23 @@ export const Route = createFileRoute("/api/public/sync/manual")({
                 status: "failed",
                 completed_at: new Date().toISOString(),
                 error_message: msg,
-              }).eq("id", job.id);
+              }).eq("id", job.id).eq("organization_id", who.orgId);
             }
             await supabaseAdmin.from("channel_integrations").update({
               last_sync_at: new Date().toISOString(),
               last_sync_status: "error",
               last_sync_error: msg,
-            }).eq("id", i.id);
+            }).eq("id", i.id).eq("organization_id", who.orgId);
           }
         }
 
         await supabaseAdmin.from("audit_logs").insert({
+          organization_id: who.orgId,
           actor_id: who.userId,
           actor_email: who.email,
           entity: "manual_sync",
           action: "EXECUTE",
-          metadata: { started_at: startedAt, finished_at: new Date().toISOString(), processed, imported, conflicts, failed },
+          metadata: { organization_id: who.orgId, started_at: startedAt, finished_at: new Date().toISOString(), processed, imported, conflicts, failed },
         });
         return Response.json({ ok: true, processed, imported, conflicts, failed });
       },
