@@ -227,6 +227,9 @@ function TeamPage() {
                   <td className="p-3 text-right">
                     <div className="flex justify-end gap-1 flex-wrap">
                       <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
+                      {u.roles.some((r: AppRole) => r === "reception" || r === "manager" || r === "cleaner") && (
+                        <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} />
+                      )}
                       {missing.length > 0 && (
                         adding?.userId === u.user_id ? (
                           <div className="flex gap-1 justify-end">

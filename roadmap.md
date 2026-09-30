@@ -16,6 +16,7 @@
 - [ ] Dispatch'in organizasyon kapsamı çalışırken test edilmedi (engel: cron secret değeri sandbox'ta yok).
 
 ## Sonraki adımlar (düzeltmeler kabul edilince)
+- [x] Personel için mülk atama ekranı (Team → Häuser)
 - [ ] Adım 5: room_types, rate_plans, occupancy_rates, kanal eşleştirme tabloları
 - [ ] Adım 6: Atomik rezervasyon RPC + fiyat alanları + integration_outbox
 - [ ] Adım 7: Sunucu tarafı QR/konum doğrulama, QR hash/rotasyon
