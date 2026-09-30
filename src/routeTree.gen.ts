@@ -37,6 +37,7 @@ import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/publi
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
 import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
 import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/public/hooks/dispatch-morning'
+import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 
@@ -188,6 +189,12 @@ const ApiPublicHooksDispatchMorningRoute =
     path: '/api/public/hooks/dispatch-morning',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksChannelOutboxRoute =
+  ApiPublicHooksChannelOutboxRouteImport.update({
+    id: '/api/public/hooks/channel-outbox',
+    path: '/api/public/hooks/channel-outbox',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedPropertiesIdQrRoute =
   AuthenticatedPropertiesIdQrRouteImport.update({
     id: '/properties/$id/qr',
@@ -226,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
@@ -257,6 +265,7 @@ export interface FileRoutesByTo {
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
@@ -290,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
@@ -323,6 +333,7 @@ export interface FileRouteTypes {
     | '/settings/logs'
     | '/properties/'
     | '/properties/$id/qr'
+    | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/settings/logs'
     | '/properties'
     | '/properties/$id/qr'
+    | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
@@ -386,6 +398,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/logs'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
+    | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
@@ -398,6 +411,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiPublicHooksChannelOutboxRoute: typeof ApiPublicHooksChannelOutboxRoute
   ApiPublicHooksDispatchMorningRoute: typeof ApiPublicHooksDispatchMorningRoute
   ApiPublicSyncManualRoute: typeof ApiPublicSyncManualRoute
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
@@ -603,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDispatchMorningRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/channel-outbox': {
+      id: '/api/public/hooks/channel-outbox'
+      path: '/api/public/hooks/channel-outbox'
+      fullPath: '/api/public/hooks/channel-outbox'
+      preLoaderRoute: typeof ApiPublicHooksChannelOutboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/properties/$id/qr': {
       id: '/_authenticated/properties/$id/qr'
       path: '/properties/$id/qr'
@@ -687,6 +708,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiPublicHooksChannelOutboxRoute: ApiPublicHooksChannelOutboxRoute,
   ApiPublicHooksDispatchMorningRoute: ApiPublicHooksDispatchMorningRoute,
   ApiPublicSyncManualRoute: ApiPublicSyncManualRoute,
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,

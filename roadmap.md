@@ -23,4 +23,14 @@
 - [x] Adım 8: transition_cleaning_task (izinli geçişler + oda durumu)
 - [x] Adım 9: room_operational_status view (security_invoker) + Rooms sayfası
 - [x] Adım 10: lint raporu — 2946 prettier (yalnız biçim), 156 no-explicit-any, 6 only-export-components, 4 exhaustive-deps, 2 prefer-const; gerçek hata yok
-- [ ] Sonraki: WuBook planlaması (iCal kaldırma dahil)
+- [x] WuBook planı onaylandı (.lovable/plan/wubook-channel-manager-phase-2-plan-2026-09-30.md)
+
+## Faz 2 — WuBook
+- [ ] 1. WuBook hesabı + API key + property ID — kullanıcıdan bekleniyor
+- [x] 2. integration_outbox + channel_accounts + tetikleyiciler (reservations, rate_plans, occupancy_rates)
+- [~] 3. Gönderici /api/public/hooks/channel-outbox (dry-run hazır; gerçek WuBook çağrısı + cron anahtar bekliyor)
+- [ ] 4. Kanal eşleme ekranı (Booking.com / üçü)
+- [ ] 5. Gelen rezervasyonlar — anahtar bekliyor
+- [ ] 6. İlk senkron — anahtar bekliyor
+- [ ] 7. iCal kaldırma — 6'dan 1 hafta sonra
+- [ ] 8. Testler
