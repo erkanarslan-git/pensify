@@ -1,0 +1,12 @@
+# Roadmap — Faz 1 (Güvenlik & Veri Modeli)
+- [x] Adım 1: .env.example, gizli bilgi taraması
+- [x] Adım 2: Sync / dispatch / webhook uç noktaları korundu, güvenlik başlıkları
+- [ ] Adım 3: Organizasyon yapısı (organizations, members, property access, organization_id backfill)
+- [ ] Adım 4: Organizasyon bazlı RLS + yetki fonksiyonları + SQL testleri
+- [ ] Adım 5: room_types, rate_plans, occupancy_rates, kanal eşleştirme tabloları
+- [ ] Adım 6: Atomik rezervasyon RPC + fiyat alanları + integration_outbox
+- [ ] Adım 7: Sunucu tarafı QR/konum doğrulama, QR hash/rotasyon
+- [ ] Adım 8: Temizlik görevi durum geçiş RPC'leri
+- [ ] Adım 9: Hesaplanan oda operasyonel durum görünümü
+- [ ] Adım 10: package-lock.json kaldır, Bun belgele, lint raporu
+- [ ] Sonraki: WuBook planlaması (iCal kaldırma dahil)

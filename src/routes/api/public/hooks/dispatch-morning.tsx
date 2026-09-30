@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { safeEqual } from "@/lib/http-security.server";
 
 const PUBLIC_BASE = "https://project--c3bce140-98e6-40ed-a35c-6ad0fa40d481.lovable.app";
 
@@ -26,20 +27,29 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-morning")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") ?? request.headers.get("Authorization")?.replace("Bearer ", "");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+        const provided = request.headers.get("x-cron-secret") ?? "";
+        if (!provided) return new Response("Unauthorized", { status: 401 });
+        const url = process.env["SUPABASE_URL"] || import.meta.env.VITE_SUPABASE_URL;
+        const service = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
+        const supabase = createClient<Database>(url, service, { auth: { persistSession: false } });
+        // Accept either the env secret (if configured) or the DB-held secret used by pg_cron.
+        const envSecret = process.env["DISPATCH_CRON_SECRET"];
+        let ok = !!envSecret && safeEqual(provided, envSecret);
+        if (!ok) {
+          const { data } = await supabase.rpc("verify_cron_secret", { _name: "dispatch", _value: provided });
+          ok = data === true;
+        }
+        if (!ok) {
+          await supabase.from("cron_executions").insert({ job: "dispatch-morning", status: "rejected", finished_at: new Date().toISOString() });
           return new Response("Unauthorized", { status: 401 });
         }
-        const url = process.env.SUPABASE_URL!;
-        const service = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-        const supabase = createClient<Database>(url, service, { auth: { persistSession: false } });
 
         const { data: settingsRows } = await supabase.from("app_settings").select("key,value");
         const s: Record<string, any> = {};
         for (const r of settingsRows ?? []) s[r.key] = r.value;
 
         const enabled = s["dispatch.enabled"] === true;
-        const tz = s["dispatch.timezone"] || "Europe/Istanbul";
+        const tz = s["dispatch.timezone"] || "Europe/Berlin";
         const target = s["dispatch.morning_time"] || "08:00";
         const template = s["dispatch.message_template"] || "Günaydın {ad}!\n{liste}";
         const lastRun = s["dispatch.last_run_date"] || "";
@@ -93,6 +103,9 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-morning")({
           .from("app_settings")
           .upsert({ key: "dispatch.last_run_date", value: today, updated_at: new Date().toISOString() });
 
+        await supabase.from("cron_executions").insert({
+          job: "dispatch-morning", status: "success", detail: { today, results }, finished_at: new Date().toISOString(),
+        });
         return Response.json({ today, results });
       },
     },

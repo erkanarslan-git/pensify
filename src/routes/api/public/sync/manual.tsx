@@ -1,5 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 import { parseICal } from "@/services/channels/ical";
+import { jsonError } from "@/lib/http-security.server";
+
+const COOLDOWN_MS = 60_000;
+
+// Verifies the caller's Supabase access token server-side and checks the
+// manage_integrations permission (owner always; admin by default; explicit
+// user/role overrides respected). Browser-supplied roles are never trusted.
+async function authorize(request: Request): Promise<{ userId: string; email: string | null } | Response> {
+  const auth = request.headers.get("authorization") ?? "";
+  if (!auth.startsWith("Bearer ")) return jsonError(401, "unauthorized");
+  const token = auth.slice(7);
+  const url = process.env["SUPABASE_URL"] || import.meta.env.VITE_SUPABASE_URL;
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const userClient = createClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await userClient.auth.getClaims(token);
+  const userId = data?.claims?.sub;
+  if (error || !userId) return jsonError(401, "unauthorized");
+
+  const role = async (r: string) =>
+    (await userClient.rpc("has_role", { _user_id: userId, _role: r as never })).data === true;
+  const isOwner = await role("owner");
+  if (!isOwner) {
+    const { data: up } = await userClient
+      .from("user_permissions").select("allowed").eq("user_id", userId).eq("permission", "manage_integrations").maybeSingle();
+    let allowed = up ? up.allowed : await role("admin");
+    if (!up && !allowed) {
+      const { data: roles } = await userClient.from("user_roles").select("role").eq("user_id", userId);
+      const { data: rp } = await userClient.from("role_permissions").select("role,allowed").eq("permission", "manage_integrations");
+      const mine = new Set((roles ?? []).map((r) => r.role as string));
+      allowed = (rp ?? []).some((r) => mine.has(r.role as string) && r.allowed);
+    }
+    if (!allowed) return jsonError(403, "forbidden");
+  }
+  return { userId, email: (data.claims.email as string | undefined) ?? null };
+}
 
 // Real iCal importer. Fetches every enabled channel_integrations row that has
 // an ical_url, parses events, and upserts them into public.reservations using
@@ -8,15 +47,25 @@ import { parseICal } from "@/services/channels/ical";
 export const Route = createFileRoute("/api/public/sync/manual")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const who = await authorize(request);
+        if (who instanceof Response) return who;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        // Durable cooldown (workers are stateless)
+        const since = new Date(Date.now() - COOLDOWN_MS).toISOString();
+        const { count: recent } = await supabaseAdmin
+          .from("audit_logs").select("id", { count: "exact", head: true })
+          .eq("entity", "manual_sync").gte("created_at", since);
+        if ((recent ?? 0) > 0) return jsonError(429, "cooldown");
+        const startedAt = new Date().toISOString();
 
         const { data: integrations, error: intErr } = await supabaseAdmin
           .from("channel_integrations")
           .select("id,channel,property_id,room_id,ical_url,name,enabled,direction")
           .eq("enabled", true)
           .not("ical_url", "is", null);
-        if (intErr) return Response.json({ ok: false, error: intErr.message }, { status: 500 });
+        if (intErr) return jsonError(500, "internal_error");
 
         const today = new Date().toISOString().slice(0, 10);
         let processed = 0;
@@ -142,6 +191,13 @@ export const Route = createFileRoute("/api/public/sync/manual")({
           }
         }
 
+        await supabaseAdmin.from("audit_logs").insert({
+          actor_id: who.userId,
+          actor_email: who.email,
+          entity: "manual_sync",
+          action: "EXECUTE",
+          metadata: { started_at: startedAt, finished_at: new Date().toISOString(), processed, imported, conflicts, failed },
+        });
         return Response.json({ ok: true, processed, imported, conflicts, failed });
       },
     },

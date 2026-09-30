@@ -99,7 +99,7 @@ export const dispatchMorningTasks = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const settings = await loadSettings(context.supabase);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Istanbul";
+    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const template = (settings["dispatch.message_template"] as string) || "Günaydın {ad}!\n{liste}";
     const scheduledFor = todayISO(tz);
 
@@ -125,7 +125,7 @@ export const getTodayDispatch = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const settings = await loadSettings(context.supabase);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Istanbul";
+    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const scheduledFor = todayISO(tz);
     const dayStart = `${scheduledFor}T00:00:00Z`;
     const dayEnd = `${scheduledFor}T23:59:59Z`;
@@ -272,7 +272,7 @@ export const simulateReply = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const settings = await loadSettings(context.supabase);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Istanbul";
+    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const scheduledFor = todayISO(tz);
 
     let action: ActionKind | null = data.action ?? null;
@@ -312,7 +312,7 @@ export const runDemoScenario = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const settings = await loadSettings(context.supabase);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Istanbul";
+    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const scheduledFor = todayISO(tz);
     const dayStart = `${scheduledFor}T00:00:00Z`;
     const dayEnd = `${scheduledFor}T23:59:59Z`;
