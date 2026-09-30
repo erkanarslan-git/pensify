@@ -36,6 +36,13 @@
       "when": 1790770710105,
       "tag": "0004_member_property_access_admin_rpcs",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790771081939,
+      "tag": "0005_step5_room_types_rate_plans_channel_mapping",
+      "breakpoints": true
     }
   ]
 }

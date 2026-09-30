@@ -263,6 +263,64 @@ export type Database = {
           },
         ]
       }
+      channel_room_mappings: {
+        Row: {
+          channel: string
+          created_at: string
+          external_rate_id: string | null
+          external_room_id: string | null
+          id: string
+          organization_id: string
+          rate_plan_id: string | null
+          room_type_id: string
+          sync_enabled: boolean
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          external_rate_id?: string | null
+          external_room_id?: string | null
+          id?: string
+          organization_id: string
+          rate_plan_id?: string | null
+          room_type_id: string
+          sync_enabled?: boolean
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          external_rate_id?: string | null
+          external_room_id?: string | null
+          id?: string
+          organization_id?: string
+          rate_plan_id?: string | null
+          room_type_id?: string
+          sync_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_room_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_room_mappings_rate_plan_id_fkey"
+            columns: ["rate_plan_id"]
+            isOneToOne: false
+            referencedRelation: "rate_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_room_mappings_room_type_id_fkey"
+            columns: ["room_type_id"]
+            isOneToOne: false
+            referencedRelation: "room_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cities: {
         Row: {
           country: string
@@ -720,6 +778,54 @@ export type Database = {
           },
         ]
       }
+      occupancy_rates: {
+        Row: {
+          closed: boolean
+          created_at: string
+          date: string
+          id: string
+          min_stay: number | null
+          organization_id: string
+          price: number
+          rate_plan_id: string
+        }
+        Insert: {
+          closed?: boolean
+          created_at?: string
+          date: string
+          id?: string
+          min_stay?: number | null
+          organization_id: string
+          price: number
+          rate_plan_id: string
+        }
+        Update: {
+          closed?: boolean
+          created_at?: string
+          date?: string
+          id?: string
+          min_stay?: number | null
+          organization_id?: string
+          price?: number
+          rate_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "occupancy_rates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "occupancy_rates_rate_plan_id_fkey"
+            columns: ["rate_plan_id"]
+            isOneToOne: false
+            referencedRelation: "rate_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           active: boolean
@@ -884,6 +990,60 @@ export type Database = {
           },
         ]
       }
+      rate_plans: {
+        Row: {
+          active: boolean
+          base_price: number
+          code: string
+          created_at: string
+          currency: string
+          id: string
+          min_stay: number
+          name: string
+          organization_id: string
+          room_type_id: string
+        }
+        Insert: {
+          active?: boolean
+          base_price: number
+          code: string
+          created_at?: string
+          currency?: string
+          id?: string
+          min_stay?: number
+          name: string
+          organization_id: string
+          room_type_id: string
+        }
+        Update: {
+          active?: boolean
+          base_price?: number
+          code?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          min_stay?: number
+          name?: string
+          organization_id?: string
+          room_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_plans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_plans_room_type_id_fkey"
+            columns: ["room_type_id"]
+            isOneToOne: false
+            referencedRelation: "room_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           booking_id: string | null
@@ -1007,6 +1167,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "role_permissions_organization_fk"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_types: {
+        Row: {
+          active: boolean
+          base_occupancy: number
+          capacity: number
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          size_sqm: number | null
+        }
+        Insert: {
+          active?: boolean
+          base_occupancy?: number
+          capacity?: number
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          size_sqm?: number | null
+        }
+        Update: {
+          active?: boolean
+          base_occupancy?: number
+          capacity?: number
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          size_sqm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_types_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
