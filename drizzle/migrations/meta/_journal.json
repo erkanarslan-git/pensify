@@ -113,6 +113,13 @@
       "when": 1790773944724,
       "tag": "0015_property_scoped_room_types_rates_channels",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790774623396,
+      "tag": "0016_outbox_property_cascade_delete",
+      "breakpoints": true
     }
   ]
 }
