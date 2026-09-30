@@ -156,10 +156,6 @@ function CalendarPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canCreatePast]);
 
-  const moveConflict = pendingMove
-    ? reservations.some((r) => r.id !== pendingMove.res.id && r.roomId === pendingMove.res.roomId && r.checkIn < pendingMove.checkOut && r.checkOut > pendingMove.checkIn)
-    : false;
-
   async function confirmMove() {
     if (!pendingMove?.res.realId) return;
     if (moveConflict) {
