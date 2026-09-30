@@ -39,76 +39,73 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-morning")({
           const { data } = await supabase.rpc("verify_cron_secret", { _name: "dispatch", _value: provided });
           ok = data === true;
         }
-        if (!ok) {
-          await supabase.from("cron_executions").insert({ job: "dispatch-morning", status: "rejected", finished_at: new Date().toISOString() });
-          return new Response("Unauthorized", { status: 401 });
+        if (!ok) return new Response("Unauthorized", { status: 401 });
+
+        // Process every active organization independently. Never assume an implicit organization.
+        const { data: orgs } = await supabase.from("organizations").select("id, timezone").eq("active", true);
+        const summary: any[] = [];
+        for (const org of orgs ?? []) {
+          summary.push(await runForOrganization(supabase, org.id, org.timezone));
         }
-
-        const { data: settingsRows } = await supabase.from("app_settings").select("key,value");
-        const s: Record<string, any> = {};
-        for (const r of settingsRows ?? []) s[r.key] = r.value;
-
-        const enabled = s["dispatch.enabled"] === true;
-        const { data: org } = await supabase.from("organizations").select("timezone").order("created_at").limit(1).maybeSingle();
-        const tz = s["dispatch.timezone"] || org?.timezone || "Europe/Berlin";
-        const target = s["dispatch.morning_time"] || "08:00";
-        const template = s["dispatch.message_template"] || "Günaydın {ad}!\n{liste}";
-        const lastRun = s["dispatch.last_run_date"] || "";
-
-        if (!enabled) return Response.json({ skipped: "disabled" });
-
-        const today = todayISO(tz);
-        const hhmm = nowHHMM(tz);
-
-        // Run once per day at or after target time
-        if (lastRun === today) return Response.json({ skipped: "already_ran_today", today });
-        if (hhmm < target) return Response.json({ skipped: "before_target", now: hhmm, target });
-
-        const { data: cleaners } = await supabase.from("cleaners").select("id, full_name").eq("active", true);
-        const results: any[] = [];
-        const dayStart = `${today}T00:00:00Z`;
-        const dayEnd = `${today}T23:59:59Z`;
-
-        for (const c of cleaners ?? []) {
-          const { data: tasks } = await supabase
-            .from("cleaning_tasks")
-            .select("id, status, due_at, rooms:room_id (number), properties:property_id (name, qr_token)")
-            .eq("cleaner_id", c.id)
-            .in("status", ["pending", "accepted", "in_progress"])
-            .gte("due_at", dayStart)
-            .lte("due_at", dayEnd)
-            .order("due_at", { ascending: true });
-          if (!tasks || tasks.length === 0) {
-            results.push({ cleanerId: c.id, skipped: "no_tasks" });
-            continue;
-          }
-          const items = tasks.map((t: any) => ({
-            propertyName: t.properties?.name ?? "—",
-            roomNumber: t.rooms?.number ?? "—",
-            link: t.properties?.qr_token ? `${PUBLIC_BASE}/clock/${t.properties.qr_token}` : `${PUBLIC_BASE}/me`,
-          }));
-          const body = renderMessage(template, c.full_name ?? "", items);
-          const { error } = await supabase.from("dispatch_messages").insert({
-            cleaner_id: c.id,
-            scheduled_for: today,
-            trigger: "auto",
-            task_ids: tasks.map((t: any) => t.id),
-            body,
-            status: "sent",
-            provider: "simulation",
-          });
-          results.push({ cleanerId: c.id, sent: !error, count: tasks.length, error: error?.message });
-        }
-
-        await supabase
-          .from("app_settings")
-          .upsert({ key: "dispatch.last_run_date", value: today, updated_at: new Date().toISOString() });
-
-        await supabase.from("cron_executions").insert({
-          job: "dispatch-morning", status: "success", detail: { today, results }, finished_at: new Date().toISOString(),
-        });
-        return Response.json({ today, results });
+        return Response.json({ organizations: summary });
       },
     },
   },
 });
+
+async function runForOrganization(supabase: any, orgId: string, orgTz: string | null) {
+  const log = (status: string, detail: any) =>
+    supabase.from("cron_executions").insert({
+      organization_id: orgId, job: "dispatch-morning", status, detail, finished_at: new Date().toISOString(),
+    });
+  try {
+    const { data: settingsRows } = await supabase.from("app_settings").select("key,value").eq("organization_id", orgId);
+    const s: Record<string, any> = {};
+    for (const r of settingsRows ?? []) s[r.key] = r.value;
+
+    if (s["dispatch.enabled"] !== true) return { orgId, skipped: "disabled" };
+    const tz = s["dispatch.timezone"] || orgTz || "Europe/Berlin";
+    const target = s["dispatch.morning_time"] || "08:00";
+    const template = s["dispatch.message_template"] || "Günaydın {ad}!\n{liste}";
+    const today = todayISO(tz);
+    const hhmm = nowHHMM(tz);
+    if (s["dispatch.last_run_date"] === today) return { orgId, skipped: "already_ran_today", today };
+    if (hhmm < target) return { orgId, skipped: "before_target", now: hhmm, target };
+
+    const { data: cleaners } = await supabase.from("cleaners").select("id, full_name")
+      .eq("organization_id", orgId).eq("active", true);
+    const results: any[] = [];
+    for (const c of cleaners ?? []) {
+      const { data: tasks } = await supabase
+        .from("cleaning_tasks")
+        .select("id, status, due_at, rooms:room_id (number), properties:property_id (name, qr_token)")
+        .eq("organization_id", orgId)
+        .eq("cleaner_id", c.id)
+        .in("status", ["pending", "accepted", "in_progress"])
+        .gte("due_at", `${today}T00:00:00Z`)
+        .lte("due_at", `${today}T23:59:59Z`)
+        .order("due_at", { ascending: true });
+      if (!tasks || tasks.length === 0) { results.push({ cleanerId: c.id, skipped: "no_tasks" }); continue; }
+      const items = tasks.map((t: any) => ({
+        propertyName: t.properties?.name ?? "—",
+        roomNumber: t.rooms?.number ?? "—",
+        link: t.properties?.qr_token ? `${PUBLIC_BASE}/clock/${t.properties.qr_token}` : `${PUBLIC_BASE}/me`,
+      }));
+      const { error } = await supabase.from("dispatch_messages").insert({
+        organization_id: orgId, cleaner_id: c.id, scheduled_for: today, trigger: "auto",
+        task_ids: tasks.map((t: any) => t.id), body: renderMessage(template, c.full_name ?? "", items),
+        status: "sent", provider: "simulation",
+      });
+      results.push({ cleanerId: c.id, sent: !error, count: tasks.length, error: error?.message });
+    }
+    await supabase.from("app_settings").upsert(
+      { organization_id: orgId, key: "dispatch.last_run_date", value: today, updated_at: new Date().toISOString() },
+      { onConflict: "organization_id,key" },
+    );
+    await log("success", { today, results });
+    return { orgId, today, results };
+  } catch (e: any) {
+    await log("error", { error: String(e?.message ?? e).slice(0, 500) });
+    return { orgId, error: "failed" };
+  }
+}
