@@ -110,6 +110,77 @@ function CalendarPage() {
     setNewRes(payload);
   }
 
+  // ---------- Drag to move a stay ----------
+  const addDaysIso = (dIso: string, n: number) => {
+    const d = new Date(dIso + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  };
+
+  function startMoveDrag(e: React.MouseEvent, res: UnifiedRes) {
+    if (!res.realId || e.button !== 0) return;
+    if (isPastDate(res.checkIn) && !canCreatePast) return;
+    const cell = (e.currentTarget as HTMLElement).parentElement;
+    const cellW = cell?.getBoundingClientRect().width ?? 60;
+    dragRef.current = { res, startX: e.clientX, cellW };
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const days = Math.round((e.clientX - d.startX) / d.cellW);
+      setDragDelta(days === 0 ? null : { resId: d.res.id, days });
+    };
+    const onUp = () => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      setDragDelta((cur) => {
+        if (d && cur && cur.days !== 0) {
+          const newIn = addDaysIso(d.res.checkIn, cur.days);
+          const newOut = addDaysIso(d.res.checkOut, cur.days);
+          if (isPastDate(newIn) && !canCreatePast) {
+            toast.error("Vergangene Buchungen", { description: "Verschieben in die Vergangenheit nur für Manager/Admin/Inhaber." });
+          } else {
+            setPendingMove({ res: d.res, checkIn: newIn, checkOut: newOut });
+          }
+        }
+        return null;
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canCreatePast]);
+
+  const moveConflict = pendingMove
+    ? reservations.some((r) => r.id !== pendingMove.res.id && r.roomId === pendingMove.res.roomId && r.checkIn < pendingMove.checkOut && r.checkOut > pendingMove.checkIn)
+    : false;
+
+  async function confirmMove() {
+    if (!pendingMove?.res.realId) return;
+    if (moveConflict) {
+      toast.error("Konflikt", { description: "Das Zimmer ist in diesem Zeitraum bereits belegt." });
+      return;
+    }
+    setSavingMove(true);
+    const { error } = await supabase
+      .from("reservations")
+      .update({ check_in: pendingMove.checkIn, check_out: pendingMove.checkOut })
+      .eq("id", pendingMove.res.realId);
+    setSavingMove(false);
+    if (error) {
+      toast.error("Verschieben fehlgeschlagen", { description: error.message });
+      return;
+    }
+    toast.success("Buchung verschoben");
+    setPendingMove(null);
+    setRefreshKey((k) => k + 1);
+  }
+
   // Real data
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
   const [realRooms, setRealRooms] = useState<UnifiedRoom[]>([]);
