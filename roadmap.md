@@ -2,7 +2,7 @@
 
 ## Adım 1–4 düzeltmeleri (inceleme sonrası)
 - [x] .gitignore: .env ve .env.* yok sayılıyor, .env.example hariç. Geçmişte .env yalnızca herkese açık anahtarlar içeriyordu (URL, publishable key, proje kimliği); gizli anahtar yok.
-- [ ] .env dosyasını Git takibinden çıkarmak: GitHub tarafında `git rm --cached .env` komutunun çalıştırılması gerekiyor (engel: Git işlemlerini platform yönetiyor).
+- [x] .env dosyası Git takibinden çıkarıldı (kullanıcı GitHub tarafında kaldırdı).
 - [x] Paket yöneticisi Bun olarak belirlendi, package-lock.json kaldırıldı; temiz `bun install --frozen-lockfile` ve production build geçti.
 - [x] Tek migration yolu belgelendi (AGENTS.md).
 - [x] Yetki yalnızca organization_members.role'e dayanıyor; global rol eşitlemesi kaldırıldı.
