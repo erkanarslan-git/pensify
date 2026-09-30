@@ -1635,6 +1635,22 @@ export type Database = {
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
+      clock_start: {
+        Args: {
+          _accuracy: number
+          _lat: number
+          _lng: number
+          _property_id: string
+          _source?: string
+          _token: string
+        }
+        Returns: string
+      }
+      clock_stop: {
+        Args: { _entry_id: string; _lat: number; _lng: number }
+        Returns: undefined
+      }
+      clock_toggle_break: { Args: { _entry_id: string }; Returns: string }
       create_booking_with_reservations: {
         Args: { _booking: Json; _lines: Json }
         Returns: string

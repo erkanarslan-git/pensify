@@ -105,20 +105,14 @@ function ClockPage() {
         if (geo.pending || !geo.coords) throw new Error(t("timeTracking.gettingLocation"));
         if (!withinGeofence) throw new Error(t("timeTracking.outOfGeofence"));
       }
-      // Auto-close any open shift at a different property
-      if (ctx.openShift) {
-        await supabase
-          .from("time_entries")
-          .update({ clock_out_at: new Date().toISOString(), status: "completed", notes: "auto-closed by new QR scan" })
-          .eq("id", ctx.openShift.id);
-      }
-      const { error } = await supabase.from("time_entries").insert({
-        cleaner_id: ctx.cleaner.id,
-        property_id: ctx.property.id,
-        clock_in_lat: geo.coords?.lat ?? null,
-        clock_in_lng: geo.coords?.lng ?? null,
-        clock_in_accuracy_m: geo.coords?.accuracy ?? null,
-        source: "qr",
+      // Server verifies QR, membership and distance; closes any other open shift.
+      const { error } = await supabase.rpc("clock_start", {
+        _property_id: ctx.property.id,
+        _token: token,
+        _lat: (geo.coords?.lat ?? null) as unknown as number,
+        _lng: (geo.coords?.lng ?? null) as unknown as number,
+        _accuracy: (geo.coords?.accuracy ?? null) as unknown as number,
+        _source: "qr",
       });
       if (error) throw error;
     },
@@ -132,26 +126,8 @@ function ClockPage() {
   const toggleBreak = useMutation({
     mutationFn: async () => {
       if (!ctx?.openShift) return;
-      const now = new Date();
-      if (ctx.openShift.break_started_at) {
-        const startedAt = new Date(ctx.openShift.break_started_at);
-        const addMin = Math.max(0, Math.round((now.getTime() - startedAt.getTime()) / 60000));
-        const { error } = await supabase
-          .from("time_entries")
-          .update({
-            break_started_at: null,
-            break_minutes: (ctx.openShift.break_minutes ?? 0) + addMin,
-            status: "active",
-          })
-          .eq("id", ctx.openShift.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("time_entries")
-          .update({ break_started_at: now.toISOString(), status: "on_break" })
-          .eq("id", ctx.openShift.id);
-        if (error) throw error;
-      }
+      const { error } = await supabase.rpc("clock_toggle_break", { _entry_id: ctx.openShift.id });
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clock-ctx", token] }),
     onError: (e: unknown) => {
@@ -164,23 +140,11 @@ function ClockPage() {
   const stop = useMutation({
     mutationFn: async () => {
       if (!ctx?.openShift) return;
-      const now = new Date();
-      let breakAdd = 0;
-      if (ctx.openShift.break_started_at) {
-        const startedAt = new Date(ctx.openShift.break_started_at);
-        breakAdd = Math.max(0, Math.round((now.getTime() - startedAt.getTime()) / 60000));
-      }
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          clock_out_at: now.toISOString(),
-          clock_out_lat: geo.coords?.lat ?? null,
-          clock_out_lng: geo.coords?.lng ?? null,
-          break_started_at: null,
-          break_minutes: (ctx.openShift.break_minutes ?? 0) + breakAdd,
-          status: "completed",
-        })
-        .eq("id", ctx.openShift.id);
+      const { error } = await supabase.rpc("clock_stop", {
+        _entry_id: ctx.openShift.id,
+        _lat: (geo.coords?.lat ?? null) as unknown as number,
+        _lng: (geo.coords?.lng ?? null) as unknown as number,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
