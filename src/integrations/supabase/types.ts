@@ -1329,6 +1329,12 @@ export type Database = {
     }
     Functions: {
       active_organization_id: { Args: never; Returns: string }
+      admin_get_member_properties: {
+        Args: { _user_id: string }
+        Returns: {
+          property_id: string
+        }[]
+      }
       admin_get_property_qr: {
         Args: { _id: string }
         Returns: {
@@ -1393,6 +1399,10 @@ export type Database = {
           _grant_role: Database["public"]["Enums"]["app_role"]
           _request_id: string
         }
+        Returns: undefined
+      }
+      admin_set_member_properties: {
+        Args: { _property_ids: string[]; _user_id: string }
         Returns: undefined
       }
       admin_set_role: {
