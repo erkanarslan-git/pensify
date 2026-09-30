@@ -41,6 +41,8 @@ interface RoomLine {
   checkOut: string;
   guestsCount: number;
   revenue: number;
+  listPrice: number | null;
+  discountReason: string;
 }
 
 interface Props {
@@ -107,6 +109,8 @@ export function NewReservationDialog({
           checkOut: addDays(startDate, 1),
           guestsCount: 1,
           revenue: 0,
+          listPrice: null,
+          discountReason: "",
         },
       ]);
     })();
@@ -116,18 +120,24 @@ export function NewReservationDialog({
   // Auto-fill price from the room's rate plan whenever room or dates change.
   // Manual edits to the price stay until room/dates change again.
   const quotedKeys = useRef<Record<string, string>>({});
-  const priceKey = lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}`).join(",");
+  const priceKey = lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`).join(",");
   useEffect(() => {
     lines.forEach(async (l) => {
-      const key = `${l.roomId}|${l.checkIn}|${l.checkOut}`;
+      const key = `${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`;
       if (!l.roomId || l.checkOut <= l.checkIn || quotedKeys.current[l.uid] === key) return;
       quotedKeys.current[l.uid] = key;
-      const { data } = await supabase.rpc("quote_room_price", {
-        _room_id: l.roomId, _check_in: l.checkIn, _check_out: l.checkOut,
+      const { data, error } = await supabase.rpc("quote_room_price", {
+        _room_id: l.roomId, _check_in: l.checkIn, _check_out: l.checkOut, _guests: l.guestsCount,
       });
-      if (data != null && quotedKeys.current[l.uid] === key) {
-        setLines((ls) => ls.map((x) => (x.uid === l.uid ? { ...x, revenue: Number(data) } : x)));
+      if (quotedKeys.current[l.uid] !== key) return;
+      if (error) {
+        toast.error("Preis konnte nicht berechnet werden", { description: error.message });
+        return;
       }
+      const price = data == null ? null : Number(data);
+      setLines((ls) => ls.map((x) => (x.uid === l.uid
+        ? { ...x, listPrice: price, revenue: price ?? x.revenue, discountReason: "" }
+        : x)));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [priceKey]);
@@ -160,6 +170,8 @@ export function NewReservationDialog({
         checkOut: last?.checkOut ?? addDays(today, 1),
         guestsCount: 1,
         revenue: 0,
+        listPrice: null,
+        discountReason: "",
       },
     ]);
   };
@@ -175,6 +187,8 @@ export function NewReservationDialog({
         return toast.error("Pension und Zimmer in jeder Zeile wählen");
       if (l.checkOut <= l.checkIn)
         return toast.error("Check-out muss nach Check-in liegen");
+      if (l.listPrice != null && l.revenue !== l.listPrice && !l.discountReason.trim())
+        return toast.error("Begründung für abweichenden Preis erforderlich");
     }
 
     setSaving(true);
@@ -194,6 +208,7 @@ export function NewReservationDialog({
         check_in: l.checkIn,
         check_out: l.checkOut,
         revenue: l.revenue,
+        discount_reason: l.discountReason.trim(),
       })),
     });
     setSaving(false);
@@ -420,7 +435,26 @@ export function NewReservationDialog({
                           }
                           className="bg-background"
                         />
+                        {l.listPrice != null && (
+                          <p className="text-[11px] text-muted-foreground">
+                            Berechnet: €{l.listPrice.toFixed(2)}
+                            {l.revenue !== l.listPrice && ` · Abweichung €${(l.listPrice - l.revenue).toFixed(2)}`}
+                          </p>
+                        )}
                       </div>
+                      {l.listPrice != null && l.revenue !== l.listPrice && (
+                        <div className="col-span-12 space-y-1.5">
+                          <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+                            Begründung für Preisänderung *
+                          </Label>
+                          <Input
+                            value={l.discountReason}
+                            onChange={(e) => updateLine(l.uid, { discountReason: e.target.value })}
+                            placeholder="z. B. Stammgast, Langzeitaufenthalt"
+                            className="bg-background"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

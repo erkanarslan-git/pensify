@@ -323,6 +323,70 @@ export type Database = {
           },
         ]
       }
+      channel_property_mappings: {
+        Row: {
+          account_id: string
+          created_at: string
+          enabled: boolean
+          external_property_code: string
+          id: string
+          last_error: string | null
+          last_pull_at: string | null
+          last_push_at: string | null
+          organization_id: string
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          enabled?: boolean
+          external_property_code: string
+          id?: string
+          last_error?: string | null
+          last_pull_at?: string | null
+          last_push_at?: string | null
+          organization_id: string
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          enabled?: boolean
+          external_property_code?: string
+          id?: string
+          last_error?: string | null
+          last_pull_at?: string | null
+          last_push_at?: string | null
+          organization_id?: string
+          property_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_property_mappings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "channel_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_property_mappings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_property_mappings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channel_room_mappings: {
         Row: {
           channel: string
@@ -816,6 +880,7 @@ export type Database = {
           next_attempt_at: string
           organization_id: string
           payload: Json
+          property_id: string | null
           provider: string
           sent_at: string | null
           status: string
@@ -829,6 +894,7 @@ export type Database = {
           next_attempt_at?: string
           organization_id: string
           payload: Json
+          property_id?: string | null
           provider?: string
           sent_at?: string | null
           status?: string
@@ -842,6 +908,7 @@ export type Database = {
           next_attempt_at?: string
           organization_id?: string
           payload?: Json
+          property_id?: string | null
           provider?: string
           sent_at?: string | null
           status?: string
@@ -852,6 +919,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_outbox_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -907,6 +981,7 @@ export type Database = {
           closed: boolean
           created_at: string
           date: string
+          guest_count: number | null
           id: string
           min_stay: number | null
           organization_id: string
@@ -917,6 +992,7 @@ export type Database = {
           closed?: boolean
           created_at?: string
           date: string
+          guest_count?: number | null
           id?: string
           min_stay?: number | null
           organization_id: string
@@ -927,6 +1003,7 @@ export type Database = {
           closed?: boolean
           created_at?: string
           date?: string
+          guest_count?: number | null
           id?: string
           min_stay?: number | null
           organization_id?: string
@@ -1056,6 +1133,10 @@ export type Database = {
           active: boolean
           address: string
           city_id: string
+          clock_without_location: boolean
+          clock_without_location_at: string | null
+          clock_without_location_by: string | null
+          clock_without_location_reason: string | null
           created_at: string
           geofence_radius_m: number
           id: string
@@ -1071,6 +1152,10 @@ export type Database = {
           active?: boolean
           address: string
           city_id: string
+          clock_without_location?: boolean
+          clock_without_location_at?: string | null
+          clock_without_location_by?: string | null
+          clock_without_location_reason?: string | null
           created_at?: string
           geofence_radius_m?: number
           id?: string
@@ -1086,6 +1171,10 @@ export type Database = {
           active?: boolean
           address?: string
           city_id?: string
+          clock_without_location?: boolean
+          clock_without_location_at?: string | null
+          clock_without_location_by?: string | null
+          clock_without_location_reason?: string | null
           created_at?: string
           geofence_radius_m?: number
           id?: string
@@ -1176,6 +1265,8 @@ export type Database = {
           check_out: string
           created_at: string
           created_by: string | null
+          discount_amount: number | null
+          discount_reason: string | null
           external_id: string | null
           guest_email: string | null
           guest_name: string
@@ -1183,8 +1274,11 @@ export type Database = {
           guests_count: number
           ical_uid: string | null
           id: string
+          list_price: number | null
           notes: string | null
           organization_id: string
+          price_overridden_at: string | null
+          price_overridden_by: string | null
           property_id: string
           revenue: number
           room_id: string
@@ -1198,6 +1292,8 @@ export type Database = {
           check_out: string
           created_at?: string
           created_by?: string | null
+          discount_amount?: number | null
+          discount_reason?: string | null
           external_id?: string | null
           guest_email?: string | null
           guest_name: string
@@ -1205,8 +1301,11 @@ export type Database = {
           guests_count?: number
           ical_uid?: string | null
           id?: string
+          list_price?: number | null
           notes?: string | null
           organization_id?: string
+          price_overridden_at?: string | null
+          price_overridden_by?: string | null
           property_id: string
           revenue?: number
           room_id: string
@@ -1220,6 +1319,8 @@ export type Database = {
           check_out?: string
           created_at?: string
           created_by?: string | null
+          discount_amount?: number | null
+          discount_reason?: string | null
           external_id?: string | null
           guest_email?: string | null
           guest_name?: string
@@ -1227,8 +1328,11 @@ export type Database = {
           guests_count?: number
           ical_uid?: string | null
           id?: string
+          list_price?: number | null
           notes?: string | null
           organization_id?: string
+          price_overridden_at?: string | null
+          price_overridden_by?: string | null
           property_id?: string
           revenue?: number
           room_id?: string
@@ -1860,10 +1964,20 @@ export type Database = {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
         Returns: Database["public"]["Enums"]["app_role"]
       }
-      quote_room_price: {
-        Args: { _check_in: string; _check_out: string; _room_id: string }
-        Returns: number
-      }
+      quote_room_price:
+        | {
+            Args: { _check_in: string; _check_out: string; _room_id: string }
+            Returns: number
+          }
+        | {
+            Args: {
+              _check_in: string
+              _check_out: string
+              _guests: number
+              _room_id: string
+            }
+            Returns: number
+          }
       request_access: {
         Args: {
           _message: string
@@ -1882,6 +1996,7 @@ export type Database = {
           name: string
         }[]
       }
+      room_capacity: { Args: { _room_id: string }; Returns: number }
       transition_cleaning_task: {
         Args: {
           _task_id: string

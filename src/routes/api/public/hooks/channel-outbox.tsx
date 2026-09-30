@@ -3,13 +3,15 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 /**
- * Sends pending channel-manager events (availability / rates) per organization.
+ * Sends pending channel-manager events per WuBook account and property connection.
  * Auth: x-cron-secret checked against private.cron_secrets ("channel-outbox").
- * Until a WuBook account is enabled for an organization, its rows stay pending.
- * In dry-run mode rows are marked "dry_run" without calling WuBook.
+ * One account (credentials) per organization; many channel_property_mappings, each linking a
+ * Pensify property to its WuBook property code. Property-scoped events go to that mapping only;
+ * org-wide events (rates) fan out to every enabled mapping.
+ * LIVE_CALLS_ENABLED is false: every row is marked "dry_run" and WuBook is never contacted.
  */
 const BATCH = 100;
-const MAX_ATTEMPTS = 8;
+const LIVE_CALLS_ENABLED = false;
 
 export const Route = createFileRoute("/api/public/hooks/channel-outbox")({
   server: {
@@ -26,47 +28,43 @@ export const Route = createFileRoute("/api/public/hooks/channel-outbox")({
 
         const { data: accounts } = await supabase
           .from("channel_accounts")
-          .select("id, organization_id, provider, property_code, secret_name, enabled, dry_run")
+          .select("id, organization_id, provider, enabled, dry_run")
+          .eq("provider", "wubook")
           .eq("enabled", true);
 
         const summary: Record<string, unknown>[] = [];
         for (const acc of accounts ?? []) {
+          const { data: mappings } = await supabase
+            .from("channel_property_mappings")
+            .select("id, property_id, external_property_code")
+            .eq("account_id", acc.id)
+            .eq("enabled", true);
+          if (!mappings?.length) continue;
+          const mapped = new Set(mappings.map((m) => m.property_id));
+
           const { data: rows } = await supabase
             .from("integration_outbox")
-            .select("id, event, payload, attempts")
+            .select("id, event, payload, property_id")
             .eq("organization_id", acc.organization_id)
-            .eq("provider", acc.provider)
+            .eq("provider", "wubook")
             .in("status", ["pending", "retry"])
             .lte("next_attempt_at", new Date().toISOString())
             .order("created_at")
             .limit(BATCH);
-          if (!rows?.length) continue;
-          const ids = rows.map((r) => r.id);
+          // property-scoped rows for unmapped properties stay pending until that property is connected
+          const due = (rows ?? []).filter((r) => !r.property_id || mapped.has(r.property_id));
+          if (!due.length) continue;
 
-          if (acc.dry_run) {
+          if (!LIVE_CALLS_ENABLED || acc.dry_run) {
             await supabase.from("integration_outbox")
-              .update({ status: "dry_run", sent_at: new Date().toISOString() }).in("id", ids);
-            summary.push({ org: acc.organization_id, dry_run: ids.length });
+              .update({ status: "dry_run", sent_at: new Date().toISOString() })
+              .in("id", due.map((r) => r.id));
+            summary.push({ org: acc.organization_id, properties: mappings.length, dry_run: due.length });
             continue;
           }
-
-          const apiKey = acc.secret_name ? process.env[acc.secret_name] : undefined;
-          const error = !apiKey || !acc.property_code
-            ? "WuBook credentials missing"
-            : "WuBook client not enabled yet"; // real push added once credentials are provided
-          for (const r of rows) {
-            const attempts = r.attempts + 1;
-            await supabase.from("integration_outbox").update({
-              status: attempts >= MAX_ATTEMPTS ? "failed" : "retry",
-              attempts,
-              last_error: error,
-              next_attempt_at: new Date(Date.now() + Math.min(60, 2 ** attempts) * 60_000).toISOString(),
-            }).eq("id", r.id);
-          }
-          await supabase.from("channel_accounts").update({ last_error: error }).eq("id", acc.id);
-          summary.push({ org: acc.organization_id, deferred: ids.length, error });
+          // Real WuBook push is intentionally not implemented until credentials are provided.
         }
-        return Response.json({ accounts: summary });
+        return Response.json({ live: LIVE_CALLS_ENABLED, accounts: summary });
       },
     },
   },
