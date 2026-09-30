@@ -187,6 +187,59 @@ export type Database = {
           },
         ]
       }
+      channel_accounts: {
+        Row: {
+          created_at: string
+          dry_run: boolean
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_pull_at: string | null
+          last_push_at: string | null
+          organization_id: string
+          property_code: string | null
+          provider: string
+          secret_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dry_run?: boolean
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_pull_at?: string | null
+          last_push_at?: string | null
+          organization_id: string
+          property_code?: string | null
+          provider?: string
+          secret_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dry_run?: boolean
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_pull_at?: string | null
+          last_push_at?: string | null
+          organization_id?: string
+          property_code?: string | null
+          provider?: string
+          secret_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channel_integrations: {
         Row: {
           api_credentials: Json | null
@@ -749,6 +802,56 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "cleaning_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          event: string
+          id: string
+          last_error: string | null
+          next_attempt_at: string
+          organization_id: string
+          payload: Json
+          provider: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          event: string
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          organization_id: string
+          payload: Json
+          provider?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          event?: string
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          organization_id?: string
+          payload?: Json
+          provider?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_outbox_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
