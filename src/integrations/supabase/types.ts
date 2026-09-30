@@ -1328,6 +1328,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      active_organization_id: { Args: never; Returns: string }
       admin_get_property_qr: {
         Args: { _id: string }
         Returns: {
@@ -1401,6 +1402,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      app_to_org_role: {
+        Args: { _r: Database["public"]["Enums"]["app_role"] }
+        Returns: Database["public"]["Enums"]["org_role"]
+      }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       default_organization_id: { Args: never; Returns: string }
@@ -1422,6 +1427,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_organization_member: { Args: { _org: string }; Returns: boolean }
       list_my_clock_properties: {
         Args: never
@@ -1433,6 +1439,25 @@ export type Database = {
           name: string
           qr_token: string
         }[]
+      }
+      my_app_roles: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
+      my_org_role: {
+        Args: { _org?: string }
+        Returns: Database["public"]["Enums"]["org_role"]
+      }
+      org_to_app_role: {
+        Args: { _r: Database["public"]["Enums"]["org_role"] }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      request_access: {
+        Args: {
+          _message: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
       }
       resolve_clock_property: {
         Args: { _token: string }
