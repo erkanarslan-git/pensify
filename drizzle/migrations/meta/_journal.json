@@ -50,6 +50,13 @@
       "when": 1790771148610,
       "tag": "0006_create_booking_atomic",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790771206500,
+      "tag": "0007_room_type_link_and_quote",
+      "breakpoints": true
     }
   ]
 }
