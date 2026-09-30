@@ -64,6 +64,13 @@
       "when": 1790771414630,
       "tag": "0008_server_side_clock_rpcs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790771494381,
+      "tag": "0009_cleaning_task_transitions",
+      "breakpoints": true
     }
   ]
 }
