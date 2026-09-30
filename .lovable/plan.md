@@ -1,57 +1,79 @@
-## Sorun ve Çözüm
+# Faz 1 — Güvenlik Sertleştirme ve Temel Veri Modeli
 
-### 1) Google Login neden çalışmıyor
-`hostingersite.com` üzerinde çalışıyorsun. Lovable'ın Google OAuth "broker" sistemi (`lovable.auth.signInWithOAuth`) sadece **Lovable altyapısındaki domainlerde** çalışır:
-- `*.lovable.app`
-- Lovable üzerinden bağlanmış custom domain
+Amaç: WuBook entegrasyonundan önce sistemi güvenli, çok şirketli (multi-tenant) ve tutarlı hale getirmek. Takvim, rezervasyon ekranları ve genel tasarım bu fazda değişmez. WuBook'a gerçek bağlantı yapılmaz. Mevcut veriler (pansiyonlar, odalar, kullanıcılar, rezervasyonlar) korunur, hiçbir şey silinmez.
 
-Harici hosting (Hostinger, Netlify, VPS vs.) üzerinde broker'ın callback'i reddedilir → Google login patlar.
+Her adım ayrı yapılır; her adımdan sonra uygulamanın çalıştığı kontrol edilir.
 
-**İki seçenek var:**
-- **A)** Domainini Lovable'a bağla (Lovable custom domain). Broker çalışır, hiçbir kod değişikliği gerekmez. En temiz yol.
-- **B)** Kendi Google OAuth Client ID + Secret'ını al, Lovable Cloud → Users → Authentication Settings → Google altına yapıştır. Sonra kod tarafında broker yerine doğrudan `supabase.auth.signInWithOAuth('google', ...)` kullanan bir yardımcı ekleyelim ve harici domain koşulunda onu çağıralım.
+## Adım 1 — Ortam ve gizli bilgiler
+- `.env.example` oluşturulur (sadece değişken isimleri: SUPABASE_*, SYNC_CRON_SECRET, DISPATCH_CRON_SECRET, WUBOOK_*).
+- Depo taranır: gizli anahtar, gerçek telefon, adres, koordinat, çalışan/misafir bilgisi var mı raporlanır. Varsa kurgusal verilerle değiştirilir.
+- Git geçmişi otomatik yeniden yazılmaz; geçmişte kalan hassas veri raporlanır.
 
-Önerim: **kısa vadede B**, uzun vadede müşteri kendi domainini alınca A'ya geçersin.
+## Adım 2 — Açık uç noktaların korunması
+- `/api/public/sync/manual`: artık giriş yapmış ve `manage_integrations` yetkisi olan kullanıcı gerekir. 401/403/429 cevapları, bekleme süresi (cooldown), denetim kaydı.
+- `/api/public/hooks/dispatch-morning`: publishable key yerine `DISPATCH_CRON_SECRET` (sabit-zamanlı karşılaştırma). Her çalışma kaydedilir. Saat dilimi organizasyondan gelir (varsayılan Europe/Berlin).
+- Booking/Airbnb webhook'ları: imzasız istekler reddedilir, "yapılandırılmadı" cevabı; boyut, içerik tipi, Zod doğrulama, event-ID (idempotency) hazırlığı, hız sınırı. Rezervasyon işlenmez.
+- Güvenlik başlıkları: CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, frame-ancestors. Google girişi ve şifre sıfırlama bozulmadan.
 
-### 2) Şifremi unuttum akışı (yeni)
+## Adım 3 — Organizasyon (çok şirketli) yapısı
+- Yeni: `organizations`, `organization_members`, `member_property_access`.
+- Roller: owner, admin, operations_manager, property_manager, reception, cleaner. (Mevcut "manager" → operations_manager olarak taşınır.)
+- Mevcut kurulum için tek bir organizasyon oluşturulur; tüm kayıtlar ve kullanıcılar bu organizasyona bağlanır, roller korunur.
+- Tüm işletme tablolarına `organization_id` eklenir, doldurulur, sonra zorunlu yapılır.
 
-Ekleyeceklerim:
-- `/auth` sayfasına **"Şifremi unuttum"** linki.
-- `supabase.auth.resetPasswordForEmail(email, { redirectTo: origin + '/reset-password' })` çağrısı (küçük bir modal veya inline form).
-- Yeni public route: **`src/routes/reset-password.tsx`**
-  - URL hash'inde `type=recovery` varsa yeni şifre formu göster.
-  - `supabase.auth.updateUser({ password })` ile şifreyi güncelle, sonra `/` veya `/auth`'a yönlendir.
-- i18n: DE / EN / TR metinleri eklenir.
+## Adım 4 — Veritabanı seviyesinde yetki (RLS)
+- Yardımcı fonksiyonlar: `is_organization_member`, `has_organization_role`, `can_access_property`, `has_organization_permission`.
+- Tüm tablo kuralları organizasyon + rol + pansiyon atamasına göre yeniden yazılır.
+- Rol/kullanıcı yetkileri artık sadece butonu gizlemekle değil, veritabanında da uygulanır.
+- Temizlikçi misafir e-posta/telefon ve ciro göremez; kanal şifreleri hiçbir zaman tarayıcıya gitmez.
+- Doğrulama SQL testleri (A şirketi B'yi göremez vb.).
 
-Auth email şablonları: Supabase varsayılan şablonu kullanabiliriz — özel marka istemiyorsan ek kurulum gerekmez. Ancak proje custom domain'de gönderim yapacaksa (uzun vadede) Lovable Email altyapısı kurulmalı; şimdilik varsayılanla ilerleyebiliriz.
+## Adım 5 — Oda tipi ve kişi sayısına göre fiyat modeli (sadece altyapı)
+- Yeni: `room_types`, `rate_plans`, `occupancy_rates` (1/2/3 kişi fiyatı, tarih aralığı, min. konaklama, EUR, decimal).
+- `rooms` tablosuna `room_type_id`, `active` eklenir; fiziksel oda temizlik ve atamada birim olarak kalır.
+- Kanal eşleştirme hazırlığı: `channel_accounts`, `channel_property_mappings`, `channel_room_type_mappings` (wubook, booking, airbnb, expedia, website, manual). Şifreler istemcinin okuyabileceği alanda tutulmaz.
 
-### 3) Karar gereken 2 nokta
+## Adım 6 — Rezervasyonun tek seferde (atomik) oluşturulması
+- Tek bir güvenli veritabanı fonksiyonu: yetki, pansiyon erişimi, oda–pansiyon uyumu, kapasite, tarih, çakışma kontrolü → booking + oda satırları + denetim + `integration_outbox` kaydı. Herhangi biri hata verirse hiçbiri kaydedilmez.
+- Pazarlık fiyatı alanları: liste fiyatı, son fiyat, indirim, gerekçe, değiştiren kişi/zaman. Fiyat farklıysa gerekçe zorunlu.
+- Mevcut "Yeni Rezervasyon" penceresi bu fonksiyonu kullanacak şekilde bağlanır (görünüm aynı kalır).
 
-Plana onay vermeden önce şunları netleştirelim:
+## Adım 7 — Temizlikçi QR ve konum güvenliği
+- Mesai başlat/bitir kararı sunucuda verilir (mesafe, GPS doğruluğu, üyelik, pansiyon erişimi).
+- Varsayılan maksimum GPS hatası 150–200 m (şu an 2000 m). Koordinatsız pansiyon reddedilir (yönetici açıkça izin vermedikçe).
+- Tüm denemeler (kabul/red) kaydedilir, hız sınırı, aynı anda tek açık mesai.
+- QR: token özeti (hash) saklanır, yenileme/iptal/sürüm desteği; sadece admin/yönetici üretebilir.
 
-**Google OAuth için:**
-- (A) "Şimdilik Lovable'ın verdiği `pensify.lovable.app` domaininde kalsın, Hostinger'ı bırakacağım." → hiçbir kod değişikliği yok, sadece şifremi unuttum'u ekleyeceğim.
-- (B) "Hostinger'da devam edeceğim, kendi Google OAuth credentials'ımı alacağım." → sana Google Cloud Console adımlarını vereceğim, sen Client ID/Secret'ı alıp Cloud UI'ya yapıştıracaksın; ben `lovable.auth.signInWithOAuth` çağrısını broker yerine doğrudan Supabase OAuth'a düşen bir fallback ile değiştireceğim.
-- (C) "Domainimi Lovable'a bağlayacağım (buy/connect)." → domain aktif olunca A ile aynı, ekstra kod yok.
+## Adım 8 — Temizlik görevi durum akışı
+- Fonksiyonlar: kabul et, başla, bitir, sorun bildir. Akış: bekliyor → kabul → devam → bitti / sorun; sorun → devam.
+- Temizlikçi oda, pansiyon, atanan kişi, tarih gibi alanları değiştiremez. Yönetici gerekçeli override yapabilir.
+- Bitirince oda durumu tek işlemde güncellenir; her geçiş kaydedilir.
 
-**Reset password sayfası için:**
-- Basit modern tasarım (Auth sayfasıyla aynı stil) — onay istiyorum.
+## Adım 9 — Oda operasyonel durumu
+- Dolu / bugün çıkış / temizlik gerekli / temizleniyor / hazır / bakım durumları rezervasyon + temizlik + bakım kayıtlarından hesaplanan bir görünümden gelir. Elle durum değiştirmek rezerveli odayı boş gösteremez.
 
-### 4) Uygulama adımları (onaydan sonra)
+## Adım 10 — Paket ve kod kalitesi
+- Bun ana paket yöneticisi olarak belgelenir; çakışan `package-lock.json` kaldırılır.
+- Dokunulan dosyalarda yeni `any` kullanılmaz; sadece değişen dosyalar biçimlendirilir; lint raporu.
 
-1. Google OAuth: seçilen yola göre kod veya konfig.
-2. `src/routes/reset-password.tsx` oluştur (public, SSR off, hash parse).
-3. `src/routes/auth.tsx`: "Şifremi unuttum" linki + inline "e-posta gönder" modu.
-4. i18n metinleri (DE/EN/TR).
-5. Test:
-   - Reset flow: e-posta iste → link tıkla → yeni şifre → login.
-   - Google flow (seçilen yola göre) hem preview hem hedef domainde.
+## Testler ve teslim
+- Brief'teki tüm test başlıkları (uç nokta, şirket izolasyonu, rezervasyon bütünlüğü, temizlikçi akışı) SQL + Playwright ile çalıştırılır.
+- Sonunda: migration listesi, değişen dosyalar, rol-yetki matrisi, korunan uç noktalar, test/derleme sonuçları, gerekli ortam değişkenleri, geri alma notları, ertelenen işler.
 
-### Teknik notlar (kullanıcı için önemsiz)
-- `redirectTo` mutlaka public route olmalı, `_authenticated` altında olamaz.
-- `/reset-password` public kalır (auth guard'a takılmaz).
-- Recovery link'i geldiğinde Supabase geçici bir session yaratır; `updateUser` onunla çalışır, sonra sign-out edip `/auth`'a atıyoruz ki kullanıcı yeni şifreyle giriş yapsın.
+## Brief ile platform arasındaki farklar (bilgi)
+- `.env` dosyası Lovable tarafından otomatik yönetilir ve sadece publishable (herkese açık) anahtarları içerir; gerçek gizli anahtarlar güvenli kasada. `.env.example` eklenir, `.env` dosyasına dokunulmaz.
+- `npm ci` yerine proje Bun kullanır; derleme Bun ile doğrulanır.
+- Veritabanı değişiklikleri geriye dönük uyumlu (sadece ekleme) yapılır; eski sütunlar silinmez, "kullanımdan kalktı" olarak işaretlenir.
+- iCal senkronizasyonu bu fazda kaldırılmaz; WuBook planlamasında birlikte kaldırılır.
+- Cron gizli anahtarları (`DISPATCH_CRON_SECRET`, `SYNC_CRON_SECRET`) sistem tarafından otomatik üretilir.
 
----
+## Ertelenenler
+Takvim/rezervasyon/temizlikçi ekranı yeniden tasarımı, WuBook API çağrıları, canlı OTA bağlantısı, web sitesi rezervasyon arayüzü, ödeme, kapı PIN, WhatsApp, sesli asistan, AI eskalasyon.
 
-**Lütfen Google için A/B/C birini seç, ondan sonra tek turda hepsini uygulayıp test edeyim.**
+## Teknik notlar
+- `app_role` enum'a `operations_manager`, `property_manager` eklenir; `manager` satırları kopyalanır ve eski değer deprecated.
+- `organization_id` akışı: nullable ekle → backfill → FK + index → NOT NULL (ayrı migration).
+- Mevcut `prevent_reservation_overlap` trigger son savunma olarak kalır; ek olarak org/property tutarlılık trigger'ı.
+- Manuel sync: `createServerFn` + `requireSupabaseAuth` + `has_organization_permission`; cooldown `sync_jobs` son kaydına göre.
+- Güvenlik başlıkları `src/server.ts` yanıt sarmalayıcısında eklenir (preview iframe için frame-ancestors lovable domainlerine izinli).
+- QR doğrulama: `clock_action(_token, _lat, _lng, _acc, _action)` SECURITY DEFINER RPC, haversine SQL'de.
