@@ -31,6 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
-.env.*
-!.env.example
+# .env holds only public (publishable) values and must be tracked so hosted builds get them.
+.env.local
+.env.*.local
