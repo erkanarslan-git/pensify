@@ -7,3 +7,4 @@
 - Bun 1.3.x + bun.lock only; CI: bun install --frozen-lockfile && bun run build. Why: one lockfile.
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
+- .env is tracked and contains only publishable values (secrets live in the secret store). Why: hosted preview/publish builds need VITE_* at build time or the app fails to load.
