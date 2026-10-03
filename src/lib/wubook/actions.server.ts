@@ -104,8 +104,9 @@ export function buildNewPropertyArgs(i: TestPropertyInput) {
     lang: "de",
     currency: "EUR",
   };
-  // woodoo_only = 1: no OTA channels are connected.
-  return [lodg, 1, account] as const;
+  // woodoo_only is deprecated by WuBook: it must be 0. No OTA channels are
+  // connected automatically either way (channels are linked manually in WuBook).
+  return [lodg, 0, account] as const;
 }
 
 export async function createTestProperty(i: TestPropertyInput, fetchImpl?: typeof fetch) {
