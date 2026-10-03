@@ -158,7 +158,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
         </DialogHeader>
 
         {loading || !r ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">Yükleniyor…</div>
+          <div className="py-12 text-center text-sm text-muted-foreground">Laden…</div>
         ) : (
           <>
             {readOnly && (
