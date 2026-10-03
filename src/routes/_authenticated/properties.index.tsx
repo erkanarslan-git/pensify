@@ -69,6 +69,21 @@ function PropertiesPage() {
   const { t } = useTranslation();
   const { data: cities = [] } = useCities();
   const { data: properties = [], isLoading } = useProperties();
+  const { data: stats = {} } = useQuery({
+    queryKey: ["property-room-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("rooms").select("property_id,status");
+      if (error) throw error;
+      const s: Record<string, { total: number; free: number; cleaning: number }> = {};
+      for (const r of data ?? []) {
+        const e = (s[r.property_id] ??= { total: 0, free: 0, cleaning: 0 });
+        e.total++;
+        if (r.status === "available" || r.status === "cleaned") e.free++;
+        if (r.status === "cleaning_required" || r.status === "cleaning_in_progress" || r.status === "checkout_today") e.cleaning++;
+      }
+      return s;
+    },
+  });
   const [editing, setEditing] = useState<PropertyRow | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -128,21 +143,23 @@ function PropertiesPage() {
                         <Building2 className="w-3 h-3" /> {p.address}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                        <Badge tone={p.active ? "success" : "muted"}>
-                          {p.active ? t("common.active") : t("common.inactive")}
-                        </Badge>
-                        <Badge tone="muted">⌖ {p.geofence_radius_m}m</Badge>
-                        {p.latitude != null && p.longitude != null && (
-                          <Badge tone="info">
-                            {p.latitude.toFixed(3)}, {p.longitude.toFixed(3)}
-                          </Badge>
+                        {!p.active && <Badge tone="muted">{t("common.inactive")}</Badge>}
+                        <Badge tone="info">{stats[p.id]?.total ?? 0} Zimmer</Badge>
+                        <Badge tone="success">{stats[p.id]?.free ?? 0} frei</Badge>
+                        {(stats[p.id]?.cleaning ?? 0) > 0 && (
+                          <Badge tone="warning">{stats[p.id]?.cleaning} Reinigung</Badge>
                         )}
                       </div>
-                      <Link to="/properties/$id/rooms" params={{ id: p.id }} className="mt-3 block">
-                        <Button size="sm" className="w-full gap-1.5">
-                          <Building2 className="w-4 h-4" /> Zimmer verwalten
-                        </Button>
-                      </Link>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <Link to="/properties/$id/rooms" params={{ id: p.id }}>
+                          <Button size="sm" className="w-full gap-1.5">
+                            <Building2 className="w-4 h-4" /> Zimmer
+                          </Button>
+                        </Link>
+                        <Link to="/reservations" search={{ property: p.id }}>
+                          <Button size="sm" variant="outline" className="w-full">Buchungen</Button>
+                        </Link>
+                      </div>
                     </Section>
                   ))}
                 </div>
