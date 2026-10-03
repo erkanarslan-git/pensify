@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import i18n from "@/i18n";
+import { roomTypeVisual } from "@/lib/room-type-visuals";
 
 export const Route = createFileRoute("/_authenticated/properties/")({
   head: () => ({ meta: [{ title: `${i18n.t("nav.properties")} — Pensify` }] }),
@@ -72,14 +73,24 @@ function PropertiesPage() {
   const { data: stats = {} } = useQuery({
     queryKey: ["property-room-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("rooms").select("property_id,status");
-      if (error) throw error;
-      const s: Record<string, { total: number; free: number; cleaning: number }> = {};
-      for (const r of data ?? []) {
-        const e = (s[r.property_id] ??= { total: 0, free: 0, cleaning: 0 });
+      const [roomsResult, typesResult] = await Promise.all([
+        supabase.from("rooms").select("property_id,status,room_type_id"),
+        supabase.from("room_types").select("id,property_id,name,code"),
+      ]);
+      if (roomsResult.error) throw roomsResult.error;
+      if (typesResult.error) throw typesResult.error;
+      const typeById = new Map((typesResult.data ?? []).map((type) => [type.id, type]));
+      const s: Record<string, { total: number; free: number; cleaning: number; types: Record<string, { name: string; code: string; count: number }> }> = {};
+      for (const r of roomsResult.data ?? []) {
+        const e = (s[r.property_id] ??= { total: 0, free: 0, cleaning: 0, types: {} });
         e.total++;
         if (r.status === "available" || r.status === "cleaned") e.free++;
         if (r.status === "cleaning_required" || r.status === "cleaning_in_progress" || r.status === "checkout_today") e.cleaning++;
+        const roomType = r.room_type_id ? typeById.get(r.room_type_id) : undefined;
+        if (roomType) {
+          const item = (e.types[roomType.id] ??= { name: roomType.name, code: roomType.code, count: 0 });
+          item.count++;
+        }
       }
       return s;
     },
@@ -149,6 +160,12 @@ function PropertiesPage() {
                         {(stats[p.id]?.cleaning ?? 0) > 0 && (
                           <Badge tone="warning">{stats[p.id]?.cleaning} Reinigung</Badge>
                         )}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-1.5" aria-label={t("propertyRooms.typeDistribution")}>
+                        {Object.values(stats[p.id]?.types ?? {}).map((roomType) => {
+                          const visual = roomTypeVisual(roomType.code);
+                          return <span key={`${p.id}-${roomType.code}`} title={`${roomType.name}: ${roomType.count}`} className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] ${visual.border} ${visual.surface} ${visual.text}`}><span className={`h-2 w-2 rounded-full ${visual.marker}`} />{roomType.name} · {roomType.count}</span>;
+                        })}
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <Link to="/properties/$id/rooms" params={{ id: p.id }}>

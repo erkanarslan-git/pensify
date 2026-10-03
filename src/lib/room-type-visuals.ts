@@ -65,11 +65,3 @@ export function roomTypeVisual(code?: string | null): RoomTypeVisual {
     border: "border-border",
   };
 }
-
-export function roomTypeCodeTitle(code?: string | null) {
-  const normalized = (code ?? "").trim().toUpperCase();
-  const parts = [visuals[roomTypeBaseCode(normalized)]?.label ?? "Zimmertyp"];
-  if (normalized.split("-").includes("BAD")) parts.push("eigenes Bad");
-  if (normalized.split("-").includes("DU")) parts.push("eigene Dusche");
-  return parts.join(" · ");
-}

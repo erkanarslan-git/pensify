@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { roomTypeVisual } from "@/lib/room-type-visuals";
 import {
   RoomDialog, statusMeta, floorLabel,
   type Room, type RoomStatus, type Cleaner, type Property, type RoomType,
@@ -136,11 +138,24 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
   const totalFree = Object.values(avail).reduce((s, a) => s + a.free, 0);
   const activeTypes = types.filter((x) => x.active);
 
-  const roomRow = (r: Room, showAssign: boolean) => {
+  const roomRow = (r: Room, showAssign: boolean, ty?: TypeFull) => {
     const meta = statusMeta[r.status];
+    const visual = roomTypeVisual(ty?.code);
+    const typeName = ty?.name ?? t("propertyRooms.noType");
     return (
-      <div key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 border-t border-border first:border-t-0 text-sm">
-        <span className="font-semibold w-16 truncate">#{r.number}</span>
+      <div key={r.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-t border-border px-3 py-2.5 first:border-t-0 sm:flex sm:flex-wrap sm:gap-x-3">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex min-w-0 items-center gap-2 sm:w-52">
+              <span className={`h-7 w-1 shrink-0 rounded-full ${visual.marker}`} />
+              <div className="min-w-0">
+                <div className="font-semibold text-sm break-words">#{r.number}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{typeName}</div>
+              </div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{t("propertyRooms.roomIdentity", { number: r.number, type: typeName })}</TooltipContent>
+        </Tooltip>
         <span className="text-xs text-muted-foreground w-10">{floorLabel(r.floor)}</span>
         <Badge tone={meta.tone}>{meta.label}</Badge>
         <span className="text-xs text-muted-foreground truncate flex-1 min-w-[120px]">
@@ -179,6 +194,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
         </div>
       )}
 
+      <TooltipProvider delayDuration={200}>
       <Tabs defaultValue={types.length ? "overview" : "types"}>
         <TabsList className="mb-4 flex-wrap h-auto">
           <TabsTrigger value="overview">{t("propertyRooms.tab.overview")}</TabsTrigger>
@@ -196,10 +212,10 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
                 <tr>{["type", "total", "occupied", "free", "cleaning", "maintenance"].map((k) => <th key={k} className="text-left px-3 py-2 font-medium">{t(`propertyRooms.ov.${k}`)}</th>)}</tr>
               </thead>
               <tbody>
-                {[...types.map((ty) => ({ id: ty.id, name: ty.name, inactive: !ty.active, list: rooms.filter((r) => r.room_type_id === ty.id) })),
-                  ...(untyped.length ? [{ id: "none", name: t("propertyRooms.noType"), inactive: false, list: untyped }] : [])].map((row) => (
+                {[...types.map((ty) => ({ id: ty.id, name: ty.name, code: ty.code, inactive: !ty.active, list: rooms.filter((r) => r.room_type_id === ty.id) })),
+                  ...(untyped.length ? [{ id: "none", name: t("propertyRooms.noType"), code: "", inactive: false, list: untyped }] : [])].map((row) => (
                   <tr key={row.id} className="border-t border-border">
-                    <td className="px-3 py-2">{row.name}{row.inactive && <span className="ml-1 text-xs text-muted-foreground">({t("propertyRooms.inactive")})</span>}</td>
+                    <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><span className={`h-2.5 w-2.5 shrink-0 rounded-full ${roomTypeVisual(row.code).marker}`} />{row.name}</span>{row.inactive && <span className="ml-1 text-xs text-muted-foreground">({t("propertyRooms.inactive")})</span>}</td>
                     <td className="px-3 py-2">{row.list.length}</td>
                     <td className="px-3 py-2">{statusCount(row.list, ["occupied", "checkout_today"])}</td>
                     <td className="px-3 py-2">{row.id !== "none" && avail[row.id] ? avail[row.id].free : statusCount(row.list, ["available", "cleaned"])}</td>
@@ -223,10 +239,10 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
           {types.map((ty) => {
             const list = rooms.filter((r) => r.room_type_id === ty.id);
             return (
-              <div key={ty.id} className={`rounded-xl border border-border bg-card px-4 py-3 flex flex-wrap items-center gap-3 ${ty.active ? "" : "opacity-60"}`}>
-                <Layers className="w-4 h-4 text-primary" />
+              <div key={ty.id} className={`rounded-xl border ${roomTypeVisual(ty.code).border} ${roomTypeVisual(ty.code).surface} px-4 py-3 flex flex-wrap items-center gap-3 ${ty.active ? "" : "opacity-60"}`}>
+                <Layers className={`w-4 h-4 ${roomTypeVisual(ty.code).text}`} />
                 <div className="flex-1 min-w-[180px]">
-                  <div className="font-semibold">{ty.name} <span className="text-xs text-muted-foreground font-normal">· {ty.code}</span></div>
+                  <div className="font-semibold">{ty.name} <Tooltip><TooltipTrigger asChild><span tabIndex={0} className={`ml-1 inline-flex rounded border px-1.5 py-0.5 text-[10px] font-semibold ${roomTypeVisual(ty.code).border} ${roomTypeVisual(ty.code).text}`}>{ty.code}</span></TooltipTrigger><TooltipContent>{t("propertyRooms.codeHint", { code: ty.code, name: ty.name })}</TooltipContent></Tooltip></div>
                   <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1"><Users className="w-3 h-3" />{t("propertyRooms.persons", { n: ty.capacity })}</span>
                     <span>· {ty.price != null ? t("propertyRooms.perNight", { price: ty.price.toFixed(2) }) : t("propertyRooms.noPrice")}</span>
@@ -260,14 +276,15 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
           {types.map((ty) => {
             const list = rooms.filter((r) => r.room_type_id === ty.id);
             return (
-              <div key={ty.id} className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="flex flex-wrap items-center gap-3 px-4 py-2.5 bg-muted/40">
-                  <div className="flex-1 font-semibold text-sm">{ty.name} <span className="text-xs text-muted-foreground font-normal">· {t("propertyRooms.roomCount", { n: list.length })}</span></div>
+              <div key={ty.id} className={`rounded-xl border ${roomTypeVisual(ty.code).border} bg-card overflow-hidden`}>
+                <div className={`flex flex-wrap items-center gap-3 px-4 py-2.5 ${roomTypeVisual(ty.code).surface}`}>
+                  <span className={`h-7 w-1 shrink-0 rounded-full ${roomTypeVisual(ty.code).marker}`} />
+                  <div className="flex-1 font-semibold text-sm">{ty.name} <span className="text-xs text-muted-foreground font-normal">· {ty.code} · {t("propertyRooms.roomCount", { n: list.length })}</span></div>
                   {canManage && ty.active && <button onClick={() => setBulkFor(ty)} className={btn}><Plus className="w-3 h-3" /> {t("propertyRooms.addRooms")}</button>}
                 </div>
                 {list.length === 0
                   ? <div className="px-4 py-3 text-xs text-muted-foreground">{t("propertyRooms.noRoomsOfType")}</div>
-                  : list.map((r) => roomRow(r, false))}
+                  : list.map((r) => roomRow(r, false, ty))}
               </div>
             );
           })}
@@ -293,6 +310,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
           <div className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">{t("propertyRooms.channelsSoon")}</div>
         </TabsContent>
       </Tabs>
+      </TooltipProvider>
 
       <TypeDialog value={canManage ? typeDlg : null} property={property} onClose={() => setTypeDlg(null)} onSaved={load} />
       <BulkRoomsDialog type={canManage ? bulkFor : null} property={property} existing={rooms} onClose={() => setBulkFor(null)} onSaved={load} />
