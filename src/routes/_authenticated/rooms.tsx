@@ -51,10 +51,14 @@ const floorLabel = (f: number | null) =>
   f == null ? "—" : f === 0 ? "EG" : `${f}.OG`;
 
 function RoomsPage() {
+  return <RoomsManager />;
+}
+
+export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const { t } = useTranslation();
   const [cities, setCities] = useState<City[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [allProperties, setProperties] = useState<Property[]>([]);
+  const [allRooms, setRooms] = useState<Room[]>([]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const [filter, setFilter] = useState<RoomStatus | "all">("all");
   const [editing, setEditing] = useState<Room | null>(null);
@@ -62,10 +66,13 @@ function RoomsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [typesOpen, setTypesOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [{ data: ci }, { data: pr }, { data: rm }, { data: cl }, { data: rt }, { data: live }] = await Promise.all([
+      setLoading(true);
+      const [ci, pr, rm, cl, rt, live] = await Promise.all([
         supabase.from("cities").select("id,name").order("name"),
         supabase.from("properties").select("id,name,city_id,organization_id").order("name"),
         supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
@@ -74,17 +81,33 @@ function RoomsPage() {
         supabase.from("room_types").select("id,name,property_id").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
-      setRoomTypes((rt ?? []) as RoomType[]);
-      setCities((ci ?? []) as City[]);
-      setProperties((pr ?? []) as Property[]);
-      // Show the live status worked out from bookings + cleaning tasks.
-      const liveMap = new Map((live ?? []).map((x) => [x.room_id, x.status]));
-      setRooms(((rm ?? []) as Room[]).map((r) => ({ ...r, status: (liveMap.get(r.id) ?? r.status) as RoomStatus })));
-      setCleaners((cl ?? []) as Cleaner[]);
+      const critical = [["properties", pr.error], ["rooms", rm.error], ["cities", ci.error]] as const;
+      const failed = critical.find(([, e]) => e);
+      for (const [name, res] of [["cleaners", cl], ["room_types", rt], ["room_operational_status", live]] as const) {
+        if (res.error) console.error(`[rooms] ${name} query failed:`, res.error.code, res.error.message);
+      }
+      if (failed) {
+        const e = failed[1]!;
+        console.error(`[rooms] ${failed[0]} query failed:`, e.code, e.message);
+        setLoadError(`${failed[0]}: ${e.code ?? ""} ${e.message}`);
+        setLoading(false);
+        return;
+      }
+      setLoadError(null);
+      setRoomTypes((rt.data ?? []) as RoomType[]);
+      setCities((ci.data ?? []) as City[]);
+      setProperties((pr.data ?? []) as Property[]);
+      const liveMap = new Map((live.data ?? []).map((x) => [x.room_id, x.status]));
+      setRooms(((rm.data ?? []) as Room[]).map((r) => ({ ...r, status: (liveMap.get(r.id) ?? r.status) as RoomStatus })));
+      setCleaners((cl.data ?? []) as Cleaner[]);
+      setLoading(false);
     })();
   }, [refreshKey]);
 
+  const properties = propertyId ? allProperties.filter((p) => p.id === propertyId) : allProperties;
+  const rooms = propertyId ? allRooms.filter((r) => r.property_id === propertyId) : allRooms;
   const list = filter === "all" ? rooms : rooms.filter((r) => r.status === filter);
+  const single = propertyId ? properties[0] : undefined;
 
   const remove = async (id: string) => {
     if (!confirm("Bu odayı silmek istediğine emin misin?")) return;
@@ -93,11 +116,42 @@ function RoomsPage() {
     else { toast.success("Oda silindi"); setRefreshKey((k) => k + 1); }
   };
 
+  if (loading || loadError) {
+    return (
+      <AppShell title={single ? `${single.name} – Zimmer` : t("pages.rooms.title")}>
+        {loading ? (
+          <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
+        ) : (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm space-y-1">
+            <p className="font-medium text-destructive">Zimmerdaten konnten nicht geladen werden.</p>
+            <p className="text-xs text-muted-foreground">{loadError}</p>
+            <button onClick={() => setRefreshKey((k) => k + 1)} className="mt-2 px-3 py-1.5 rounded-md border border-border text-xs hover:bg-accent">Erneut versuchen</button>
+          </div>
+        )}
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
-      title={t("pages.rooms.title")}
+      title={single ? `${single.name} – Zimmer` : t("pages.rooms.title")}
       subtitle={`${rooms.length} oda · ${properties.length} lokasyon`}
+      actions={
+        properties.length > 0 ? (
+          <button
+            onClick={() => setCreating({ propertyId: single?.id ?? properties[0].id })}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium"
+          >
+            <Plus className="w-4 h-4" /> Neues Zimmer
+          </button>
+        ) : undefined
+      }
     >
+      {single && (
+        <nav className="text-xs text-muted-foreground mb-3">
+          <Link to="/properties" className="hover:underline">Pensionen</Link> / {single.name} / Zimmer
+        </nav>
+      )}
       <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setTypesOpen(true)}
@@ -127,11 +181,9 @@ function RoomsPage() {
 
       {properties.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-4 text-sm space-y-2">
-          <p>
-            Henüz hiç lokasyon eklemedin. Odalar lokasyonların altına eklenir.
-          </p>
+          <p>Henüz hiç pansiyon yok.</p>
           <p className="text-muted-foreground">
-            Önce <Link to="/properties" className="text-primary underline underline-offset-2">Lokasyonlar</Link> sayfasından bir pansiyon oluştur; sonra bu sayfada her lokasyonun başlığında çıkan <strong>Oda ekle</strong> düğmesine basarak odaları ekleyebilirsin. "Zimmertypen &amp; Preise" düğmesi oda tipleri ve gecelik fiyatlar içindir — istersen odaları ekledikten sonra da ayarlayabilirsin.
+            Önce <Link to="/properties" className="text-primary underline underline-offset-2">Pensionen</Link> sayfasından bir pansiyon oluştur; sonra buradaki <strong>Neues Zimmer</strong> düğmesiyle oda ekleyebilirsin.
           </p>
         </div>
       ) : (
