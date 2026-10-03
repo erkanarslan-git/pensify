@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const TIMEOUT_MS = 30_000;
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { FlaskConical, Loader2, CheckCircle2, XCircle, Circle } from "lucide-react";
@@ -97,10 +99,20 @@ export function WuBookTestPanel() {
     queryFn: () => fetchStatus(),
     enabled: isAdmin,
     refetchInterval: (q) => {
-      const t = q.state.data?.testAccount?.webhookTest;
-      return t && t["accepted"] && !t["received_at"] ? 4000 : false;
+      const d = q.state.data;
+      const t = d?.testAccount?.webhookTest;
+      if (!t || t["accepted"] === false || typeof t["started_at"] !== "string") return false;
+      const started = t["started_at"] as string;
+      const got = t["received_at"] || d?.inbox?.some((i) => i.event_type === "test" && i.received_at >= started);
+      const age = Date.now() - new Date(started).getTime();
+      return !got && age < TIMEOUT_MS + 5000 ? 2000 : false;
     },
   });
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((n) => n + 1), 2000);
+    return () => clearInterval(id);
+  }, []);
   if (!isAdmin) return null;
   const refresh = () => qc.invalidateQueries({ queryKey: ["wubook-webhook-status"] });
 
@@ -112,6 +124,13 @@ export function WuBookTestPanel() {
   const acc = st?.testAccount;
   const wt = acc?.webhookTest ?? null;
   const pc = acc?.pushUrlCheck ?? null;
+  const startedAt = typeof wt?.["started_at"] === "string" ? (wt["started_at"] as string) : null;
+  const inboxHit = startedAt ? st?.inbox?.find((i) => i.event_type === "test" && i.received_at >= startedAt) : undefined;
+  const receivedAt = (wt?.["received_at"] as string | undefined) ?? inboxHit?.received_at ?? null;
+  const timedOut = startedAt ? Date.now() - new Date(startedAt).getTime() > TIMEOUT_MS : false;
+  // Green once the ping arrived (even if acceptance was overwritten); red on rejection or timeout.
+  const accepted: boolean | null = !wt ? null : receivedAt || wt["accepted"] === true ? true : wt["accepted"] === false ? false : timedOut ? false : null;
+  const reached: boolean | null = !wt ? null : receivedAt ? true : accepted === false || timedOut ? false : null;
 
   return (
     <div className="rounded-xl border bg-card p-4 space-y-4">
@@ -219,10 +238,14 @@ export function WuBookTestPanel() {
             </div>
             <ul className="space-y-1">
               <Step ok={wt ? true : null} label={`Test gestartet ${wt ? fmt(wt["started_at"]) : ""}`} />
-              <Step ok={wt ? (wt["accepted"] === true ? true : wt["accepted"] === false ? false : null) : null} label={wt?.["error"] ? `WuBook: ${String(wt["error"])}` : "WuBook hat den Aufruf angenommen"} />
-              <Step ok={wt?.["received_at"] ? true : null} label={`Webhook hat Pensify erreicht ${wt?.["received_at"] ? fmt(wt["received_at"]) : ""}`} />
-              <Step ok={wt?.["http_status"] === 200 ? true : null} label="HTTP 200 zurückgegeben (Test: lcode 1000 / rcode 2000)" />
+              <Step ok={accepted} label={wt?.["error"] ? `WuBook: ${String(wt["error"])}` : "WuBook hat den Aufruf angenommen"} />
+              <Step ok={reached} label={reached === false ? "Webhook hat Pensify nicht erreicht (keine Antwort innerhalb von 30 Sekunden)" : `Webhook hat Pensify erreicht ${receivedAt ? fmt(receivedAt) : ""}`} />
+              <Step ok={reached} label="HTTP 200 zurückgegeben (Test: lcode 1000 / rcode 2000)" />
             </ul>
+            {(accepted === false || reached === false) && (
+              <p className="text-sm text-destructive">Test fehlgeschlagen. Bitte erneut testen; bleibt es rot, Webhook-Adresse prüfen.</p>
+            )}
+            {reached && <p className="text-sm text-success">Test erfolgreich – WuBook erreicht Pensify.</p>}
           </section>
 
           <section className="space-y-2">

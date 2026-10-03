@@ -183,7 +183,11 @@ export const startWuBookWebhookTest = createServerFn({ method: "POST" })
     await supabaseAdmin.from("channel_accounts").update({ last_webhook_test: { started_at: startedAt } as never }).eq("id", acc.id);
     const { activatePushTest, run } = await import("@/lib/wubook/actions.server");
     const res = await run(() => activatePushTest(acc.wubook_lcode!));
-    const state = res.ok ? { started_at: startedAt, accepted: true } : { started_at: startedAt, accepted: false, error: res.errorMessage };
+    // Merge with the current row: the webhook may already have written received_at/http_status.
+    const { data: cur } = await supabaseAdmin.from("channel_accounts").select("last_webhook_test").eq("id", acc.id).single();
+    const prev = (cur?.last_webhook_test as Record<string, unknown> | null) ?? {};
+    const keep = prev["started_at"] === startedAt ? prev : {};
+    const state = res.ok ? { ...keep, started_at: startedAt, accepted: true } : { ...keep, started_at: startedAt, accepted: false, error: res.errorMessage };
     await supabaseAdmin.from("channel_accounts").update({ last_webhook_test: state as never }).eq("id", acc.id);
     await audit(orgId, context.userId, res.ok ? "webhook_test_started" : "webhook_test_failed", { lcode: acc.wubook_lcode, error_code: res.ok ? null : res.errorCode });
     return res.ok ? { ok: true as const } : { ok: false as const, errorMessage: res.errorMessage };
