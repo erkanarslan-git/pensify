@@ -76,6 +76,7 @@ function parseWiredStatus(raw: unknown): { ok: boolean; result: unknown; errorCo
 
 export async function testConnection(
   fetchImpl?: typeof fetch,
+  transportOverrides?: Partial<XmlRpcTransportOptions>,
 ): Promise<ConnectionTestResult> {
   const testedAt = new Date().toISOString();
   const { config, missing } = getWuBookConfig();
@@ -96,7 +97,7 @@ export async function testConnection(
 
   try {
     assertMethodAllowed("corporate_fetch_accounts", config);
-    const transport: XmlRpcTransportOptions = { url: config.url, fetchImpl };
+    const transport: XmlRpcTransportOptions = { url: config.url, fetchImpl, ...transportOverrides };
     // corporate_fetch_accounts(token) — token never leaves the server.
     const raw = await callXmlRpc("corporate_fetch_accounts", [config.token], transport);
     const { ok, result, errorCode } = parseWiredStatus(raw);

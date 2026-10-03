@@ -53,7 +53,7 @@ export function WuBookStatus() {
         <div className="flex items-center gap-2">
           <PlugZap className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">WuBook Wired</h3>
-          <Badge>Shadow / Nur lesen</Badge>
+          <Badge tone="warning">Shadow / Nur lesen</Badge>
         </div>
         <Button size="sm" variant="outline" onClick={onTest} disabled={testing || status?.configured === false}>
           {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verbindung testen"}
