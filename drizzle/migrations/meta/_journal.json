@@ -120,6 +120,13 @@
       "when": 1790774623396,
       "tag": "0016_outbox_property_cascade_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791022528289,
+      "tag": "0017_grant_tenant_columns_select",
+      "breakpoints": true
     }
   ]
 }

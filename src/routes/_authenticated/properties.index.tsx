@@ -138,6 +138,11 @@ function PropertiesPage() {
                           </Badge>
                         )}
                       </div>
+                      <Link to="/properties/$id/rooms" params={{ id: p.id }} className="mt-3 block">
+                        <Button size="sm" className="w-full gap-1.5">
+                          <Building2 className="w-4 h-4" /> Zimmer verwalten
+                        </Button>
+                      </Link>
                     </Section>
                   ))}
                 </div>
