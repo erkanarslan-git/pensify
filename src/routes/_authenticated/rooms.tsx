@@ -19,13 +19,13 @@ export const Route = createFileRoute("/_authenticated/rooms")({
   component: RoomsPage,
 });
 
-type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
+export type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
 
-interface Property { id: string; name: string; city_id: string | null; organization_id: string }
-interface RoomType { id: string; name: string; property_id: string | null }
+export interface Property { id: string; name: string; city_id: string | null; organization_id: string }
+export interface RoomType { id: string; name: string; property_id: string | null }
 interface City { id: string; name: string }
-interface Cleaner { id: string; full_name: string; active: boolean }
-interface Room {
+export interface Cleaner { id: string; full_name: string; active: boolean }
+export interface Room {
   id: string;
   property_id: string;
   number: string;
@@ -37,7 +37,7 @@ interface Room {
   room_type_id: string | null;
 }
 
-const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
+export const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
   available: { label: "Müsait", tone: "success" },
   occupied: { label: "Dolu", tone: "primary" },
   checkout_today: { label: "Bugün Çıkış", tone: "info" },
@@ -47,7 +47,7 @@ const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning
   maintenance: { label: "Bakım", tone: "destructive" },
 };
 
-const floorLabel = (f: number | null) =>
+export const floorLabel = (f: number | null) =>
   f == null ? "—" : f === 0 ? "EG" : `${f}.OG`;
 
 function RoomsPage() {
@@ -278,7 +278,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   );
 }
 
-function RoomDialog({
+export function RoomDialog({
   open, room, propertyId, properties, cleaners, roomTypes, onClose, onSaved,
 }: {
   open: boolean;
