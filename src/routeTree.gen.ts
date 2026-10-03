@@ -9,40 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
-import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
-import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
-import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
-import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
-import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
-import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
-import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
-import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
-import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
-import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
-import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
+import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
+import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
+import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
+import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
+import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
+import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
+import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
+import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenticated/channel-sync'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
 import { Route as AuthenticatedSettingsLogsRouteImport } from './routes/_authenticated/settings.logs'
-import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
-import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
-import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/public/hooks/dispatch-morning'
-import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
-import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
+import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
+import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
+import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
+import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/public/hooks/dispatch-morning'
+import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
+import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -50,9 +51,8 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -60,56 +60,36 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAiRoute = AuthenticatedAiRouteImport.update({
-  id: '/ai',
-  path: '/ai',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedChannelSyncRoute =
-  AuthenticatedChannelSyncRouteImport.update({
-    id: '/channel-sync',
-    path: '/channel-sync',
+const AuthenticatedTimeTrackingRoute =
+  AuthenticatedTimeTrackingRouteImport.update({
+    id: '/time-tracking',
+    path: '/time-tracking',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCleanersRoute = AuthenticatedCleanersRouteImport.update({
-  id: '/cleaners',
-  path: '/cleaners',
+const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
-  id: '/cleaning',
-  path: '/cleaning',
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDispatchRoute = AuthenticatedDispatchRouteImport.update({
-  id: '/dispatch',
-  path: '/dispatch',
+const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
-  id: '/geo-test',
-  path: '/geo-test',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
+const AuthenticatedReservationsRoute =
+  AuthenticatedReservationsRouteImport.update({
+    id: '/reservations',
+    path: '/reservations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedRequestAccessRoute =
@@ -118,41 +98,56 @@ const AuthenticatedRequestAccessRoute =
     path: '/request-access',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedReservationsRoute =
-  AuthenticatedReservationsRouteImport.update({
-    id: '/reservations',
-    path: '/reservations',
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
-  id: '/rooms',
-  path: '/rooms',
+const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
+  id: '/geo-test',
+  path: '/geo-test',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
-  id: '/team',
-  path: '/team',
+const AuthenticatedDispatchRoute = AuthenticatedDispatchRouteImport.update({
+  id: '/dispatch',
+  path: '/dispatch',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedTimeTrackingRoute =
-  AuthenticatedTimeTrackingRouteImport.update({
-    id: '/time-tracking',
-    path: '/time-tracking',
+const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
+  id: '/cleaning',
+  path: '/cleaning',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCleanersRoute = AuthenticatedCleanersRouteImport.update({
+  id: '/cleaners',
+  path: '/cleaners',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChannelSyncRoute =
+  AuthenticatedChannelSyncRouteImport.update({
+    id: '/channel-sync',
+    path: '/channel-sync',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
-  id: '/clock/$token',
-  path: '/clock/$token',
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAiRoute = AuthenticatedAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPropertiesIndexRoute =
@@ -167,11 +162,32 @@ const AuthenticatedSettingsLogsRoute =
     path: '/logs',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
-const AuthenticatedPropertiesIdQrRoute =
-  AuthenticatedPropertiesIdQrRouteImport.update({
-    id: '/properties/$id/qr',
-    path: '/properties/$id/qr',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
+  id: '/clock/$token',
+  path: '/clock/$token',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicWebhooksBookingRoute =
+  ApiPublicWebhooksBookingRouteImport.update({
+    id: '/api/public/webhooks/booking',
+    path: '/api/public/webhooks/booking',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWebhooksAirbnbRoute = ApiPublicWebhooksAirbnbRouteImport.update({
+  id: '/api/public/webhooks/airbnb',
+  path: '/api/public/webhooks/airbnb',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSyncManualRoute = ApiPublicSyncManualRouteImport.update({
+  id: '/api/public/sync/manual',
+  path: '/api/public/sync/manual',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksDispatchMorningRoute =
+  ApiPublicHooksDispatchMorningRouteImport.update({
+    id: '/api/public/hooks/dispatch-morning',
+    path: '/api/public/hooks/dispatch-morning',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksChannelOutboxRoute =
   ApiPublicHooksChannelOutboxRouteImport.update({
@@ -179,27 +195,11 @@ const ApiPublicHooksChannelOutboxRoute =
     path: '/api/public/hooks/channel-outbox',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksDispatchMorningRoute =
-  ApiPublicHooksDispatchMorningRouteImport.update({
-    id: '/api/public/hooks/dispatch-morning',
-    path: '/api/public/hooks/dispatch-morning',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicSyncManualRoute = ApiPublicSyncManualRouteImport.update({
-  id: '/api/public/sync/manual',
-  path: '/api/public/sync/manual',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWebhooksAirbnbRoute = ApiPublicWebhooksAirbnbRouteImport.update({
-  id: '/api/public/webhooks/airbnb',
-  path: '/api/public/webhooks/airbnb',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWebhooksBookingRoute =
-  ApiPublicWebhooksBookingRouteImport.update({
-    id: '/api/public/webhooks/booking',
-    path: '/api/public/webhooks/booking',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedPropertiesIdQrRoute =
+  AuthenticatedPropertiesIdQrRouteImport.update({
+    id: '/properties/$id/qr',
+    path: '/properties/$id/qr',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const ApiPublicIcalRoomsRoomIdRoute =
   ApiPublicIcalRoomsRoomIdRouteImport.update({
@@ -421,11 +421,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -435,11 +435,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -449,102 +449,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/ai': {
-      id: '/_authenticated/ai'
-      path: '/ai'
-      fullPath: '/ai'
-      preLoaderRoute: typeof AuthenticatedAiRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/analytics': {
-      id: '/_authenticated/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/calendar': {
-      id: '/_authenticated/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/channel-sync': {
-      id: '/_authenticated/channel-sync'
-      path: '/channel-sync'
-      fullPath: '/channel-sync'
-      preLoaderRoute: typeof AuthenticatedChannelSyncRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/cleaners': {
-      id: '/_authenticated/cleaners'
-      path: '/cleaners'
-      fullPath: '/cleaners'
-      preLoaderRoute: typeof AuthenticatedCleanersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/cleaning': {
-      id: '/_authenticated/cleaning'
-      path: '/cleaning'
-      fullPath: '/cleaning'
-      preLoaderRoute: typeof AuthenticatedCleaningRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dispatch': {
-      id: '/_authenticated/dispatch'
-      path: '/dispatch'
-      fullPath: '/dispatch'
-      preLoaderRoute: typeof AuthenticatedDispatchRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/geo-test': {
-      id: '/_authenticated/geo-test'
-      path: '/geo-test'
-      fullPath: '/geo-test'
-      preLoaderRoute: typeof AuthenticatedGeoTestRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/me': {
-      id: '/_authenticated/me'
-      path: '/me'
-      fullPath: '/me'
-      preLoaderRoute: typeof AuthenticatedMeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/request-access': {
-      id: '/_authenticated/request-access'
-      path: '/request-access'
-      fullPath: '/request-access'
-      preLoaderRoute: typeof AuthenticatedRequestAccessRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/reservations': {
-      id: '/_authenticated/reservations'
-      path: '/reservations'
-      fullPath: '/reservations'
-      preLoaderRoute: typeof AuthenticatedReservationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/rooms': {
-      id: '/_authenticated/rooms'
-      path: '/rooms'
-      fullPath: '/rooms'
-      preLoaderRoute: typeof AuthenticatedRoomsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+    '/_authenticated/time-tracking': {
+      id: '/_authenticated/time-tracking'
+      path: '/time-tracking'
+      fullPath: '/time-tracking'
+      preLoaderRoute: typeof AuthenticatedTimeTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/team': {
@@ -554,25 +470,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/time-tracking': {
-      id: '/_authenticated/time-tracking'
-      path: '/time-tracking'
-      fullPath: '/time-tracking'
-      preLoaderRoute: typeof AuthenticatedTimeTrackingRouteImport
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/rooms': {
+      id: '/_authenticated/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof AuthenticatedRoomsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/clock/$token': {
-      id: '/_authenticated/clock/$token'
-      path: '/clock/$token'
-      fullPath: '/clock/$token'
-      preLoaderRoute: typeof AuthenticatedClockTokenRouteImport
+    '/_authenticated/reservations': {
+      id: '/_authenticated/reservations'
+      path: '/reservations'
+      fullPath: '/reservations'
+      preLoaderRoute: typeof AuthenticatedReservationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/request-access': {
+      id: '/_authenticated/request-access'
+      path: '/request-access'
+      fullPath: '/request-access'
+      preLoaderRoute: typeof AuthenticatedRequestAccessRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/me': {
+      id: '/_authenticated/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof AuthenticatedMeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/geo-test': {
+      id: '/_authenticated/geo-test'
+      path: '/geo-test'
+      fullPath: '/geo-test'
+      preLoaderRoute: typeof AuthenticatedGeoTestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dispatch': {
+      id: '/_authenticated/dispatch'
+      path: '/dispatch'
+      fullPath: '/dispatch'
+      preLoaderRoute: typeof AuthenticatedDispatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cleaning': {
+      id: '/_authenticated/cleaning'
+      path: '/cleaning'
+      fullPath: '/cleaning'
+      preLoaderRoute: typeof AuthenticatedCleaningRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cleaners': {
+      id: '/_authenticated/cleaners'
+      path: '/cleaners'
+      fullPath: '/cleaners'
+      preLoaderRoute: typeof AuthenticatedCleanersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/channel-sync': {
+      id: '/_authenticated/channel-sync'
+      path: '/channel-sync'
+      fullPath: '/channel-sync'
+      preLoaderRoute: typeof AuthenticatedChannelSyncRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ai': {
+      id: '/_authenticated/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AuthenticatedAiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/properties/': {
@@ -589,32 +582,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsLogsRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
-    '/_authenticated/properties/$id/qr': {
-      id: '/_authenticated/properties/$id/qr'
-      path: '/properties/$id/qr'
-      fullPath: '/properties/$id/qr'
-      preLoaderRoute: typeof AuthenticatedPropertiesIdQrRouteImport
+    '/_authenticated/clock/$token': {
+      id: '/_authenticated/clock/$token'
+      path: '/clock/$token'
+      fullPath: '/clock/$token'
+      preLoaderRoute: typeof AuthenticatedClockTokenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/hooks/channel-outbox': {
-      id: '/api/public/hooks/channel-outbox'
-      path: '/api/public/hooks/channel-outbox'
-      fullPath: '/api/public/hooks/channel-outbox'
-      preLoaderRoute: typeof ApiPublicHooksChannelOutboxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/dispatch-morning': {
-      id: '/api/public/hooks/dispatch-morning'
-      path: '/api/public/hooks/dispatch-morning'
-      fullPath: '/api/public/hooks/dispatch-morning'
-      preLoaderRoute: typeof ApiPublicHooksDispatchMorningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/sync/manual': {
-      id: '/api/public/sync/manual'
-      path: '/api/public/sync/manual'
-      fullPath: '/api/public/sync/manual'
-      preLoaderRoute: typeof ApiPublicSyncManualRouteImport
+    '/api/public/webhooks/booking': {
+      id: '/api/public/webhooks/booking'
+      path: '/api/public/webhooks/booking'
+      fullPath: '/api/public/webhooks/booking'
+      preLoaderRoute: typeof ApiPublicWebhooksBookingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhooks/airbnb': {
@@ -624,12 +603,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksAirbnbRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhooks/booking': {
-      id: '/api/public/webhooks/booking'
-      path: '/api/public/webhooks/booking'
-      fullPath: '/api/public/webhooks/booking'
-      preLoaderRoute: typeof ApiPublicWebhooksBookingRouteImport
+    '/api/public/sync/manual': {
+      id: '/api/public/sync/manual'
+      path: '/api/public/sync/manual'
+      fullPath: '/api/public/sync/manual'
+      preLoaderRoute: typeof ApiPublicSyncManualRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/dispatch-morning': {
+      id: '/api/public/hooks/dispatch-morning'
+      path: '/api/public/hooks/dispatch-morning'
+      fullPath: '/api/public/hooks/dispatch-morning'
+      preLoaderRoute: typeof ApiPublicHooksDispatchMorningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/channel-outbox': {
+      id: '/api/public/hooks/channel-outbox'
+      path: '/api/public/hooks/channel-outbox'
+      fullPath: '/api/public/hooks/channel-outbox'
+      preLoaderRoute: typeof ApiPublicHooksChannelOutboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/properties/$id/qr': {
+      id: '/_authenticated/properties/$id/qr'
+      path: '/properties/$id/qr'
+      fullPath: '/properties/$id/qr'
+      preLoaderRoute: typeof AuthenticatedPropertiesIdQrRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/ical/rooms/$roomId': {
       id: '/api/public/ical/rooms/$roomId'
