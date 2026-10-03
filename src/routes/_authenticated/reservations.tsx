@@ -7,7 +7,7 @@ import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { sourceColor, sourceLabel } from "@/lib/guest-color";
+import { sourceColor, sourceLabel, normalizeChannel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 import { usePermissions } from "@/hooks/use-permissions";
 
 type Search = { property?: string };
@@ -81,7 +81,7 @@ function ReservationsPage() {
   const departures = rows.filter((r) => active(r) && r.check_out === today).length;
   const staying = rows.filter((r) => active(r) && r.check_in <= today && r.check_out > today).length;
 
-  const channels = useMemo(() => Array.from(new Set(rows.map((r) => r.channel))), [rows]);
+  const channels = ACTIVE_CHANNELS;
   const properties = useMemo(() => {
     const map = new Map<string, string>();
     for (const r of rows) if (r.property) map.set(r.property.id, r.property.name);
@@ -91,7 +91,7 @@ function ReservationsPage() {
   const filtered = useMemo(
     () =>
       rows.filter((r) => {
-        if (src !== "all" && r.channel !== src) return false;
+        if (src !== "all" && normalizeChannel(r.channel) !== src) return false;
         if (prop !== "all" && r.property?.id !== prop) return false;
         if (q && !(r.guest_name ?? "").toLowerCase().includes(q.toLowerCase())) return false;
         if (period === "upcoming" && r.check_out < today) return false;

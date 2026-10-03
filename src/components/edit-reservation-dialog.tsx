@@ -6,7 +6,8 @@ import { History, User as UserIcon, Clock, Lock } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
 
 type Channel = "booking" | "airbnb" | "check24" | "woocommerce" | "phone" | "direct" | "walkin" | "website" | "ical";
-const CHANNELS: Channel[] = ["direct", "booking", "airbnb", "check24", "woocommerce", "phone", "walkin", "website"];
+import { sourceLabel } from "@/lib/guest-color";
+import { useEnabledChannels } from "@/lib/channels";
 const STATUSES = ["confirmed", "tentative", "cancelled", "no_show", "checked_in", "checked_out"] as const;
 type Status = typeof STATUSES[number];
 
@@ -53,6 +54,7 @@ const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_p
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
   const perms = usePermissions();
+  const enabledChannels = useEnabledChannels();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [r, setR] = useState<Reservation | null>(null);
@@ -205,7 +207,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <span className="text-xs text-muted-foreground">Kanal</span>
                 <select value={r.channel} onChange={(e) => update("channel", e.target.value as Channel)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
-                  {CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  {Array.from(new Set<string>([r.channel, ...enabledChannels])).map((c) => <option key={c} value={c}>{sourceLabel(c)}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">

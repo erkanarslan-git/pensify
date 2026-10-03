@@ -52,12 +52,12 @@ export function sourceColor(src: string): string {
 }
 
 const SOURCE_LABEL: Record<ActiveChannel, string> = {
-  booking: "Booking",
+  booking: "Booking.com",
   airbnb: "Airbnb",
   expedia: "Expedia",
   check24: "Check24",
-  website: "Web",
-  direct: "Direkt/Tel",
+  website: "Website",
+  direct: "Privat (Telefon/E-Mail)",
 };
 export function sourceLabel(src: string): string {
   return SOURCE_LABEL[normalizeChannel(src)];
