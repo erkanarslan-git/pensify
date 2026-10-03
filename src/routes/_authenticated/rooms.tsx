@@ -235,10 +235,10 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
                                   </div>
                                 </div>
                                  <div className="text-[11px] text-muted-foreground flex items-center gap-1 break-words">
-                                  <Users className="w-3 h-3" />{r.capacity} · {typeName ?? "ohne Typ"}
-       </div></TooltipProvider>
+                                   <Users className="w-3 h-3" />{r.capacity} · {typeName ?? "ohne Typ"}
+                                 </div>
                                 <div className="mt-1.5"><Badge tone={meta.tone}>{meta.label}</Badge></div>
-                              </div>
+       </div></TooltipProvider>
                             );
                           })}
                         </div>
