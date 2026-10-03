@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RoomsManager } from "./rooms";
+import { PropertyRoomsView } from "@/components/property-rooms-view";
 
 export const Route = createFileRoute("/_authenticated/properties/$id/rooms")({
   head: () => ({ meta: [{ title: "Zimmer verwalten — Pensify" }] }),
@@ -8,5 +8,5 @@ export const Route = createFileRoute("/_authenticated/properties/$id/rooms")({
 
 function PropertyRoomsPage() {
   const { id } = Route.useParams();
-  return <RoomsManager propertyId={id} />;
+  return <PropertyRoomsView propertyId={id} />;
 }
