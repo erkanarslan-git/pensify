@@ -204,6 +204,7 @@ function RoomsPage() {
           );
         })}
       </div>
+      )}
 
       <RoomDialog
         open={!!editing || !!creating}
