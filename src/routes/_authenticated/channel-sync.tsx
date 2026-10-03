@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { WuBookStatus } from "@/components/wubook-status";
+import { WuBookTestPanel } from "@/components/wubook-test-panel";
 import { usePermissions } from "@/hooks/use-permissions";
 import { ACTIVE_CHANNELS, type ActiveChannel, normalizeChannel, sourceColor, sourceLabel } from "@/lib/guest-color";
 
@@ -102,6 +103,7 @@ function ChannelSyncPage() {
       </div>
 
       <WuBookStatus />
+      <WuBookTestPanel />
 
       {(data?.conflicts.length ?? 0) > 0 && (
         <div className="mt-4">
