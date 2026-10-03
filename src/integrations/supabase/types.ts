@@ -2093,6 +2093,7 @@ export type Database = {
         | "walkin"
         | "website"
         | "ical"
+        | "expedia"
       reservation_status:
         | "confirmed"
         | "tentative"
@@ -2267,6 +2268,7 @@ export const Constants = {
         "walkin",
         "website",
         "ical",
+        "expedia",
       ],
       reservation_status: [
         "confirmed",
