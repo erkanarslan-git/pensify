@@ -85,12 +85,15 @@ export interface TestPropertyInput {
 }
 
 export function buildNewPropertyArgs(i: TestPropertyInput) {
+  // Fields per WuBook docs: url is required; the official XML example also sends `email`.
   const lodg = {
     name: i.name,
     address: i.address,
+    url: DEFAULT_PUBLIC_BASE,
     zip: i.zip,
     city: i.city,
     phone: i.phone,
+    email: i.contact_email,
     contact_email: i.contact_email,
     booking_email: i.booking_email,
     country: "DE",
