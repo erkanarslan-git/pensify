@@ -1168,14 +1168,18 @@ export type Database = {
           clock_without_location_by: string | null
           clock_without_location_reason: string | null
           created_at: string
+          external_source_id: string | null
           geofence_radius_m: number
           id: string
+          import_batch_id: string | null
+          import_needs_review: boolean
           latitude: number | null
           longitude: number | null
           name: string
           notes: string | null
           organization_id: string
           qr_token: string
+          source_system: string | null
           updated_at: string
         }
         Insert: {
@@ -1187,14 +1191,18 @@ export type Database = {
           clock_without_location_by?: string | null
           clock_without_location_reason?: string | null
           created_at?: string
+          external_source_id?: string | null
           geofence_radius_m?: number
           id?: string
+          import_batch_id?: string | null
+          import_needs_review?: boolean
           latitude?: number | null
           longitude?: number | null
           name: string
           notes?: string | null
           organization_id?: string
           qr_token?: string
+          source_system?: string | null
           updated_at?: string
         }
         Update: {
@@ -1206,14 +1214,18 @@ export type Database = {
           clock_without_location_by?: string | null
           clock_without_location_reason?: string | null
           created_at?: string
+          external_source_id?: string | null
           geofence_radius_m?: number
           id?: string
+          import_batch_id?: string | null
+          import_needs_review?: boolean
           latitude?: number | null
           longitude?: number | null
           name?: string
           notes?: string | null
           organization_id?: string
           qr_token?: string
+          source_system?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1457,11 +1469,15 @@ export type Database = {
           code: string
           created_at: string
           description: string | null
+          external_source_id: string | null
           id: string
+          import_batch_id: string | null
+          import_needs_review: boolean
           name: string
           organization_id: string
           property_id: string | null
           size_sqm: number | null
+          source_system: string | null
         }
         Insert: {
           active?: boolean
@@ -1470,11 +1486,15 @@ export type Database = {
           code: string
           created_at?: string
           description?: string | null
+          external_source_id?: string | null
           id?: string
+          import_batch_id?: string | null
+          import_needs_review?: boolean
           name: string
           organization_id: string
           property_id?: string | null
           size_sqm?: number | null
+          source_system?: string | null
         }
         Update: {
           active?: boolean
@@ -1483,11 +1503,15 @@ export type Database = {
           code?: string
           created_at?: string
           description?: string | null
+          external_source_id?: string | null
           id?: string
+          import_batch_id?: string | null
+          import_needs_review?: boolean
           name?: string
           organization_id?: string
           property_id?: string | null
           size_sqm?: number | null
+          source_system?: string | null
         }
         Relationships: [
           {
@@ -1508,47 +1532,68 @@ export type Database = {
       }
       rooms: {
         Row: {
+          active: boolean
           capacity: number
           created_at: string
           default_cleaner_id: string | null
+          external_source_id: string | null
           floor: number | null
           ical_feed_token: string | null
           id: string
+          import_batch_id: string | null
+          import_needs_review: boolean
           notes: string | null
           number: string
           organization_id: string
           property_id: string
           room_type_id: string | null
+          source_system: string | null
+          source_title: string | null
+          source_url: string | null
           status: Database["public"]["Enums"]["room_status"]
           updated_at: string
         }
         Insert: {
+          active?: boolean
           capacity?: number
           created_at?: string
           default_cleaner_id?: string | null
+          external_source_id?: string | null
           floor?: number | null
           ical_feed_token?: string | null
           id?: string
+          import_batch_id?: string | null
+          import_needs_review?: boolean
           notes?: string | null
           number: string
           organization_id?: string
           property_id: string
           room_type_id?: string | null
+          source_system?: string | null
+          source_title?: string | null
+          source_url?: string | null
           status?: Database["public"]["Enums"]["room_status"]
           updated_at?: string
         }
         Update: {
+          active?: boolean
           capacity?: number
           created_at?: string
           default_cleaner_id?: string | null
+          external_source_id?: string | null
           floor?: number | null
           ical_feed_token?: string | null
           id?: string
+          import_batch_id?: string | null
+          import_needs_review?: boolean
           notes?: string | null
           number?: string
           organization_id?: string
           property_id?: string
           room_type_id?: string | null
+          source_system?: string | null
+          source_title?: string | null
+          source_url?: string | null
           status?: Database["public"]["Enums"]["room_status"]
           updated_at?: string
         }
@@ -1860,6 +1905,7 @@ export type Database = {
       }
     }
     Functions: {
+      _require_room_manager: { Args: { _property_id: string }; Returns: string }
       active_organization_id: { Args: never; Returns: string }
       admin_get_member_properties: {
         Args: { _user_id: string }
@@ -1998,6 +2044,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      import_wp_rooms: { Args: { _batch: Json }; Returns: Json }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_organization_member: { Args: { _org: string }; Returns: boolean }
       list_my_clock_properties: {
@@ -2010,6 +2057,10 @@ export type Database = {
           name: string
           qr_token: string
         }[]
+      }
+      move_rooms_to_type: {
+        Args: { _from_type: string; _to_type: string }
+        Returns: number
       }
       my_app_roles: {
         Args: never
@@ -2065,6 +2116,28 @@ export type Database = {
           total: number
         }[]
       }
+      save_occupancy_prices: {
+        Args: {
+          _from: string
+          _prices: Json
+          _room_type_id: string
+          _to: string
+        }
+        Returns: number
+      }
+      save_room_type_full: {
+        Args: {
+          _base_occupancy: number
+          _capacity: number
+          _code: string
+          _description: string
+          _name: string
+          _price: number
+          _property_id: string
+          _room_type_id: string
+        }
+        Returns: string
+      }
       save_room_type_with_plan: {
         Args: {
           _capacity: number
@@ -2074,6 +2147,10 @@ export type Database = {
           _room_type_id: string
         }
         Returns: string
+      }
+      set_room_type_active: {
+        Args: { _active: boolean; _room_type_id: string }
+        Returns: undefined
       }
       transition_cleaning_task: {
         Args: {

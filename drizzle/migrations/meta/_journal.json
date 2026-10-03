@@ -148,6 +148,13 @@
       "when": 1791034498507,
       "tag": "0020_room_type_and_bulk_rooms_rpcs",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791040441851,
+      "tag": "0021_room_import_and_type_management",
+      "breakpoints": true
     }
   ]
 }
