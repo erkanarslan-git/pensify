@@ -3,6 +3,7 @@ import type { ActiveChannel } from "./guest-color";
 export const DEFAULT_CHANNEL_COLORS: Record<ActiveChannel, string> = {
   booking: "#003580",
   airbnb: "#ff5a5f",
+  expedia: "#fbcc33",
   check24: "#005ea8",
   website: "#10b981",
   direct: "#f59e0b",
