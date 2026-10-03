@@ -16,7 +16,7 @@
 - [ ] Dispatch canlı testi — ertelendi: kullanıcı anahtarları daha sonra verecek
 
 ## Sonraki adımlar (düzeltmeler kabul edilince)
-- [~] Oda arayüzü: kısaltma açıklamaları, tip renkleri ve geçici demo fiyatları
+- [x] Oda arayüzü: kısaltma açıklamaları, tip renkleri ve geçici demo fiyatları
 - [x] Personel için mülk atama ekranı (Team → Häuser)
 - [x] Adım 5: room_types, rate_plans, occupancy_rates, channel_room_mappings (tenant-scoped unique, same-org trigger, RLS) — migration 0005 uygulandı
 - [x] Adım 6: Atomik rezervasyon RPC + otomatik fiyat (room_type_id, quote_room_price, Zimmertypen & Preise) — integration_outbox WuBook planına ertelendi
