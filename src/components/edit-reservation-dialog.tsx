@@ -54,6 +54,7 @@ const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_p
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
   const perms = usePermissions();
+  const enabledChannels = useEnabledChannels();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [r, setR] = useState<Reservation | null>(null);
