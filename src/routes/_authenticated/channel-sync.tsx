@@ -23,9 +23,8 @@ const HOW: Record<ActiveChannel, string> = {
   website: "Buchungsformular der Website",
   direct: "Manuell (Telefon, E-Mail, vor Ort)",
 };
-const NAME: Partial<Record<ActiveChannel, string>> = { booking: "Booking.com", website: "Website", direct: "Privat" };
 
-const SETTINGS_KEY = "channels.enabled";
+import { CHANNEL_SETTINGS_KEY as SETTINGS_KEY } from "@/lib/channels";
 
 function ago(iso: string | null | undefined) {
   if (!iso) return "noch nie";
@@ -85,6 +84,7 @@ function ChannelSyncPage() {
     if (error) return toast.error(error.message);
     toast.success(on ? "Kanal aktiviert" : "Kanal deaktiviert");
     qc.invalidateQueries({ queryKey: ["channels-page"] });
+    qc.invalidateQueries({ queryKey: ["channels-enabled"] });
   }
 
   async function resolveConflict(id: string, status: "resolved" | "ignored") {
@@ -131,7 +131,7 @@ function ChannelSyncPage() {
                 <div key={ch} className="flex items-center gap-4 px-5 py-3">
                   <span className="w-3 h-3 rounded-full shrink-0" style={{ background: sourceColor(ch) }} />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">{NAME[ch] ?? sourceLabel(ch)}</div>
+                    <div className="text-sm font-medium">{sourceLabel(ch)}</div>
                     <div className="text-xs text-muted-foreground">{HOW[ch]}</div>
                   </div>
                   <div className="text-xs text-muted-foreground text-right hidden sm:block">
@@ -144,7 +144,7 @@ function ChannelSyncPage() {
             })}
           </div>
           <p className="text-xs text-muted-foreground mt-6">
-            Booking.com, Airbnb, Expedia und Check24 werden im WuBook-Konto verbunden (WuBook → Channel Manager). Pensify spricht nur mit WuBook.
+            Booking.com, Airbnb, Expedia und Check24 werden im WuBook-Konto verbunden (WuBook → Channel Manager). Pensify spricht nur mit WuBook. Ausgeschaltete Kanäle können bei „Neue Buchung“ nicht ausgewählt werden; Buchungen über WuBook kommen trotzdem an.
           </p>
         </Section>
       </div>

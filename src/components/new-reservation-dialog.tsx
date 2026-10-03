@@ -20,15 +20,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
+import { sourceLabel, type ActiveChannel } from "@/lib/guest-color";
+import { useEnabledChannels } from "@/lib/channels";
 
-type Channel = "booking" | "airbnb" | "check24" | "website" | "direct";
-const CHANNELS: { value: Channel; label: string }[] = [
-  { value: "direct", label: "Direkt / Telefon" },
-  { value: "booking", label: "Booking" },
-  { value: "airbnb", label: "Airbnb" },
-  { value: "check24", label: "Check24" },
-  { value: "website", label: "Web" },
-];
+type Channel = ActiveChannel;
 
 interface Property { id: string; name: string }
 interface Room { id: string; number: string; property_id: string }
@@ -76,6 +71,7 @@ export function NewReservationDialog({
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [channel, setChannel] = useState<Channel>("direct");
+  const enabledChannels = useEnabledChannels();
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<RoomLine[]>([]);
   const [saving, setSaving] = useState(false);
@@ -287,9 +283,9 @@ export function NewReservationDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CHANNELS.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                  {enabledChannels.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {sourceLabel(c)}
                     </SelectItem>
                   ))}
                 </SelectContent>
