@@ -140,7 +140,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   return (
     <AppShell
       title={single ? `${single.name} – Zimmer` : t("pages.rooms.title")}
-      subtitle={`${rooms.length} oda · ${properties.length} lokasyon`}
+      subtitle={`${rooms.length} Zimmer · ${properties.length} Pensionen`}
       actions={
         properties.length > 0 ? (
           <button
