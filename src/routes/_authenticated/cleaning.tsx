@@ -1,26 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Badge, Section } from "@/components/app-shell";
-import { useEffect, useMemo, useState } from "react";
-import { Camera, Check, Play, AlertTriangle, MessageCircle, UserCog } from "lucide-react";
+import { AppShell, Badge } from "@/components/app-shell";
+import { useMemo, useState } from "react";
+import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
-  head: () => ({ meta: [{ title: "Cleaning — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Reinigung — Pensify" }] }),
   component: CleaningPage,
 });
 
 type CleaningStatus = "pending" | "accepted" | "in_progress" | "completed" | "problem";
 
 const statusMeta: Record<CleaningStatus, { label: string; tone: "warning" | "info" | "success" | "destructive" | "muted" }> = {
-  pending: { label: "Bekliyor", tone: "warning" },
-  accepted: { label: "Kabul edildi", tone: "info" },
-  in_progress: { label: "Devam ediyor", tone: "info" },
-  completed: { label: "Tamamlandı", tone: "success" },
-  problem: { label: "Sorun", tone: "destructive" },
+  pending: { label: "Offen", tone: "warning" },
+  accepted: { label: "Angenommen", tone: "info" },
+  in_progress: { label: "Läuft", tone: "info" },
+  completed: { label: "Fertig", tone: "success" },
+  problem: { label: "Problem", tone: "destructive" },
 };
+
+type View = "open" | "problem" | "done" | "all";
 
 interface Task {
   id: string;
@@ -40,179 +43,197 @@ function CleaningPage() {
   const { t } = useTranslation();
   const perm = usePermissions();
   const canAssign = perm.can("assign_cleaning");
+  const [view, setView] = useState<View>("open");
+  const [prop, setProp] = useState("all");
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [cleaners, setCleaners] = useState<Cleaner[]>([]);
-  const [filter, setFilter] = useState<CleaningStatus | "all">("all");
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    (async () => {
-      const [{ data: ts }, { data: rm }, { data: pr }, { data: cl }] = await Promise.all([
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["cleaning-page"],
+    queryFn: async () => {
+      const [ts, rm, pr, cl] = await Promise.all([
         supabase.from("cleaning_tasks")
           .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes")
           .order("due_at", { ascending: true }),
         supabase.from("rooms").select("id,number,floor"),
-        supabase.from("properties").select("id,name"),
+        supabase.from("properties").select("id,name").order("name"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
       ]);
-      setTasks((ts ?? []) as Task[]);
-      setRooms((rm ?? []) as Room[]);
-      setProperties((pr ?? []) as Property[]);
-      setCleaners((cl ?? []) as Cleaner[]);
-    })();
-  }, [refreshKey]);
+      const err = ts.error ?? rm.error ?? pr.error ?? cl.error;
+      if (err) throw err;
+      return {
+        tasks: (ts.data ?? []) as Task[],
+        rooms: (rm.data ?? []) as Room[],
+        properties: (pr.data ?? []) as Property[],
+        cleaners: (cl.data ?? []) as Cleaner[],
+      };
+    },
+  });
 
-  const getRoom = (id: string) => rooms.find((r) => r.id === id);
-  const getProperty = (id: string) => properties.find((p) => p.id === id);
-  const getCleaner = (id: string | null) => (id ? cleaners.find((c) => c.id === id) : undefined);
+  const tasks = data?.tasks ?? [];
+  const rooms = useMemo(() => new Map((data?.rooms ?? []).map((r) => [r.id, r])), [data]);
+  const properties = data?.properties ?? [];
+  const cleaners = data?.cleaners ?? [];
+  const cleanerName = (id: string | null) => (id ? cleaners.find((c) => c.id === id)?.full_name : undefined);
 
   const update = async (id: string, status: CleaningStatus) => {
-    // Server checks the allowed status step and updates the room status too.
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(error.message); return; }
-    toast.success(`Görev: ${statusMeta[status].label}`);
-    setRefreshKey((k) => k + 1);
+    toast.success(`Aufgabe: ${statusMeta[status].label}`);
+    refetch();
   };
 
   const reassign = async (taskId: string, cleanerId: string) => {
-    const { error } = await supabase.from("cleaning_tasks")
-      .update({ cleaner_id: cleanerId || null })
-      .eq("id", taskId);
+    const { error } = await supabase.from("cleaning_tasks").update({ cleaner_id: cleanerId || null }).eq("id", taskId);
     if (error) { toast.error(error.message); return; }
-    toast.success(cleanerId ? "Temizlikçi atandı" : "Atama kaldırıldı");
-    setRefreshKey((k) => k + 1);
+    toast.success(cleanerId ? "Reinigungskraft zugewiesen" : "Zuweisung entfernt");
+    refetch();
   };
 
-  const list = useMemo(
-    () => (filter === "all" ? tasks : tasks.filter((x) => x.status === filter)),
-    [tasks, filter]
-  );
+  const isOpen = (s: CleaningStatus) => s === "pending" || s === "accepted" || s === "in_progress";
+  const counts = {
+    open: tasks.filter((x) => isOpen(x.status)).length,
+    problem: tasks.filter((x) => x.status === "problem").length,
+    done: tasks.filter((x) => x.status === "completed").length,
+    unassigned: tasks.filter((x) => !x.cleaner_id && x.status !== "completed").length,
+  };
 
-  const unassignedCount = tasks.filter((x) => !x.cleaner_id).length;
+  const filtered = tasks.filter((x) => {
+    if (prop !== "all" && x.property_id !== prop) return false;
+    if (view === "open") return isOpen(x.status);
+    if (view === "problem") return x.status === "problem";
+    if (view === "done") return x.status === "completed";
+    return true;
+  });
+
+  const groups = properties
+    .map((p) => ({ ...p, items: filtered.filter((x) => x.property_id === p.id) }))
+    .filter((g) => g.items.length > 0);
+
+  const views: { id: View; label: string; n: number }[] = [
+    { id: "open", label: "Zu erledigen", n: counts.open },
+    { id: "problem", label: "Probleme", n: counts.problem },
+    { id: "done", label: "Erledigt", n: counts.done },
+    { id: "all", label: "Alle", n: tasks.length },
+  ];
 
   return (
     <AppShell
       title={t("pages.cleaning.title")}
-      subtitle={
-        unassignedCount > 0
-          ? `${tasks.length} görev · ${unassignedCount} atanmamış`
-          : `${tasks.length} görev`
-      }
+      subtitle={`${counts.open} offen · ${counts.unassigned} ohne Reinigungskraft`}
     >
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          onClick={() => setFilter("all")}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border ${filter === "all" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
-        >
-          Tümü ({tasks.length})
-        </button>
-        {(Object.keys(statusMeta) as CleaningStatus[]).map((s) => (
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {views.map((v) => (
           <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${filter === s ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
+            key={v.id}
+            onClick={() => setView(v.id)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${view === v.id ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
           >
-            {statusMeta[s].label} ({tasks.filter((x) => x.status === s).length})
+            {v.label} ({v.n})
           </button>
         ))}
+        <select value={prop} onChange={(e) => setProp(e.target.value)} className="ml-auto px-3 py-2 rounded-md border border-input bg-card text-sm">
+          <option value="all">Alle Pensionen</option>
+          {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {list.map((task) => {
-          const room = getRoom(task.room_id);
-          const prop = getProperty(task.property_id);
-          const cleaner = getCleaner(task.cleaner_id);
-          const meta = statusMeta[task.status];
-          const due = new Date(task.due_at);
-          const unassigned = !task.cleaner_id;
-          return (
-            <div key={task.id} className={`rounded-xl border bg-card p-5 shadow-soft ${unassigned ? "border-amber-400/60" : "border-border"}`}>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-xs text-muted-foreground">{prop?.name}</div>
-                  <div className="text-lg font-semibold tracking-tight">Zimmer #{room?.number}</div>
-                </div>
-                <Badge tone={meta.tone}>{meta.label}</Badge>
-              </div>
-
-              <div className="mt-3 space-y-1.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fällig</span>
-                  <span className="font-medium">{due.toLocaleString([], { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
-                </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="text-muted-foreground">Reinigungskraft</span>
-                  {canAssign ? (
-                    <select
-                      value={task.cleaner_id ?? ""}
-                      onChange={(e) => reassign(task.id, e.target.value)}
-                      className={`text-xs px-2 py-1 rounded-md border bg-card max-w-[60%] ${unassigned ? "border-amber-400 text-amber-700 dark:border-amber-500/60 dark:text-amber-300" : "border-input"}`}
-                    >
-                      <option value="">— atanmamış —</option>
-                      {cleaners.filter((c) => c.active || c.id === task.cleaner_id).map((c) => (
-                        <option key={c.id} value={c.id}>{c.full_name}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className={`font-medium ${unassigned ? "text-amber-600 dark:text-amber-400 italic" : ""}`}>
-                      {cleaner?.full_name ?? "atanmamış"}
-                    </span>
-                  )}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fotos</span>
-                  <span className="font-medium inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
-                </div>
-                {task.notes && (
-                  <div className="text-xs text-muted-foreground italic pt-1">"{task.notes}"</div>
-                )}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {task.status === "pending" && (
-                  <button onClick={() => update(task.id, "accepted")} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
-                    <Check className="w-3 h-3" /> Akzeptieren
-                  </button>
-                )}
-                {(task.status === "accepted" || task.status === "problem") && (
-                  <button onClick={() => update(task.id, "in_progress")} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
-                    <Play className="w-3 h-3" /> Starten
-                  </button>
-                )}
-                {task.status === "in_progress" && (
-                  <button onClick={() => update(task.id, "completed")} className="text-xs px-2.5 py-1.5 rounded-md bg-success text-success-foreground hover:opacity-90 inline-flex items-center gap-1">
-                    <Check className="w-3 h-3" /> Fertig
-                  </button>
-                )}
-                {task.status !== "completed" && task.status !== "problem" && (
-                  <button onClick={() => update(task.id, "problem")} className="text-xs px-2.5 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5 inline-flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" /> Problem
-                  </button>
-                )}
-                {cleaner && (
-                  <button
-                    onClick={() => toast.info(`WhatsApp → ${cleaner.full_name}`)}
-                    className="text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-accent inline-flex items-center gap-1 ml-auto"
-                  >
-                    <MessageCircle className="w-3 h-3" /> Benachrichtigen
-                  </button>
-                )}
-                {!cleaner && canAssign && (
-                  <span className="text-[11px] text-amber-600 dark:text-amber-400 inline-flex items-center gap-1 ml-auto">
-                    <UserCog className="w-3 h-3" /> Reinigungskraft zuweisen
+      {error ? (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
+          Reinigungsaufgaben konnten nicht geladen werden.{" "}
+          <button onClick={() => refetch()} className="underline font-medium">Erneut versuchen</button>
+        </div>
+      ) : isLoading ? (
+        <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
+      ) : groups.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+          <Sparkles className="w-6 h-6 mx-auto mb-2 text-success" />
+          {view === "open" ? "Alles sauber — keine offenen Aufgaben." : "Keine Aufgaben für diese Auswahl."}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {groups.map((g) => {
+            const gOpen = g.items.filter((x) => isOpen(x.status)).length;
+            const gProb = g.items.filter((x) => x.status === "problem").length;
+            return (
+              <details key={g.id} open className="group rounded-xl border border-border bg-card">
+                <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform -rotate-90 group-open:rotate-0" />
+                    <span className="font-semibold truncate">{g.name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {g.items.length} Aufgaben · {gOpen} offen{gProb > 0 ? ` · ${gProb} Problem` : ""}
                   </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-        {list.length === 0 && (
-          <Section title="Keine Aufgaben"><div className="text-sm text-muted-foreground">Für diesen Filter gibt es keine Reinigungsaufgaben.</div></Section>
-        )}
-      </div>
+                </summary>
+                <div className="border-t border-border divide-y divide-border/60">
+                  {g.items.map((task) => {
+                    const room = rooms.get(task.room_id);
+                    const meta = statusMeta[task.status];
+                    const due = new Date(task.due_at);
+                    const unassigned = !task.cleaner_id;
+                    const name = cleanerName(task.cleaner_id);
+                    return (
+                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm">
+                        <div className="w-20 font-semibold">#{room?.number ?? "—"}</div>
+                        <div className="w-28 text-muted-foreground tabular-nums">
+                          {due.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                        <div className="w-28"><Badge tone={meta.tone}>{meta.label}</Badge></div>
+                        <div className="flex-1 min-w-[160px]">
+                          {canAssign ? (
+                            <select
+                              value={task.cleaner_id ?? ""}
+                              onChange={(e) => reassign(task.id, e.target.value)}
+                              className={`text-xs px-2 py-1 rounded-md border bg-card ${unassigned ? "border-warning text-warning" : "border-input"}`}
+                            >
+                              <option value="">— nicht zugewiesen —</option>
+                              {cleaners.filter((c) => c.active || c.id === task.cleaner_id).map((c) => (
+                                <option key={c.id} value={c.id}>{c.full_name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className={unassigned ? "text-warning italic" : ""}>{name ?? "nicht zugewiesen"}</span>
+                          )}
+                          {task.notes && <div className="text-xs text-muted-foreground italic mt-0.5">"{task.notes}"</div>}
+                        </div>
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
+                        <div className="flex gap-1.5">
+                          {task.status === "pending" && (
+                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-3 h-3" />}>Annehmen</ActionBtn>
+                          )}
+                          {(task.status === "accepted" || task.status === "problem") && (
+                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-3 h-3" />}>Starten</ActionBtn>
+                          )}
+                          {task.status === "in_progress" && (
+                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-3 h-3" />}>Fertig</ActionBtn>
+                          )}
+                          {isOpen(task.status) && (
+                            <button onClick={() => update(task.id, "problem")} title="Problem melden" className="text-xs px-2 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5">
+                              <AlertTriangle className="w-3 h-3" />
+                            </button>
+                          )}
+                          {name && (
+                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title="Benachrichtigen" className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                              <MessageCircle className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            );
+          })}
+        </div>
+      )}
     </AppShell>
+  );
+}
+
+function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
+      {icon} {children}
+    </button>
   );
 }
