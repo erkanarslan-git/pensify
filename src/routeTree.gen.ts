@@ -41,6 +41,7 @@ import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/
 import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
 import { Route as AuthenticatedPropertiesIdRoomsRouteImport } from './routes/_authenticated/properties.$id.rooms'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
+import { Route as ApiPublicWebhooksWubookSecretRouteImport } from './routes/api/public/webhooks/wubook/$secret'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -215,6 +216,12 @@ const AuthenticatedPropertiesIdQrRoute =
     path: '/properties/$id/qr',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicWebhooksWubookSecretRoute =
+  ApiPublicWebhooksWubookSecretRouteImport.update({
+    id: '/api/public/webhooks/wubook/$secret',
+    path: '/api/public/webhooks/wubook/$secret',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIcalRoomsRoomIdRoute =
   ApiPublicIcalRoomsRoomIdRouteImport.update({
     id: '/api/public/ical/rooms/$roomId',
@@ -255,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
+  '/api/public/webhooks/wubook/$secret': typeof ApiPublicWebhooksWubookSecretRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -289,6 +297,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
+  '/api/public/webhooks/wubook/$secret': typeof ApiPublicWebhooksWubookSecretRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -325,6 +334,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
+  '/api/public/webhooks/wubook/$secret': typeof ApiPublicWebhooksWubookSecretRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
     | '/api/public/ical/rooms/$roomId'
+    | '/api/public/webhooks/wubook/$secret'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
     | '/api/public/ical/rooms/$roomId'
+    | '/api/public/webhooks/wubook/$secret'
   id:
     | '__root__'
     | '/_authenticated'
@@ -430,6 +442,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
     | '/api/public/ical/rooms/$roomId'
+    | '/api/public/webhooks/wubook/$secret'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -443,6 +456,7 @@ export interface RootRouteChildren {
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
   ApiPublicWebhooksBookingRoute: typeof ApiPublicWebhooksBookingRoute
   ApiPublicIcalRoomsRoomIdRoute: typeof ApiPublicIcalRoomsRoomIdRoute
+  ApiPublicWebhooksWubookSecretRoute: typeof ApiPublicWebhooksWubookSecretRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -671,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPropertiesIdQrRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/wubook/$secret': {
+      id: '/api/public/webhooks/wubook/$secret'
+      path: '/api/public/webhooks/wubook/$secret'
+      fullPath: '/api/public/webhooks/wubook/$secret'
+      preLoaderRoute: typeof ApiPublicWebhooksWubookSecretRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ical/rooms/$roomId': {
       id: '/api/public/ical/rooms/$roomId'
       path: '/api/public/ical/rooms/$roomId'
@@ -758,6 +779,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,
   ApiPublicWebhooksBookingRoute: ApiPublicWebhooksBookingRoute,
   ApiPublicIcalRoomsRoomIdRoute: ApiPublicIcalRoomsRoomIdRoute,
+  ApiPublicWebhooksWubookSecretRoute: ApiPublicWebhooksWubookSecretRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

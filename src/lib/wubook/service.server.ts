@@ -4,7 +4,18 @@
 
 import { callXmlRpc, XmlRpcError, type XmlRpcTransportOptions } from "./xmlrpc.server";
 
-const READ_ONLY_METHODS = new Set(["corporate_fetch_accounts", "get_channels_info"]);
+const READ_ONLY_METHODS = new Set([
+  "corporate_fetch_accounts",
+  "get_channels_info",
+  "push_url",
+  "fetch_booking",
+  "fetch_new_bookings",
+]);
+// Explicit admin actions: only callable with adminAction=true from an
+// owner/admin server function, and only against the org's test property.
+const ADMIN_ACTION_METHODS = new Set(["corporate_new_account_and_property", "push_activation"]);
+// Never callable, in any mode.
+const FORBIDDEN_METHODS = new Set(["mark_bookings"]);
 
 export class WuBookGuardError extends Error {
   constructor(public method: string) {
@@ -44,8 +55,14 @@ export function getWuBookConfig(): { config?: WuBookConfig; missing: string[] } 
 
 /** Server-side mutation guard: rejects anything outside the read allowlist
  *  while shadow mode is on or outbound is disabled. */
-export function assertMethodAllowed(method: string, config: WuBookConfig): void {
+export function assertMethodAllowed(
+  method: string,
+  config: WuBookConfig,
+  opts: { adminAction?: boolean } = {},
+): void {
+  if (FORBIDDEN_METHODS.has(method)) throw new WuBookGuardError(method);
   if (READ_ONLY_METHODS.has(method)) return;
+  if (opts.adminAction === true && ADMIN_ACTION_METHODS.has(method)) return;
   if (config.mode === "shadow" || !config.outboundEnabled) {
     throw new WuBookGuardError(method);
   }

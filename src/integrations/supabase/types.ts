@@ -193,42 +193,57 @@ export type Database = {
           dry_run: boolean
           enabled: boolean
           id: string
+          is_test: boolean
           last_error: string | null
           last_pull_at: string | null
           last_push_at: string | null
+          last_push_url_check: Json | null
+          last_webhook_test: Json | null
           organization_id: string
           property_code: string | null
           provider: string
           secret_name: string | null
           updated_at: string
+          wubook_acode: string | null
+          wubook_lcode: string | null
         }
         Insert: {
           created_at?: string
           dry_run?: boolean
           enabled?: boolean
           id?: string
+          is_test?: boolean
           last_error?: string | null
           last_pull_at?: string | null
           last_push_at?: string | null
+          last_push_url_check?: Json | null
+          last_webhook_test?: Json | null
           organization_id: string
           property_code?: string | null
           provider?: string
           secret_name?: string | null
           updated_at?: string
+          wubook_acode?: string | null
+          wubook_lcode?: string | null
         }
         Update: {
           created_at?: string
           dry_run?: boolean
           enabled?: boolean
           id?: string
+          is_test?: boolean
           last_error?: string | null
           last_pull_at?: string | null
           last_push_at?: string | null
+          last_push_url_check?: Json | null
+          last_webhook_test?: Json | null
           organization_id?: string
           property_code?: string | null
           provider?: string
           secret_name?: string | null
           updated_at?: string
+          wubook_acode?: string | null
+          wubook_lcode?: string | null
         }
         Relationships: [
           {
@@ -1876,6 +1891,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wubook_inbox: {
+        Row: {
+          account_id: string | null
+          event_type: string
+          id: string
+          lcode: string
+          meta: Json | null
+          organization_id: string
+          rcode: string
+          received_at: string
+          status: string
+        }
+        Insert: {
+          account_id?: string | null
+          event_type: string
+          id?: string
+          lcode: string
+          meta?: Json | null
+          organization_id: string
+          rcode: string
+          received_at?: string
+          status: string
+        }
+        Update: {
+          account_id?: string | null
+          event_type?: string
+          id?: string
+          lcode?: string
+          meta?: Json | null
+          organization_id?: string
+          rcode?: string
+          received_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wubook_inbox_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "channel_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wubook_inbox_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

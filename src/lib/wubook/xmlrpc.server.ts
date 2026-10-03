@@ -24,18 +24,23 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function paramXml(value: unknown): string {
-  if (typeof value === "number" && Number.isInteger(value)) return `<param><value><int>${value}</int></value></param>`;
-  if (typeof value === "string") return `<param><value><string>${escapeXml(value)}</string></value></param>`;
-  if (Array.isArray(value)) {
-    return `<param><value><array><data>${value.map((v) => `<value>${scalarXml(v)}</value>`).join("")}</data></array></value></param>`;
+function valueXml(value: unknown): string {
+  if (typeof value === "boolean") return `<boolean>${value ? 1 : 0}</boolean>`;
+  if (typeof value === "number" && Number.isInteger(value)) return `<int>${value}</int>`;
+  if (typeof value === "string") return `<string>${escapeXml(value)}</string>`;
+  if (Array.isArray(value)) return `<array><data>${value.map((v) => `<value>${valueXml(v)}</value>`).join("")}</data></array>`;
+  if (value && typeof value === "object") {
+    return `<struct>${Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined && v !== null)
+      .map(([k, v]) => `<member><name>${escapeXml(k)}</name><value>${valueXml(v)}</value></member>`)
+      .join("")}</struct>`;
   }
   throw new XmlRpcError("unsupported_param", "fault");
 }
 
-function scalarXml(value: unknown): string {
-  if (typeof value === "number" && Number.isInteger(value)) return `<int>${value}</int>`;
-  return `<string>${escapeXml(String(value ?? ""))}</string>`;
+function paramXml(value: unknown): string {
+  if (value === undefined || value === null) throw new XmlRpcError("unsupported_param", "fault");
+  return `<param><value>${valueXml(value)}</value></param>`;
 }
 
 export function buildRequest(method: string, params: unknown[]): string {
