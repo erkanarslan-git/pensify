@@ -116,7 +116,7 @@ export const getWuBookWebhookStatus = createServerFn({ method: "GET" })
       .limit(10);
     return {
       testAccount: acc
-        ? { acode: acc.wubook_acode, lcode: acc.wubook_lcode, createdAt: acc.created_at, pushUrlCheck: acc.last_push_url_check as Record<string, unknown> | null, webhookTest: acc.last_webhook_test as Record<string, unknown> | null }
+        ? { acode: acc.wubook_acode, lcode: acc.wubook_lcode, createdAt: acc.created_at, pushUrlCheck: acc.last_push_url_check as Record<string, string | number | boolean | null> | null, webhookTest: acc.last_webhook_test as Record<string, string | number | boolean | null> | null }
         : null,
       expectedUrl: expected,
       importEnabled: isImportEnabled(),
