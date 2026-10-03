@@ -113,7 +113,7 @@ describe("testConnection", () => {
     const fetchImpl = vi.fn(async () =>
       xmlResponse(OK_XML("<array><data><value><int>0</int></value><value><array><data><value><struct><member><name>name</name><value><string>A</string></value></member></struct></value><value><struct><member><name>name</name><value><string>B</string></value></member></struct></value></data></array></value></data></array>")),
     ) as unknown as typeof fetch;
-    const res = await testConnection(fetchImpl);
+    const res = await testConnection(fetchImpl, { timeoutMs: 50 });
     expect(res.connected).toBe(true);
     expect(res.subaccounts).toBe(2);
     expect(res.mode).toBe("shadow");
@@ -127,7 +127,7 @@ describe("testConnection", () => {
     const fetchImpl = vi.fn(async () =>
       xmlResponse(OK_XML("<array><data><value><int>-1</int></value><value><string>Invalid token test-token-123</string></value></data></array>")),
     ) as unknown as typeof fetch;
-    const res = await testConnection(fetchImpl);
+    const res = await testConnection(fetchImpl, { timeoutMs: 50 });
     expect(res.connected).toBe(false);
     expect(res.errorCode).toBe("wubook_error_-1");
     expect(JSON.stringify(res)).not.toContain("test-token-123");
@@ -135,7 +135,7 @@ describe("testConnection", () => {
 
   it("handles malformed XML", async () => {
     const fetchImpl = vi.fn(async () => xmlResponse("<html>not xml</html>")) as unknown as typeof fetch;
-    const res = await testConnection(fetchImpl);
+    const res = await testConnection(fetchImpl, { timeoutMs: 50 });
     expect(res.connected).toBe(false);
     expect(res.errorCode).toBe("no_response_param");
   });
@@ -151,7 +151,7 @@ describe("testConnection", () => {
           });
         }),
     ) as unknown as typeof fetch;
-    const res = await testConnection(fetchImpl);
+    const res = await testConnection(fetchImpl, { timeoutMs: 50 });
     expect(res.connected).toBe(false);
     expect(res.errorCode).toBe("request_timeout");
   });
