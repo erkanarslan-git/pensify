@@ -31,19 +31,30 @@ const FIELDS = [
 ] as const;
 type FormKey = (typeof FIELDS)[number][0];
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-function validate(f: Record<FormKey, string>): string | null {
-  const t = (k: FormKey) => f[k].trim();
-  if (t("name").length < 2) return "Name der Unterkunft: mindestens 2 Zeichen.";
-  if (t("address").length < 2) return "Adresse: mindestens 2 Zeichen.";
-  if (t("zip").length < 3) return "PLZ: mindestens 3 Zeichen.";
-  if (t("city").length < 2) return "Stadt: mindestens 2 Zeichen.";
-  for (const k of ["phone", "account_phone"] as const) {
-    if (t(k).replace(/\D/g, "").length < 5) return `${k === "phone" ? "Telefon" : "Telefon (Konto)"}: bitte eine echte Telefonnummer (mind. 5 Ziffern) eingeben.`;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const MIN: Partial<Record<FormKey, number>> = { name: 2, address: 2, zip: 3, city: 2, first_name: 1, last_name: 1 };
+function fieldError(k: FormKey, raw: string): string | null {
+  const v = raw.trim();
+  if (!v) return "Pflichtfeld";
+  if (k === "phone" || k === "account_phone") {
+    if (!/^\+?[\d\s()/-]+$/.test(v)) return "Nur Ziffern, Leerzeichen und + erlaubt";
+    if (v.replace(/\D/g, "").length < 5) return "Mindestens 5 Ziffern (z. B. +49 176 1234567)";
+    return null;
   }
-  const emailLabels = { contact_email: "Kontakt-E-Mail", booking_email: "Buchungs-E-Mail", email: "E-Mail (Konto)" } as const;
-  for (const k of ["contact_email", "booking_email", "email"] as const) {
-    if (!EMAIL_RE.test(t(k))) return `${emailLabels[k]}: keine gültige E-Mail-Adresse (z. B. name@gmail.com).`;
+  if (k === "contact_email" || k === "booking_email" || k === "email") {
+    if (!v.includes("@")) return "Es fehlt das @-Zeichen (z. B. name@gmail.com)";
+    if (!EMAIL_RE.test(v)) return "Keine gültige E-Mail-Adresse (z. B. name@gmail.com)";
+    return null;
+  }
+  if (k === "zip" && !/^\d{4,5}$/.test(v)) return "PLZ: 4–5 Ziffern";
+  const m = MIN[k];
+  if (m && v.length < m) return `Mindestens ${m} Zeichen`;
+  return null;
+}
+function validate(f: Record<FormKey, string>): string | null {
+  for (const [k, label] of FIELDS) {
+    const e = fieldError(k, f[k]);
+    if (e) return `${label}: ${e}`;
   }
   return null;
 }
@@ -75,6 +86,7 @@ export function WuBookTestPanel() {
     return f;
   });
   const [reviewing, setReviewing] = useState(false);
+  const [touched, setTouched] = useState<Partial<Record<FormKey, boolean>>>({});
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [password, setPassword] = useState<string | null>(null);
@@ -116,15 +128,44 @@ export function WuBookTestPanel() {
           {!reviewing ? (
             <>
               <div className="grid sm:grid-cols-2 gap-3">
-                {FIELDS.map(([k, label]) => (
-                  <div key={k} className="space-y-1">
-                    <Label htmlFor={`wb-${k}`}>{label}</Label>
-                    <Input id={`wb-${k}`} value={form[k]} maxLength={200} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
-                  </div>
-                ))}
+                {FIELDS.map(([k, label]) => {
+                  const err = touched[k] ? fieldError(k, form[k]) : null;
+                  const ok = touched[k] && !err;
+                  return (
+                    <div key={k} className="space-y-1">
+                      <Label htmlFor={`wb-${k}`}>{label}</Label>
+                      <Input
+                        id={`wb-${k}`}
+                        value={form[k]}
+                        maxLength={200}
+                        aria-invalid={!!err}
+                        className={err ? "border-destructive focus-visible:ring-destructive" : ok ? "border-success" : ""}
+                        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+                        onBlur={() => setTouched((t) => ({ ...t, [k]: true }))}
+                      />
+                      {err ? (
+                        <p className="text-xs text-destructive flex items-center gap-1"><XCircle className="h-3 w-3" />{err}</p>
+                      ) : ok ? (
+                        <p className="text-xs text-success flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />OK</p>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
               <p className="text-xs text-muted-foreground">Fest: Land DE · Zeitzone Europe/Berlin · Sprache de · Währung EUR</p>
-              <Button size="sm" onClick={() => { const err = validate(form); if (err) { toast.error(err); return; } setReviewing(true); }} disabled={FIELDS.some(([k]) => !form[k].trim())}>Testunterkunft erstellen…</Button>
+              {(() => {
+                const invalid = FIELDS.filter(([k]) => fieldError(k, form[k])).length;
+                return (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Button size="sm" onClick={() => {
+                      setTouched(Object.fromEntries(FIELDS.map(([k]) => [k, true])));
+                      if (validate(form)) return;
+                      setReviewing(true);
+                    }}>Testunterkunft erstellen…</Button>
+                    {invalid > 0 && <span className="text-xs text-muted-foreground">{invalid} Feld(er) noch unvollständig oder fehlerhaft</span>}
+                  </div>
+                );
+              })()}
             </>
           ) : (
             <div className="space-y-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
