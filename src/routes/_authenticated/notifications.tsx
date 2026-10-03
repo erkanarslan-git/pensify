@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
-  head: () => ({ meta: [{ title: "Eylem Merkezi — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Benachrichtigungen — Pensify" }] }),
   component: NotificationsPage,
 });
 

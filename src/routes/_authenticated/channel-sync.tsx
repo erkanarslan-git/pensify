@@ -71,18 +71,18 @@ function ChannelSyncPage() {
   }
 
   async function deleteIntegration(row: Integration) {
-    if (!confirm(`"${row.name ?? row.ical_url ?? row.channel}" gerçekten silinsin mi?`)) return;
+    if (!confirm(`"${row.name ?? row.ical_url ?? row.channel}" wirklich löschen?`)) return;
     const { error } = await supabase.from("channel_integrations").delete().eq("id", row.id);
     if (error) toast.error(error.message); else toast.success("Gelöscht");
   }
 
   async function updateIntegration(row: Integration, patch: { name?: string | null; property_id?: string; room_id?: string | null; ical_url?: string | null }) {
     const { error } = await supabase.from("channel_integrations").update(patch).eq("id", row.id);
-    if (error) toast.error(error.message); else toast.success("Güncellendi");
+    if (error) toast.error(error.message); else toast.success("Aktualisiert");
   }
 
   async function addIntegration(channel: Channel, propertyId: string, icalUrl: string, name?: string, roomId?: string) {
-    if (!propertyId) return toast.error("Bir mülk seçin");
+    if (!propertyId) return toast.error("Bitte eine Pension wählen");
     const { error } = await supabase.from("channel_integrations").insert({
       channel,
       property_id: propertyId,
@@ -92,12 +92,12 @@ function ChannelSyncPage() {
       enabled: true,
       direction: "both",
     });
-    if (error) toast.error(error.message); else toast.success("Kanal bağlandı");
+    if (error) toast.error(error.message); else toast.success("Kanal verbunden");
   }
 
   async function bulkAdd(channel: Channel, rows: { name: string; url: string; propertyId: string; roomId?: string }[]): Promise<void> {
     const valid = rows.filter((r) => r.propertyId && r.url);
-    if (valid.length === 0) { toast.error("Eşleştirilebilir satır yok"); return; }
+    if (valid.length === 0) { toast.error("Keine zuordenbaren Zeilen"); return; }
     const { error, data } = await supabase.from("channel_integrations").insert(
       valid.map((r) => ({
         channel,
@@ -110,7 +110,7 @@ function ChannelSyncPage() {
       })),
     ).select("id");
     if (error) { toast.error(error.message); return; }
-    toast.success(`${data?.length ?? 0} kayıt eklendi`);
+    toast.success(`${data?.length ?? 0} Einträge hinzugefügt`);
   }
 
   async function manualSync(row?: Integration) {
@@ -347,7 +347,7 @@ function ChannelCard({
       title={channel.label}
       action={
         <div className="flex items-center gap-2">
-          <Badge tone="muted">{rows.length} bağlı</Badge>
+          <Badge tone="muted">{rows.length} verbunden</Badge>
           <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline">
@@ -361,7 +361,7 @@ function ChannelCard({
               {bulkParsed.length === 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">
-                    İlan adı ve iCal URL'sini alt alta yapıştırın (aralarında boş satır olabilir).
+                    Inseratsname und iCal-URL untereinander einfügen (Leerzeilen erlaubt).
                   </p>
                   <Textarea
                     value={bulkText}
@@ -372,21 +372,21 @@ function ChannelCard({
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setBulkOpen(false)}>Abbrechen</Button>
                     <Button onClick={() => setBulkParsed(parseBulk(bulkText))}>
-                      Ayrıştır ve önizle
+                      Prüfen & Vorschau
                     </Button>
                   </DialogFooter>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">
-                    {bulkParsed.length} kayıt bulundu. Otomatik mülk eşleştirmesini kontrol edin ve gerekirse düzeltin.
+                    {bulkParsed.length} Einträge gefunden. Bitte automatische Pensions-Zuordnung prüfen und ggf. korrigieren.
                   </p>
                   <div className="max-h-[420px] overflow-auto border border-border rounded-md">
                     <table className="w-full text-xs">
                       <thead className="bg-muted/50 sticky top-0">
                         <tr>
-                          <th className="text-left px-2 py-1.5 font-medium">İlan</th>
-                          <th className="text-left px-2 py-1.5 font-medium">Mülk</th>
+                          <th className="text-left px-2 py-1.5 font-medium">Inserat</th>
+                          <th className="text-left px-2 py-1.5 font-medium">Pension</th>
                           <th className="text-left px-2 py-1.5 font-medium">Oda (ops.)</th>
                         </tr>
                       </thead>
@@ -406,7 +406,7 @@ function ChannelCard({
                                   }}
                                   className="w-full px-2 py-1 rounded border border-input bg-card"
                                 >
-                                  <option value="">— Eşleşmedi —</option>
+                                  <option value="">— Nicht zugeordnet —</option>
                                   {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                                 </select>
                               </td>
@@ -421,7 +421,7 @@ function ChannelCard({
                                   disabled={!r.propertyId}
                                   className="w-full px-2 py-1 rounded border border-input bg-card"
                                 >
-                                  <option value="">— Tümü —</option>
+                                  <option value="">— Alle —</option>
                                   {rms.map((rm) => <option key={rm.id} value={rm.id}>Oda {rm.number}</option>)}
                                 </select>
                               </td>
@@ -439,7 +439,7 @@ function ChannelCard({
                         setBulkParsed([]); setBulkText(""); setBulkOpen(false);
                       }}
                     >
-                      {bulkParsed.filter((r) => r.propertyId).length} kaydı ekle
+                      {bulkParsed.filter((r) => r.propertyId).length} Einträge hinzufügen
                     </Button>
                   </DialogFooter>
                 </div>
@@ -462,7 +462,7 @@ function ChannelCard({
                   {room && <span className="text-xs text-muted-foreground">Oda {room.number}</span>}
                   {missingRoom && (
                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Oda atanmadı — senkron atlanır
+                      <AlertTriangle className="w-3 h-3" /> Kein Zimmer zugewiesen — Sync wird übersprungen
                     </span>
                   )}
                 </div>
@@ -471,7 +471,7 @@ function ChannelCard({
                   {" · "}
                   {r.ical_url ? <span className="truncate inline-block max-w-[360px] align-bottom">{r.ical_url}</span> : "iCal URL yok"}
                   {" · "}
-                  {r.last_sync_at ? `Son: ${new Date(r.last_sync_at).toLocaleString()}` : "Hiç senkron olmadı"}
+                  {r.last_sync_at ? `Zuletzt: ${new Date(r.last_sync_at).toLocaleString()}` : "Noch nie synchronisiert"}
                   {" · "}
                   <span className={r.last_sync_status === "success" ? "text-emerald-600 dark:text-emerald-400" : r.last_sync_status === "error" ? "text-destructive" : ""}>
                     {r.last_sync_status ?? "—"}
@@ -501,15 +501,15 @@ function ChannelCard({
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Bağlantıyı düzenle</DialogTitle>
+            <DialogTitle>Verbindung bearbeiten</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs text-muted-foreground">İlan adı</label>
+              <label className="text-xs text-muted-foreground">Inseratsname</label>
               <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Mülk</label>
+              <label className="text-xs text-muted-foreground">Pension</label>
               <select
                 value={editPropertyId}
                 onChange={(e) => { setEditPropertyId(e.target.value); setEditRoomId(""); }}
@@ -519,17 +519,17 @@ function ChannelCard({
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Oda (senkron için zorunlu)</label>
+              <label className="text-xs text-muted-foreground">Zimmer (für Sync erforderlich)</label>
               <select
                 value={editRoomId}
                 onChange={(e) => setEditRoomId(e.target.value)}
                 className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-sm"
               >
-                <option value="">— Seçin —</option>
+                <option value="">— Wählen —</option>
                 {editRooms.map((r) => <option key={r.id} value={r.id}>Oda {r.number}</option>)}
               </select>
               {editRooms.length === 0 && (
-                <p className="text-xs text-amber-600 mt-1">Bu mülkte tanımlı oda yok. Önce Odalar sayfasından ekleyin.</p>
+                <p className="text-xs text-warning mt-1">Diese Pension hat keine Zimmer. Bitte zuerst unter Zimmer anlegen.</p>
               )}
             </div>
             <div>
@@ -560,13 +560,13 @@ function ChannelCard({
 
       <div className="grid gap-2 p-3 rounded-md bg-muted/40 md:grid-cols-[1fr_1fr_2fr_auto] items-end">
         <div>
-          <label className="text-xs text-muted-foreground">Mülk</label>
+          <label className="text-xs text-muted-foreground">Pension</label>
           <select
             value={propertyId}
             onChange={(e) => { setPropertyId(e.target.value); setRoomId(""); }}
             className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-sm"
           >
-            <option value="">Mülk seç…</option>
+            <option value="">Pension wählen…</option>
             {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
@@ -578,14 +578,14 @@ function ChannelCard({
             disabled={!propertyId}
             className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-sm"
           >
-            <option value="">Tümü</option>
+            <option value="">Alle</option>
             {roomsForProp.map((r) => <option key={r.id} value={r.id}>Oda {r.number}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-xs text-muted-foreground">İlan adı & iCal URL</label>
+          <label className="text-xs text-muted-foreground">Inseratsname & iCal-URL</label>
           <div className="flex gap-2 mt-1">
-            <Input value={listingName} onChange={(e) => setListingName(e.target.value)} placeholder="İlan adı (ops.)" className="w-1/3" />
+            <Input value={listingName} onChange={(e) => setListingName(e.target.value)} placeholder="Inseratsname (optional)" className="w-1/3" />
             <Input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://…/calendar.ics" className="flex-1" />
           </div>
         </div>
@@ -595,7 +595,7 @@ function ChannelCard({
             setIcalUrl(""); setListingName("");
           }}
         >
-          <Plus className="w-4 h-4 mr-1.5" /> Bağla
+          <Plus className="w-4 h-4 mr-1.5" /> Verbinden
         </Button>
       </div>
     </Section>
