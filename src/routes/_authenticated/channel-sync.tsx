@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import type { Database } from "@/integrations/supabase/types";
+import { WuBookStatus } from "@/components/wubook-status";
 
 export const Route = createFileRoute("/_authenticated/channel-sync")({
   head: () => ({ meta: [{ title: "Channel Sync — Pensify" }] }),
@@ -194,6 +195,7 @@ function ChannelSyncPage() {
         </TabsList>
 
         <TabsContent value="connections" className="space-y-4 mt-4">
+          <WuBookStatus />
           {CHANNELS.map((ch) => (
             <ChannelCard
               key={ch.id}
