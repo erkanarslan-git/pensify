@@ -524,6 +524,25 @@ function CalendarPage() {
 
               {flatRooms.flatMap(({ room: r, property: p }, rowIdx) => {
                 const cells: React.ReactNode[] = [];
+                const isNewGroup = rowIdx === 0 || flatRooms[rowIdx - 1].property.id !== p.id;
+                if (isNewGroup) {
+                  const groupRooms = flatRooms.filter((fr) => fr.property.id === p.id);
+                  const occupiedToday = groupRooms.filter((fr) =>
+                    reservations.some((res) => res.roomId === fr.room.id && res.checkIn <= today && res.checkOut > today),
+                  ).length;
+                  cells.push(
+                    <div
+                      key={`${p.id}-header`}
+                      style={{ gridColumn: "1 / -1" }}
+                      className="flex items-center justify-between gap-3 px-3 py-2 mt-2 first:mt-0 rounded-md bg-accent/50 border border-border text-sm"
+                    >
+                      <span className="font-semibold truncate">{p.name}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {groupRooms.length} Zimmer · heute belegt: {occupiedToday}
+                      </span>
+                    </div>,
+                  );
+                }
                 cells.push(
                   <div key={`${r.id}-label`} className={`py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-primary/10" : ""}`}>
                     <div className="min-w-0 flex-1">
