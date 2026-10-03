@@ -125,14 +125,19 @@ function splitTopLevel(xml: string, tag: string): string[] {
 
 export function parseResponse(xml: string): unknown {
   assertSafeXml(xml);
-  const fault = xml.match(/<fault>[\s\S]*?<value>([\s\S]*?)<\/value>[\s\S]*?<\/fault>/);
-  if (fault) {
-    const f = parseValue(fault[1]) as Record<string, unknown>;
+  const faultInner = xml.match(/<fault>([\s\S]*)<\/fault>/)?.[1];
+  if (faultInner !== undefined) {
+    const fVal = splitTopLevel(faultInner, "value")[0];
+    const f = (fVal !== undefined ? parseValue(fVal) : {}) as Record<string, unknown>;
     throw new XmlRpcError(`xmlrpc_fault_${f?.faultCode ?? "unknown"}`, "fault");
   }
-  const param = xml.match(/<params>[\s\S]*?<param>[\s\S]*?<value>([\s\S]*?)<\/value>[\s\S]*?<\/param>[\s\S]*?<\/params>/);
-  if (!param) throw new XmlRpcError("no_response_param", "malformed");
-  return parseValue(param[1]);
+  const paramsInner = xml.match(/<params>([\s\S]*)<\/params>/)?.[1];
+  if (paramsInner === undefined) throw new XmlRpcError("no_response_param", "malformed");
+  const firstParam = splitTopLevel(paramsInner, "param")[0];
+  if (firstParam === undefined) throw new XmlRpcError("no_response_param", "malformed");
+  const valueInner = splitTopLevel(firstParam, "value")[0];
+  if (valueInner === undefined) throw new XmlRpcError("no_response_param", "malformed");
+  return parseValue(valueInner);
 }
 
 export interface XmlRpcTransportOptions {
