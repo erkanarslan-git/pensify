@@ -24,7 +24,14 @@ import i18n from "@/i18n";
 import { roomTypeVisual } from "@/lib/room-type-visuals";
 
 export const Route = createFileRoute("/_authenticated/properties/")({
-  head: () => ({ meta: [{ title: `${i18n.t("nav.properties")} — Pensify` }] }),
+  head: () => ({ meta: [
+    { title: `${i18n.t("nav.properties")} — Pensify` },
+    { name: "description", content: "Pensify tesislerini ve oda dağılımlarını yönetin." },
+    { property: "og:title", content: `${i18n.t("nav.properties")} — Pensify` },
+    { property: "og:description", content: "Pensify tesislerini ve oda dağılımlarını yönetin." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: PropertiesPage,
 });
 

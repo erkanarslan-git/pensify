@@ -16,7 +16,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { roomTypeVisual } from "@/lib/room-type-visuals";
 
 export const Route = createFileRoute("/_authenticated/rooms")({
-  head: () => ({ meta: [{ title: "Rooms — Pensify" }] }),
+  head: () => ({ meta: [
+    { title: "Zimmerübersicht — Pensify" },
+    { name: "description", content: "Zimmer nach Pension, Typ und Status verwalten." },
+    { property: "og:title", content: "Zimmerübersicht — Pensify" },
+    { property: "og:description", content: "Zimmer nach Pension, Typ und Status verwalten." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: RoomsPage,
 });
 
@@ -191,7 +198,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
           </p>
         </div>
       ) : (
-       <div className="space-y-6">
+        <TooltipProvider delayDuration={200}><div className="space-y-6">
         {cities.map((city) => {
           const cityProps = properties.filter((p) => p.city_id === city.id && (!pFilter || p.id === pFilter));
           if (cityProps.length === 0) return null;
@@ -250,7 +257,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
             </div>
           );
         })}
-      </div>
+      </div></TooltipProvider>
       )}
 
       <RoomDialog
