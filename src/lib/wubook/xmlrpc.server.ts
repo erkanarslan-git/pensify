@@ -1,0 +1,179 @@
+// WuBook Wired XML-RPC transport. Server-only.
+// Security: the request body contains the permanent token — never log it,
+// never return raw XML to callers. Parsing rejects DTD/ENTITY/PI to block
+// XXE and external resource loading.
+
+const TIMEOUT_MS = 10_000;
+const MAX_RESPONSE_BYTES = 512 * 1024;
+
+export class XmlRpcError extends Error {
+  constructor(
+    message: string,
+    public code: "timeout" | "http" | "malformed" | "too_large" | "fault",
+  ) {
+    super(message);
+  }
+}
+
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function paramXml(value: unknown): string {
+  if (typeof value === "number" && Number.isInteger(value)) return `<param><value><int>${value}</int></value></param>`;
+  if (typeof value === "string") return `<param><value><string>${escapeXml(value)}</string></value></param>`;
+  if (Array.isArray(value)) {
+    return `<param><value><array><data>${value.map((v) => `<value>${scalarXml(v)}</value>`).join("")}</data></array></value></param>`;
+  }
+  throw new XmlRpcError("unsupported_param", "fault");
+}
+
+function scalarXml(value: unknown): string {
+  if (typeof value === "number" && Number.isInteger(value)) return `<int>${value}</int>`;
+  return `<string>${escapeXml(String(value ?? ""))}</string>`;
+}
+
+export function buildRequest(method: string, params: unknown[]): string {
+  return `<?xml version="1.0" encoding="UTF-8"?><methodCall><methodName>${escapeXml(method)}</methodName><params>${params.map(paramXml).join("")}</params></methodCall>`;
+}
+
+// ---- Minimal safe XML-RPC response parser (no DTD, no entities, no PI) ----
+
+function assertSafeXml(xml: string): void {
+  if (/<!DOCTYPE|<!ENTITY|<\?xml-stylesheet|<!\[CDATA\[<|xmlns\s*=\s*["']https?:/i.test(xml)) {
+    throw new XmlRpcError("unsafe_xml", "malformed");
+  }
+}
+
+function unescapeXml(s: string): string {
+  return s
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&amp;/g, "&");
+}
+
+function parseValue(xml: string): unknown {
+  const trimmed = xml.trim();
+  const m = trimmed.match(/^<(\w+)>([\s\S]*)<\/\1>$/);
+  if (!m) return unescapeXml(trimmed); // bare text = string
+  const [, tag, inner] = m;
+  switch (tag) {
+    case "int":
+    case "i4":
+      return parseInt(inner, 10);
+    case "double":
+      return parseFloat(inner);
+    case "boolean":
+      return inner.trim() === "1";
+    case "string":
+      return unescapeXml(inner);
+    case "array": {
+      const data = inner.match(/<data>([\s\S]*)<\/data>/)?.[1] ?? "";
+      return splitTopLevel(data, "value").map(parseValue);
+    }
+    case "struct": {
+      const out: Record<string, unknown> = {};
+      for (const member of splitTopLevel(inner, "member")) {
+        const name = member.match(/<name>([\s\S]*?)<\/name>/)?.[1] ?? "";
+        const val = member.match(/<value>([\s\S]*)<\/value>/)?.[1] ?? "";
+        out[unescapeXml(name)] = parseValue(val);
+      }
+      return out;
+    }
+    default:
+      return unescapeXml(inner);
+  }
+}
+
+// Split XML into top-level elements with the given tag (handles nesting).
+function splitTopLevel(xml: string, tag: string): string[] {
+  const out: string[] = [];
+  const re = new RegExp(`<${tag}>`);
+  let i = 0;
+  while (i < xml.length) {
+    re.lastIndex = i;
+    const start = xml.indexOf(`<${tag}>`, i);
+    if (start === -1) break;
+    let depth = 1;
+    let j = start + tag.length + 2;
+    while (j < xml.length && depth > 0) {
+      const nextOpen = xml.indexOf(`<${tag}>`, j);
+      const nextClose = xml.indexOf(`</${tag}>`, j);
+      if (nextClose === -1) throw new XmlRpcError("unbalanced_xml", "malformed");
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        j = nextOpen + tag.length + 2;
+      } else {
+        depth--;
+        if (depth === 0) out.push(xml.slice(start + tag.length + 2, nextClose));
+        j = nextClose + tag.length + 3;
+      }
+    }
+    i = j;
+  }
+  return out;
+}
+
+export function parseResponse(xml: string): unknown {
+  assertSafeXml(xml);
+  const fault = xml.match(/<fault>[\s\S]*?<value>([\s\S]*?)<\/value>[\s\S]*?<\/fault>/);
+  if (fault) {
+    const f = parseValue(fault[1]) as Record<string, unknown>;
+    throw new XmlRpcError(`xmlrpc_fault_${f?.faultCode ?? "unknown"}`, "fault");
+  }
+  const param = xml.match(/<params>[\s\S]*?<param>[\s\S]*?<value>([\s\S]*?)<\/value>[\s\S]*?<\/param>[\s\S]*?<\/params>/);
+  if (!param) throw new XmlRpcError("no_response_param", "malformed");
+  return parseValue(param[1]);
+}
+
+export interface XmlRpcTransportOptions {
+  url: string;
+  timeoutMs?: number;
+  maxBytes?: number;
+  fetchImpl?: typeof fetch;
+}
+
+export async function callXmlRpc(
+  method: string,
+  params: unknown[],
+  opts: XmlRpcTransportOptions,
+): Promise<unknown> {
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  const timeoutMs = opts.timeoutMs ?? TIMEOUT_MS;
+  const maxBytes = opts.maxBytes ?? MAX_RESPONSE_BYTES;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let res: Response;
+  try {
+    res = await fetchImpl(opts.url, {
+      method: "POST",
+      headers: { "content-type": "text/xml; charset=utf-8" },
+      body: buildRequest(method, params),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if ((e as Error).name === "AbortError") throw new XmlRpcError("request_timeout", "timeout");
+    throw new XmlRpcError("network_error", "http");
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res.ok) throw new XmlRpcError(`http_${res.status}`, "http");
+
+  const len = Number(res.headers.get("content-length") ?? "0");
+  if (len > maxBytes) throw new XmlRpcError("response_too_large", "too_large");
+  const text = await res.text();
+  if (new TextEncoder().encode(text).length > maxBytes) {
+    throw new XmlRpcError("response_too_large", "too_large");
+  }
+  return parseResponse(text);
+}
