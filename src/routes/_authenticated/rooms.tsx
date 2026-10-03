@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Badge, Section } from "@/components/app-shell";
 import { useEffect, useState } from "react";
 import { Users, Plus, Pencil, Trash2 } from "lucide-react";
@@ -125,6 +125,16 @@ function RoomsPage() {
         })}
       </div>
 
+      {properties.length === 0 ? (
+        <div className="rounded-lg border border-border bg-card p-4 text-sm space-y-2">
+          <p>
+            Henüz hiç lokasyon eklemedin. Odalar lokasyonların altına eklenir.
+          </p>
+          <p className="text-muted-foreground">
+            Önce <Link to="/properties" className="text-primary underline underline-offset-2">Lokasyonlar</Link> sayfasından bir pansiyon oluştur; sonra bu sayfada her lokasyonun başlığında çıkan <strong>Oda ekle</strong> düğmesine basarak odaları ekleyebilirsin. "Zimmertypen &amp; Preise" düğmesi oda tipleri ve gecelik fiyatlar içindir — istersen odaları ekledikten sonra da ayarlayabilirsin.
+          </p>
+        </div>
+      ) : (
       <div className="space-y-6">
         {cities.map((city) => {
           const cityProps = properties.filter((p) => p.city_id === city.id);
