@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, Badge, Section } from "@/components/app-shell";
+import { AppShell, Badge } from "@/components/app-shell";
 import { useEffect, useState } from "react";
 import { Users, Plus, Pencil, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { RoomTypesDialog } from "@/components/room-types-dialog";
 import {
   Dialog,
   DialogContent,
@@ -19,13 +18,13 @@ export const Route = createFileRoute("/_authenticated/rooms")({
   component: RoomsPage,
 });
 
-type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
+export type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
 
-interface Property { id: string; name: string; city_id: string | null; organization_id: string }
-interface RoomType { id: string; name: string; property_id: string | null }
+export interface Property { id: string; name: string; city_id: string | null; organization_id: string }
+export interface RoomType { id: string; name: string; property_id: string | null }
 interface City { id: string; name: string }
-interface Cleaner { id: string; full_name: string; active: boolean }
-interface Room {
+export interface Cleaner { id: string; full_name: string; active: boolean }
+export interface Room {
   id: string;
   property_id: string;
   number: string;
@@ -37,7 +36,7 @@ interface Room {
   room_type_id: string | null;
 }
 
-const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
+export const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
   available: { label: "Müsait", tone: "success" },
   occupied: { label: "Dolu", tone: "primary" },
   checkout_today: { label: "Bugün Çıkış", tone: "info" },
@@ -47,7 +46,7 @@ const statusMeta: Record<RoomStatus, { label: string; tone: "success" | "warning
   maintenance: { label: "Bakım", tone: "destructive" },
 };
 
-const floorLabel = (f: number | null) =>
+export const floorLabel = (f: number | null) =>
   f == null ? "—" : f === 0 ? "EG" : `${f}.OG`;
 
 function RoomsPage() {
@@ -65,7 +64,9 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const [creating, setCreating] = useState<{ propertyId: string } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [typesOpen, setTypesOpen] = useState(false);
+  const [pFilter, setPFilter] = useState("");
+  const [tFilter, setTFilter] = useState("");
+  const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -106,7 +107,11 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
 
   const properties = propertyId ? allProperties.filter((p) => p.id === propertyId) : allProperties;
   const rooms = propertyId ? allRooms.filter((r) => r.property_id === propertyId) : allRooms;
-  const list = filter === "all" ? rooms : rooms.filter((r) => r.status === filter);
+  const list = rooms
+    .filter((r) => filter === "all" || r.status === filter)
+    .filter((r) => !tFilter || (tFilter === "none" ? !r.room_type_id : r.room_type_id === tFilter))
+    .filter((r) => !q.trim() || r.number.toLowerCase().includes(q.trim().toLowerCase()))
+    .sort((a, b) => a.number.localeCompare(b.number, "de", { numeric: true }));
   const single = propertyId ? properties[0] : undefined;
 
   const remove = async (id: string) => {
@@ -135,7 +140,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   return (
     <AppShell
       title={single ? `${single.name} – Zimmer` : t("pages.rooms.title")}
-      subtitle={`${rooms.length} oda · ${properties.length} lokasyon`}
+      subtitle={`${rooms.length} Zimmer · ${properties.length} Pensionen`}
       actions={
         properties.length > 0 ? (
           <button
@@ -152,103 +157,89 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
           <Link to="/properties" className="hover:underline">Pensionen</Link> / {single.name} / Zimmer
         </nav>
       )}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          onClick={() => setTypesOpen(true)}
-          className="px-3 py-1.5 rounded-full text-xs font-medium border border-primary text-primary hover:bg-primary/10"
-        >
-          Zimmertypen & Preise
-        </button>
-        <button
-          onClick={() => setFilter("all")}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium border ${filter === "all" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
-        >
-          Tümü ({rooms.length})
-        </button>
-        {(Object.keys(statusMeta) as RoomStatus[]).map((s) => {
-          const count = rooms.filter((r) => r.status === s).length;
-          return (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border ${filter === s ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
-            >
-              {statusMeta[s].label} ({count})
-            </button>
-          );
-        })}
+      <div className="flex flex-wrap items-center gap-2 mb-4 rounded-lg border border-border bg-card p-2">
+        <select value={pFilter} onChange={(e) => { setPFilter(e.target.value); setTFilter(""); }} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
+          <option value="">Alle Pensionen</option>
+          {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <select value={tFilter} onChange={(e) => setTFilter(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
+          <option value="">Alle Zimmertypen</option>
+          <option value="none">Ohne Zimmertyp</option>
+          {roomTypes.filter((rt) => !pFilter || rt.property_id === pFilter).map((rt) => (
+            <option key={rt.id} value={rt.id}>{rt.name}{!pFilter ? ` · ${properties.find((p) => p.id === rt.property_id)?.name ?? ""}` : ""}</option>
+          ))}
+        </select>
+        <select value={filter} onChange={(e) => setFilter(e.target.value as RoomStatus | "all")} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
+          <option value="all">Alle Status ({rooms.length})</option>
+          {(Object.keys(statusMeta) as RoomStatus[]).map((s) => (
+            <option key={s} value={s}>{statusMeta[s].label} ({rooms.filter((r) => r.status === s).length})</option>
+          ))}
+        </select>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Zimmer-Nr. suchen" className="px-2 py-1.5 rounded-md border border-input bg-card text-sm w-40" />
+        {(pFilter || tFilter || filter !== "all" || q) && (
+          <button onClick={() => { setPFilter(""); setTFilter(""); setFilter("all"); setQ(""); }} className="text-xs text-muted-foreground hover:underline">Filter zurücksetzen</button>
+        )}
       </div>
 
       {properties.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-4 text-sm space-y-2">
-          <p>Henüz hiç pansiyon yok.</p>
+          <p>Noch keine Pension angelegt.</p>
           <p className="text-muted-foreground">
-            Önce <Link to="/properties" className="text-primary underline underline-offset-2">Pensionen</Link> sayfasından bir pansiyon oluştur; sonra buradaki <strong>Neues Zimmer</strong> düğmesiyle oda ekleyebilirsin.
+            Legen Sie zuerst unter <Link to="/properties" className="text-primary underline underline-offset-2">Pensionen</Link> eine Pension an.
           </p>
         </div>
       ) : (
       <div className="space-y-6">
         {cities.map((city) => {
-          const cityProps = properties.filter((p) => p.city_id === city.id);
+          const cityProps = properties.filter((p) => p.city_id === city.id && (!pFilter || p.id === pFilter));
           if (cityProps.length === 0) return null;
           return (
             <div key={city.id}>
-              <h3 className="text-sm font-semibold tracking-tight mb-3">{city.name}</h3>
-              <div className="space-y-4">
+              <h3 className="text-sm font-semibold tracking-tight mb-2">{city.name}</h3>
+              <div className="space-y-2">
                 {cityProps.map((p) => {
+                  const all = rooms.filter((r) => r.property_id === p.id);
                   const propRooms = list.filter((r) => r.property_id === p.id);
+                  const free = all.filter((r) => r.status === "available" || r.status === "cleaned").length;
+                  const dirty = all.filter((r) => r.status === "cleaning_required" || r.status === "cleaning_in_progress").length;
+                  const filtering = !!(pFilter || tFilter || filter !== "all" || q);
+                  if (filtering && propRooms.length === 0) return null;
                   return (
-                    <Section
-                      key={p.id}
-                      title={p.name}
-                      action={
-                        <button
-                          onClick={() => setCreating({ propertyId: p.id })}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border text-xs hover:bg-accent"
-                        >
-                          <Plus className="w-3 h-3" /> Oda ekle
-                        </button>
-                      }
-                    >
+                    <details key={p.id} open={filtering || !!pFilter} className="rounded-xl border border-border bg-card group/d">
+                      <summary className="flex flex-wrap items-center gap-3 px-4 py-3 cursor-pointer list-none">
+                        <span className="text-muted-foreground transition-transform group-open/d:rotate-90">›</span>
+                        <span className="font-semibold flex-1 min-w-[160px]">{p.name}</span>
+                        <span className="text-xs text-muted-foreground">{all.length} Zimmer · <span className="text-foreground font-medium">{free} frei</span> · {dirty} Reinigung</span>
+                        <Link to="/properties/$id/rooms" params={{ id: p.id }} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border text-xs hover:bg-accent">
+                          Zimmer verwalten
+                        </Link>
+                      </summary>
                       {propRooms.length === 0 ? (
-                        <div className="text-xs text-muted-foreground py-3">Bu lokasyonda oda yok.</div>
+                        <div className="text-xs text-muted-foreground px-4 pb-3">Keine Zimmer.</div>
                       ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 px-4 pb-4">
                           {propRooms.map((r) => {
                             const meta = statusMeta[r.status];
+                            const typeName = roomTypes.find((rt) => rt.id === r.room_type_id)?.name;
                             return (
-                              <div key={r.id} className="rounded-lg border border-border p-3 bg-card hover:shadow-elevated transition-shadow group">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground">
-                                      {floorLabel(r.floor)}
-                                    </span>
-                                    <span className="font-semibold">#{r.number}</span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                                    <Users className="w-3 h-3" />{r.capacity}
-                                  </span>
-                                </div>
-                                <div className="mt-2 flex items-center justify-between">
-                                  <Badge tone={meta.tone}>{meta.label}</Badge>
-                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => setEditing(r)} className="p-1 rounded hover:bg-accent" title="Düzenle">
-                                      <Pencil className="w-3 h-3" />
-                                    </button>
-                                    <button onClick={() => remove(r.id)} className="p-1 rounded hover:bg-destructive/10 text-destructive" title="Sil">
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
+                              <div key={r.id} className="rounded-lg border border-border p-2.5 bg-background">
+                                <div className="flex items-center justify-between gap-1">
+                                  <span className="font-semibold text-sm">#{r.number} <span className="text-[10px] font-normal text-muted-foreground">{floorLabel(r.floor)}</span></span>
+                                  <div className="flex">
+                                    <button onClick={() => setEditing(r)} className="p-1 rounded hover:bg-accent" title="Bearbeiten"><Pencil className="w-3 h-3" /></button>
+                                    <button onClick={() => remove(r.id)} className="p-1 rounded hover:bg-destructive/10 text-destructive" title="Löschen"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                 </div>
-                                <div className="mt-2 text-[11px] text-muted-foreground truncate" title="Varsayılan temizlikçi">
-                                  🧹 {cleaners.find((c) => c.id === r.default_cleaner_id)?.full_name ?? <span className="italic text-amber-600 dark:text-amber-400">atanmamış</span>}
+                                <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                                  <Users className="w-3 h-3" />{r.capacity} · {typeName ?? "ohne Typ"}
                                 </div>
+                                <div className="mt-1.5"><Badge tone={meta.tone}>{meta.label}</Badge></div>
                               </div>
                             );
                           })}
                         </div>
                       )}
-                    </Section>
+                    </details>
                   );
                 })}
               </div>
@@ -268,17 +259,11 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
         onClose={() => { setEditing(null); setCreating(null); }}
         onSaved={() => setRefreshKey((k) => k + 1)}
       />
-      <RoomTypesDialog
-        open={typesOpen}
-        properties={properties}
-        onClose={() => setTypesOpen(false)}
-        onSaved={() => setRefreshKey((k) => k + 1)}
-      />
     </AppShell>
   );
 }
 
-function RoomDialog({
+export function RoomDialog({
   open, room, propertyId, properties, cleaners, roomTypes, onClose, onSaved,
 }: {
   open: boolean;
