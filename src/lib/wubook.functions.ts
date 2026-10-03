@@ -126,7 +126,17 @@ export const getWuBookWebhookStatus = createServerFn({ method: "GET" })
 
 export const createWuBookTestProperty = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => testPropertySchema.parse(d))
+  .inputValidator((d: unknown) => {
+    const r = testPropertySchema.safeParse(d);
+    if (r.success) return r.data;
+    const LABELS: Record<string, string> = {
+      name: "Name der Unterkunft", address: "Adresse", zip: "PLZ", city: "Stadt", phone: "Telefon",
+      contact_email: "Kontakt-E-Mail", booking_email: "Buchungs-E-Mail", first_name: "Vorname (Konto)",
+      last_name: "Nachname (Konto)", email: "E-Mail (Konto)", account_phone: "Telefon (Konto)", confirm: "Bestätigung",
+    };
+    const fields = [...new Set(r.error.issues.map((i) => LABELS[String(i.path[0])] ?? String(i.path[0])))];
+    throw new Error(`Bitte prüfen: ${fields.join(", ")}`);
+  })
   .handler(async ({ data, context }) => {
     const { orgId } = await requireOrgRole(context.supabase, ADMIN_ROLES);
     if (rateLimited(`wubook-create:${orgId}`, 2, 10 * 60_000)) return { ok: false as const, errorMessage: "Zu viele Versuche." };
