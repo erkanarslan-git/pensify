@@ -73,7 +73,7 @@ function ChannelSyncPage() {
   async function deleteIntegration(row: Integration) {
     if (!confirm(`"${row.name ?? row.ical_url ?? row.channel}" gerçekten silinsin mi?`)) return;
     const { error } = await supabase.from("channel_integrations").delete().eq("id", row.id);
-    if (error) toast.error(error.message); else toast.success("Silindi");
+    if (error) toast.error(error.message); else toast.success("Gelöscht");
   }
 
   async function updateIntegration(row: Integration, patch: { name?: string | null; property_id?: string; room_id?: string | null; ical_url?: string | null }) {
@@ -370,7 +370,7 @@ function ChannelCard({
                     placeholder={"Doppelzimmer in Bielefeld (Senner Hellweg)\nhttps://www.airbnb.de/calendar/ical/....ics?t=..."}
                   />
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setBulkOpen(false)}>İptal</Button>
+                    <Button variant="outline" onClick={() => setBulkOpen(false)}>Abbrechen</Button>
                     <Button onClick={() => setBulkParsed(parseBulk(bulkText))}>
                       Ayrıştır ve önizle
                     </Button>
@@ -484,7 +484,7 @@ function ChannelCard({
                   <span>{r.enabled ? "Aktif" : "Pasif"}</span>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => openEdit(r)}>
-                  <Pencil className="w-3.5 h-3.5 mr-1.5" /> Düzenle
+                  <Pencil className="w-3.5 h-3.5 mr-1.5" /> Bearbeiten
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => onSync(r)} disabled={missingRoom}>
                   <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Senkr.
@@ -538,7 +538,7 @@ function ChannelCard({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditing(null)}>İptal</Button>
+            <Button variant="outline" onClick={() => setEditing(null)}>Abbrechen</Button>
             <Button
               onClick={async () => {
                 if (!editing) return;
@@ -551,7 +551,7 @@ function ChannelCard({
                 setEditing(null);
               }}
             >
-              Kaydet
+              Speichern
             </Button>
           </DialogFooter>
         </DialogContent>

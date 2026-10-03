@@ -152,7 +152,7 @@ function GeoTestPage() {
           </div>
           {q.isLoading ? (
             <div className="p-5 text-sm text-muted-foreground inline-flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" /> Yükleniyor…
+              <Loader2 className="w-4 h-4 animate-spin" /> Laden…
             </div>
           ) : rows.length === 0 ? (
             <div className="p-5 text-sm text-muted-foreground">Lokasyon yok.</div>

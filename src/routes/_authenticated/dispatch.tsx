@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
-  head: () => ({ meta: [{ title: "Görev Dağıtımı — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Aufgabenverteilung — Pensify" }] }),
   component: DispatchPage,
 });
 
@@ -29,20 +29,20 @@ function DispatchPage() {
 
   const sendAll = useMutation({
     mutationFn: () => dispatchFn({ data: { trigger: "manual" } }),
-    onSuccess: () => { toast.success("Mesajlar gönderildi"); qc.invalidateQueries({ queryKey: ["dispatch"] }); },
+    onSuccess: () => { toast.success("Nachrichten gesendet"); qc.invalidateQueries({ queryKey: ["dispatch"] }); },
     onError: (e: any) => toast.error(e.message),
   });
   const sendOne = useMutation({
     mutationFn: (cleanerId: string) => dispatchFn({ data: { cleanerIds: [cleanerId], trigger: "resend" } }),
-    onSuccess: () => { toast.success("Yeniden gönderildi"); qc.invalidateQueries({ queryKey: ["dispatch"] }); },
+    onSuccess: () => { toast.success("Erneut gesendet"); qc.invalidateQueries({ queryKey: ["dispatch"] }); },
     onError: (e: any) => toast.error(e.message),
   });
   const reply = useMutation({
     mutationFn: (v: { cleanerId: string; text?: string; action?: "accept" | "start" | "complete" | "problem"; taskId?: string }) =>
       replyFn({ data: v }),
     onSuccess: (r: any) => {
-      if (r.applied) toast.success(`${r.parsed}: görev → ${r.taskStatus}${r.roomStatus ? `, oda → ${r.roomStatus}` : ""}`);
-      else toast.warning(`Uygulanmadı (${r.parsed}${r.error ? `: ${r.error}` : ""})`);
+      if (r.applied) toast.success(`${r.parsed}: Aufgabe → ${r.taskStatus}${r.roomStatus ? `, Zimmer → ${r.roomStatus}` : ""}`);
+      else toast.warning(`Nicht angewendet (${r.parsed}${r.error ? `: ${r.error}` : ""})`);
       qc.invalidateQueries({ queryKey: ["dispatch"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -53,7 +53,7 @@ function DispatchPage() {
     onSuccess: (r: any) => {
       if (!r.ok) { toast.error(`Demo: ${r.error}`); return; }
       const ok = r.steps.filter((s: any) => s.result.applied).length;
-      toast.success(`Demo tamamlandı — ${ok}/${r.steps.length} adım uygulandı`);
+      toast.success(`Demo abgeschlossen — ${ok}/${r.steps.length} Schritte angewendet`);
       qc.invalidateQueries({ queryKey: ["dispatch"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -64,7 +64,7 @@ function DispatchPage() {
   const [replyOpen, setReplyOpen] = useState<{ cleanerId: string; name: string } | null>(null);
 
 
-  if (isLoading) return <AppShell title="Görev Dağıtımı">Yükleniyor…</AppShell>;
+  if (isLoading) return <AppShell title="Aufgabenverteilung">Laden…</AppShell>;
   if (!data) return null;
 
   const s = data.settings as Record<string, any>;
@@ -88,18 +88,18 @@ function DispatchPage() {
 
   return (
     <AppShell
-      title="Görev Dağıtımı"
-      subtitle={`Bugün ${data.scheduledFor} · ${enabled ? "Otomatik açık" : "Otomatik kapalı"} · ${morningTime} ${timezone}`}
+      title="Aufgabenverteilung"
+      subtitle={`Heute ${data.scheduledFor} · ${enabled ? "Automatisch an" : "Automatisch aus"} · ${morningTime} ${timezone}`}
       actions={
         <>
           <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-            <Cog className="w-4 h-4 mr-1" /> Ayarlar
+            <Cog className="w-4 h-4 mr-1" /> Einstellungen
           </Button>
           <Button variant="outline" size="sm" onClick={() => runDemo.mutate(undefined)} disabled={runDemo.isPending}>
-            <PlayCircle className="w-4 h-4 mr-1" /> {runDemo.isPending ? "Çalışıyor…" : "Demo senaryosu"}
+            <PlayCircle className="w-4 h-4 mr-1" /> {runDemo.isPending ? "Läuft…" : "Demo-Szenario"}
           </Button>
           <Button size="sm" onClick={() => sendAll.mutate()} disabled={sendAll.isPending}>
-            <Send className="w-4 h-4 mr-1" /> Herkese şimdi gönder
+            <Send className="w-4 h-4 mr-1" /> Jetzt an alle senden
           </Button>
         </>
       }
@@ -107,12 +107,12 @@ function DispatchPage() {
     >
       <div className="space-y-4">
         <div className="grid sm:grid-cols-3 gap-3">
-          <Kpi label="Aktif temizlikçi" value={data.cleaners.length} />
-          <Kpi label="Bugünkü görev" value={data.tasks.length} />
-          <Kpi label="Gönderilen mesaj" value={data.messages.length} />
+          <Kpi label="Aktive Reinigungskräfte" value={data.cleaners.length} />
+          <Kpi label="Aufgaben heute" value={data.tasks.length} />
+          <Kpi label="Gesendete Nachrichten" value={data.messages.length} />
         </div>
 
-        <Section title="Temizlikçiler">
+        <Section title="Reinigungskräfte">
           <div className="grid md:grid-cols-2 gap-3">
             {data.cleaners.map((c: any) => {
               const tasks = tasksByCleaner.get(c.id) ?? [];
@@ -128,14 +128,14 @@ function DispatchPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="font-medium">{c.full_name}</div>
-                      <div className="text-xs text-muted-foreground">{c.phone ?? "telefon yok"}</div>
+                      <div className="text-xs text-muted-foreground">{c.phone ?? "kein Telefon"}</div>
                     </div>
-                    {msg ? <Badge tone="success">Gönderildi · {new Date(msg.sent_at).toLocaleTimeString()}</Badge> : <Badge tone="muted">Henüz gönderilmedi</Badge>}
+                    {msg ? <Badge tone="success">Gesendet · {new Date(msg.sent_at).toLocaleTimeString()}</Badge> : <Badge tone="muted">Noch nicht gesendet</Badge>}
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge tone="warning">{counts.pending} bekliyor</Badge>
-                    <Badge tone="info">{counts.in_progress} sürüyor</Badge>
-                    <Badge tone="success">{counts.completed} bitti</Badge>
+                    <Badge tone="warning">{counts.pending} offen</Badge>
+                    <Badge tone="info">{counts.in_progress} läuft</Badge>
+                    <Badge tone="success">{counts.completed} fertig</Badge>
                   </div>
                   {tasks.length > 0 && (
                     <ul className="space-y-1.5 pt-1">
@@ -144,7 +144,7 @@ function DispatchPage() {
                           <div className="flex items-center justify-between gap-2">
                             <span className="truncate">
                               <span className="text-muted-foreground">{i + 1}.</span>{" "}
-                              <span className="font-medium">{t.properties?.name}</span> · Oda {t.rooms?.number}
+                              <span className="font-medium">{t.properties?.name}</span> · Zimmer {t.rooms?.number}
                             </span>
                             <TaskStatusBadge status={t.status} />
                           </div>
@@ -182,18 +182,18 @@ function DispatchPage() {
                   )}
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Button size="sm" variant="outline" onClick={() => sendOne.mutate(c.id)} disabled={sendOne.isPending || tasks.length === 0}>
-                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> {msg ? "Yeniden gönder" : "Şimdi gönder"}
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> {msg ? "Erneut senden" : "Jetzt senden"}
                     </Button>
                     {msg && (
                       <Button size="sm" variant="ghost" onClick={() => setPreviewBody(msg.body)}>
-                        <Eye className="w-3.5 h-3.5 mr-1" /> Mesajı gör
+                        <Eye className="w-3.5 h-3.5 mr-1" /> Nachricht ansehen
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => runDemo.mutate(c.id)} disabled={runDemo.isPending || tasks.length === 0}>
-                      <PlayCircle className="w-3.5 h-3.5 mr-1" /> Demo akışı
+                      <PlayCircle className="w-3.5 h-3.5 mr-1" /> Demo-Ablauf
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setReplyOpen({ cleanerId: c.id, name: c.full_name })} disabled={!msg}>
-                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> Metin cevap
+                      <MessageSquare className="w-3.5 h-3.5 mr-1" /> Antwort simulieren
                     </Button>
                   </div>
 
@@ -204,15 +204,15 @@ function DispatchPage() {
         </Section>
 
         {unassigned.length > 0 && (
-          <Section title={`Atanmamış görevler (${unassigned.length})`}>
+          <Section title={`Nicht zugewiesene Aufgaben (${unassigned.length})`}>
             <ul className="text-sm space-y-1">
               {unassigned.map((t: any) => (
                 <li key={t.id} className="text-muted-foreground">
-                  {t.properties?.name} - Oda {t.rooms?.number} · {t.status}
+                  {t.properties?.name} – Zimmer {t.rooms?.number} · {t.status}
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-muted-foreground mt-2">Bunlara temizlikçi atamak için Temizlik sayfasını kullanın.</p>
+            <p className="text-xs text-muted-foreground mt-2">Zum Zuweisen einer Reinigungskraft bitte die Seite „Reinigung" verwenden.</p>
           </Section>
         )}
       </div>
@@ -223,7 +223,7 @@ function DispatchPage() {
         initial={{ morningTime, timezone, enabled, template: s["dispatch.message_template"] || "" }}
         onSave={async (v) => {
           await saveSettings({ data: v });
-          toast.success("Ayarlar kaydedildi");
+          toast.success("Einstellungen gespeichert");
           setSettingsOpen(false);
           qc.invalidateQueries({ queryKey: ["dispatch"] });
         }}
@@ -231,14 +231,14 @@ function DispatchPage() {
 
       <Dialog open={previewBody != null} onOpenChange={(o) => !o && setPreviewBody(null)}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>WhatsApp Mesajı Önizleme</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>WhatsApp-Nachricht Vorschau</DialogTitle></DialogHeader>
           <pre className="text-sm bg-muted rounded-lg p-4 whitespace-pre-wrap font-sans">{previewBody}</pre>
         </DialogContent>
       </Dialog>
 
       <Dialog open={replyOpen != null} onOpenChange={(o) => !o && setReplyOpen(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{replyOpen?.name} adına cevap simüle et</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Antwort für {replyOpen?.name} simulieren</DialogTitle></DialogHeader>
           <ReplyForm
             onSend={(text) => {
               if (replyOpen) reply.mutate({ cleanerId: replyOpen.cleanerId, text });
@@ -271,11 +271,11 @@ function ActionBtn({
 
 function TaskStatusBadge({ status }: { status: string }) {
   const map: Record<string, { tone: "muted" | "info" | "success" | "warning" | "destructive"; label: string }> = {
-    pending: { tone: "muted", label: "pending" },
-    accepted: { tone: "info", label: "accepted" },
-    in_progress: { tone: "info", label: "in_progress" },
-    completed: { tone: "success", label: "completed" },
-    problem: { tone: "destructive", label: "problem" },
+    pending: { tone: "muted", label: "Offen" },
+    accepted: { tone: "info", label: "Angenommen" },
+    in_progress: { tone: "info", label: "Läuft" },
+    completed: { tone: "success", label: "Fertig" },
+    problem: { tone: "destructive", label: "Problem" },
   };
   const m = map[status] ?? { tone: "muted" as const, label: status };
   return <Badge tone={m.tone}>{m.label}</Badge>;
@@ -296,7 +296,7 @@ function ReplyForm({ onSend }: { onSend: (text: string) => void }) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        Örnek: <code>1 2</code> = 2. odayı başlat, <code>2 1</code> = 1. odayı bitir.
+        Beispiel: <code>1 2</code> = 2. Zimmer starten, <code>2 1</code> = 1. Zimmer abschließen.
       </p>
       <input
         value={text}
@@ -305,7 +305,7 @@ function ReplyForm({ onSend }: { onSend: (text: string) => void }) {
         placeholder="1 1"
       />
       <div className="flex justify-end">
-        <Button onClick={() => onSend(text)}>Gönder</Button>
+        <Button onClick={() => onSend(text)}>Senden</Button>
       </div>
     </div>
   );
@@ -326,29 +326,29 @@ function SettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <DialogHeader><DialogTitle>Görev Dağıtımı Ayarları</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Einstellungen Aufgabenverteilung</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <label className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border">
-            <span className="text-sm">Otomatik sabah bildirimi aktif</span>
+            <span className="text-sm">Automatische Morgen-Benachrichtigung aktiv</span>
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="grid gap-1">
-              <span className="text-xs text-muted-foreground">Saat (24s)</span>
+              <span className="text-xs text-muted-foreground">Uhrzeit (24h)</span>
               <input type="time" value={morningTime} onChange={(e) => setMorningTime(e.target.value)} className="px-3 py-2 border border-input rounded-md text-sm" />
             </label>
             <label className="grid gap-1">
-              <span className="text-xs text-muted-foreground">Zaman dilimi</span>
+              <span className="text-xs text-muted-foreground">Zeitzone</span>
               <input value={timezone} onChange={(e) => setTimezone(e.target.value)} className="px-3 py-2 border border-input rounded-md text-sm" />
             </label>
           </div>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Mesaj şablonu — kullanılabilir değişkenler: {"{ad}, {N}, {liste}"}</span>
+            <span className="text-xs text-muted-foreground">Nachrichtenvorlage — verfügbare Variablen: {"{ad}, {N}, {liste}"}</span>
             <textarea value={template} onChange={(e) => setTemplate(e.target.value)} rows={10} className="px-3 py-2 border border-input rounded-md text-sm font-mono" />
           </label>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>İptal</Button>
-            <Button onClick={() => onSave({ morningTime, timezone, enabled, template })}>Kaydet</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+            <Button onClick={() => onSave({ morningTime, timezone, enabled, template })}>Speichern</Button>
           </div>
         </div>
       </DialogContent>

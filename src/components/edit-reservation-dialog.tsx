@@ -158,7 +158,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
         </DialogHeader>
 
         {loading || !r ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">Yükleniyor…</div>
+          <div className="py-12 text-center text-sm text-muted-foreground">Laden…</div>
         ) : (
           <>
             {readOnly && (
@@ -301,11 +301,11 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
 
             <DialogFooter>
               <button onClick={() => onOpenChange(false)} disabled={saving}
-                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? "Schließen" : "İptal"}</button>
+                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? "Schließen" : "Abbrechen"}</button>
               {!readOnly && (
                 <button onClick={submit} disabled={saving}
                   className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
-                  {saving ? "Kaydediliyor…" : "Kaydet"}
+                  {saving ? "Speichern…" : "Speichern"}
                 </button>
               )}
             </DialogFooter>

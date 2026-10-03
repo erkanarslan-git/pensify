@@ -379,14 +379,14 @@ export function RoomDialog({
             </select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Varsayılan temizlikçi</label>
+            <label className="text-xs text-muted-foreground">Standard-Reinigungskraft</label>
             <select value={defaultCleanerId} onChange={(e) => setDefaultCleanerId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
               <option value="">— atanmamış —</option>
               {cleaners.filter((c) => c.active || c.id === defaultCleanerId).map((c) => (
                 <option key={c.id} value={c.id}>{c.full_name}</option>
               ))}
             </select>
-            <p className="text-[11px] text-muted-foreground mt-1">Her çıkışta bu temizlikçiye otomatik görev oluşturulur.</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Bei jedem Check-out wird automatisch eine Aufgabe für diese Reinigungskraft erstellt.</p>
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Notlar</label>
@@ -394,9 +394,9 @@ export function RoomDialog({
           </div>
         </div>
         <DialogFooter>
-          <button onClick={onClose} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">İptal</button>
+          <button onClick={onClose} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">Abbrechen</button>
           <button onClick={save} disabled={saving} className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm disabled:opacity-50">
-            {saving ? "Kaydediliyor…" : "Kaydet"}
+            {saving ? "Speichern…" : "Speichern"}
           </button>
         </DialogFooter>
       </DialogContent>

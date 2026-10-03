@@ -135,7 +135,7 @@ function MePage() {
   const start = useMutation({
     mutationFn: async () => {
       const c = ctx.data?.cleaner;
-      if (!c) throw new Error("Hesabın bir temizlikçi kaydına bağlı değil. Lütfen yöneticinle iletişime geç.");
+      if (!c) throw new Error("Dein Konto ist mit keinem Reinigungskraft-Profil verknüpft. Bitte wende dich an deinen Administrator.");
       if (!selectedProperty) throw new Error("Lokasyon seç");
       if (hasCoords) {
         if (geo.pending) throw new Error("Konum alınıyor, lütfen bekle…");
@@ -221,7 +221,7 @@ function MePage() {
 
         {!cleaner && (
           <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm">
-            Hesabın henüz bir temizlikçi kaydına bağlı değil. Lütfen yöneticinle iletişime geç.
+            Dein Konto ist noch mit keinem Reinigungskraft-Profil verknüpft. Bitte wende dich an deinen Administrator.
           </div>
         )}
 

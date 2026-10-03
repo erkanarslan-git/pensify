@@ -101,7 +101,7 @@ function CleanersPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
       setEditing(null);
-      toast.success("Kaydedildi");
+      toast.success("Gespeichert");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -114,7 +114,7 @@ function CleanersPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
       setDeleting(null);
-      toast.success("Silindi");
+      toast.success("Gelöscht");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -131,7 +131,7 @@ function CleanersPage() {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
       qc.invalidateQueries({ queryKey: ["admin-users"] });
       setLinking(null);
-      toast.success("Bağlantı güncellendi");
+      toast.success("Verknüpfung aktualisiert");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -160,11 +160,11 @@ function CleanersPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold tracking-tight">{c.full_name}</h3>
-                    <Badge tone={c.active ? "success" : "muted"}>{c.active ? "Aktif" : "Pasif"}</Badge>
+                    <Badge tone={c.active ? "success" : "muted"}>{c.active ? "Aktiv" : "Inaktiv"}</Badge>
                     {c.user_id ? (
-                      <Badge tone="success">Bağlı</Badge>
+                      <Badge tone="success">Verknüpft</Badge>
                     ) : (
-                      <Badge tone="warning">Hesap yok</Badge>
+                      <Badge tone="warning">Kein Konto</Badge>
                     )}
                   </div>
                   {c.phone && (
@@ -179,20 +179,20 @@ function CleanersPage() {
               </div>
               {c.hourly_rate != null && (
                 <div className="mt-3 text-sm">
-                  Saatlik: <strong>€{Number(c.hourly_rate).toFixed(2)}</strong>
+                  Stundenlohn: <strong>€{Number(c.hourly_rate).toFixed(2)}</strong>
                 </div>
               )}
               {c.notes && <div className="mt-2 text-xs text-muted-foreground">{c.notes}</div>}
               <div className="mt-4 pt-3 border-t border-border flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => setEditing(c)}>
-                  <Pencil className="w-3 h-3 mr-1" /> Düzenle
+                  <Pencil className="w-3 h-3 mr-1" /> Bearbeiten
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setLinking(c)}>
                   {c.user_id ? <Unlink className="w-3 h-3 mr-1" /> : <Link2 className="w-3 h-3 mr-1" />}
-                  Hesap bağla
+                  Konto verknüpfen
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setDeleting(c)}>
-                  <Trash2 className="w-3 h-3 mr-1" /> Sil
+                  <Trash2 className="w-3 h-3 mr-1" /> Löschen
                 </Button>
               </div>
             </div>
@@ -204,12 +204,12 @@ function CleanersPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing?.id ? "Personel düzenle" : "Yeni personel"}</DialogTitle>
+            <DialogTitle>{editing?.id ? "Mitarbeiter bearbeiten" : "Neuer Mitarbeiter"}</DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-3">
               <div>
-                <Label>Ad Soyad</Label>
+                <Label>Name</Label>
                 <Input value={editing.full_name ?? ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -218,36 +218,36 @@ function CleanersPage() {
                   <Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} />
                 </div>
                 <div>
-                  <Label>E-posta</Label>
+                  <Label>E-Mail</Label>
                   <Input value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Saatlik (€)</Label>
+                  <Label>Stundenlohn (€)</Label>
                   <Input type="number" step="0.01" value={editing.hourly_rate ?? ""} onChange={(e) => setEditing({ ...editing, hourly_rate: e.target.value ? Number(e.target.value) : null })} />
                 </div>
                 <div>
-                  <Label>Durum</Label>
+                  <Label>Status</Label>
                   <Select value={String(editing.active ?? true)} onValueChange={(v) => setEditing({ ...editing, active: v === "true" })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="true">Aktif</SelectItem>
-                      <SelectItem value="false">Pasif</SelectItem>
+                      <SelectItem value="true">Aktiv</SelectItem>
+                      <SelectItem value="false">Inaktiv</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div>
-                <Label>Not</Label>
+                <Label>Notiz</Label>
                 <Input value={editing.notes ?? ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditing(null)}>İptal</Button>
+            <Button variant="ghost" onClick={() => setEditing(null)}>Abbrechen</Button>
             <Button onClick={() => editing && save.mutate(editing)} disabled={!editing?.full_name || save.isPending}>
-              Kaydet
+              Speichern
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -257,21 +257,21 @@ function CleanersPage() {
       <Dialog open={!!linking} onOpenChange={(o) => !o && setLinking(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Kullanıcı hesabı bağla</DialogTitle>
+            <DialogTitle>Benutzerkonto verknüpfen</DialogTitle>
           </DialogHeader>
           {linking && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {linking.full_name} — QR ile vardiya başlatabilmesi için bir kullanıcı hesabına bağlanmalı.
-                Kişi önce <code>/auth</code> sayfasından kayıt olmalı.
+                {linking.full_name} — muss mit einem Benutzerkonto verknüpft sein, um per QR einzustempeln.
+                Die Person muss sich zuerst unter <code>/auth</code> registrieren.
               </p>
               <Select
                 value={linking.user_id ?? "none"}
                 onValueChange={(v) => link.mutate({ cleanerId: linking.id, userId: v === "none" ? null : v })}
               >
-                <SelectTrigger><SelectValue placeholder="Kullanıcı seç" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Benutzer wählen" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— Bağlı değil —</SelectItem>
+                  <SelectItem value="none">— Nicht verknüpft —</SelectItem>
                   {users.data?.map((u) => (
                     <SelectItem key={u.user_id} value={u.user_id}>
                       {u.full_name || u.email} ({u.email})
@@ -287,14 +287,14 @@ function CleanersPage() {
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Personeli sil?</AlertDialogTitle>
+            <AlertDialogTitle>Mitarbeiter löschen?</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleting?.full_name} kalıcı olarak silinecek. Geçmiş zaman kayıtları da silinir.
+              {deleting?.full_name} wird endgültig gelöscht. Auch vergangene Zeit-Einträge werden entfernt.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>Sil</AlertDialogAction>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>Löschen</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
