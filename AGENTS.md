@@ -8,3 +8,4 @@
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
 - .env is tracked and contains only publishable values (secrets live in the secret store). Why: hosted preview/publish builds need VITE_* at build time or the app fails to load.
+- Room types (with their rate plan) and bulk physical rooms are created only via the SECURITY DEFINER RPCs save_room_type_with_plan / create_rooms_bulk, which check org, property access and manage_rooms. Why: atomic writes and DB-enforced permissions.

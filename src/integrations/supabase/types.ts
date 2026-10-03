@@ -1970,6 +1970,15 @@ export type Database = {
         Args: { _booking: Json; _lines: Json }
         Returns: string
       }
+      create_rooms_bulk: {
+        Args: {
+          _floor: number
+          _numbers: string[]
+          _property_id: string
+          _room_type_id: string
+        }
+        Returns: number
+      }
       default_organization_id: { Args: never; Returns: string }
       has_organization_permission: {
         Args: { _org: string; _permission: string }
@@ -2055,6 +2064,16 @@ export type Database = {
           room_type_id: string
           total: number
         }[]
+      }
+      save_room_type_with_plan: {
+        Args: {
+          _capacity: number
+          _name: string
+          _price: number
+          _property_id: string
+          _room_type_id: string
+        }
+        Returns: string
       }
       transition_cleaning_task: {
         Args: {
