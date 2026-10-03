@@ -583,7 +583,6 @@ function CalendarPage() {
                           </Tooltip>
                         )}
                       </div>
-                      <div className="text-[11px] text-muted-foreground truncate">{p.name}</div>
                     </div>
                   </div>,
                 );
