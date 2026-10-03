@@ -12,16 +12,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { roomTypeVisual } from "@/lib/room-type-visuals";
 
 export const Route = createFileRoute("/_authenticated/rooms")({
-  head: () => ({ meta: [{ title: "Rooms — Pensify" }] }),
+  head: () => ({ meta: [
+    { title: "Zimmerübersicht — Pensify" },
+    { name: "description", content: "Zimmer nach Pension, Typ und Status verwalten." },
+    { property: "og:title", content: "Zimmerübersicht — Pensify" },
+    { property: "og:description", content: "Zimmer nach Pension, Typ und Status verwalten." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: RoomsPage,
 });
 
 export type RoomStatus = "available" | "occupied" | "cleaning_required" | "cleaning_in_progress" | "cleaned" | "checkout_today" | "maintenance";
 
 export interface Property { id: string; name: string; city_id: string | null; organization_id: string }
-export interface RoomType { id: string; name: string; property_id: string | null }
+export interface RoomType { id: string; name: string; code?: string; property_id: string | null }
 interface City { id: string; name: string }
 export interface Cleaner { id: string; full_name: string; active: boolean }
 export interface Room {
@@ -79,7 +88,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
         supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
-        supabase.from("room_types").select("id,name,property_id").order("name"),
+        supabase.from("room_types").select("id,name,code,property_id").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
       const critical = [["properties", pr.error], ["rooms", rm.error], ["cities", ci.error]] as const;
@@ -189,7 +198,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
           </p>
         </div>
       ) : (
-      <div className="space-y-6">
+        <TooltipProvider delayDuration={200}><div className="space-y-6">
         {cities.map((city) => {
           const cityProps = properties.filter((p) => p.city_id === city.id && (!pFilter || p.id === pFilter));
           if (cityProps.length === 0) return null;
@@ -220,24 +229,26 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 px-4 pb-4">
                           {propRooms.map((r) => {
                             const meta = statusMeta[r.status];
-                            const typeName = roomTypes.find((rt) => rt.id === r.room_type_id)?.name;
+                             const roomType = roomTypes.find((rt) => rt.id === r.room_type_id);
+                             const typeName = roomType?.name;
+                             const visual = roomTypeVisual(roomType?.code);
                             return (
-                              <div key={r.id} className="rounded-lg border border-border p-2.5 bg-background">
+                               <div key={r.id} className={`rounded-lg border ${visual.border} p-2.5 bg-background`}>
                                 <div className="flex items-center justify-between gap-1">
-                                  <span className="font-semibold text-sm">#{r.number} <span className="text-[10px] font-normal text-muted-foreground">{floorLabel(r.floor)}</span></span>
+                                   <Tooltip><TooltipTrigger asChild><span tabIndex={0} className="min-w-0 font-semibold text-sm break-words"><span className={`mr-1.5 inline-block h-2.5 w-2.5 rounded-full ${visual.marker}`} />#{r.number} <span className="text-[10px] font-normal text-muted-foreground">{floorLabel(r.floor)}</span></span></TooltipTrigger><TooltipContent>#{r.number} · {typeName ?? "Ohne Zimmertyp"}</TooltipContent></Tooltip>
                                   <div className="flex">
                                     <button onClick={() => setEditing(r)} className="p-1 rounded hover:bg-accent" title="Bearbeiten"><Pencil className="w-3 h-3" /></button>
                                     <button onClick={() => remove(r.id)} className="p-1 rounded hover:bg-destructive/10 text-destructive" title="Löschen"><Trash2 className="w-3 h-3" /></button>
                                   </div>
                                 </div>
-                                <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
-                                  <Users className="w-3 h-3" />{r.capacity} · {typeName ?? "ohne Typ"}
-                                </div>
-                                <div className="mt-1.5"><Badge tone={meta.tone}>{meta.label}</Badge></div>
-                              </div>
+                                 <div className="text-[11px] text-muted-foreground flex items-center gap-1 break-words">
+                                   <Users className="w-3 h-3" />{r.capacity} · {typeName ?? "ohne Typ"}
+                                 </div>
+                                 <div className="mt-1.5"><Badge tone={meta.tone}>{meta.label}</Badge></div>
+                               </div>
                             );
-                          })}
-                        </div>
+                           })}
+                         </div>
                       )}
                     </details>
                   );
@@ -246,7 +257,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
             </div>
           );
         })}
-      </div>
+      </div></TooltipProvider>
       )}
 
       <RoomDialog

@@ -355,7 +355,11 @@
     "mode_range": "Başlangıç no + adet",
     "mode_list": "Numara listesi",
     "numberList": "Numaralar (virgülle)",
-    "roomNumber": "Oda numarası"
+    "roomNumber": "Oda numarası",
+    "roomIdentity": "Oda {{number}} · {{type}}",
+    "codeHint": "{{code}}, {{name}} anlamına gelir",
+    "typeDistribution": "Oda tiplerine göre dağılım",
+    "demoPrice": "Geçici demo fiyatı"
   },
   "import": {
     "title": "Veri İçe Aktarma (WordPress)",

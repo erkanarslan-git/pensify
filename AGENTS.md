@@ -10,3 +10,4 @@
 - .env is tracked and contains only publishable values (secrets live in the secret store). Why: hosted preview/publish builds need VITE_* at build time or the app fails to load.
 - Room types, rate plans, occupancy prices, bulk rooms and WordPress imports are written only via SECURITY DEFINER RPCs (save_room_type_full, create_rooms_bulk, set_room_type_active, move_rooms_to_type, save_occupancy_prices, import_wp_rooms) that resolve org server-side and check property access + manage_rooms (import: owner/admin). Why: atomic writes and DB-enforced permissions.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
+- Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.

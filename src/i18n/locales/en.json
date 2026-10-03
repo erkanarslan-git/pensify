@@ -355,7 +355,11 @@
     "mode_range": "Start number + count",
     "mode_list": "Number list",
     "numberList": "Numbers (comma separated)",
-    "roomNumber": "Room number"
+    "roomNumber": "Room number",
+    "roomIdentity": "Room {{number}} · {{type}}",
+    "codeHint": "{{code}} means {{name}}",
+    "typeDistribution": "Room distribution by type",
+    "demoPrice": "Temporary demo price"
   },
   "import": {
     "title": "Data import (WordPress)",
