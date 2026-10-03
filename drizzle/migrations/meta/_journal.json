@@ -141,6 +141,13 @@
       "when": 1791032183109,
       "tag": "0019_add_expedia_channel",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791034498507,
+      "tag": "0020_room_type_and_bulk_rooms_rpcs",
+      "breakpoints": true
     }
   ]
 }
