@@ -32,6 +32,7 @@ import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
 import { Route as AuthenticatedSettingsLogsRouteImport } from './routes/_authenticated/settings.logs'
+import { Route as AuthenticatedSettingsImportRouteImport } from './routes/_authenticated/settings.import'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
@@ -163,6 +164,12 @@ const AuthenticatedSettingsLogsRoute =
     path: '/logs',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedSettingsImportRoute =
+  AuthenticatedSettingsImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
   id: '/clock/$token',
   path: '/clock/$token',
@@ -237,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/settings/import': typeof AuthenticatedSettingsImportRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -270,6 +278,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/settings/import': typeof AuthenticatedSettingsImportRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -305,6 +314,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/_authenticated/settings/import': typeof AuthenticatedSettingsImportRoute
   '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/time-tracking'
     | '/api/chat'
     | '/clock/$token'
+    | '/settings/import'
     | '/settings/logs'
     | '/properties/'
     | '/properties/$id/qr'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/'
     | '/clock/$token'
+    | '/settings/import'
     | '/settings/logs'
     | '/properties'
     | '/properties/$id/qr'
@@ -407,6 +419,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
+    | '/_authenticated/settings/import'
     | '/_authenticated/settings/logs'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
@@ -595,6 +608,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsLogsRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/settings/import': {
+      id: '/_authenticated/settings/import'
+      path: '/import'
+      fullPath: '/settings/import'
+      preLoaderRoute: typeof AuthenticatedSettingsImportRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/clock/$token': {
       id: '/_authenticated/clock/$token'
       path: '/clock/$token'
@@ -662,10 +682,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsImportRoute: typeof AuthenticatedSettingsImportRoute
   AuthenticatedSettingsLogsRoute: typeof AuthenticatedSettingsLogsRoute
 }
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsImportRoute: AuthenticatedSettingsImportRoute,
   AuthenticatedSettingsLogsRoute: AuthenticatedSettingsLogsRoute,
 }
 

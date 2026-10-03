@@ -2,7 +2,7 @@ import { createFileRoute, useRouterState, Outlet } from "@tanstack/react-router"
 import { AppShell } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText, User as UserIcon } from "lucide-react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText, User as UserIcon, FileUp } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
 });
 
-type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs";
+type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import";
 
 const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
   { key: "general", label: "Allgemein", icon: Globe },
@@ -25,6 +25,7 @@ const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
   { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
   { key: "security", label: "Sicherheit", icon: Shield },
   { key: "logs", label: "Audit Logs", icon: ScrollText },
+  { key: "import", label: "Datenimport", icon: FileUp },
 ];
 
 function SettingsLayout() {
@@ -35,6 +36,7 @@ function SettingsLayout() {
 
   useEffect(() => {
     if (pathname === "/settings/logs") setActiveTab("logs");
+    else if (pathname === "/settings/import") setActiveTab("import");
     else setActiveTab("general");
   }, [pathname]);
 
@@ -53,6 +55,8 @@ function SettingsLayout() {
                 onClick={() => {
                   if (x.key === "logs") {
                     navigate({ to: "/settings/logs" });
+                  } else if (x.key === "import") {
+                    navigate({ to: "/settings/import" });
                   } else {
                     setActiveTab(x.key);
                     if (isChildRoute) navigate({ to: "/settings" });
