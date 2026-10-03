@@ -41,8 +41,9 @@ function validate(f: Record<FormKey, string>): string | null {
   for (const k of ["phone", "account_phone"] as const) {
     if (t(k).replace(/\D/g, "").length < 5) return `${k === "phone" ? "Telefon" : "Telefon (Konto)"}: bitte eine echte Telefonnummer (mind. 5 Ziffern) eingeben.`;
   }
+  const emailLabels = { contact_email: "Kontakt-E-Mail", booking_email: "Buchungs-E-Mail", email: "E-Mail (Konto)" } as const;
   for (const k of ["contact_email", "booking_email", "email"] as const) {
-    if (!EMAIL_RE.test(t(k))) return "Bitte gültige E-Mail-Adressen eingeben.";
+    if (!EMAIL_RE.test(t(k))) return `${emailLabels[k]}: keine gültige E-Mail-Adresse (z. B. name@gmail.com).`;
   }
   return null;
 }
