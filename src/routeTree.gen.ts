@@ -38,6 +38,7 @@ import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public
 import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
 import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/public/hooks/dispatch-morning'
 import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
+import { Route as AuthenticatedPropertiesIdRoomsRouteImport } from './routes/_authenticated/properties.$id.rooms'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 
@@ -195,6 +196,12 @@ const ApiPublicHooksChannelOutboxRoute =
     path: '/api/public/hooks/channel-outbox',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedPropertiesIdRoomsRoute =
+  AuthenticatedPropertiesIdRoomsRouteImport.update({
+    id: '/properties/$id/rooms',
+    path: '/properties/$id/rooms',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPropertiesIdQrRoute =
   AuthenticatedPropertiesIdQrRouteImport.update({
     id: '/properties/$id/qr',
@@ -233,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
   '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
@@ -265,6 +273,7 @@ export interface FileRoutesByTo {
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
   '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
@@ -299,6 +308,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
+  '/_authenticated/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
   '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/settings/logs'
     | '/properties/'
     | '/properties/$id/qr'
+    | '/properties/$id/rooms'
     | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/settings/logs'
     | '/properties'
     | '/properties/$id/qr'
+    | '/properties/$id/rooms'
     | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
@@ -398,6 +410,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/logs'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
+    | '/_authenticated/properties/$id/rooms'
     | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
     | '/api/public/sync/manual'
@@ -624,6 +637,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksChannelOutboxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/properties/$id/rooms': {
+      id: '/_authenticated/properties/$id/rooms'
+      path: '/properties/$id/rooms'
+      fullPath: '/properties/$id/rooms'
+      preLoaderRoute: typeof AuthenticatedPropertiesIdRoomsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/properties/$id/qr': {
       id: '/_authenticated/properties/$id/qr'
       path: '/properties/$id/qr'
@@ -675,6 +695,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
   AuthenticatedPropertiesIndexRoute: typeof AuthenticatedPropertiesIndexRoute
   AuthenticatedPropertiesIdQrRoute: typeof AuthenticatedPropertiesIdQrRoute
+  AuthenticatedPropertiesIdRoomsRoute: typeof AuthenticatedPropertiesIdRoomsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -698,6 +719,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
   AuthenticatedPropertiesIndexRoute: AuthenticatedPropertiesIndexRoute,
   AuthenticatedPropertiesIdQrRoute: AuthenticatedPropertiesIdQrRoute,
+  AuthenticatedPropertiesIdRoomsRoute: AuthenticatedPropertiesIdRoomsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
