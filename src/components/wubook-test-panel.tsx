@@ -31,6 +31,22 @@ const FIELDS = [
 ] as const;
 type FormKey = (typeof FIELDS)[number][0];
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function validate(f: Record<FormKey, string>): string | null {
+  const t = (k: FormKey) => f[k].trim();
+  if (t("name").length < 2) return "Name der Unterkunft: mindestens 2 Zeichen.";
+  if (t("address").length < 2) return "Adresse: mindestens 2 Zeichen.";
+  if (t("zip").length < 3) return "PLZ: mindestens 3 Zeichen.";
+  if (t("city").length < 2) return "Stadt: mindestens 2 Zeichen.";
+  for (const k of ["phone", "account_phone"] as const) {
+    if (t(k).replace(/\D/g, "").length < 5) return `${k === "phone" ? "Telefon" : "Telefon (Konto)"}: bitte eine echte Telefonnummer (mind. 5 Ziffern) eingeben.`;
+  }
+  for (const k of ["contact_email", "booking_email", "email"] as const) {
+    if (!EMAIL_RE.test(t(k))) return "Bitte gültige E-Mail-Adressen eingeben.";
+  }
+  return null;
+}
+
 const fmt = (s?: unknown) => (typeof s === "string" ? new Date(s).toLocaleString("de-DE") : "—");
 
 function Step({ ok, label }: { ok: boolean | null; label: string }) {
@@ -77,7 +93,7 @@ export function WuBookTestPanel() {
 
   async function act(key: string, fn: () => Promise<void>) {
     setBusy(key);
-    try { await fn(); } catch { toast.error("Aktion fehlgeschlagen"); } finally { setBusy(null); refresh(); }
+    try { await fn(); } catch (e) { toast.error(`Aktion fehlgeschlagen: ${e instanceof Error ? e.message.slice(0, 160) : "unbekannter Fehler"}`); } finally { setBusy(null); refresh(); }
   }
 
   const acc = st?.testAccount;
@@ -107,7 +123,7 @@ export function WuBookTestPanel() {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">Fest: Land DE · Zeitzone Europe/Berlin · Sprache de · Währung EUR</p>
-              <Button size="sm" onClick={() => setReviewing(true)} disabled={FIELDS.some(([k]) => !form[k].trim())}>Testunterkunft erstellen…</Button>
+              <Button size="sm" onClick={() => { const err = validate(form); if (err) { toast.error(err); return; } setReviewing(true); }} disabled={FIELDS.some(([k]) => !form[k].trim())}>Testunterkunft erstellen…</Button>
             </>
           ) : (
             <div className="space-y-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
