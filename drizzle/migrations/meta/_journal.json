@@ -127,6 +127,13 @@
       "when": 1791022528289,
       "tag": "0017_grant_tenant_columns_select",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791023790697,
+      "tag": "0018_room_type_availability",
+      "breakpoints": true
     }
   ]
 }

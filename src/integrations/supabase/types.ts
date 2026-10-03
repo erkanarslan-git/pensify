@@ -2047,6 +2047,15 @@ export type Database = {
         }[]
       }
       room_capacity: { Args: { _room_id: string }; Returns: number }
+      room_type_availability: {
+        Args: { _date: string; _property: string }
+        Returns: {
+          booked: number
+          free: number
+          room_type_id: string
+          total: number
+        }[]
+      }
       transition_cleaning_task: {
         Args: {
           _task_id: string
