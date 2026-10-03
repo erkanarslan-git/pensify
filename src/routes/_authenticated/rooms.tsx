@@ -191,7 +191,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
           </p>
         </div>
       ) : (
-       <TooltipProvider delayDuration={200}><div className="space-y-6">
+       <div className="space-y-6">
         {cities.map((city) => {
           const cityProps = properties.filter((p) => p.city_id === city.id && (!pFilter || p.id === pFilter));
           if (cityProps.length === 0) return null;
@@ -240,8 +240,8 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
                                  <div className="mt-1.5"><Badge tone={meta.tone}>{meta.label}</Badge></div>
                                </div>
                             );
-                          })}
-       </div></TooltipProvider>
+                           })}
+                         </div>
                       )}
                     </details>
                   );
