@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo } from "react";
-import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown } from "lucide-react";
+import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
@@ -9,6 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sourceColor, sourceLabel, normalizeChannel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 import { usePermissions } from "@/hooks/use-permissions";
+import { toast } from "sonner";
+import { ReservationTrash } from "@/components/reservation-trash";
+import { formatDateDE } from "@/lib/date-de";
 
 type Search = { property?: string };
 
@@ -32,7 +35,7 @@ interface Row {
   property: { id: string; name: string } | null;
 }
 
-type Period = "upcoming" | "today" | "past" | "all";
+type Period = "upcoming" | "today" | "past" | "all" | "trash";
 
 const statusLabel: Record<string, { label: string; tone: "success" | "info" | "warning" | "destructive" | "muted" }> = {
   confirmed: { label: "Bestätigt", tone: "success" },
@@ -43,10 +46,7 @@ const statusLabel: Record<string, { label: string; tone: "success" | "info" | "w
   no_show: { label: "No-Show", tone: "destructive" },
 };
 
-function fmt(d: string) {
-  const [y, m, day] = d.split("-");
-  return `${day}.${m}.${y.slice(2)}`;
-}
+const fmt = formatDateDE;
 
 function ReservationsPage() {
   const { t } = useTranslation();
@@ -68,6 +68,7 @@ function ReservationsPage() {
       const { data, error } = await supabase
         .from("reservations")
         .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,room:rooms(number,property_id),property:properties(id,name)")
+        .is("deleted_at", null)
         .order("check_in", { ascending: true })
         .limit(1000);
       if (error) throw error;
@@ -112,11 +113,21 @@ function ReservationsPage() {
 
   const isLocked = (r: Row) => r.check_out <= today && !isAdmin;
 
+  const softDelete = async (r: Row) => {
+    const reason = window.prompt(`Buchung von ${r.guest_name} löschen?\nSie landet im Papierkorb (nur Admins können sie wiederherstellen).\n\nGrund (optional):`, "");
+    if (reason === null) return;
+    const { error } = await (supabase as any).rpc("soft_delete_reservation", { _id: r.id, _reason: reason });
+    if (error) { toast.error(error.code === "42501" ? "Keine Berechtigung zum Löschen." : "Löschen fehlgeschlagen."); return; }
+    toast.success("Buchung in den Papierkorb verschoben");
+    refetch();
+  };
+
   const periods: { id: Period; label: string }[] = [
     { id: "upcoming", label: "Aktuell & kommend" },
     { id: "today", label: "Heute im Haus" },
     { id: "past", label: "Vergangen" },
     { id: "all", label: "Alle" },
+    ...(isAdmin ? [{ id: "trash" as Period, label: "Papierkorb" }] : []),
   ];
 
   return (
@@ -174,7 +185,9 @@ function ReservationsPage() {
         </select>
       </div>
 
-      {error ? (
+      {period === "trash" && isAdmin ? (
+        <ReservationTrash onChanged={() => refetch()} />
+      ) : error ? (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
           Buchungen konnten nicht geladen werden.{" "}
           <button onClick={() => refetch()} className="underline font-medium">Erneut versuchen</button>
@@ -208,9 +221,10 @@ function ReservationsPage() {
                     return (
                       <div
                         key={r.id}
-                        className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm ${r.check_out < today ? "opacity-70" : ""}`}
+                        className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm border-l-4 ${r.check_out < today ? "opacity-70" : ""}`}
+                        style={{ borderLeftColor: sourceColor(r.channel), background: `color-mix(in oklab, ${sourceColor(r.channel)} 10%, transparent)` }}
                       >
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: sourceColor(r.channel) }} title={sourceLabel(r.channel)} />
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 text-primary-foreground" style={{ background: sourceColor(r.channel) }}>{sourceLabel(r.channel)}</span>
                         <div className="min-w-[160px] flex-1">
                           <div className="font-medium">{r.guest_name}</div>
                           <div className="text-xs text-muted-foreground">
@@ -218,7 +232,7 @@ function ReservationsPage() {
                           </div>
                         </div>
                         <span className="w-16 text-muted-foreground">#{r.room?.number ?? "—"}</span>
-                        <span className="w-36 tabular-nums">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
+                        <span className="w-44 tabular-nums">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
                         <span className="w-24"><Badge tone={st.tone}>{st.label}</Badge></span>
                         <span className="w-20 text-right font-medium tabular-nums">€{Number(r.revenue ?? 0).toLocaleString("de-DE")}</span>
                         <button
@@ -230,6 +244,15 @@ function ReservationsPage() {
                           {locked ? <Lock className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
                           {locked ? "Gesperrt" : "Bearbeiten"}
                         </button>
+                        {!locked && (
+                          <button
+                            onClick={() => softDelete(r)}
+                            title="Löschen (in den Papierkorb)"
+                            className="inline-flex items-center px-2 py-1 rounded-md border border-input bg-card text-xs text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     );
                   })}

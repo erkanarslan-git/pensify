@@ -1332,6 +1332,9 @@ export type Database = {
           check_out: string
           created_at: string
           created_by: string | null
+          delete_reason: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           discount_amount: number | null
           discount_reason: string | null
           external_id: string | null
@@ -1350,6 +1353,9 @@ export type Database = {
           revenue: number
           room_id: string
           status: Database["public"]["Enums"]["reservation_status"]
+          status_before_delete:
+            | Database["public"]["Enums"]["reservation_status"]
+            | null
           updated_at: string
         }
         Insert: {
@@ -1359,6 +1365,9 @@ export type Database = {
           check_out: string
           created_at?: string
           created_by?: string | null
+          delete_reason?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           discount_amount?: number | null
           discount_reason?: string | null
           external_id?: string | null
@@ -1377,6 +1386,9 @@ export type Database = {
           revenue?: number
           room_id: string
           status?: Database["public"]["Enums"]["reservation_status"]
+          status_before_delete?:
+            | Database["public"]["Enums"]["reservation_status"]
+            | null
           updated_at?: string
         }
         Update: {
@@ -1386,6 +1398,9 @@ export type Database = {
           check_out?: string
           created_at?: string
           created_by?: string | null
+          delete_reason?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           discount_amount?: number | null
           discount_reason?: string | null
           external_id?: string | null
@@ -1404,6 +1419,9 @@ export type Database = {
           revenue?: number
           room_id?: string
           status?: Database["public"]["Enums"]["reservation_status"]
+          status_before_delete?:
+            | Database["public"]["Enums"]["reservation_status"]
+            | null
           updated_at?: string
         }
         Relationships: [
@@ -1557,6 +1575,7 @@ export type Database = {
           id: string
           import_batch_id: string | null
           import_needs_review: boolean
+          key_code: string | null
           notes: string | null
           number: string
           organization_id: string
@@ -1579,6 +1598,7 @@ export type Database = {
           id?: string
           import_batch_id?: string | null
           import_needs_review?: boolean
+          key_code?: string | null
           notes?: string | null
           number: string
           organization_id?: string
@@ -1601,6 +1621,7 @@ export type Database = {
           id?: string
           import_batch_id?: string | null
           import_needs_review?: boolean
+          key_code?: string | null
           notes?: string | null
           number?: string
           organization_id?: string
@@ -2140,6 +2161,7 @@ export type Database = {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      purge_reservation: { Args: { _id: string }; Returns: undefined }
       quote_room_price:
         | {
             Args: { _check_in: string; _check_out: string; _room_id: string }
@@ -2172,6 +2194,7 @@ export type Database = {
           name: string
         }[]
       }
+      restore_reservation: { Args: { _id: string }; Returns: undefined }
       room_capacity: { Args: { _room_id: string }; Returns: number }
       room_type_availability: {
         Args: { _date: string; _property: string }
@@ -2216,6 +2239,10 @@ export type Database = {
       }
       set_room_type_active: {
         Args: { _active: boolean; _room_type_id: string }
+        Returns: undefined
+      }
+      soft_delete_reservation: {
+        Args: { _id: string; _reason?: string }
         Returns: undefined
       }
       transition_cleaning_task: {

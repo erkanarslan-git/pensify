@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, Kpi, Section, Badge } from "@/components/app-shell";
+import { AppShell, Section, Badge } from "@/components/app-shell";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { sourceColor, sourceLabel } from "@/lib/guest-color";
+import { formatDateDE } from "@/lib/date-de";
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell, Legend,
@@ -30,17 +31,19 @@ function Dashboard() {
   const { data, refetch } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [rooms, tasks, res, props] = await Promise.all([
-        supabase.from("rooms").select("id,number,status,property:properties(name)"),
+      const [rooms, tasks, res, props, inHouse] = await Promise.all([
+        supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name)"),
         supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").gte("check_out", today).neq("status", "cancelled").order("check_out").limit(6),
         supabase.from("properties").select("id"),
+        supabase.from("reservations").select("room_id,check_out").lte("check_in", today).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)"),
       ]);
       return {
         rooms: (rooms.data ?? []) as any[],
         tasks: (tasks.data ?? []) as any[],
         upcoming: (res.data ?? []) as any[],
         propsCount: (props.data ?? []).length,
+        inHouse: (inHouse.data ?? []) as { room_id: string; check_out: string }[],
       };
     },
   });
@@ -48,14 +51,18 @@ function Dashboard() {
   const rooms = data?.rooms ?? [];
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
+  const inHouse = data?.inHouse ?? [];
+  // Occupancy comes from today's reservations, not from the static room label.
+  const occupiedIds = new Set(inHouse.filter((r) => r.check_out > today).map((r) => r.room_id));
+  const checkoutIds = new Set(inHouse.filter((r) => r.check_out === today).map((r) => r.room_id));
   const totalRooms = rooms.length;
-  const occupied = rooms.filter((r) => r.status === "occupied").length;
-  const available = rooms.filter((r) => r.status === "available").length;
-  const cleaningPending = tasks.filter((t) => t.status === "pending").length;
+  const occupied = occupiedIds.size;
+  const maintenance = rooms.filter((r) => r.status === "maintenance").length;
+  const available = rooms.filter((r) => !occupiedIds.has(r.id) && r.status !== "maintenance").length;
+  const cleaningPending = tasks.filter((t) => t.status === "pending" || t.status === "accepted").length;
   const cleaningInProgress = tasks.filter((t) => t.status === "in_progress").length;
   const completedToday = tasks.filter((t) => t.status === "completed" && (t.due_at ?? "").slice(0, 10) === today).length;
-  const checkoutToday = rooms.filter((r) => r.status === "checkout_today").length;
-  const maintenance = rooms.filter((r) => r.status === "maintenance").length;
+  const checkoutToday = checkoutIds.size;
 
   // Weekly occupancy from reservations (last 7 days incl. today)
   const { data: weekRes } = useQuery({
@@ -98,15 +105,37 @@ function Dashboard() {
         </button>
       }
     >
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi label={t("dashboard.totalRooms")} value={totalRooms} hint={t("dashboard.properties", { count: data?.propsCount ?? 0 })} />
-        <Kpi label={t("dashboard.occupied")} value={occupied} hint={t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 })} accent="info" />
-        <Kpi label={t("dashboard.available")} value={available} accent="success" />
-        <Kpi label={t("dashboard.cleaningPending")} value={cleaningPending} accent="warning" />
-        <Kpi label={t("dashboard.cleaningInProgress")} value={cleaningInProgress} accent="primary" />
-        <Kpi label={t("dashboard.completedToday")} value={completedToday} accent="success" />
-        <Kpi label={t("dashboard.checkoutsToday")} value={checkoutToday} accent="warning" />
-        <Kpi label={t("dashboard.maintenance")} value={maintenance} accent="destructive" />
+      <div className="relative">
+        <div aria-hidden className="pointer-events-none absolute -top-24 -left-16 w-80 h-80 rounded-full bg-primary/25 blur-3xl animate-glow-drift" />
+        <div aria-hidden className="pointer-events-none absolute -top-10 right-0 w-72 h-72 rounded-full bg-info/20 blur-3xl animate-glow-drift [animation-delay:-6s]" />
+        <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: t("dashboard.totalRooms"), value: totalRooms, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), tone: "primary", to: "/rooms", search: {} },
+            { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), tone: "info", to: "/reservations", search: {} },
+            { label: t("dashboard.available"), value: available, tone: "success", to: "/rooms", search: { status: "available" } },
+            { label: t("dashboard.cleaningPending"), value: cleaningPending, tone: "warning", to: "/cleaning", search: {} },
+            { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, tone: "primary", to: "/cleaning", search: {} },
+            { label: t("dashboard.completedToday"), value: completedToday, tone: "success", to: "/cleaning", search: {} },
+            { label: t("dashboard.checkoutsToday"), value: checkoutToday, tone: "warning", to: "/reservations", search: {} },
+            { label: t("dashboard.maintenance"), value: maintenance, tone: "destructive", to: "/rooms", search: { status: "maintenance" } },
+          ].map((k, i) => (
+            <Link
+              key={k.label}
+              to={k.to as any}
+              search={k.search as any}
+              style={{ animationDelay: `${i * 60}ms` }}
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl p-5 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated animate-rise-in"
+            >
+              <div aria-hidden className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-2xl opacity-40 group-hover:opacity-80 transition-opacity bg-${k.tone}`} />
+              <div className="relative flex items-start justify-between">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{k.label}</div>
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className={`relative mt-2 text-4xl font-semibold tracking-tight tabular-nums text-${k.tone}`}>{k.value}</div>
+              {k.hint && <div className="relative mt-1 text-xs text-muted-foreground">{k.hint}</div>}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mt-6">
@@ -183,7 +212,7 @@ function Dashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">{r.check_out}</div>
+                    <div className="text-sm font-medium">{formatDateDE(r.check_out)}</div>
                     <div className="text-xs text-muted-foreground">{r.guests_count} {t("common.guests")}</div>
                   </div>
                 </div>
