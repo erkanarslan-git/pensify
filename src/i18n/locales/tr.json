@@ -475,7 +475,13 @@
     "bulkUpdated": "{{count}} oda güncellendi.",
     "page": "{{page}} / {{pages}}. sayfa",
     "previous": "Önceki",
-    "next": "Sonraki"
+    "next": "Sonraki",
+    "guestPricesTitle": "Kişi sayısına göre gecelik fiyat",
+    "guestPriceLabel": "{{n}} kişi (€)",
+    "guestPricesHint": "Bu oda tipindeki tüm odalara uygulanır. Boş = temel fiyat.",
+    "invalidPrice": "Geçersiz fiyat.",
+    "pricesFailed": "Oda kaydedildi, fiyatlar kaydedilemedi.",
+    "noRatePlan": "Bu oda tipi için henüz fiyat tanımlı değil."
   },
   "cleaning": {
     "subtitle": "{{open}} açık · {{unassigned}} görevlisiz",

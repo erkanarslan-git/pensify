@@ -475,7 +475,13 @@
     "bulkUpdated": "{{count}} rooms updated.",
     "page": "Page {{page}} of {{pages}}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "guestPricesTitle": "Nightly price by number of guests",
+    "guestPriceLabel": "{{n}} guest(s) (€)",
+    "guestPricesHint": "Applies to all rooms of this room type. Empty = base price.",
+    "invalidPrice": "Invalid price.",
+    "pricesFailed": "Room saved, but prices could not be saved.",
+    "noRatePlan": "No price set up for this room type yet."
   },
   "cleaning": {
     "subtitle": "{{open}} open · {{unassigned}} without cleaner",

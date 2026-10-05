@@ -475,7 +475,13 @@
     "bulkUpdated": "{{count}} Zimmer aktualisiert.",
     "page": "Seite {{page}} von {{pages}}",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "guestPricesTitle": "Preis pro Nacht nach Personenzahl",
+    "guestPriceLabel": "{{n}} Pers. (€)",
+    "guestPricesHint": "Gilt für alle Zimmer dieses Zimmertyps. Leer = Grundpreis.",
+    "invalidPrice": "Ungültiger Preis.",
+    "pricesFailed": "Zimmer gespeichert, Preise konnten nicht gespeichert werden.",
+    "noRatePlan": "Für diesen Zimmertyp ist noch kein Preis angelegt."
   },
   "cleaning": {
     "subtitle": "{{open}} offen · {{unassigned}} ohne Reinigungskraft",
