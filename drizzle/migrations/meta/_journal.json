@@ -204,6 +204,13 @@
       "when": 1791191588770,
       "tag": "0028_booking_customer_type_and_guest_prices",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1791195826584,
+      "tag": "0029_wubook_multiple_accounts_per_org",
+      "breakpoints": true
     }
   ]
 }

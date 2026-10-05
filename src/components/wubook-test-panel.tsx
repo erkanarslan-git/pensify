@@ -18,7 +18,7 @@ import {
   fetchWuBookNewBookingsReadOnly,
 } from "@/lib/wubook.functions";
 
-const FIELDS = [
+export const FIELDS = [
   ["name", "Name der Unterkunft"],
   ["address", "Adresse"],
   ["zip", "PLZ"],
@@ -31,11 +31,11 @@ const FIELDS = [
   ["email", "E-Mail (Konto)"],
   ["account_phone", "Telefon (Konto)"],
 ] as const;
-type FormKey = (typeof FIELDS)[number][0];
+export type FormKey = (typeof FIELDS)[number][0];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN: Partial<Record<FormKey, number>> = { name: 2, address: 2, zip: 3, city: 2, first_name: 1, last_name: 1 };
-function fieldError(k: FormKey, raw: string): string | null {
+export function fieldError(k: FormKey, raw: string): string | null {
   const v = raw.trim();
   if (!v) return "Pflichtfeld";
   if (k === "phone" || k === "account_phone") {
@@ -53,7 +53,7 @@ function fieldError(k: FormKey, raw: string): string | null {
   if (m && v.length < m) return `Mindestens ${m} Zeichen`;
   return null;
 }
-function validate(f: Record<FormKey, string>): string | null {
+export function validate(f: Record<FormKey, string>): string | null {
   for (const [k, label] of FIELDS) {
     const e = fieldError(k, f[k]);
     if (e) return `${label}: ${e}`;
