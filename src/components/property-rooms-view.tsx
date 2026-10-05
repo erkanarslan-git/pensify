@@ -536,8 +536,22 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-2">
       <div className="font-semibold text-sm">{type.name} <span className="text-xs text-muted-foreground font-normal">· {type.price != null ? t("propertyRooms.perNight", { price: type.price.toFixed(2) }) : t("propertyRooms.noPrice")}</span></div>
-      {type.price == null ? <p className="text-xs text-muted-foreground">{t("propertyRooms.err.no_rate_plan")}</p> : (
-        <div className="flex flex-wrap items-end gap-2 text-xs">
+      {type.price == null ? <p className="text-xs text-muted-foreground">{t("propertyRooms.err.no_rate_plan")}</p> : (<>
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium">{t("propertyRooms.stdGuestPrices")}</p>
+          <p className="text-[11px] text-muted-foreground">{t("propertyRooms.stdGuestPricesHint")}</p>
+          <div className="flex flex-wrap items-end gap-2 text-xs">
+            {guests.map((g) => (
+              <label key={g} className="space-y-1 w-28"><span className="block text-muted-foreground">{t("propertyRooms.guestPrice", { n: g })}</span>
+                <input type="number" min={0} step="0.01" className={input} placeholder={type.price?.toFixed(2)} value={std[g] ?? ""} disabled={!canManage}
+                  onChange={(e) => setStd((s) => ({ ...s, [g]: e.target.value }))} /></label>
+            ))}
+            {canManage && <button disabled={stdBusy} onClick={saveStd} className={primaryBtn}>{stdBusy ? t("propertyRooms.saving") : t("propertyRooms.save")}</button>}
+          </div>
+        </div>
+        <details className="pt-2 border-t border-border">
+          <summary className="text-xs font-medium cursor-pointer">{t("propertyRooms.seasonPrices")}</summary>
+        <div className="flex flex-wrap items-end gap-2 text-xs mt-2">
           <label className="space-y-1"><span className="block text-muted-foreground">{t("propertyRooms.from")}</span>
             <input type="date" className={input} value={from} onChange={(e) => setFrom(e.target.value)} disabled={!canManage} /></label>
           <label className="space-y-1"><span className="block text-muted-foreground">{t("propertyRooms.to")}</span>
@@ -549,7 +563,8 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
           ))}
           {canManage && <button disabled={busy} onClick={save} className={primaryBtn}>{busy ? t("propertyRooms.saving") : t("propertyRooms.save")}</button>}
         </div>
-      )}
+        </details>
+      </>)}
     </div>
   );
 }
