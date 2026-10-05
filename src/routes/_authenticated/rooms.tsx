@@ -299,6 +299,7 @@ export function RoomDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const [number, setNumber] = useState("");
   const [capacity, setCapacity] = useState(2);
   const [floor, setFloor] = useState<string>("0");
@@ -309,6 +310,7 @@ export function RoomDialog({
   const [defaultCleanerId, setDefaultCleanerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [roomTypeId, setRoomTypeId] = useState<string>("");
+  const [showKeyCode, setShowKeyCode] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -322,6 +324,7 @@ export function RoomDialog({
       setKeyCode(room.key_code ?? "");
       setDefaultCleanerId(room.default_cleaner_id ?? "");
       setRoomTypeId(room.room_type_id ?? "");
+      setShowKeyCode(false);
     } else {
       setNumber("");
       setCapacity(2);
@@ -332,15 +335,16 @@ export function RoomDialog({
       setKeyCode("");
       setDefaultCleanerId("");
       setRoomTypeId("");
+      setShowKeyCode(false);
     }
   }, [open, room, propertyId, properties]);
 
   const save = async () => {
-    if (!number.trim() || !propId) { toast.error("Oda no ve lokasyon zorunlu"); return; }
+    if (!number.trim() || !propId) { toast.error(t("rooms.required")); return; }
     setSaving(true);
     const f = floor.trim() === "" ? null : Number(floor);
     if (f !== null && (!Number.isInteger(f) || f < 0 || f > 50)) {
-      toast.error("Geçersiz kat"); setSaving(false); return;
+      toast.error(t("rooms.invalidFloor")); setSaving(false); return;
     }
     const payload = {
       property_id: propId,
@@ -358,78 +362,84 @@ export function RoomDialog({
       ? await supabase.from("rooms").update(payload).eq("id", room.id)
       : await supabase.from("rooms").insert(payload);
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(room ? "Oda güncellendi" : "Oda eklendi");
+    if (error) { toast.error(t("rooms.actionFailed")); return; }
+    toast.success(room ? t("rooms.updated") : t("rooms.created"));
     onSaved();
     onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{room ? "Odayı düzenle" : "Yeni oda"}</DialogTitle>
+      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border px-4 py-4 pr-12 sm:px-6">
+          <DialogTitle>{room ? t("rooms.editRoom") : t("rooms.newRoom")}</DialogTitle>
+          <DialogDescription>{t("rooms.dialogDescription")}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="max-h-[calc(100dvh-10rem)] space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
           <div>
-            <label className="text-xs text-muted-foreground">Lokasyon</label>
+            <label className="text-xs text-muted-foreground">{t("rooms.property")}</label>
             <select value={propId} onChange={(e) => { setPropId(e.target.value); setRoomTypeId(""); }} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
               {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <div>
-              <label className="text-xs text-muted-foreground">Oda no</label>
+              <label className="text-xs text-muted-foreground">{t("rooms.roomNumber")}</label>
               <input value={number} onChange={(e) => setNumber(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Kat (0 = EG)</label>
+              <label className="text-xs text-muted-foreground">{t("rooms.floor")}</label>
               <input type="number" min={0} max={50} value={floor} onChange={(e) => setFloor(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Kapasite</label>
+              <label className="text-xs text-muted-foreground">{t("rooms.capacity")}</label>
               <input type="number" min={1} max={20} value={capacity} onChange={(e) => setCapacity(Number(e.target.value))} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Durum</label>
+            <label className="text-xs text-muted-foreground">{t("rooms.status")}</label>
             <select value={status} onChange={(e) => setStatus(e.target.value as RoomStatus)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
               {(Object.keys(statusMeta) as RoomStatus[]).map((s) => (
-                <option key={s} value={s}>{statusMeta[s].label}</option>
+                <option key={s} value={s}>{t(`status.${s}`)}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Zimmertyp (Preis)</label>
+            <label className="text-xs text-muted-foreground">{t("rooms.roomType")}</label>
             <select value={roomTypeId} onChange={(e) => setRoomTypeId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
-              <option value="">— kein Typ —</option>
+              <option value="">— {t("rooms.withoutRoomType")} —</option>
               {roomTypes.filter((t) => t.property_id === propId).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Standard-Reinigungskraft</label>
+            <label className="text-xs text-muted-foreground">{t("rooms.defaultCleaner")}</label>
             <select value={defaultCleanerId} onChange={(e) => setDefaultCleanerId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
-              <option value="">— atanmamış —</option>
+              <option value="">— {t("rooms.notAssigned")} —</option>
               {cleaners.filter((c) => c.active || c.id === defaultCleanerId).map((c) => (
                 <option key={c.id} value={c.id}>{c.full_name}</option>
               ))}
             </select>
-            <p className="text-[11px] text-muted-foreground mt-1">Bei jedem Check-out wird automatisch eine Aufgabe für diese Reinigungskraft erstellt.</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{t("rooms.cleanerHint")}</p>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Schlüsselbox-Code</label>
-            <input value={keyCode} onChange={(e) => setKeyCode(e.target.value)} maxLength={20} placeholder="z. B. 4821" className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm font-mono tracking-widest" />
+            <label className="text-xs text-muted-foreground">{t("rooms.keyCode")}</label>
+            <div className="relative">
+              <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <input type={showKeyCode ? "text" : "password"} value={keyCode} onChange={(e) => setKeyCode(e.target.value)} maxLength={20} autoComplete="off" placeholder={t("rooms.keyCodePlaceholder")} className="w-full rounded-md border border-input bg-card py-2 pl-9 pr-11 font-mono text-sm" />
+              <Button type="button" variant="ghost" size="icon" onClick={() => setShowKeyCode((v) => !v)} className="absolute right-1 top-0.5" title={showKeyCode ? t("rooms.hideKeyCode") : t("rooms.showKeyCode")}>
+                {showKeyCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">{t("rooms.keyCodeHint")}</p>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Notizen</label>
+            <label className="text-xs text-muted-foreground">{t("rooms.notes")}</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </div>
         </div>
-        <DialogFooter>
-          <button onClick={onClose} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">Abbrechen</button>
-          <button onClick={save} disabled={saving} className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm disabled:opacity-50">
-            {saving ? "Speichern…" : "Speichern"}
-          </button>
+        <DialogFooter className="gap-2 border-t border-border bg-background px-4 py-3 sm:px-6">
+          <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
+          <Button onClick={save} disabled={saving}>{saving ? t("rooms.saving") : t("common.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
