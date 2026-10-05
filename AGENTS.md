@@ -15,3 +15,4 @@
 - Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
 - Creating a cleaner account also creates its cleaner profile in the same server operation; never require manual account linking for new cleaners. Why: one person must be entered once.
 - Room status changes go through set_rooms_status and invalidate operational summaries. Why: bulk updates must be atomic and immediately visible everywhere.
+- WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
