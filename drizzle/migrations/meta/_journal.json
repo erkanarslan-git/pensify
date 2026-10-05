@@ -190,6 +190,13 @@
       "when": 1791162657304,
       "tag": "0026_reversible_cleaning_task_transitions",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1791164416886,
+      "tag": "0027_atomic_room_status_updates",
+      "breakpoints": true
     }
   ]
 }
