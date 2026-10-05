@@ -325,6 +325,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
         roomTypes={(editing ? types : activeTypes) as unknown as RoomType[]}
         onClose={() => { setEditing(null); setNewRoom(false); }}
         onSaved={load}
+        onInvalidate={() => {}}
       />
     </AppShell>
   );

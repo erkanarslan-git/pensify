@@ -67,7 +67,7 @@ function CleanersPage() {
   });
 
   const save = useMutation({
-    mutationFn: async (c: Partial<CleanerRow>) => {
+    mutationFn: async (c: Partial<CleanerRow> & { password?: string }) => {
       const payload = {
         full_name: c.full_name!,
         phone: c.phone || null,
@@ -166,15 +166,15 @@ function CleanersPage() {
                 <Input value={editing.full_name ?? ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} />
               </div>
               {!editing.id && <div className="rounded-md border border-border bg-muted p-3 space-y-3"><div><p className="text-sm font-medium">Giriş bilgileri</p><p className="text-xs text-muted-foreground">Bu bilgilerle personel doğrudan temizlik hesabına giriş yapar.</p></div><div className="grid gap-3 sm:grid-cols-2"><div><Label>E-posta</Label><Input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div><div><Label>Geçici şifre</Label><Input type="text" minLength={8} value={editing.password ?? ""} onChange={(e) => setEditing({ ...editing, password: e.target.value })} /></div></div></div>}
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid gap-3 ${editing.id ? "grid-cols-2" : "grid-cols-1"}`}>
                 <div>
                   <Label>Telefon</Label>
                   <Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} />
                 </div>
-                <div>
+                {editing.id && <div>
                   <Label>E-Mail</Label>
                   <Input value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} />
-                </div>
+                </div>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
