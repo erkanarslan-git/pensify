@@ -197,6 +197,7 @@ function CleaningPage() {
                         </div>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
                         <div className="flex gap-1.5">
+                        <div className="flex gap-1.5">
                           {task.status === "pending" && (
                             <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-3 h-3" />}>Annehmen</ActionBtn>
                           )}
@@ -206,14 +207,38 @@ function CleaningPage() {
                           {task.status === "in_progress" && (
                             <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-3 h-3" />}>Fertig</ActionBtn>
                           )}
+                          
+                          {/* Reversal Buttons */}
+                          {task.status === "accepted" && (
+                            <button onClick={() => update(task.id, "pending")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                              <Undo2 className="w-3 h-3" />
+                            </button>
+                          )}
+                          {task.status === "in_progress" && (
+                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                              <Undo2 className="w-3 h-3" />
+                            </button>
+                          )}
+                          {task.status === "completed" && (
+                            <button onClick={() => update(task.id, "in_progress")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                              <Undo2 className="w-3 h-3" />
+                            </button>
+                          )}
+                          {task.status === "problem" && (
+                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                              <Undo2 className="w-3 h-3" />
+                            </button>
+                          )}
+
                           {isOpen(task.status) && (
                             <button onClick={() => update(task.id, "problem")} title="Problem melden" className="text-xs px-2 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5">
                               <AlertTriangle className="w-3 h-3" />
                             </button>
                           )}
-                          {name && (
-                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title="Benachrichtigen" className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
-                              <MessageCircle className="w-3 h-3" />
+
+                          {canAssign && (
+                            <button onClick={() => update(task.id, "pending")} title={t("common.reset")} className="text-xs px-2 py-1.5 rounded-md border border-warning/30 text-warning hover:bg-warning/5">
+                              <RotateCcw className="w-3 h-3" />
                             </button>
                           )}
                         </div>
