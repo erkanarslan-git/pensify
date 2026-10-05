@@ -92,7 +92,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Libre+Baskerville:wght@400;700&amp;display=swap" rel="stylesheet" />
       </head>
       <body>
         {children}
