@@ -27,6 +27,8 @@ interface Reservation {
   property_id: string;
   room_id: string;
   guest_name: string;
+  customer_type: string | null;
+  company_name: string | null;
   guest_email: string | null;
   guest_phone: string | null;
   guests_count: number;
@@ -113,13 +115,17 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const submit = async () => {
     if (!r) return;
     if (readOnly) { toast.error("Keine Berechtigung", { description: "Vergangene Buchungen dürfen nur Manager/Admin/Inhaber bearbeiten." }); return; }
-    if (!r.guest_name.trim()) return toast.error("Misafir adı zorunlu");
-    if (r.check_out <= r.check_in) return toast.error("Çıkış tarihi girişten sonra olmalı");
+    const isCompany = r.customer_type === "company";
+    if (isCompany && !r.company_name?.trim()) return toast.error("Firmenname ist erforderlich");
+    if (!r.guest_name.trim()) return toast.error("Gastname ist erforderlich");
+    if (r.check_out <= r.check_in) return toast.error("Abreise muss nach der Anreise liegen");
 
     setSaving(true);
     const { error } = await supabase.from("reservations").update({
       property_id: r.property_id,
       room_id: r.room_id,
+      customer_type: isCompany ? "company" : "person",
+      company_name: isCompany ? r.company_name!.trim() : null,
       guest_name: r.guest_name.trim(),
       guest_email: r.guest_email?.trim() || null,
       guest_phone: r.guest_phone?.trim() || null,
@@ -171,8 +177,26 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
             )}
             <fieldset disabled={readOnly} className={readOnly ? "opacity-90" : ""}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div className="col-span-full grid gap-1">
+                <span className="text-xs text-muted-foreground">Bucht eine Person oder eine Firma?</span>
+                <div className="inline-flex rounded-md border border-input overflow-hidden w-fit">
+                  {(["person", "company"] as const).map((ct) => (
+                    <button key={ct} type="button" onClick={() => update("customer_type", ct)}
+                      className={`px-4 py-1.5 text-sm ${((r.customer_type ?? "person") === ct) ? "bg-primary text-primary-foreground" : "bg-card"}`}>
+                      {ct === "person" ? "Privatperson" : "Firma"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {r.customer_type === "company" && (
+                <label className="col-span-full grid gap-1">
+                  <span className="text-xs text-muted-foreground">Firmenname *</span>
+                  <input value={r.company_name ?? ""} onChange={(e) => update("company_name", e.target.value)}
+                    className="px-3 py-2 rounded-md border border-input bg-card" />
+                </label>
+              )}
               <label className="col-span-full grid gap-1">
-                <span className="text-xs text-muted-foreground">Misafir adı *</span>
+                <span className="text-xs text-muted-foreground">{r.customer_type === "company" ? "Gast / Ansprechpartner *" : "Gastname *"}</span>
                 <input value={r.guest_name} onChange={(e) => update("guest_name", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
