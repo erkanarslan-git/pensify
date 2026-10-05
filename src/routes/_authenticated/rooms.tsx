@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useEffect, useState } from "react";
-import { Users, Plus, Pencil, Trash2, Eye, EyeOff, Search, KeyRound, Building2 } from "lucide-react";
+import { Users, Plus, Pencil, Trash2, Eye, EyeOff, Search, KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -174,7 +174,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
     >
       {single && (
         <nav className="text-xs text-muted-foreground mb-3">
-          <Link to="/properties" className="hover:underline">Pensionen</Link> / {single.name} / Zimmer
+          <Link to="/properties" className="hover:underline">{t("nav.properties")}</Link> / {single.name} / {t("nav.rooms")}
         </nav>
       )}
       <div className="mb-5 grid gap-2 rounded-lg border border-border bg-card p-3 shadow-soft sm:grid-cols-2 lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(150px,auto))_auto]">
@@ -206,9 +206,9 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
 
       {properties.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-4 text-sm space-y-2">
-          <p>Noch keine Pension angelegt.</p>
+          <p>{t("pensions.noPensions")}</p>
           <p className="text-muted-foreground">
-            Legen Sie zuerst unter <Link to="/properties" className="text-primary underline underline-offset-2">Pensionen</Link> eine Pension an.
+            <Link to="/properties" className="text-primary underline underline-offset-2">{t("nav.properties")}</Link>
           </p>
         </div>
       ) : (
@@ -238,7 +238,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
                         </Link>
                       </summary>
                       {propRooms.length === 0 ? (
-                        <div className="text-xs text-muted-foreground px-4 pb-3">Keine Zimmer.</div>
+                        <div className="px-4 py-3 text-xs text-muted-foreground">{t("rooms.noRooms")}</div>
                       ) : (
                         <div className="divide-y divide-border/60 border-t border-border">
                           {propRooms.map((r) => {

@@ -82,7 +82,9 @@
     "byProperty": "By location",
     "allSources": "All sources",
     "searchGuests": "Search guests…",
-    "new": "New"
+    "new": "New",
+    "undo": "Undo",
+    "reset": "Reset"
   },
   "pages": {
     "reservations": {
@@ -189,7 +191,8 @@
     "accepted": "Accepted",
     "in_progress": "In progress",
     "completed": "Completed",
-    "problem": "Problem"
+    "problem": "Problem",
+    "cleaned": "Clean"
   },
   "timeTracking": {
     "qrSubtitle": "Printable QR card for cleaners",
@@ -420,5 +423,67 @@
     "running": "Importing…",
     "done": "Import completed",
     "again": "New import"
+  },
+  "rooms": {
+    "subtitle": "{{rooms}} rooms · {{properties}} locations",
+    "newRoom": "New room",
+    "editRoom": "Edit room",
+    "dialogDescription": "Manage room details, assignment and key-box access securely.",
+    "searchPlaceholder": "Search location, address, room, type or cleaner…",
+    "allProperties": "All locations",
+    "allRoomTypes": "All room types",
+    "allStatuses": "All statuses",
+    "withoutRoomType": "Without room type",
+    "resetFilters": "Reset filters",
+    "propertySummary": "{{rooms}} rooms · {{free}} free · {{cleaning}} cleaning",
+    "manage": "Manage rooms",
+    "noRooms": "No rooms for this selection.",
+    "notAssigned": "not assigned",
+    "property": "Location",
+    "roomNumber": "Room number",
+    "floor": "Floor (0 = ground)",
+    "capacity": "Capacity",
+    "status": "Status",
+    "roomType": "Room type (price)",
+    "defaultCleaner": "Default cleaner",
+    "cleanerHint": "A task is created automatically for this cleaner at every check-out.",
+    "keyCode": "Key-box code",
+    "keyCodePlaceholder": "e.g. 4821",
+    "keyCodeHint": "For security, the code stays hidden by default.",
+    "showKeyCode": "Show code",
+    "hideKeyCode": "Hide code",
+    "notes": "Notes",
+    "saving": "Saving…",
+    "required": "Room number and location are required.",
+    "invalidFloor": "Enter a valid floor.",
+    "actionFailed": "Action failed. Please try again.",
+    "created": "Room created.",
+    "updated": "Room updated.",
+    "deleted": "Room deleted.",
+    "confirmDelete": "Really delete this room?",
+    "loadError": "Room data could not be loaded.",
+    "loadErrorHint": "Please try again. If the issue continues, contact an administrator.",
+    "retry": "Try again"
+  },
+  "cleaning": {
+    "subtitle": "{{open}} open · {{unassigned}} without cleaner",
+    "toDo": "To do",
+    "problems": "Problems",
+    "done": "Done",
+    "loadError": "Cleaning tasks could not be loaded.",
+    "allClean": "Everything is clean — no open tasks.",
+    "noTasks": "No tasks for this selection.",
+    "groupSummary": "{{total}} tasks · {{open}} open",
+    "problemCount": "{{count}} problem",
+    "notAssigned": "not assigned",
+    "accept": "Accept",
+    "start": "Start",
+    "finish": "Finish",
+    "reportProblem": "Report problem",
+    "notify": "Notify",
+    "assigned": "Cleaner assigned.",
+    "unassigned": "Assignment removed.",
+    "statusChanged": "Task: {{status}}",
+    "actionFailed": "Action failed. Please try again."
   }
 }

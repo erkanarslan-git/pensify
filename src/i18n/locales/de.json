@@ -82,7 +82,9 @@
     "byProperty": "Nach Pension",
     "allSources": "Alle Quellen",
     "searchGuests": "Gäste suchen…",
-    "new": "Neu"
+    "new": "Neu",
+    "undo": "Rückgängig",
+    "reset": "Zurücksetzen"
   },
   "pages": {
     "reservations": {
@@ -189,7 +191,8 @@
     "accepted": "Angenommen",
     "in_progress": "Läuft",
     "completed": "Erledigt",
-    "problem": "Problem"
+    "problem": "Problem",
+    "cleaned": "Sauber"
   },
   "timeTracking": {
     "qrSubtitle": "Druckbare QR-Karte für Reinigungskräfte",
@@ -420,5 +423,67 @@
     "running": "Importiert…",
     "done": "Import abgeschlossen",
     "again": "Neuer Import"
+  },
+  "rooms": {
+    "subtitle": "{{rooms}} Zimmer · {{properties}} Pensionen",
+    "newRoom": "Neues Zimmer",
+    "editRoom": "Zimmer bearbeiten",
+    "dialogDescription": "Zimmerdaten, Zuständigkeit und Schlüsselbox sicher verwalten.",
+    "searchPlaceholder": "Pension, Adresse, Zimmer, Typ oder Reinigungskraft suchen…",
+    "allProperties": "Alle Pensionen",
+    "allRoomTypes": "Alle Zimmertypen",
+    "allStatuses": "Alle Status",
+    "withoutRoomType": "Ohne Zimmertyp",
+    "resetFilters": "Filter zurücksetzen",
+    "propertySummary": "{{rooms}} Zimmer · {{free}} frei · {{cleaning}} Reinigung",
+    "manage": "Zimmer verwalten",
+    "noRooms": "Keine Zimmer für diese Auswahl.",
+    "notAssigned": "nicht zugewiesen",
+    "property": "Pension",
+    "roomNumber": "Zimmernummer",
+    "floor": "Etage (0 = EG)",
+    "capacity": "Kapazität",
+    "status": "Status",
+    "roomType": "Zimmertyp (Preis)",
+    "defaultCleaner": "Standard-Reinigungskraft",
+    "cleanerHint": "Bei jedem Check-out wird automatisch eine Aufgabe für diese Reinigungskraft erstellt.",
+    "keyCode": "Schlüsselbox-Code",
+    "keyCodePlaceholder": "z. B. 4821",
+    "keyCodeHint": "Aus Sicherheitsgründen bleibt der Code standardmäßig verborgen.",
+    "showKeyCode": "Code anzeigen",
+    "hideKeyCode": "Code verbergen",
+    "notes": "Notizen",
+    "saving": "Speichert…",
+    "required": "Zimmernummer und Pension sind erforderlich.",
+    "invalidFloor": "Bitte eine gültige Etage eingeben.",
+    "actionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
+    "created": "Zimmer angelegt.",
+    "updated": "Zimmer aktualisiert.",
+    "deleted": "Zimmer gelöscht.",
+    "confirmDelete": "Dieses Zimmer wirklich löschen?",
+    "loadError": "Zimmerdaten konnten nicht geladen werden.",
+    "loadErrorHint": "Bitte erneut versuchen. Besteht das Problem weiter, wenden Sie sich an den Administrator.",
+    "retry": "Erneut versuchen"
+  },
+  "cleaning": {
+    "subtitle": "{{open}} offen · {{unassigned}} ohne Reinigungskraft",
+    "toDo": "Zu erledigen",
+    "problems": "Probleme",
+    "done": "Erledigt",
+    "loadError": "Reinigungsaufgaben konnten nicht geladen werden.",
+    "allClean": "Alles sauber — keine offenen Aufgaben.",
+    "noTasks": "Keine Aufgaben für diese Auswahl.",
+    "groupSummary": "{{total}} Aufgaben · {{open}} offen",
+    "problemCount": "{{count}} Problem",
+    "notAssigned": "nicht zugewiesen",
+    "accept": "Annehmen",
+    "start": "Starten",
+    "finish": "Fertig",
+    "reportProblem": "Problem melden",
+    "notify": "Benachrichtigen",
+    "assigned": "Reinigungskraft zugewiesen.",
+    "unassigned": "Zuweisung entfernt.",
+    "statusChanged": "Aufgabe: {{status}}",
+    "actionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen."
   }
 }
