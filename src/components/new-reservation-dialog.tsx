@@ -231,6 +231,7 @@ export function NewReservationDialog({
     setGuestEmail("");
     setGuestPhone("");
     setNotes("");
+    setCustomerType("person"); setCompanyName(""); setCompanyContact(""); setCompanyVat(""); setCompanyAddress("");
   };
 
   return (
