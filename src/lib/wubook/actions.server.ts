@@ -141,3 +141,31 @@ export async function fetchNewBookingsReadOnly(lcode: string, fetchImpl?: typeof
 export function isImportEnabled(): boolean {
   return process.env["WUBOOK_RESERVATION_IMPORT_ENABLED"] === "true";
 }
+
+// ---------- Pilot room ----------
+/** Creates one WuBook room type (new_room). Returns the WuBook room id. */
+export async function createRoom(
+  lcode: string,
+  r: { name: string; beds: number; price: number; avail: number; shortname: string },
+  fetchImpl?: typeof fetch,
+) {
+  // new_room(token, lcode, woodoo, name, beds, defprice, avail, shortname, defboard)
+  const payload = await wired("new_room", [lcode, 0, r.name, r.beds, r.price, r.avail, r.shortname, "nb"], { adminAction: true }, fetchImpl);
+  const rid = payload != null ? String(payload) : "";
+  if (!rid) throw new WuBookActionError("missing_rid", "WuBook hat keine Zimmer-ID geliefert.");
+  return rid;
+}
+
+/** Read-only: lists the WuBook rooms of a property. */
+export async function fetchRooms(lcode: string, fetchImpl?: typeof fetch) {
+  const payload = await wired("fetch_rooms", [lcode, 0], {}, fetchImpl);
+  const list = Array.isArray(payload) ? (payload as Record<string, unknown>[]) : [];
+  return list.map((x) => ({
+    id: String(x["id"] ?? ""),
+    name: String(x["name"] ?? ""),
+    shortname: String(x["shortname"] ?? ""),
+    occupancy: Number(x["occupancy"] ?? 0),
+    price: Number(x["price"] ?? 0),
+    availability: Number(x["availability"] ?? 0),
+  }));
+}

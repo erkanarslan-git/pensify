@@ -289,3 +289,76 @@ export const createWuBookPilotProperty = createServerFn({ method: "POST" })
     await audit(orgId, context.userId, "pilot_property_created", { property_id: data.property_id, lcode: res.data.lcode, acode: res.data.acode });
     return { ok: true as const, acode: res.data.acode, lcode: res.data.lcode, password: res.data.password };
   });
+
+// ---------------- Pilot room: one WuBook room type for one Pensify room type ----------------
+async function loadPilot(orgId: string, propertyId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("channel_property_mappings")
+    .select("id, external_property_code, account:channel_accounts!inner(is_test)")
+    .eq("organization_id", orgId)
+    .eq("property_id", propertyId);
+  return (data ?? []).find((m) => !(m.account as { is_test: boolean } | null)?.is_test) ?? null;
+}
+
+const pilotRoomSchema = z.object({ property_id: z.string().uuid(), room_type_id: z.string().uuid(), avail: z.number().int().min(1).max(1) });
+
+export const createWuBookPilotRoom = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => pilotRoomSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await requireOrgRole(context.supabase, ADMIN_ROLES);
+    if (rateLimited(`wubook-room:${orgId}`, 3, 10 * 60_000)) return { ok: false as const, errorMessage: "Zu viele Versuche." };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const pm = await loadPilot(orgId, data.property_id);
+    if (!pm) return { ok: false as const, errorMessage: "Pension ist nicht mit WuBook verbunden." };
+    const { data: rt } = await supabaseAdmin
+      .from("room_types").select("id, name, code, capacity").eq("id", data.room_type_id).eq("property_id", data.property_id).eq("organization_id", orgId).maybeSingle();
+    if (!rt) return { ok: false as const, errorMessage: "Zimmertyp nicht gefunden." };
+    const { data: existing } = await supabaseAdmin
+      .from("channel_room_mappings").select("external_room_id").eq("property_id", data.property_id).eq("channel", "wubook").eq("room_type_id", rt.id).maybeSingle();
+    if (existing?.external_room_id) return { ok: false as const, errorMessage: `Bereits angelegt (WuBook-Zimmer ${existing.external_room_id}).` };
+    const { data: plan } = await supabaseAdmin.from("rate_plans").select("id, base_price").eq("room_type_id", rt.id).eq("active", true).limit(1).maybeSingle();
+    const price = Number(plan?.base_price ?? 0);
+    if (!(price > 0)) return { ok: false as const, errorMessage: "Kein Preis für diesen Zimmertyp hinterlegt." };
+
+    const { createRoom, run } = await import("@/lib/wubook/actions.server");
+    const res = await run(() => createRoom(pm.external_property_code, { name: rt.name, beds: rt.capacity, price, avail: data.avail, shortname: rt.code.slice(0, 4) }));
+    if (!res.ok) {
+      await audit(orgId, context.userId, "pilot_room_failed", { property_id: data.property_id, room_type_id: rt.id, error_code: res.errorCode });
+      return { ok: false as const, errorMessage: res.errorMessage };
+    }
+    await supabaseAdmin.from("channel_room_mappings").insert({
+      organization_id: orgId, channel: "wubook", room_type_id: rt.id, rate_plan_id: plan?.id ?? null, property_id: data.property_id,
+      property_mapping_id: pm.id, external_room_id: res.data, sync_enabled: false,
+    } as never);
+    await audit(orgId, context.userId, "pilot_room_created", { property_id: data.property_id, room_type_id: rt.id, rid: res.data, price, avail: data.avail });
+    return { ok: true as const, rid: res.data, price };
+  });
+
+/** Read-only check: is the mapped WuBook room present with the expected values? */
+export const checkWuBookPilotRooms = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ property_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { orgId } = await requireOrgRole(context.supabase, ADMIN_ROLES);
+    const pm = await loadPilot(orgId, data.property_id);
+    if (!pm) return { ok: false as const, errorMessage: "Pension ist nicht mit WuBook verbunden." };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: maps } = await supabaseAdmin
+      .from("channel_room_mappings").select("external_room_id, room_type:room_types(name)").eq("property_mapping_id", pm.id);
+    const { fetchRooms, run } = await import("@/lib/wubook/actions.server");
+    const res = await run(() => fetchRooms(pm.external_property_code));
+    if (!res.ok) return { ok: false as const, errorMessage: res.errorMessage };
+    const rooms = res.data;
+    return {
+      ok: true as const,
+      lcode: pm.external_property_code,
+      wubookRooms: rooms,
+      mappings: (maps ?? []).map((m) => ({
+        rid: m.external_room_id,
+        roomType: (m.room_type as { name: string } | null)?.name ?? "—",
+        found: rooms.some((r) => r.id === m.external_room_id),
+      })),
+    };
+  });
