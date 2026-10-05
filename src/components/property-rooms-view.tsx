@@ -157,7 +157,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
           <TooltipContent>{t("propertyRooms.roomIdentity", { number: r.number, type: typeName })}</TooltipContent>
         </Tooltip>
         <span className="text-xs text-muted-foreground w-10">{floorLabel(r.floor)}</span>
-        <Badge tone={meta.tone}>{meta.label}</Badge>
+        <Badge tone={meta.tone}>{t(`status.${r.status}`)}</Badge>
         <span className="text-xs text-muted-foreground truncate flex-1 min-w-[120px]">
           🧹 {cleaners.find((c) => c.id === r.default_cleaner_id)?.full_name ?? "—"}
         </span>
