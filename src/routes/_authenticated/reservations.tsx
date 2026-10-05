@@ -68,6 +68,7 @@ function ReservationsPage() {
       const { data, error } = await supabase
         .from("reservations")
         .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,room:rooms(number,property_id),property:properties(id,name)")
+        .is("deleted_at", null)
         .order("check_in", { ascending: true })
         .limit(1000);
       if (error) throw error;
