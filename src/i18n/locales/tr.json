@@ -361,8 +361,7 @@
     "roomNumber": "Oda numarası",
     "roomIdentity": "Oda {{number}} · {{type}}",
     "codeHint": "{{code}}, {{name}} anlamına gelir",
-    "typeDistribution": "Oda tiplerine göre dağılım",
-    "demoPrice": "Geçici demo fiyatı"
+    "typeDistribution": "Oda tiplerine göre dağılım"
   },
   "import": {
     "title": "Veri İçe Aktarma (WordPress)",
@@ -463,7 +462,17 @@
     "confirmDelete": "Bu oda gerçekten silinsin mi?",
     "loadError": "Oda bilgileri yüklenemedi.",
     "loadErrorHint": "Lütfen tekrar deneyin. Sorun sürerse yöneticiye başvurun.",
-    "retry": "Tekrar dene"
+    "retry": "Tekrar dene",
+    "selectedCount": "{{count}} oda seçildi",
+    "applyStatus": "Durumu uygula",
+    "sendToCleaning": "Temizliğe gönder",
+    "selectPage": "Görünen odaları seç",
+    "selectRoom": "{{room}} numaralı odayı seç",
+    "actions": "İşlemler",
+    "bulkUpdated": "{{count}} oda güncellendi.",
+    "page": "{{page}} / {{pages}}. sayfa",
+    "previous": "Önceki",
+    "next": "Sonraki"
   },
   "cleaning": {
     "subtitle": "{{open}} açık · {{unassigned}} görevlisiz",

@@ -23,7 +23,6 @@ export const PERMISSIONS: Permission[] = [
   { key: "view_finance", label: "Umsatz & Abrechnung ansehen", group: "Finanzen", defaultRoles: ["owner", "admin", "manager"] },
   { key: "pay_cleaners", label: "Lohn freigeben / als bezahlt markieren", group: "Finanzen", defaultRoles: ["owner", "admin"] },
   { key: "manage_team", label: "Team & Rollen verwalten", group: "Administration", defaultRoles: ["owner", "admin"] },
-  { key: "manage_settings", label: "Einstellungen ändern", group: "Administration", defaultRoles: ["owner", "admin"] },
   { key: "manage_integrations", label: "Kanal-Integrationen", group: "Administration", defaultRoles: ["owner", "admin"] },
 ];
 

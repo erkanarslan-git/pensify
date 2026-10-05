@@ -361,8 +361,7 @@
     "roomNumber": "Zimmernummer",
     "roomIdentity": "Zimmer {{number}} · {{type}}",
     "codeHint": "{{code}} steht für {{name}}",
-    "typeDistribution": "Zimmerverteilung nach Typ",
-    "demoPrice": "Vorläufiger Demopreis"
+    "typeDistribution": "Zimmerverteilung nach Typ"
   },
   "import": {
     "title": "Datenimport (WordPress)",
@@ -463,7 +462,17 @@
     "confirmDelete": "Dieses Zimmer wirklich löschen?",
     "loadError": "Zimmerdaten konnten nicht geladen werden.",
     "loadErrorHint": "Bitte erneut versuchen. Besteht das Problem weiter, wenden Sie sich an den Administrator.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "selectedCount": "{{count}} Zimmer ausgewählt",
+    "applyStatus": "Status anwenden",
+    "sendToCleaning": "Zur Reinigung",
+    "selectPage": "Sichtbare Zimmer auswählen",
+    "selectRoom": "Zimmer {{room}} auswählen",
+    "actions": "Aktionen",
+    "bulkUpdated": "{{count}} Zimmer aktualisiert.",
+    "page": "Seite {{page}} von {{pages}}",
+    "previous": "Zurück",
+    "next": "Weiter"
   },
   "cleaning": {
     "subtitle": "{{open}} offen · {{unassigned}} ohne Reinigungskraft",
