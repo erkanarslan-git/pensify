@@ -45,6 +45,7 @@ export interface Room {
   status: RoomStatus;
   floor: number | null;
   notes: string | null;
+  key_code?: string | null;
   default_cleaner_id: string | null;
   room_type_id: string | null;
 }
@@ -90,7 +91,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       const [ci, pr, rm, cl, rt, live] = await Promise.all([
         supabase.from("cities").select("id,name").order("name"),
         supabase.from("properties").select("id,name,city_id,organization_id").order("name"),
-        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,key_code,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
         supabase.from("room_types").select("id,name,code,property_id").order("name"),
@@ -297,6 +298,7 @@ export function RoomDialog({
   const [status, setStatus] = useState<RoomStatus>("available");
   const [propId, setPropId] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [keyCode, setKeyCode] = useState("");
   const [defaultCleanerId, setDefaultCleanerId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [roomTypeId, setRoomTypeId] = useState<string>("");
@@ -310,6 +312,7 @@ export function RoomDialog({
       setStatus(room.status);
       setPropId(room.property_id);
       setNotes(room.notes ?? "");
+      setKeyCode(room.key_code ?? "");
       setDefaultCleanerId(room.default_cleaner_id ?? "");
       setRoomTypeId(room.room_type_id ?? "");
     } else {
@@ -319,6 +322,7 @@ export function RoomDialog({
       setStatus("available");
       setPropId(propertyId ?? properties[0]?.id ?? "");
       setNotes("");
+      setKeyCode("");
       setDefaultCleanerId("");
       setRoomTypeId("");
     }
@@ -338,6 +342,7 @@ export function RoomDialog({
       floor: f,
       status,
       notes: notes.trim() || null,
+      key_code: keyCode.trim() || null,
       default_cleaner_id: defaultCleanerId || null,
       room_type_id: roomTypeId || null,
       organization_id: properties.find((p) => p.id === propId)?.organization_id,
@@ -405,7 +410,11 @@ export function RoomDialog({
             <p className="text-[11px] text-muted-foreground mt-1">Bei jedem Check-out wird automatisch eine Aufgabe für diese Reinigungskraft erstellt.</p>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Notlar</label>
+            <label className="text-xs text-muted-foreground">Schlüsselbox-Code</label>
+            <input value={keyCode} onChange={(e) => setKeyCode(e.target.value)} maxLength={20} placeholder="z. B. 4821" className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm font-mono tracking-widest" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Notizen</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </div>
         </div>
