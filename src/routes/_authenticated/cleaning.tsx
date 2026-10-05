@@ -241,6 +241,12 @@ function CleaningPage() {
                               <RotateCcw className="w-3 h-3" />
                             </button>
                           )}
+
+                          {name && (
+                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title="Benachrichtigen" className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                              <MessageCircle className="w-3 h-3" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
