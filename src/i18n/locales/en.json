@@ -361,8 +361,7 @@
     "roomNumber": "Room number",
     "roomIdentity": "Room {{number}} · {{type}}",
     "codeHint": "{{code}} means {{name}}",
-    "typeDistribution": "Room distribution by type",
-    "demoPrice": "Temporary demo price"
+    "typeDistribution": "Room distribution by type"
   },
   "import": {
     "title": "Data import (WordPress)",
@@ -463,7 +462,17 @@
     "confirmDelete": "Really delete this room?",
     "loadError": "Room data could not be loaded.",
     "loadErrorHint": "Please try again. If the issue continues, contact an administrator.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "selectedCount": "{{count}} rooms selected",
+    "applyStatus": "Apply status",
+    "sendToCleaning": "Send to cleaning",
+    "selectPage": "Select visible rooms",
+    "selectRoom": "Select room {{room}}",
+    "actions": "Actions",
+    "bulkUpdated": "{{count}} rooms updated.",
+    "page": "Page {{page}} of {{pages}}",
+    "previous": "Previous",
+    "next": "Next"
   },
   "cleaning": {
     "subtitle": "{{open}} open · {{unassigned}} without cleaner",
