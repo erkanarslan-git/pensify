@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
-import { listWuBookPilotProperties, createWuBookPilotProperty } from "@/lib/wubook.functions";
+import { listWuBookPilotProperties, createWuBookPilotProperty, createWuBookPilotRoom, checkWuBookPilotRooms } from "@/lib/wubook.functions";
 import { FIELDS, fieldError, validate, type FormKey } from "@/components/wubook-test-panel";
 
 /** Splits "Straße 1, 32257 Bünde, DE" into address / zip / city. */
@@ -81,6 +81,7 @@ export function WuBookPilotPanel() {
               <CheckCircle2 className="h-4 w-4 text-success" />
               <span className="font-medium">{propName(l.propertyId)}</span>
               <span className="text-muted-foreground">WuBook-Code {l.lcode} · Konto {l.acode ?? "—"} · Verkauf {l.enabled ? "aktiv" : "noch aus"}</span>
+              <PilotRooms propertyId={l.propertyId} />
             </li>
           ))}
         </ul>
@@ -163,6 +164,68 @@ export function WuBookPilotPanel() {
               }
             }}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Jetzt anlegen"}</Button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PilotRooms({ propertyId }: { propertyId: string }) {
+  const createRoom = useServerFn(createWuBookPilotRoom);
+  const check = useServerFn(checkWuBookPilotRooms);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState(false);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof check>> | null>(null);
+  const { data: types = [] } = useQuery({
+    queryKey: ["pilot-room-types", propertyId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("room_types").select("id,name,code,capacity").eq("property_id", propertyId).eq("active", true).order("capacity");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const [typeId, setTypeId] = useState("");
+  const selected = typeId || types.find((t) => t.code === "EZ")?.id || types[0]?.id || "";
+  const doCheck = async () => {
+    const r = await check({ data: { property_id: propertyId } });
+    setResult(r);
+    if (!r.ok) toast.error(r.errorMessage);
+  };
+  return (
+    <div className="w-full mt-2 ml-6 rounded-lg border p-3 space-y-2">
+      <p className="font-medium text-sm">Zimmer bei WuBook</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <select aria-label="Zimmertyp" value={selected} onChange={(e) => setTypeId(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
+          {types.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.capacity} Pers.)</option>)}
+        </select>
+        <span className="text-xs text-muted-foreground">Anzahl: 1 · Preis: aktueller Pensify-Preis</span>
+      </div>
+      <label className="flex items-center gap-2 text-sm">
+        <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(v === true)} /> Ich bestätige: dieser Zimmertyp wird mit Anzahl 1 bei WuBook angelegt.
+      </label>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={!confirm || !selected || busy !== null} onClick={async () => {
+          setBusy("create");
+          try {
+            const r = await createRoom({ data: { property_id: propertyId, room_type_id: selected, avail: 1 } });
+            if (!r.ok) toast.error(r.errorMessage); else { toast.success(`Angelegt: WuBook-Zimmer ${r.rid} · €${r.price}`); await doCheck(); }
+          } catch (e) { toast.error(e instanceof Error ? e.message.slice(0, 160) : "Fehler"); } finally { setBusy(null); setConfirm(false); }
+        }}>{busy === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Bei WuBook anlegen"}</Button>
+        <Button size="sm" variant="outline" disabled={busy !== null} onClick={async () => { setBusy("check"); try { await doCheck(); } finally { setBusy(null); } }}>
+          {busy === "check" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verbindung prüfen"}
+        </Button>
+      </div>
+      {result?.ok && (
+        <div className="text-sm space-y-1">
+          {result.mappings.length === 0 && <p className="text-muted-foreground">Noch kein Zimmer verbunden.</p>}
+          {result.mappings.map((m) => (
+            <p key={m.rid ?? m.roomType} className={m.found ? "text-success" : "text-destructive"}>
+              {m.found ? "✓" : "✗"} {m.roomType} ↔ WuBook-Zimmer {m.rid} {m.found ? "gefunden" : "bei WuBook nicht gefunden"}
+            </p>
+          ))}
+          {result.wubookRooms.map((r) => (
+            <p key={r.id} className="text-xs text-muted-foreground">WuBook: {r.name} ({r.shortname}) · {r.occupancy} Pers. · €{r.price} · ID {r.id}</p>
+          ))}
         </div>
       )}
     </div>
