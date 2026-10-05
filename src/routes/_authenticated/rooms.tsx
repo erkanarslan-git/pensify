@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ROOM_STATUSES = ["available", "occupied", "cleaning_required", "cleaning_in_progress", "cleaned", "checkout_today", "maintenance"];
 
@@ -64,6 +65,7 @@ function RoomsPage() {
 
 export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [allProperties, setProperties] = useState<Property[]>([]);
   const [allRooms, setRooms] = useState<Room[]>([]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
@@ -161,12 +163,18 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
     const ids = [...selected];
     if (ids.length === 0) return;
     setBulkSaving(true);
-    const { error } = await supabase.from("rooms").update({ status: nextStatus }).in("id", ids);
+    const { data: updatedCount, error } = await supabase.rpc("set_rooms_status", { _room_ids: ids, _status: nextStatus });
     setBulkSaving(false);
     if (error) { toast.error(t("rooms.actionFailed")); return; }
-    toast.success(t("rooms.bulkUpdated", { count: ids.length }));
+    if (updatedCount !== ids.length) { toast.error(t("rooms.actionFailed")); return; }
+    toast.success(t("rooms.bulkUpdated", { count: updatedCount }));
     setSelected(new Set());
     setRefreshKey((key) => key + 1);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+      queryClient.invalidateQueries({ queryKey: ["dashboard-week"] }),
+      queryClient.invalidateQueries({ queryKey: ["cleaning"] }),
+    ]);
   };
 
   const remove = async (id: string) => {
@@ -261,13 +269,18 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
         roomTypes={roomTypes}
         onClose={() => { setEditing(null); setCreating(null); }}
         onSaved={() => setRefreshKey((k) => k + 1)}
+        onInvalidate={() => {
+          queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-week"] });
+          queryClient.invalidateQueries({ queryKey: ["cleaning"] });
+        }}
       />
     </AppShell>
   );
 }
 
 export function RoomDialog({
-  open, room, propertyId, properties, cleaners, roomTypes, onClose, onSaved,
+  open, room, propertyId, properties, cleaners, roomTypes, onClose, onSaved, onInvalidate,
 }: {
   open: boolean;
   room: Room | null;
@@ -277,6 +290,7 @@ export function RoomDialog({
   roomTypes: RoomType[];
   onClose: () => void;
   onSaved: () => void;
+  onInvalidate: () => void;
 }) {
   const { t } = useTranslation();
   const [number, setNumber] = useState("");
@@ -338,12 +352,20 @@ export function RoomDialog({
       organization_id: properties.find((p) => p.id === propId)?.organization_id,
     };
     const { error } = room
-      ? await supabase.from("rooms").update(payload).eq("id", room.id)
+      ? status !== room.status
+        ? await (async () => {
+            const { status: _status, ...details } = payload;
+            const detailResult = await supabase.from("rooms").update(details).eq("id", room.id);
+            if (detailResult.error) return detailResult;
+            return supabase.rpc("set_rooms_status", { _room_ids: [room.id], _status: status });
+          })()
+        : await supabase.from("rooms").update(payload).eq("id", room.id)
       : await supabase.from("rooms").insert(payload);
     setSaving(false);
     if (error) { toast.error(t("rooms.actionFailed")); return; }
     toast.success(room ? t("rooms.updated") : t("rooms.created"));
     onSaved();
+    onInvalidate();
     onClose();
   };
 

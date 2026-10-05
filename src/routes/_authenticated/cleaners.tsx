@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
-import { Phone, Plus, Pencil, Trash2, Link2, Unlink } from "lucide-react";
+import { Mail, Phone, Plus, Pencil, Trash2, UserCheck, UserX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { adminCreateUser } from "@/lib/admin-users.functions";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -36,19 +38,12 @@ type CleanerRow = {
   notes: string | null;
 };
 
-type AdminUser = {
-  user_id: string;
-  email: string;
-  full_name: string | null;
-  roles: string[];
-};
-
 function CleanersPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState<Partial<CleanerRow> | null>(null);
+  const [editing, setEditing] = useState<(Partial<CleanerRow> & { password?: string }) | null>(null);
   const [deleting, setDeleting] = useState<CleanerRow | null>(null);
-  const [linking, setLinking] = useState<CleanerRow | null>(null);
+  const createUser = useServerFn(adminCreateUser);
 
   const cleaners = useQuery({
     queryKey: ["cleaners"],
@@ -71,15 +66,6 @@ function CleanersPage() {
     },
   });
 
-  const users = useQuery({
-    queryKey: ["admin-users"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_users");
-      if (error) throw error;
-      return (data ?? []) as AdminUser[];
-    },
-  });
-
   const save = useMutation({
     mutationFn: async (c: Partial<CleanerRow>) => {
       const payload = {
@@ -94,16 +80,23 @@ function CleanersPage() {
         const { error } = await supabase.from("cleaners").update(payload).eq("id", c.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("cleaners").insert(payload);
-        if (error) throw error;
+        if (!c.email || !c.password) throw new Error("E-Mail und Passwort sind erforderlich.");
+        await createUser({ data: {
+          email: c.email,
+          password: c.password,
+          full_name: c.full_name,
+          role: "cleaner",
+          cleaner: { phone: c.phone ?? undefined, hourly_rate: c.hourly_rate, notes: c.notes ?? undefined },
+        } });
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
       setEditing(null);
       toast.success("Gespeichert");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: () => toast.error("Kayıt tamamlanamadı. E-posta adresini ve bilgileri kontrol edin."),
   });
 
   const remove = useMutation({
@@ -115,23 +108,6 @@ function CleanersPage() {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
       setDeleting(null);
       toast.success("Gelöscht");
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const link = useMutation({
-    mutationFn: async ({ cleanerId, userId }: { cleanerId: string; userId: string | null }) => {
-      const { error } = await supabase.rpc("admin_link_cleaner", {
-        _cleaner_id: cleanerId,
-        _user_id: userId as string,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["cleaners"] });
-      qc.invalidateQueries({ queryKey: ["admin-users"] });
-      setLinking(null);
-      toast.success("Verknüpfung aktualisiert");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -148,51 +124,28 @@ function CleanersPage() {
         </Button>
       }
     >
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="overflow-hidden border border-border bg-card">
+        <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] gap-4 border-b border-border bg-muted px-4 py-2 text-xs font-medium text-muted-foreground md:grid">
+          <span>Personel</span><span>İletişim</span><span>Saat ücreti</span><span>Durum</span><span className="text-right">İşlem</span>
+        </div>
         {list.map((c) => {
-          const linkedUser = users.data?.find((u) => u.user_id === c.user_id);
           return (
-            <div key={c.id} className="rounded-xl border border-border bg-card p-5 shadow-soft">
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary grid place-items-center text-sm font-semibold">
+            <div key={c.id} className="grid gap-3 border-b border-border p-4 last:border-b-0 md:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] md:items-center">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-muted text-xs font-semibold">
                   {c.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold tracking-tight">{c.full_name}</h3>
-                    <Badge tone={c.active ? "success" : "muted"}>{c.active ? "Aktiv" : "Inaktiv"}</Badge>
-                    {c.user_id ? (
-                      <Badge tone="success">Verknüpft</Badge>
-                    ) : (
-                      <Badge tone="warning">Kein Konto</Badge>
-                    )}
-                  </div>
-                  {c.phone && (
-                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                      <Phone className="w-3 h-3" /> {c.phone}
-                    </div>
-                  )}
-                  {linkedUser && (
-                    <div className="mt-1 text-xs text-muted-foreground">{linkedUser.email}</div>
-                  )}
-                </div>
+                <div className="min-w-0"><div className="truncate font-medium">{c.full_name}</div><div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">{c.user_id ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}{c.user_id ? "Giriş hesabı aktif" : "Eski kayıt · giriş hesabı yok"}</div></div>
               </div>
-              {c.hourly_rate != null && (
-                <div className="mt-3 text-sm">
-                  Stundenlohn: <strong>€{Number(c.hourly_rate).toFixed(2)}</strong>
-                </div>
-              )}
-              {c.notes && <div className="mt-2 text-xs text-muted-foreground">{c.notes}</div>}
-              <div className="mt-4 pt-3 border-t border-border flex flex-wrap gap-2">
+              <div className="space-y-1 text-sm text-muted-foreground">{c.phone && <div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{c.phone}</div>}{c.email && <div className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{c.email}</div>}</div>
+              <div className="text-sm font-medium">{c.hourly_rate == null ? "—" : `€${Number(c.hourly_rate).toFixed(2)}`}</div>
+              <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? "Aktif" : "Pasif"}</Badge></div>
+              <div className="flex justify-end gap-1">
                 <Button size="sm" variant="outline" onClick={() => setEditing(c)}>
-                  <Pencil className="w-3 h-3 mr-1" /> Bearbeiten
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setLinking(c)}>
-                  {c.user_id ? <Unlink className="w-3 h-3 mr-1" /> : <Link2 className="w-3 h-3 mr-1" />}
-                  Konto verknüpfen
+                  <Pencil className="w-3 h-3 mr-1" /> Düzenle
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setDeleting(c)}>
-                  <Trash2 className="w-3 h-3 mr-1" /> Löschen
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             </div>
@@ -204,7 +157,7 @@ function CleanersPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing?.id ? "Mitarbeiter bearbeiten" : "Neuer Mitarbeiter"}</DialogTitle>
+            <DialogTitle>{editing?.id ? "Personeli düzenle" : "Yeni temizlik personeli"}</DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-3">
@@ -212,6 +165,7 @@ function CleanersPage() {
                 <Label>Name</Label>
                 <Input value={editing.full_name ?? ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} />
               </div>
+              {!editing.id && <div className="rounded-md border border-border bg-muted p-3 space-y-3"><div><p className="text-sm font-medium">Giriş bilgileri</p><p className="text-xs text-muted-foreground">Bu bilgilerle personel doğrudan temizlik hesabına giriş yapar.</p></div><div className="grid gap-3 sm:grid-cols-2"><div><Label>E-posta</Label><Input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div><div><Label>Geçici şifre</Label><Input type="text" minLength={8} value={editing.password ?? ""} onChange={(e) => setEditing({ ...editing, password: e.target.value })} /></div></div></div>}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Telefon</Label>
@@ -246,41 +200,10 @@ function CleanersPage() {
           )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditing(null)}>Abbrechen</Button>
-            <Button onClick={() => editing && save.mutate(editing)} disabled={!editing?.full_name || save.isPending}>
+            <Button onClick={() => editing && save.mutate(editing)} disabled={!editing?.full_name || (!editing.id && (!editing.email || (editing.password?.length ?? 0) < 8)) || save.isPending}>
               Speichern
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Link dialog */}
-      <Dialog open={!!linking} onOpenChange={(o) => !o && setLinking(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Benutzerkonto verknüpfen</DialogTitle>
-          </DialogHeader>
-          {linking && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {linking.full_name} — muss mit einem Benutzerkonto verknüpft sein, um per QR einzustempeln.
-                Die Person muss sich zuerst unter <code>/auth</code> registrieren.
-              </p>
-              <Select
-                value={linking.user_id ?? "none"}
-                onValueChange={(v) => link.mutate({ cleanerId: linking.id, userId: v === "none" ? null : v })}
-              >
-                <SelectTrigger><SelectValue placeholder="Benutzer wählen" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— Nicht verknüpft —</SelectItem>
-                  {users.data?.map((u) => (
-                    <SelectItem key={u.user_id} value={u.user_id}>
-                      {u.full_name || u.email} ({u.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 

@@ -26,12 +26,23 @@ async function orgOwners(admin: any, orgId: string): Promise<string[]> {
 
 export const adminCreateUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { email: string; password: string; full_name?: string; role?: string }) =>
+  .inputValidator((d: {
+    email: string;
+    password: string;
+    full_name?: string;
+    role?: string;
+    cleaner?: { phone?: string; hourly_rate?: number | null; notes?: string };
+  }) =>
     z.object({
       email: z.string().email(),
       password: z.string().min(8),
       full_name: z.string().optional(),
       role: z.enum(ROLES).optional(),
+      cleaner: z.object({
+        phone: z.string().optional(),
+        hourly_rate: z.number().nonnegative().nullable().optional(),
+        notes: z.string().optional(),
+      }).optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -46,10 +57,31 @@ export const adminCreateUser = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const uid = created.user?.id;
     if (!uid) throw new Error("User creation failed");
-    if (data.role) {
-      const orgRole = data.role === "manager" ? "operations_manager" : data.role;
-      if (orgRole === "owner") throw new Error("Inhaber kann nur über die Rollenverwaltung vergeben werden.");
-      await supabaseAdmin.from("organization_members").insert({ organization_id: orgId, user_id: uid, role: orgRole as any });
+    try {
+      if (data.role) {
+        const orgRole = data.role === "manager" ? "operations_manager" : data.role;
+        if (orgRole === "owner") throw new Error("Inhaber kann nur über die Rollenverwaltung vergeben werden.");
+        const { error: memberError } = await supabaseAdmin
+          .from("organization_members")
+          .insert({ organization_id: orgId, user_id: uid, role: orgRole as any });
+        if (memberError) throw memberError;
+      }
+      if (data.role === "cleaner") {
+        const { error: cleanerError } = await supabaseAdmin.from("cleaners").insert({
+          organization_id: orgId,
+          user_id: uid,
+          full_name: data.full_name?.trim() || data.email.split("@")[0],
+          email: data.email,
+          phone: data.cleaner?.phone?.trim() || null,
+          hourly_rate: data.cleaner?.hourly_rate ?? null,
+          notes: data.cleaner?.notes?.trim() || null,
+          active: true,
+        });
+        if (cleanerError) throw cleanerError;
+      }
+    } catch (cause) {
+      await supabaseAdmin.auth.admin.deleteUser(uid);
+      throw new Error(cause instanceof Error ? cause.message : "User creation failed");
     }
     return { id: uid };
   });
