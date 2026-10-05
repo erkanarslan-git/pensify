@@ -9,4 +9,6 @@
 - [ ] Login ohne Registrierung/Google, neues Design
 - [ ] Buchungsformular Privat/Firma
 - [ ] Wartung → Zimmer aus Buchungsauswahl + WuBook-Sperre
-- [ ] Reinigung/Dispatch/Team Komplett-Test, i18n-Durchsicht
+- [x] Reinigung: vollständige Vor-/Zurück-Statuswechsel für berechtigte Leitung; Zimmerstatus folgt automatisch
+- [x] Zimmerübersicht: kompakte Liste, globale Suche/Filter, sichere Schlüsselcode-Anzeige, responsive Dialoge
+- [ ] Dispatch/Team Komplett-Test, restliche i18n-Durchsicht außerhalb Zimmer/Reinigung

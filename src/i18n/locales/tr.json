@@ -82,7 +82,9 @@
     "byProperty": "Lokasyona göre",
     "allSources": "Tüm kanallar",
     "searchGuests": "Misafir ara…",
-    "new": "Yeni"
+    "new": "Yeni",
+    "undo": "Geri al",
+    "reset": "Başa döndür"
   },
   "pages": {
     "reservations": {
@@ -189,7 +191,8 @@
     "accepted": "Kabul edildi",
     "in_progress": "Sürüyor",
     "completed": "Tamamlandı",
-    "problem": "Sorun"
+    "problem": "Sorun",
+    "cleaned": "Temiz"
   },
   "timeTracking": {
     "qrSubtitle": "Temizlikçiler için yazdırılabilir QR kartı",
@@ -420,5 +423,67 @@
     "running": "Aktarılıyor…",
     "done": "İçe aktarma tamamlandı",
     "again": "Yeni içe aktarma"
+  },
+  "rooms": {
+    "subtitle": "{{properties}} tesiste {{rooms}} oda",
+    "newRoom": "Yeni oda",
+    "editRoom": "Odayı düzenle",
+    "dialogDescription": "Oda bilgilerini, görevliyi ve anahtar kutusu erişimini güvenle yönetin.",
+    "searchPlaceholder": "Tesis, adres, oda, tip veya görevli ara…",
+    "allProperties": "Tüm tesisler",
+    "allRoomTypes": "Tüm oda tipleri",
+    "allStatuses": "Tüm durumlar",
+    "withoutRoomType": "Oda tipi yok",
+    "resetFilters": "Filtreleri sıfırla",
+    "propertySummary": "{{rooms}} oda · {{free}} boş · {{cleaning}} temizlik",
+    "manage": "Odaları yönet",
+    "noRooms": "Bu seçime uygun oda yok.",
+    "notAssigned": "atanmamış",
+    "property": "Tesis",
+    "roomNumber": "Oda numarası",
+    "floor": "Kat (0 = zemin)",
+    "capacity": "Kapasite",
+    "status": "Durum",
+    "roomType": "Oda tipi (fiyat)",
+    "defaultCleaner": "Standart temizlik görevlisi",
+    "cleanerHint": "Her çıkıştan sonra bu görevli için otomatik temizlik görevi oluşturulur.",
+    "keyCode": "Anahtar kutusu kodu",
+    "keyCodePlaceholder": "ör. 4821",
+    "keyCodeHint": "Güvenlik için kod varsayılan olarak gizli tutulur.",
+    "showKeyCode": "Kodu göster",
+    "hideKeyCode": "Kodu gizle",
+    "notes": "Notlar",
+    "saving": "Kaydediliyor…",
+    "required": "Oda numarası ve tesis zorunludur.",
+    "invalidFloor": "Geçerli bir kat girin.",
+    "actionFailed": "İşlem başarısız. Lütfen tekrar deneyin.",
+    "created": "Oda oluşturuldu.",
+    "updated": "Oda güncellendi.",
+    "deleted": "Oda silindi.",
+    "confirmDelete": "Bu oda gerçekten silinsin mi?",
+    "loadError": "Oda bilgileri yüklenemedi.",
+    "loadErrorHint": "Lütfen tekrar deneyin. Sorun sürerse yöneticiye başvurun.",
+    "retry": "Tekrar dene"
+  },
+  "cleaning": {
+    "subtitle": "{{open}} açık · {{unassigned}} görevlisiz",
+    "toDo": "Yapılacak",
+    "problems": "Sorunlar",
+    "done": "Tamamlanan",
+    "loadError": "Temizlik görevleri yüklenemedi.",
+    "allClean": "Her yer temiz — açık görev yok.",
+    "noTasks": "Bu seçime uygun görev yok.",
+    "groupSummary": "{{total}} görev · {{open}} açık",
+    "problemCount": "{{count}} sorun",
+    "notAssigned": "atanmamış",
+    "accept": "Kabul et",
+    "start": "Başlat",
+    "finish": "Tamamla",
+    "reportProblem": "Sorun bildir",
+    "notify": "Bildirim gönder",
+    "assigned": "Temizlik görevlisi atandı.",
+    "unassigned": "Görevli kaldırıldı.",
+    "statusChanged": "Görev: {{status}}",
+    "actionFailed": "İşlem başarısız. Lütfen tekrar deneyin."
   }
 }

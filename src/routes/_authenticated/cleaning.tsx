@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useMemo, useState } from "react";
-import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles } from "lucide-react";
+import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles, Undo2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -15,12 +15,9 @@ export const Route = createFileRoute("/_authenticated/cleaning")({
 
 type CleaningStatus = "pending" | "accepted" | "in_progress" | "completed" | "problem";
 
-const statusMeta: Record<CleaningStatus, { label: string; tone: "warning" | "info" | "success" | "destructive" | "muted" }> = {
-  pending: { label: "Offen", tone: "warning" },
-  accepted: { label: "Angenommen", tone: "info" },
-  in_progress: { label: "Läuft", tone: "info" },
-  completed: { label: "Fertig", tone: "success" },
-  problem: { label: "Problem", tone: "destructive" },
+const statusMeta: Record<CleaningStatus, { tone: "warning" | "info" | "success" | "destructive" | "muted" }> = {
+  pending: { tone: "warning" }, accepted: { tone: "info" }, in_progress: { tone: "info" },
+  completed: { tone: "success" }, problem: { tone: "destructive" },
 };
 
 type View = "open" | "problem" | "done" | "all";
@@ -76,15 +73,15 @@ function CleaningPage() {
 
   const update = async (id: string, status: CleaningStatus) => {
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
-    if (error) { toast.error(error.message); return; }
-    toast.success(`Aufgabe: ${statusMeta[status].label}`);
+    if (error) { toast.error(t("cleaning.actionFailed")); return; }
+    toast.success(t("cleaning.statusChanged", { status: t(`status.${status}`) }));
     refetch();
   };
 
   const reassign = async (taskId: string, cleanerId: string) => {
     const { error } = await supabase.from("cleaning_tasks").update({ cleaner_id: cleanerId || null }).eq("id", taskId);
-    if (error) { toast.error(error.message); return; }
-    toast.success(cleanerId ? "Reinigungskraft zugewiesen" : "Zuweisung entfernt");
+    if (error) { toast.error(t("cleaning.actionFailed")); return; }
+    toast.success(cleanerId ? t("cleaning.assigned") : t("cleaning.unassigned"));
     refetch();
   };
 
@@ -109,16 +106,16 @@ function CleaningPage() {
     .filter((g) => g.items.length > 0);
 
   const views: { id: View; label: string; n: number }[] = [
-    { id: "open", label: "Zu erledigen", n: counts.open },
-    { id: "problem", label: "Probleme", n: counts.problem },
-    { id: "done", label: "Erledigt", n: counts.done },
-    { id: "all", label: "Alle", n: tasks.length },
+    { id: "open", label: t("cleaning.toDo"), n: counts.open },
+    { id: "problem", label: t("cleaning.problems"), n: counts.problem },
+    { id: "done", label: t("cleaning.done"), n: counts.done },
+    { id: "all", label: t("common.all"), n: tasks.length },
   ];
 
   return (
     <AppShell
       title={t("pages.cleaning.title")}
-      subtitle={`${counts.open} offen · ${counts.unassigned} ohne Reinigungskraft`}
+      subtitle={t("cleaning.subtitle", { open: counts.open, unassigned: counts.unassigned })}
     >
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {views.map((v) => (
@@ -131,22 +128,22 @@ function CleaningPage() {
           </button>
         ))}
         <select value={prop} onChange={(e) => setProp(e.target.value)} className="ml-auto px-3 py-2 rounded-md border border-input bg-card text-sm">
-          <option value="all">Alle Pensionen</option>
+          <option value="all">{t("rooms.allProperties")}</option>
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </div>
 
       {error ? (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
-          Reinigungsaufgaben konnten nicht geladen werden.{" "}
-          <button onClick={() => refetch()} className="underline font-medium">Erneut versuchen</button>
+          {t("cleaning.loadError")}{" "}
+          <button onClick={() => refetch()} className="underline font-medium">{t("rooms.retry")}</button>
         </div>
       ) : isLoading ? (
         <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
       ) : groups.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           <Sparkles className="w-6 h-6 mx-auto mb-2 text-success" />
-          {view === "open" ? "Alles sauber — keine offenen Aufgaben." : "Keine Aufgaben für diese Auswahl."}
+          {view === "open" ? t("cleaning.allClean") : t("cleaning.noTasks")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -161,7 +158,7 @@ function CleaningPage() {
                     <span className="font-semibold truncate">{g.name}</span>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {g.items.length} Aufgaben · {gOpen} offen{gProb > 0 ? ` · ${gProb} Problem` : ""}
+                    {t("cleaning.groupSummary", { total: g.items.length, open: gOpen })}{gProb > 0 ? ` · ${t("cleaning.problemCount", { count: gProb })}` : ""}
                   </span>
                 </summary>
                 <div className="border-t border-border divide-y divide-border/60">
@@ -177,7 +174,7 @@ function CleaningPage() {
                         <div className="w-28 text-muted-foreground tabular-nums">
                           {due.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </div>
-                        <div className="w-28"><Badge tone={meta.tone}>{meta.label}</Badge></div>
+                        <div className="w-28"><Badge tone={meta.tone}>{t(`status.${task.status}`)}</Badge></div>
                         <div className="flex-1 min-w-[160px]">
                           {canAssign ? (
                             <select
@@ -185,27 +182,26 @@ function CleaningPage() {
                               onChange={(e) => reassign(task.id, e.target.value)}
                               className={`text-xs px-2 py-1 rounded-md border bg-card ${unassigned ? "border-warning text-warning" : "border-input"}`}
                             >
-                              <option value="">— nicht zugewiesen —</option>
+                              <option value="">— {t("cleaning.notAssigned")} —</option>
                               {cleaners.filter((c) => c.active || c.id === task.cleaner_id).map((c) => (
                                 <option key={c.id} value={c.id}>{c.full_name}</option>
                               ))}
                             </select>
                           ) : (
-                            <span className={unassigned ? "text-warning italic" : ""}>{name ?? "nicht zugewiesen"}</span>
+                            <span className={unassigned ? "text-warning italic" : ""}>{name ?? t("cleaning.notAssigned")}</span>
                           )}
                           {task.notes && <div className="text-xs text-muted-foreground italic mt-0.5">"{task.notes}"</div>}
                         </div>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
                         <div className="flex gap-1.5">
-                        <div className="flex gap-1.5">
                           {task.status === "pending" && (
-                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-3 h-3" />}>Annehmen</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-3 h-3" />}>{t("cleaning.accept")}</ActionBtn>
                           )}
                           {(task.status === "accepted" || task.status === "problem") && (
-                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-3 h-3" />}>Starten</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-3 h-3" />}>{t("cleaning.start")}</ActionBtn>
                           )}
                           {task.status === "in_progress" && (
-                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-3 h-3" />}>Fertig</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-3 h-3" />}>{t("cleaning.finish")}</ActionBtn>
                           )}
                           
                           {/* Reversal Buttons */}
@@ -231,7 +227,7 @@ function CleaningPage() {
                           )}
 
                           {isOpen(task.status) && (
-                            <button onClick={() => update(task.id, "problem")} title="Problem melden" className="text-xs px-2 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5">
+                            <button onClick={() => update(task.id, "problem")} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5">
                               <AlertTriangle className="w-3 h-3" />
                             </button>
                           )}
@@ -243,7 +239,7 @@ function CleaningPage() {
                           )}
 
                           {name && (
-                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title="Benachrichtigen" className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title={t("cleaning.notify")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
                               <MessageCircle className="w-3 h-3" />
                             </button>
                           )}
