@@ -2241,6 +2241,13 @@ export type Database = {
         Args: { _active: boolean; _room_type_id: string }
         Returns: undefined
       }
+      set_rooms_status: {
+        Args: {
+          _room_ids: string[]
+          _status: Database["public"]["Enums"]["room_status"]
+        }
+        Returns: number
+      }
       soft_delete_reservation: {
         Args: { _id: string; _reason?: string }
         Returns: undefined

@@ -494,5 +494,30 @@
     "unassigned": "Zuweisung entfernt.",
     "statusChanged": "Aufgabe: {{status}}",
     "actionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen."
+  },
+  "cleaners": {
+    "staff": "Personal",
+    "contact": "Kontakt",
+    "hourlyRate": "Stundenlohn",
+    "status": "Status",
+    "action": "Aktion",
+    "accountActive": "Anmeldekonto aktiv",
+    "legacyNoAccount": "Alter Eintrag · kein Anmeldekonto",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "editStaff": "Mitarbeiter bearbeiten",
+    "newStaff": "Neue Reinigungskraft",
+    "name": "Name",
+    "loginDetails": "Anmeldedaten",
+    "loginHint": "Die Reinigungskraft kann sich mit diesen Daten direkt anmelden.",
+    "email": "E-Mail",
+    "temporaryPassword": "Vorläufiges Passwort",
+    "phone": "Telefon",
+    "hourlyRateEuro": "Stundenlohn (€)",
+    "notes": "Notiz",
+    "saveFailed": "Speichern nicht möglich. Bitte E-Mail und Angaben prüfen.",
+    "deleted": "Mitarbeiter gelöscht.",
+    "deleteTitle": "Mitarbeiter löschen?",
+    "deleteDescription": "{{name}} wird endgültig gelöscht. Auch vergangene Zeiteinträge werden entfernt."
   }
 }

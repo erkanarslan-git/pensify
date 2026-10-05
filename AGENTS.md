@@ -13,3 +13,5 @@
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
 - WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
 - Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
+- Creating a cleaner account also creates its cleaner profile in the same server operation; never require manual account linking for new cleaners. Why: one person must be entered once.
+- Room status changes go through set_rooms_status and invalidate operational summaries. Why: bulk updates must be atomic and immediately visible everywhere.

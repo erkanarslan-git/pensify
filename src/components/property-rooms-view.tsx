@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Plus, Pencil, Trash2, Users, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { usePermissions } from "@/hooks/use-permissions";
 import { AppShell, Badge } from "@/components/app-shell";
@@ -46,6 +47,7 @@ export function friendlyError(t: TFunction, err: { code?: string; message?: stri
 
 export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const perms = usePermissions();
   const canManage = perms.can("manage_rooms");
   const [property, setProperty] = useState<Property | null>(null);
@@ -325,6 +327,11 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
         roomTypes={(editing ? types : activeTypes) as unknown as RoomType[]}
         onClose={() => { setEditing(null); setNewRoom(false); }}
         onSaved={load}
+        onInvalidate={() => {
+          queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-week"] });
+          queryClient.invalidateQueries({ queryKey: ["cleaning"] });
+        }}
       />
     </AppShell>
   );

@@ -494,5 +494,30 @@
     "unassigned": "Assignment removed.",
     "statusChanged": "Task: {{status}}",
     "actionFailed": "Action failed. Please try again."
+  },
+  "cleaners": {
+    "staff": "Staff",
+    "contact": "Contact",
+    "hourlyRate": "Hourly rate",
+    "status": "Status",
+    "action": "Action",
+    "accountActive": "Login account active",
+    "legacyNoAccount": "Older entry · no login account",
+    "active": "Active",
+    "inactive": "Inactive",
+    "editStaff": "Edit staff member",
+    "newStaff": "New cleaner",
+    "name": "Name",
+    "loginDetails": "Login details",
+    "loginHint": "The cleaner can sign in directly with these details.",
+    "email": "Email",
+    "temporaryPassword": "Temporary password",
+    "phone": "Phone",
+    "hourlyRateEuro": "Hourly rate (€)",
+    "notes": "Notes",
+    "saveFailed": "Could not save. Check the email address and details.",
+    "deleted": "Staff member deleted.",
+    "deleteTitle": "Delete staff member?",
+    "deleteDescription": "{{name}} will be permanently deleted. Past time entries will also be removed."
   }
 }

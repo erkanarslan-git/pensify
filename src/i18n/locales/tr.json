@@ -494,5 +494,30 @@
     "unassigned": "Görevli kaldırıldı.",
     "statusChanged": "Görev: {{status}}",
     "actionFailed": "İşlem başarısız. Lütfen tekrar deneyin."
+  },
+  "cleaners": {
+    "staff": "Personel",
+    "contact": "İletişim",
+    "hourlyRate": "Saat ücreti",
+    "status": "Durum",
+    "action": "İşlem",
+    "accountActive": "Giriş hesabı aktif",
+    "legacyNoAccount": "Eski kayıt · giriş hesabı yok",
+    "active": "Aktif",
+    "inactive": "Pasif",
+    "editStaff": "Personeli düzenle",
+    "newStaff": "Yeni temizlik personeli",
+    "name": "Ad soyad",
+    "loginDetails": "Giriş bilgileri",
+    "loginHint": "Personel bu bilgilerle doğrudan temizlik hesabına giriş yapar.",
+    "email": "E-posta",
+    "temporaryPassword": "Geçici şifre",
+    "phone": "Telefon",
+    "hourlyRateEuro": "Saat ücreti (€)",
+    "notes": "Not",
+    "saveFailed": "Kayıt tamamlanamadı. E-posta adresini ve bilgileri kontrol edin.",
+    "deleted": "Personel silindi.",
+    "deleteTitle": "Personel silinsin mi?",
+    "deleteDescription": "{{name}} kalıcı olarak silinecek. Geçmiş çalışma kayıtları da kaldırılacak."
   }
 }

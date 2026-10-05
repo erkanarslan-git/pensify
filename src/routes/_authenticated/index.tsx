@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { ArrowUpRight, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +19,10 @@ export const Route = createFileRoute("/_authenticated/")({
     meta: [
       { title: "Dashboard — Pensify" },
       { name: "description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
+      { property: "og:title", content: "Dashboard — Pensify" },
+      { property: "og:description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Dashboard,
@@ -30,6 +35,8 @@ function Dashboard() {
 
   const { data, refetch } = useQuery({
     queryKey: ["dashboard"],
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const [rooms, tasks, res, props, inHouse] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
@@ -100,15 +107,13 @@ function Dashboard() {
       title={t("dashboard.title")}
       subtitle={t("dashboard.subtitle")}
       actions={
-        <button onClick={() => setNewOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 shadow-soft">
+        <Button onClick={() => setNewOpen(true)} size="sm">
           <Plus className="w-4 h-4" /> {t("common.newReservation")}
-        </button>
+        </Button>
       }
     >
-      <div className="relative">
-        <div aria-hidden className="pointer-events-none absolute -top-24 -left-16 w-80 h-80 rounded-full bg-primary/25 blur-3xl animate-glow-drift" />
-        <div aria-hidden className="pointer-events-none absolute -top-10 right-0 w-72 h-72 rounded-full bg-info/20 blur-3xl animate-glow-drift [animation-delay:-6s]" />
-        <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div>
+        <div className="grid grid-cols-2 overflow-hidden border border-border bg-card lg:grid-cols-4">
           {[
             { label: t("dashboard.totalRooms"), value: totalRooms, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), tone: "primary", to: "/rooms", search: {} },
             { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), tone: "info", to: "/reservations", search: {} },
@@ -118,21 +123,19 @@ function Dashboard() {
             { label: t("dashboard.completedToday"), value: completedToday, tone: "success", to: "/cleaning", search: {} },
             { label: t("dashboard.checkoutsToday"), value: checkoutToday, tone: "warning", to: "/reservations", search: {} },
             { label: t("dashboard.maintenance"), value: maintenance, tone: "destructive", to: "/rooms", search: { status: "maintenance" } },
-          ].map((k, i) => (
+          ].map((k) => (
             <Link
               key={k.label}
               to={k.to as any}
               search={k.search as any}
-              style={{ animationDelay: `${i * 60}ms` }}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl p-5 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated animate-rise-in"
+              className="group border-b border-r border-border p-4 transition-colors hover:bg-muted lg:[&:nth-child(n+5)]:border-b-0"
             >
-              <div aria-hidden className={`absolute -right-8 -top-8 w-28 h-28 rounded-full blur-2xl opacity-40 group-hover:opacity-80 transition-opacity bg-${k.tone}`} />
-              <div className="relative flex items-start justify-between">
+              <div className="flex items-start justify-between">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{k.label}</div>
                 <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className={`relative mt-2 text-4xl font-semibold tracking-tight tabular-nums text-${k.tone}`}>{k.value}</div>
-              {k.hint && <div className="relative mt-1 text-xs text-muted-foreground">{k.hint}</div>}
+              <div className={`mt-2 text-3xl font-semibold tabular-nums text-${k.tone}`}>{k.value}</div>
+              {k.hint && <div className="mt-1 text-xs text-muted-foreground">{k.hint}</div>}
             </Link>
           ))}
         </div>
