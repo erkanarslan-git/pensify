@@ -19,7 +19,7 @@ import {
 
 interface TypeFull {
   id: string; name: string; code: string; capacity: number; base_occupancy: number; description: string | null;
-  active: boolean; property_id: string | null; planId: string | null; price: number | null; demoPrice: boolean;
+  active: boolean; property_id: string | null; planId: string | null; price: number | null;
 }
 interface Avail { room_type_id: string; total: number; booked: number; free: number }
 
@@ -87,7 +87,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     setProperty(pr.data as Property);
     setTypes((rt.data ?? []).map((x) => {
       const p = (rp.data ?? []).find((y) => y.room_type_id === x.id);
-      return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null, demoPrice: p?.name === "Standard (Demo)" } as TypeFull;
+      return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null } as TypeFull;
     }));
     const liveMap = new Map((live.data ?? []).map((x) => [x.room_id, x.status]));
     setRooms(((rm.data ?? []) as Room[])
@@ -507,7 +507,7 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-2">
-      <div className="font-semibold text-sm">{type.name} <span className="text-xs text-muted-foreground font-normal">· {type.price != null ? t("propertyRooms.perNight", { price: type.price.toFixed(2) }) : t("propertyRooms.noPrice")}</span>{type.demoPrice && <span className="ml-2 text-[10px] font-medium text-warning-foreground">{t("propertyRooms.demoPrice")}</span>}</div>
+      <div className="font-semibold text-sm">{type.name} <span className="text-xs text-muted-foreground font-normal">· {type.price != null ? t("propertyRooms.perNight", { price: type.price.toFixed(2) }) : t("propertyRooms.noPrice")}</span></div>
       {type.price == null ? <p className="text-xs text-muted-foreground">{t("propertyRooms.err.no_rate_plan")}</p> : (
         <div className="flex flex-wrap items-end gap-2 text-xs">
           <label className="space-y-1"><span className="block text-muted-foreground">{t("propertyRooms.from")}</span>

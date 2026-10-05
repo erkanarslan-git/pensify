@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getTodayDispatch, simulateReply } from "@/lib/dispatch.functions";
-import { Eye, Check, Play, CheckCircle2, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { getTodayDispatch } from "@/lib/dispatch.functions";
+import { Eye } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 
@@ -17,24 +16,12 @@ export const Route = createFileRoute("/_authenticated/dispatch")({
 
 function DispatchPage() {
   const fetchToday = useServerFn(getTodayDispatch);
-  const replyFn = useServerFn(simulateReply);
-  const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["dispatch", "today"],
     queryFn: () => fetchToday(),
   });
 
-  const reply = useMutation({
-    mutationFn: (v: { cleanerId: string; text?: string; action?: "accept" | "start" | "complete" | "problem"; taskId?: string }) =>
-      replyFn({ data: v }),
-    onSuccess: (r: any) => {
-      if (r.applied) toast.success(`${r.parsed}: Aufgabe → ${r.taskStatus}${r.roomStatus ? `, Zimmer → ${r.roomStatus}` : ""}`);
-      else toast.warning(`Nicht angewendet (${r.parsed}${r.error ? `: ${r.error}` : ""})`);
-      qc.invalidateQueries({ queryKey: ["dispatch"] });
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
   const [previewBody, setPreviewBody] = useState<string | null>(null);
 
 
@@ -108,34 +95,6 @@ function DispatchPage() {
                             </span>
                             <TaskStatusBadge status={t.status} />
                           </div>
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            <ActionBtn
-                              icon={Check}
-                              label="Accept"
-                              disabled={reply.isPending || ["accepted", "in_progress", "completed"].includes(t.status)}
-                              onClick={() => reply.mutate({ cleanerId: c.id, action: "accept", taskId: t.id })}
-                            />
-                            <ActionBtn
-                              icon={Play}
-                              label="Start"
-                              disabled={reply.isPending || ["in_progress", "completed"].includes(t.status)}
-                              onClick={() => reply.mutate({ cleanerId: c.id, action: "start", taskId: t.id })}
-                            />
-                            <ActionBtn
-                              icon={CheckCircle2}
-                              label="Complete"
-                              tone="success"
-                              disabled={reply.isPending || t.status === "completed"}
-                              onClick={() => reply.mutate({ cleanerId: c.id, action: "complete", taskId: t.id })}
-                            />
-                            <ActionBtn
-                              icon={AlertTriangle}
-                              label="Problem"
-                              tone="warning"
-                              disabled={reply.isPending || t.status === "problem"}
-                              onClick={() => reply.mutate({ cleanerId: c.id, action: "problem", taskId: t.id })}
-                            />
-                          </div>
                         </li>
                       ))}
                     </ul>
@@ -176,24 +135,6 @@ function DispatchPage() {
       </Dialog>
 
     </AppShell>
-  );
-}
-
-function ActionBtn({
-  icon: Icon, label, onClick, disabled, tone,
-}: { icon: any; label: string; onClick: () => void; disabled?: boolean; tone?: "success" | "warning" }) {
-  const toneCls =
-    tone === "success" ? "border-success/40 text-success hover:bg-success/10"
-    : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/10"
-    : "border-border hover:bg-accent";
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition ${toneCls} disabled:opacity-40 disabled:cursor-not-allowed`}
-    >
-      <Icon className="w-3 h-3" /> {label}
-    </button>
   );
 }
 

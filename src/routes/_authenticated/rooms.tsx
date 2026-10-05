@@ -35,7 +35,6 @@ export type RoomStatus = "available" | "occupied" | "cleaning_required" | "clean
 
 export interface Property { id: string; name: string; address: string; city_id: string | null; organization_id: string }
 export interface RoomType { id: string; name: string; code?: string; property_id: string | null }
-interface City { id: string; name: string }
 export interface Cleaner { id: string; full_name: string; active: boolean }
 export interface Room {
   id: string;
@@ -65,7 +64,6 @@ function RoomsPage() {
 
 export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const { t } = useTranslation();
-  const [cities, setCities] = useState<City[]>([]);
   const [allProperties, setProperties] = useState<Property[]>([]);
   const [allRooms, setRooms] = useState<Room[]>([]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
@@ -90,8 +88,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [ci, pr, rm, cl, rt, live] = await Promise.all([
-        supabase.from("cities").select("id,name").order("name"),
+      const [pr, rm, cl, rt, live] = await Promise.all([
         supabase.from("properties").select("id,name,address,city_id,organization_id").order("name"),
         supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,key_code,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
@@ -99,7 +96,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
         supabase.from("room_types").select("id,name,code,property_id").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
-      const critical = [["properties", pr.error], ["rooms", rm.error], ["cities", ci.error]] as const;
+      const critical = [["properties", pr.error], ["rooms", rm.error]] as const;
       const failed = critical.find(([, e]) => e);
       for (const [name, res] of [["cleaners", cl], ["room_types", rt], ["room_operational_status", live]] as const) {
         if (res.error) console.error(`[rooms] ${name} query failed:`, res.error.code, res.error.message);
@@ -113,7 +110,6 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       }
       setLoadError(null);
       setRoomTypes((rt.data ?? []) as RoomType[]);
-      setCities((ci.data ?? []) as City[]);
       setProperties((pr.data ?? []) as Property[]);
       const liveMap = new Map((live.data ?? []).map((x) => [x.room_id, x.status]));
       setRooms(((rm.data ?? []) as Room[]).map((r) => ({ ...r, status: (liveMap.get(r.id) ?? r.status) as RoomStatus })));
