@@ -21,6 +21,7 @@ import {
 interface TypeFull {
   id: string; name: string; code: string; capacity: number; base_occupancy: number; description: string | null;
   active: boolean; property_id: string | null; planId: string | null; price: number | null;
+  guestPrices: Record<string, number>;
 }
 interface Avail { room_type_id: string; total: number; booked: number; free: number }
 
@@ -69,7 +70,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     const [pr, rt, rp, rm, cl, live, av] = await Promise.all([
       supabase.from("properties").select("id,name,city_id,organization_id").eq("id", propertyId).maybeSingle(),
       supabase.from("room_types").select("id,name,code,capacity,base_occupancy,description,active,property_id").eq("property_id", propertyId).order("capacity").order("name"),
-      supabase.from("rate_plans").select("id,room_type_id,name,base_price,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
+      supabase.from("rate_plans").select("id,room_type_id,name,base_price,guest_prices,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
       supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id").eq("property_id", propertyId).order("number"),
       supabase.from("cleaners").select("id,full_name,active").order("full_name"),
       supabase.from("room_operational_status").select("room_id,status"),
@@ -89,7 +90,8 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     setProperty(pr.data as Property);
     setTypes((rt.data ?? []).map((x) => {
       const p = (rp.data ?? []).find((y) => y.room_type_id === x.id);
-      return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null } as TypeFull;
+      return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null,
+        guestPrices: (p?.guest_prices && typeof p.guest_prices === "object" ? p.guest_prices : {}) as Record<string, number> } as TypeFull;
     }));
     const liveMap = new Map((live.data ?? []).map((x) => [x.room_id, x.status]));
     setRooms(((rm.data ?? []) as Room[])
@@ -494,6 +496,25 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
   const [prices, setPrices] = useState<Record<number, string>>({});
   const [busy, setBusy] = useState(false);
   const guests = Array.from({ length: type.capacity }, (_, i) => i + 1);
+  const [std, setStd] = useState<Record<number, string>>(() =>
+    Object.fromEntries(guests.map((g) => [g, type.guestPrices[String(g)] != null ? String(type.guestPrices[String(g)]) : ""])));
+  const [stdBusy, setStdBusy] = useState(false);
+
+  const saveStd = async () => {
+    const payload: Record<string, number> = {};
+    for (const g of guests) {
+      const v = std[g];
+      if (v === undefined || v === "") continue;
+      const n = Number(v);
+      if (!(n >= 0) || n > 100000) return toast.error(t("propertyRooms.err.invalid_price"));
+      payload[String(g)] = n;
+    }
+    setStdBusy(true);
+    const { error } = await supabase.rpc("save_guest_prices" as never, { _room_type_id: type.id, _prices: payload } as never);
+    setStdBusy(false);
+    if (error) return toast.error(friendlyError(t, error));
+    toast.success(t("propertyRooms.pricesSaved"));
+  };
 
   const save = async () => {
     const payload: Record<string, number> = {};
