@@ -1,0 +1,1 @@
+ALTER TABLE public.channel_accounts DROP CONSTRAINT IF EXISTS channel_accounts_organization_id_provider_key;
