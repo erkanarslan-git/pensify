@@ -15,7 +15,11 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { roomTypeVisual } from "@/lib/room-type-visuals";
 
+const ROOM_STATUSES = ["available", "occupied", "cleaning_required", "cleaning_in_progress", "cleaned", "checkout_today", "maintenance"];
+
 export const Route = createFileRoute("/_authenticated/rooms")({
+  validateSearch: (s: Record<string, unknown>): { status?: string } =>
+    typeof s.status === "string" && ROOM_STATUSES.includes(s.status) ? { status: s.status } : {},
   head: () => ({ meta: [
     { title: "Zimmerübersicht — Pensify" },
     { name: "description", content: "Zimmer nach Pension, Typ und Status verwalten." },
@@ -68,7 +72,8 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const [allProperties, setProperties] = useState<Property[]>([]);
   const [allRooms, setRooms] = useState<Room[]>([]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
-  const [filter, setFilter] = useState<RoomStatus | "all">("all");
+  const initialStatus = Route.useSearch().status;
+  const [filter, setFilter] = useState<RoomStatus | "all">((initialStatus as RoomStatus) ?? "all");
   const [editing, setEditing] = useState<Room | null>(null);
   const [creating, setCreating] = useState<{ propertyId: string } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
