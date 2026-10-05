@@ -161,3 +161,11 @@
     letter-spacing: -0.02em;
   }
 }
+
+@source inline("bg-primary bg-info bg-success bg-warning bg-destructive text-primary text-info text-success text-warning text-destructive");
+
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes glow-drift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,20px) scale(1.15); } }
+@utility animate-rise-in { animation: rise-in 0.5s cubic-bezier(.2,.8,.2,1) both; }
+@utility animate-glow-drift { animation: glow-drift 14s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .animate-rise-in, .animate-glow-drift { animation: none; } }
