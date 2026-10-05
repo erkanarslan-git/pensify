@@ -361,7 +361,10 @@
     "roomNumber": "Oda numarası",
     "roomIdentity": "Oda {{number}} · {{type}}",
     "codeHint": "{{code}}, {{name}} anlamına gelir",
-    "typeDistribution": "Oda tiplerine göre dağılım"
+    "typeDistribution": "Oda tiplerine göre dağılım",
+    "stdGuestPrices": "Kişi sayısına göre standart gecelik fiyat",
+    "stdGuestPricesHint": "Sezon fiyatı yoksa her zaman bu kullanılır. Boş = temel fiyat.",
+    "seasonPrices": "Belirli tarih aralığı için sezon fiyatı (isteğe bağlı)"
   },
   "import": {
     "title": "Veri İçe Aktarma (WordPress)",
