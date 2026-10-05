@@ -223,3 +223,69 @@ export const fetchWuBookNewBookingsReadOnly = createServerFn({ method: "POST" })
     await audit(orgId, context.userId, "fetch_new_bookings_readonly", { lcode: acc.wubook_lcode, ok: res.ok });
     return res.ok ? { ok: true as const, lcode: acc.wubook_lcode, pending: res.data } : { ok: false as const, errorMessage: res.errorMessage };
   });
+
+// ---------------- Real (pilot) WuBook property per Pensify property (admin only) ----------------
+// Creates a NON-test WuBook account+property and links it to one Pensify property.
+// Stays disabled + dry-run: no rooms, prices or availability are sent here.
+const pilotSchema = testPropertySchema.extend({ property_id: z.string().uuid() });
+
+export const listWuBookPilotProperties = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { orgId } = await requireOrgRole(context.supabase, ADMIN_ROLES);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("channel_property_mappings")
+      .select("id, property_id, external_property_code, enabled, created_at, account:channel_accounts!inner(is_test, wubook_acode)")
+      .eq("organization_id", orgId);
+    return (data ?? [])
+      .filter((m) => !(m.account as { is_test: boolean } | null)?.is_test)
+      .map((m) => ({ id: m.id, propertyId: m.property_id, lcode: m.external_property_code, enabled: m.enabled, createdAt: m.created_at, acode: (m.account as { wubook_acode: string | null } | null)?.wubook_acode ?? null }));
+  });
+
+export const createWuBookPilotProperty = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => {
+    const r = pilotSchema.safeParse(d);
+    if (r.success) return r.data;
+    throw new Error(`Bitte prüfen: ${[...new Set(r.error.issues.map((i) => String(i.path[0])))].join(", ")}`);
+  })
+  .handler(async ({ data, context }) => {
+    const { orgId } = await requireOrgRole(context.supabase, ADMIN_ROLES);
+    if (rateLimited(`wubook-pilot:${orgId}`, 2, 10 * 60_000)) return { ok: false as const, errorMessage: "Zu viele Versuche. Bitte in 10 Minuten erneut." };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prop } = await supabaseAdmin.from("properties").select("id").eq("id", data.property_id).eq("organization_id", orgId).maybeSingle();
+    if (!prop) return { ok: false as const, errorMessage: "Pension nicht gefunden." };
+    const { data: existing } = await supabaseAdmin
+      .from("channel_property_mappings")
+      .select("id, external_property_code, account:channel_accounts!inner(is_test)")
+      .eq("organization_id", orgId)
+      .eq("property_id", data.property_id);
+    const real = (existing ?? []).find((m) => !(m.account as { is_test: boolean } | null)?.is_test);
+    if (real) return { ok: false as const, errorMessage: `Diese Pension ist bereits mit WuBook verbunden (Code ${real.external_property_code}).` };
+
+    const { data: acc, error } = await supabaseAdmin
+      .from("channel_accounts")
+      .insert({ organization_id: orgId, provider: "wubook", is_test: false, enabled: false, dry_run: true, property_code: null } as never)
+      .select("id")
+      .single();
+    if (error || !acc) return { ok: false as const, errorMessage: "Konto konnte nicht vorbereitet werden." };
+
+    const { createTestProperty, run } = await import("@/lib/wubook/actions.server");
+    const { confirm: _c, property_id: _p, ...input } = data;
+    const res = await run(() => createTestProperty(input));
+    if (!res.ok) {
+      await supabaseAdmin.from("channel_accounts").delete().eq("id", acc.id);
+      await audit(orgId, context.userId, "pilot_property_failed", { property_id: data.property_id, error_code: res.errorCode });
+      return { ok: false as const, errorMessage: res.errorMessage };
+    }
+    await supabaseAdmin
+      .from("channel_accounts")
+      .update({ wubook_acode: res.data.acode, wubook_lcode: res.data.lcode, property_code: res.data.lcode, last_error: null } as never)
+      .eq("id", acc.id);
+    await supabaseAdmin.from("channel_property_mappings").insert({
+      organization_id: orgId, account_id: acc.id, property_id: data.property_id, external_property_code: res.data.lcode, enabled: false,
+    } as never);
+    await audit(orgId, context.userId, "pilot_property_created", { property_id: data.property_id, lcode: res.data.lcode, acode: res.data.acode });
+    return { ok: true as const, acode: res.data.acode, lcode: res.data.lcode, password: res.data.password };
+  });
