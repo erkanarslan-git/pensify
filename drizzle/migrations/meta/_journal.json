@@ -183,6 +183,13 @@
       "when": 1791161705931,
       "tag": "0025_reservation_trash_and_room_key_code",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1791162657304,
+      "tag": "0026_reversible_cleaning_task_transitions",
+      "breakpoints": true
     }
   ]
 }
