@@ -141,8 +141,13 @@ export type Database = {
         Row: {
           booking_ref: string
           channel: string | null
+          company_address: string | null
+          company_contact: string | null
+          company_name: string | null
+          company_vat_id: string | null
           created_at: string
           created_by: string | null
+          customer_type: string
           id: string
           notes: string | null
           organization_id: string
@@ -154,8 +159,13 @@ export type Database = {
         Insert: {
           booking_ref?: string
           channel?: string | null
+          company_address?: string | null
+          company_contact?: string | null
+          company_name?: string | null
+          company_vat_id?: string | null
           created_at?: string
           created_by?: string | null
+          customer_type?: string
           id?: string
           notes?: string | null
           organization_id?: string
@@ -167,8 +177,13 @@ export type Database = {
         Update: {
           booking_ref?: string
           channel?: string | null
+          company_address?: string | null
+          company_contact?: string | null
+          company_name?: string | null
+          company_vat_id?: string | null
           created_at?: string
           created_by?: string | null
+          customer_type?: string
           id?: string
           notes?: string | null
           organization_id?: string
@@ -1267,6 +1282,7 @@ export type Database = {
           code: string
           created_at: string
           currency: string
+          guest_prices: Json
           id: string
           min_stay: number
           name: string
@@ -1280,6 +1296,7 @@ export type Database = {
           code: string
           created_at?: string
           currency?: string
+          guest_prices?: Json
           id?: string
           min_stay?: number
           name: string
@@ -1293,6 +1310,7 @@ export type Database = {
           code?: string
           created_at?: string
           currency?: string
+          guest_prices?: Json
           id?: string
           min_stay?: number
           name?: string
@@ -1330,8 +1348,10 @@ export type Database = {
           channel: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
+          company_name: string | null
           created_at: string
           created_by: string | null
+          customer_type: string
           delete_reason: string | null
           deleted_at: string | null
           deleted_by: string | null
@@ -1363,8 +1383,10 @@ export type Database = {
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
+          company_name?: string | null
           created_at?: string
           created_by?: string | null
+          customer_type?: string
           delete_reason?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -1396,8 +1418,10 @@ export type Database = {
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in?: string
           check_out?: string
+          company_name?: string | null
           created_at?: string
           created_by?: string | null
+          customer_type?: string
           delete_reason?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -2204,6 +2228,10 @@ export type Database = {
           room_type_id: string
           total: number
         }[]
+      }
+      save_guest_prices: {
+        Args: { _prices: Json; _room_type_id: string }
+        Returns: undefined
       }
       save_occupancy_prices: {
         Args: {

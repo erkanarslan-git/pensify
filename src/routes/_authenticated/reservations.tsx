@@ -31,6 +31,8 @@ interface Row {
   check_out: string;
   guests_count: number;
   revenue: number;
+  customer_type?: string | null;
+  company_name?: string | null;
   room: { number: string; property_id: string } | null;
   property: { id: string; name: string } | null;
 }
@@ -67,7 +69,7 @@ function ReservationsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reservations")
-        .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,room:rooms(number,property_id),property:properties(id,name)")
+        .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,customer_type,company_name,room:rooms(number,property_id),property:properties(id,name)")
         .is("deleted_at", null)
         .order("check_in", { ascending: true })
         .limit(1000);
@@ -94,7 +96,7 @@ function ReservationsPage() {
       rows.filter((r) => {
         if (src !== "all" && normalizeChannel(r.channel) !== src) return false;
         if (prop !== "all" && r.property?.id !== prop) return false;
-        if (q && !(r.guest_name ?? "").toLowerCase().includes(q.toLowerCase())) return false;
+        if (q && !`${r.guest_name ?? ""} ${r.company_name ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
         if (period === "upcoming" && r.check_out < today) return false;
         if (period === "today" && !(r.check_in <= today && r.check_out >= today)) return false;
         if (period === "past" && r.check_out >= today) return false;
@@ -226,7 +228,8 @@ function ReservationsPage() {
                       >
                         <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 text-primary-foreground" style={{ background: sourceColor(r.channel) }}>{sourceLabel(r.channel)}</span>
                         <div className="min-w-[160px] flex-1">
-                          <div className="font-medium">{r.guest_name}</div>
+                          <div className="font-medium">{r.customer_type === "company" ? (r.company_name ?? r.guest_name) : r.guest_name} <span className="ml-1 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-border text-muted-foreground">{r.customer_type === "company" ? "Firma" : "Privat"}</span></div>
+                          {r.customer_type === "company" && r.company_name && r.guest_name !== r.company_name && <div className="text-xs text-muted-foreground">Gast: {r.guest_name}</div>}
                           <div className="text-xs text-muted-foreground">
                             {sourceLabel(r.channel)} · {r.guests_count} Gäste
                           </div>

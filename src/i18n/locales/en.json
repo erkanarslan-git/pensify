@@ -361,7 +361,10 @@
     "roomNumber": "Room number",
     "roomIdentity": "Room {{number}} · {{type}}",
     "codeHint": "{{code}} means {{name}}",
-    "typeDistribution": "Room distribution by type"
+    "typeDistribution": "Room distribution by type",
+    "stdGuestPrices": "Standard nightly price by number of guests",
+    "stdGuestPricesHint": "Used whenever no seasonal price is set. Empty = base price.",
+    "seasonPrices": "Seasonal prices for a date range (optional)"
   },
   "import": {
     "title": "Data import (WordPress)",

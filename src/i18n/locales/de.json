@@ -361,7 +361,10 @@
     "roomNumber": "Zimmernummer",
     "roomIdentity": "Zimmer {{number}} · {{type}}",
     "codeHint": "{{code}} steht für {{name}}",
-    "typeDistribution": "Zimmerverteilung nach Typ"
+    "typeDistribution": "Zimmerverteilung nach Typ",
+    "stdGuestPrices": "Standardpreis pro Nacht nach Personenzahl",
+    "stdGuestPricesHint": "Gilt immer, wenn kein Saisonpreis gesetzt ist. Leer = Grundpreis.",
+    "seasonPrices": "Saisonpreise für einen Zeitraum (optional)"
   },
   "import": {
     "title": "Datenimport (WordPress)",

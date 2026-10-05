@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, User, Building2 } from "lucide-react";
 import { sourceLabel, type ActiveChannel } from "@/lib/guest-color";
 import { useEnabledChannels } from "@/lib/channels";
 
@@ -68,6 +68,11 @@ export function NewReservationDialog({
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [guestName, setGuestName] = useState("");
+  const [customerType, setCustomerType] = useState<"person" | "company">("person");
+  const [companyName, setCompanyName] = useState("");
+  const [companyContact, setCompanyContact] = useState("");
+  const [companyVat, setCompanyVat] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [channel, setChannel] = useState<Channel>("direct");
@@ -176,7 +181,8 @@ export function NewReservationDialog({
     setLines((ls) => (ls.length > 1 ? ls.filter((l) => l.uid !== id) : ls));
 
   const submit = async () => {
-    if (!guestName.trim()) return toast.error("Gastname erforderlich");
+    if (customerType === "company" && !companyName.trim()) return toast.error("Firmenname erforderlich");
+    if (customerType === "person" && !guestName.trim()) return toast.error("Gastname erforderlich");
     if (lines.length === 0) return toast.error("Mindestens ein Zimmer hinzufügen");
     for (const l of lines) {
       if (!l.propertyId || !l.roomId)
@@ -191,6 +197,11 @@ export function NewReservationDialog({
     // One database transaction: booking + all rooms succeed together or not at all.
     const { error } = await supabase.rpc("create_booking_with_reservations", {
       _booking: {
+        customer_type: customerType,
+        company_name: companyName.trim(),
+        company_vat_id: companyVat.trim(),
+        company_address: companyAddress.trim(),
+        company_contact: companyContact.trim(),
         guest_name: guestName.trim(),
         guest_email: guestEmail.trim(),
         guest_phone: guestPhone.trim(),
@@ -220,6 +231,7 @@ export function NewReservationDialog({
     setGuestEmail("");
     setGuestPhone("");
     setNotes("");
+    setCustomerType("person"); setCompanyName(""); setCompanyContact(""); setCompanyVat(""); setCompanyAddress("");
   };
 
   return (
@@ -236,15 +248,53 @@ export function NewReservationDialog({
           {/* Guest information */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-full space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Bucht eine Person oder eine Firma? *</Label>
+              <div role="radiogroup" className="grid grid-cols-2 gap-2">
+                {(["person", "company"] as const).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    role="radio"
+                    aria-checked={customerType === k}
+                    onClick={() => setCustomerType(k)}
+                    className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-sm font-medium ${customerType === k ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card hover:bg-accent"}`}
+                  >
+                    {k === "person" ? <User className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
+                    {k === "person" ? "Privatperson" : "Firma"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {customerType === "company" && (
+              <>
+                <div className="col-span-full space-y-2">
+                  <Label htmlFor="companyName" className="text-xs text-muted-foreground uppercase tracking-wider">Firmenname *</Label>
+                  <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={200} className="bg-card" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="companyContact" className="text-xs text-muted-foreground uppercase tracking-wider">Ansprechpartner</Label>
+                  <Input id="companyContact" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} maxLength={200} className="bg-card" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="companyVat" className="text-xs text-muted-foreground uppercase tracking-wider">USt-IdNr.</Label>
+                  <Input id="companyVat" value={companyVat} onChange={(e) => setCompanyVat(e.target.value)} maxLength={50} placeholder="DE123456789" className="bg-card" />
+                </div>
+                <div className="col-span-full space-y-2">
+                  <Label htmlFor="companyAddress" className="text-xs text-muted-foreground uppercase tracking-wider">Rechnungsadresse</Label>
+                  <Input id="companyAddress" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} maxLength={300} placeholder="Straße, PLZ, Ort" className="bg-card" />
+                </div>
+              </>
+            )}
+            <div className="col-span-full space-y-2">
               <Label htmlFor="guestName" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Gastname *
+                {customerType === "company" ? "Name des Gastes (optional)" : "Gastname *"}
               </Label>
               <Input
                 id="guestName"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
                 maxLength={100}
-                placeholder="Vor- und Nachname"
+                placeholder={customerType === "company" ? "Wer übernachtet? (z. B. Monteur)" : "Vor- und Nachname"}
                 className="bg-card"
               />
             </div>

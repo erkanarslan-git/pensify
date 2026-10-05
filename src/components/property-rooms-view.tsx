@@ -21,6 +21,7 @@ import {
 interface TypeFull {
   id: string; name: string; code: string; capacity: number; base_occupancy: number; description: string | null;
   active: boolean; property_id: string | null; planId: string | null; price: number | null;
+  guestPrices: Record<string, number>;
 }
 interface Avail { room_type_id: string; total: number; booked: number; free: number }
 
@@ -69,7 +70,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     const [pr, rt, rp, rm, cl, live, av] = await Promise.all([
       supabase.from("properties").select("id,name,city_id,organization_id").eq("id", propertyId).maybeSingle(),
       supabase.from("room_types").select("id,name,code,capacity,base_occupancy,description,active,property_id").eq("property_id", propertyId).order("capacity").order("name"),
-      supabase.from("rate_plans").select("id,room_type_id,name,base_price,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
+      supabase.from("rate_plans").select("id,room_type_id,name,base_price,guest_prices,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
       supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id").eq("property_id", propertyId).order("number"),
       supabase.from("cleaners").select("id,full_name,active").order("full_name"),
       supabase.from("room_operational_status").select("room_id,status"),
@@ -89,7 +90,8 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     setProperty(pr.data as Property);
     setTypes((rt.data ?? []).map((x) => {
       const p = (rp.data ?? []).find((y) => y.room_type_id === x.id);
-      return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null } as TypeFull;
+      return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null,
+        guestPrices: (p?.guest_prices && typeof p.guest_prices === "object" ? p.guest_prices : {}) as Record<string, number> } as TypeFull;
     }));
     const liveMap = new Map((live.data ?? []).map((x) => [x.room_id, x.status]));
     setRooms(((rm.data ?? []) as Room[])
@@ -494,6 +496,25 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
   const [prices, setPrices] = useState<Record<number, string>>({});
   const [busy, setBusy] = useState(false);
   const guests = Array.from({ length: type.capacity }, (_, i) => i + 1);
+  const [std, setStd] = useState<Record<number, string>>(() =>
+    Object.fromEntries(guests.map((g) => [g, type.guestPrices[String(g)] != null ? String(type.guestPrices[String(g)]) : ""])));
+  const [stdBusy, setStdBusy] = useState(false);
+
+  const saveStd = async () => {
+    const payload: Record<string, number> = {};
+    for (const g of guests) {
+      const v = std[g];
+      if (v === undefined || v === "") continue;
+      const n = Number(v);
+      if (!(n >= 0) || n > 100000) return toast.error(t("propertyRooms.err.invalid_price"));
+      payload[String(g)] = n;
+    }
+    setStdBusy(true);
+    const { error } = await supabase.rpc("save_guest_prices" as never, { _room_type_id: type.id, _prices: payload } as never);
+    setStdBusy(false);
+    if (error) return toast.error(friendlyError(t, error));
+    toast.success(t("propertyRooms.pricesSaved"));
+  };
 
   const save = async () => {
     const payload: Record<string, number> = {};
@@ -515,8 +536,22 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-2">
       <div className="font-semibold text-sm">{type.name} <span className="text-xs text-muted-foreground font-normal">· {type.price != null ? t("propertyRooms.perNight", { price: type.price.toFixed(2) }) : t("propertyRooms.noPrice")}</span></div>
-      {type.price == null ? <p className="text-xs text-muted-foreground">{t("propertyRooms.err.no_rate_plan")}</p> : (
-        <div className="flex flex-wrap items-end gap-2 text-xs">
+      {type.price == null ? <p className="text-xs text-muted-foreground">{t("propertyRooms.err.no_rate_plan")}</p> : (<>
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium">{t("propertyRooms.stdGuestPrices")}</p>
+          <p className="text-[11px] text-muted-foreground">{t("propertyRooms.stdGuestPricesHint")}</p>
+          <div className="flex flex-wrap items-end gap-2 text-xs">
+            {guests.map((g) => (
+              <label key={g} className="space-y-1 w-28"><span className="block text-muted-foreground">{t("propertyRooms.guestPrice", { n: g })}</span>
+                <input type="number" min={0} step="0.01" className={input} placeholder={type.price?.toFixed(2)} value={std[g] ?? ""} disabled={!canManage}
+                  onChange={(e) => setStd((s) => ({ ...s, [g]: e.target.value }))} /></label>
+            ))}
+            {canManage && <button disabled={stdBusy} onClick={saveStd} className={primaryBtn}>{stdBusy ? t("propertyRooms.saving") : t("propertyRooms.save")}</button>}
+          </div>
+        </div>
+        <details className="pt-2 border-t border-border">
+          <summary className="text-xs font-medium cursor-pointer">{t("propertyRooms.seasonPrices")}</summary>
+        <div className="flex flex-wrap items-end gap-2 text-xs mt-2">
           <label className="space-y-1"><span className="block text-muted-foreground">{t("propertyRooms.from")}</span>
             <input type="date" className={input} value={from} onChange={(e) => setFrom(e.target.value)} disabled={!canManage} /></label>
           <label className="space-y-1"><span className="block text-muted-foreground">{t("propertyRooms.to")}</span>
@@ -528,7 +563,8 @@ function PriceCard({ type, canManage }: { type: TypeFull; canManage: boolean }) 
           ))}
           {canManage && <button disabled={busy} onClick={save} className={primaryBtn}>{busy ? t("propertyRooms.saving") : t("propertyRooms.save")}</button>}
         </div>
-      )}
+        </details>
+      </>)}
     </div>
   );
 }
