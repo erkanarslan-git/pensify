@@ -19,6 +19,10 @@ export const Route = createFileRoute("/_authenticated/")({
     meta: [
       { title: "Dashboard — Pensify" },
       { name: "description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
+      { property: "og:title", content: "Dashboard — Pensify" },
+      { property: "og:description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Dashboard,

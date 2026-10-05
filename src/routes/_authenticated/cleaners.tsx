@@ -23,7 +23,14 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/cleaners")({
-  head: () => ({ meta: [{ title: "Cleaners — Pensify" }] }),
+  head: () => ({ meta: [
+    { title: "Personal — Pensify" },
+    { name: "description", content: "Reinigungspersonal und Zugangsdaten verwalten." },
+    { property: "og:title", content: "Personal — Pensify" },
+    { property: "og:description", content: "Reinigungspersonal und Zugangsdaten verwalten." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: CleanersPage,
 });
 
@@ -96,7 +103,7 @@ function CleanersPage() {
       setEditing(null);
       toast.success("Gespeichert");
     },
-    onError: () => toast.error("Kayıt tamamlanamadı. E-posta adresini ve bilgileri kontrol edin."),
+    onError: () => toast.error(t("cleaners.saveFailed")),
   });
 
   const remove = useMutation({
@@ -107,7 +114,7 @@ function CleanersPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
       setDeleting(null);
-      toast.success("Gelöscht");
+      toast.success(t("cleaners.deleted"));
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -126,7 +133,7 @@ function CleanersPage() {
     >
       <div className="overflow-hidden border border-border bg-card">
         <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] gap-4 border-b border-border bg-muted px-4 py-2 text-xs font-medium text-muted-foreground md:grid">
-          <span>Personel</span><span>İletişim</span><span>Saat ücreti</span><span>Durum</span><span className="text-right">İşlem</span>
+          <span>{t("cleaners.staff")}</span><span>{t("cleaners.contact")}</span><span>{t("cleaners.hourlyRate")}</span><span>{t("cleaners.status")}</span><span className="text-right">{t("cleaners.action")}</span>
         </div>
         {list.map((c) => {
           return (
@@ -135,14 +142,14 @@ function CleanersPage() {
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-muted text-xs font-semibold">
                   {c.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                 </div>
-                <div className="min-w-0"><div className="truncate font-medium">{c.full_name}</div><div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">{c.user_id ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}{c.user_id ? "Giriş hesabı aktif" : "Eski kayıt · giriş hesabı yok"}</div></div>
+                <div className="min-w-0"><div className="truncate font-medium">{c.full_name}</div><div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">{c.user_id ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}{c.user_id ? t("cleaners.accountActive") : t("cleaners.legacyNoAccount")}</div></div>
               </div>
               <div className="space-y-1 text-sm text-muted-foreground">{c.phone && <div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{c.phone}</div>}{c.email && <div className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{c.email}</div>}</div>
               <div className="text-sm font-medium">{c.hourly_rate == null ? "—" : `€${Number(c.hourly_rate).toFixed(2)}`}</div>
-              <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? "Aktif" : "Pasif"}</Badge></div>
+              <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? t("cleaners.active") : t("cleaners.inactive")}</Badge></div>
               <div className="flex justify-end gap-1">
                 <Button size="sm" variant="outline" onClick={() => setEditing(c)}>
-                  <Pencil className="w-3 h-3 mr-1" /> Düzenle
+                  <Pencil className="w-3 h-3 mr-1" /> {t("common.edit")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setDeleting(c)}>
                   <Trash2 className="w-3 h-3" />
@@ -157,51 +164,51 @@ function CleanersPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing?.id ? "Personeli düzenle" : "Yeni temizlik personeli"}</DialogTitle>
+            <DialogTitle>{editing?.id ? t("cleaners.editStaff") : t("cleaners.newStaff")}</DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-3">
               <div>
-                <Label>Name</Label>
+                <Label>{t("cleaners.name")}</Label>
                 <Input value={editing.full_name ?? ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} />
               </div>
-              {!editing.id && <div className="rounded-md border border-border bg-muted p-3 space-y-3"><div><p className="text-sm font-medium">Giriş bilgileri</p><p className="text-xs text-muted-foreground">Bu bilgilerle personel doğrudan temizlik hesabına giriş yapar.</p></div><div className="grid gap-3 sm:grid-cols-2"><div><Label>E-posta</Label><Input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div><div><Label>Geçici şifre</Label><Input type="text" minLength={8} value={editing.password ?? ""} onChange={(e) => setEditing({ ...editing, password: e.target.value })} /></div></div></div>}
+              {!editing.id && <div className="rounded-md border border-border bg-muted p-3 space-y-3"><div><p className="text-sm font-medium">{t("cleaners.loginDetails")}</p><p className="text-xs text-muted-foreground">{t("cleaners.loginHint")}</p></div><div className="grid gap-3 sm:grid-cols-2"><div><Label>{t("cleaners.email")}</Label><Input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div><div><Label>{t("cleaners.temporaryPassword")}</Label><Input type="text" minLength={8} value={editing.password ?? ""} onChange={(e) => setEditing({ ...editing, password: e.target.value })} /></div></div></div>}
               <div className={`grid gap-3 ${editing.id ? "grid-cols-2" : "grid-cols-1"}`}>
                 <div>
-                  <Label>Telefon</Label>
+                  <Label>{t("cleaners.phone")}</Label>
                   <Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} />
                 </div>
                 {editing.id && <div>
-                  <Label>E-Mail</Label>
+                  <Label>{t("cleaners.email")}</Label>
                   <Input value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} />
                 </div>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Stundenlohn (€)</Label>
+                  <Label>{t("cleaners.hourlyRateEuro")}</Label>
                   <Input type="number" step="0.01" value={editing.hourly_rate ?? ""} onChange={(e) => setEditing({ ...editing, hourly_rate: e.target.value ? Number(e.target.value) : null })} />
                 </div>
                 <div>
-                  <Label>Status</Label>
+                  <Label>{t("cleaners.status")}</Label>
                   <Select value={String(editing.active ?? true)} onValueChange={(v) => setEditing({ ...editing, active: v === "true" })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="true">Aktiv</SelectItem>
-                      <SelectItem value="false">Inaktiv</SelectItem>
+                      <SelectItem value="true">{t("cleaners.active")}</SelectItem>
+                      <SelectItem value="false">{t("cleaners.inactive")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div>
-                <Label>Notiz</Label>
+                <Label>{t("cleaners.notes")}</Label>
                 <Input value={editing.notes ?? ""} onChange={(e) => setEditing({ ...editing, notes: e.target.value })} />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditing(null)}>Abbrechen</Button>
+            <Button variant="ghost" onClick={() => setEditing(null)}>{t("common.cancel")}</Button>
             <Button onClick={() => editing && save.mutate(editing)} disabled={!editing?.full_name || (!editing.id && (!editing.email || (editing.password?.length ?? 0) < 8)) || save.isPending}>
-              Speichern
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -210,14 +217,14 @@ function CleanersPage() {
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Mitarbeiter löschen?</AlertDialogTitle>
+            <AlertDialogTitle>{t("cleaners.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleting?.full_name} wird endgültig gelöscht. Auch vergangene Zeit-Einträge werden entfernt.
+              {t("cleaners.deleteDescription", { name: deleting?.full_name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>Löschen</AlertDialogAction>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>{t("common.delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
