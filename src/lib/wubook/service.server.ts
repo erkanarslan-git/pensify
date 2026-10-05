@@ -10,10 +10,11 @@ const READ_ONLY_METHODS = new Set([
   "push_url",
   "fetch_booking",
   "fetch_new_bookings",
+  "fetch_rooms",
 ]);
 // Explicit admin actions: only callable with adminAction=true from an
 // owner/admin server function, and only against the org's test property.
-const ADMIN_ACTION_METHODS = new Set(["corporate_new_account_and_property", "push_activation"]);
+const ADMIN_ACTION_METHODS = new Set(["corporate_new_account_and_property", "push_activation", "new_room"]);
 // Never callable, in any mode.
 const FORBIDDEN_METHODS = new Set(["mark_bookings"]);
 
