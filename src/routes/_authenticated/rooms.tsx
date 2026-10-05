@@ -304,6 +304,29 @@ export function RoomDialog({
   const [saving, setSaving] = useState(false);
   const [roomTypeId, setRoomTypeId] = useState<string>("");
   const [showKeyCode, setShowKeyCode] = useState(false);
+  const [typeCap, setTypeCap] = useState(0);
+  const [basePrice, setBasePrice] = useState<number | null>(null);
+  const [guestPrices, setGuestPrices] = useState<Record<number, string>>({});
+  const [pricesDirty, setPricesDirty] = useState(false);
+
+  useEffect(() => {
+    setPricesDirty(false);
+    if (!open || !roomTypeId) { setTypeCap(0); setGuestPrices({}); setBasePrice(null); return; }
+    let alive = true;
+    (async () => {
+      const [{ data: rt }, { data: rp }] = await Promise.all([
+        supabase.from("room_types").select("capacity").eq("id", roomTypeId).maybeSingle(),
+        supabase.from("rate_plans").select("base_price,guest_prices").eq("room_type_id", roomTypeId).eq("active", true).order("created_at").limit(1).maybeSingle(),
+      ]);
+      if (!alive) return;
+      const cap = rt?.capacity ?? 0;
+      const gp = (rp?.guest_prices && typeof rp.guest_prices === "object" ? rp.guest_prices : {}) as Record<string, number>;
+      setTypeCap(rp ? cap : 0);
+      setBasePrice(rp ? Number(rp.base_price) : null);
+      setGuestPrices(Object.fromEntries(Array.from({ length: cap }, (_, i) => [i + 1, gp[String(i + 1)] != null ? String(gp[String(i + 1)]) : ""])));
+    })();
+    return () => { alive = false; };
+  }, [open, roomTypeId]);
 
   useEffect(() => {
     if (!open) return;
@@ -361,8 +384,19 @@ export function RoomDialog({
           })()
         : await supabase.from("rooms").update(payload).eq("id", room.id)
       : await supabase.from("rooms").insert(payload);
+    if (error) { setSaving(false); toast.error(t("rooms.actionFailed")); return; }
+    if (roomTypeId && typeCap > 0 && pricesDirty) {
+      const prices: Record<string, number> = {};
+      for (const [k, v] of Object.entries(guestPrices)) {
+        if (v === "") continue;
+        const n = Number(v);
+        if (!(n >= 0) || n > 100000) { setSaving(false); toast.error(t("rooms.invalidPrice")); return; }
+        prices[k] = n;
+      }
+      const { error: pErr } = await supabase.rpc("save_guest_prices", { _room_type_id: roomTypeId, _prices: prices });
+      if (pErr) { setSaving(false); toast.error(t("rooms.pricesFailed")); return; }
+    }
     setSaving(false);
-    if (error) { toast.error(t("rooms.actionFailed")); return; }
     toast.success(room ? t("rooms.updated") : t("rooms.created"));
     onSaved();
     onInvalidate();
@@ -412,6 +446,25 @@ export function RoomDialog({
               {roomTypes.filter((t) => t.property_id === propId).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
           </div>
+          {roomTypeId && typeCap > 0 && (
+            <div className="rounded-md border border-border p-3 space-y-2">
+              <div className="text-xs font-medium">{t("rooms.guestPricesTitle")}</div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {Array.from({ length: typeCap }, (_, i) => i + 1).map((g) => (
+                  <label key={g} className="space-y-1">
+                    <span className="block text-[11px] text-muted-foreground">{t("rooms.guestPriceLabel", { n: g })}</span>
+                    <input type="number" min={0} step="0.01" value={guestPrices[g] ?? ""} placeholder={basePrice?.toFixed(2)}
+                      onChange={(e) => { setPricesDirty(true); setGuestPrices((s) => ({ ...s, [g]: e.target.value })); }}
+                      className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
+                  </label>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground">{t("rooms.guestPricesHint")}</p>
+            </div>
+          )}
+          {roomTypeId && typeCap === 0 && basePrice === null && (
+            <p className="text-[11px] text-muted-foreground">{t("rooms.noRatePlan")}</p>
+          )}
           <div>
             <label className="text-xs text-muted-foreground">{t("rooms.defaultCleaner")}</label>
             <select value={defaultCleanerId} onChange={(e) => setDefaultCleanerId(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
