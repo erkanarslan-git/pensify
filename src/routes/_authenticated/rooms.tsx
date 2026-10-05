@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useEffect, useState } from "react";
-import { Users, Plus, Pencil, Trash2, Eye, EyeOff, Search, KeyRound } from "lucide-react";
+import { Users, Plus, Pencil, Trash2, Eye, EyeOff, Search, KeyRound, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,7 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { roomTypeVisual } from "@/lib/room-type-visuals";
 
 const ROOM_STATUSES = ["available", "occupied", "cleaning_required", "cleaning_in_progress", "cleaned", "checkout_today", "maintenance"];
 
@@ -81,6 +80,12 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [revealedCodes, setRevealedCodes] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<RoomStatus>("available");
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
 
   useEffect(() => {
     (async () => {
@@ -134,6 +139,39 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
     })
     .sort((a, b) => a.number.localeCompare(b.number, "de", { numeric: true }));
   const single = propertyId ? properties[0] : undefined;
+  const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
+  const visibleRooms = list.slice((page - 1) * pageSize, page * pageSize);
+  const allVisibleSelected = visibleRooms.length > 0 && visibleRooms.every((room) => selected.has(room.id));
+
+  useEffect(() => {
+    setPage(1);
+    setSelected(new Set());
+  }, [q, pFilter, tFilter, filter]);
+
+  const toggleRoom = (id: string) => setSelected((current) => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const toggleVisible = () => setSelected((current) => {
+    const next = new Set(current);
+    if (allVisibleSelected) visibleRooms.forEach((room) => next.delete(room.id));
+    else visibleRooms.forEach((room) => next.add(room.id));
+    return next;
+  });
+
+  const applyBulkStatus = async (nextStatus: RoomStatus) => {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    setBulkSaving(true);
+    const { error } = await supabase.from("rooms").update({ status: nextStatus }).in("id", ids);
+    setBulkSaving(false);
+    if (error) { toast.error(t("rooms.actionFailed")); return; }
+    toast.success(t("rooms.bulkUpdated", { count: ids.length }));
+    setSelected(new Set());
+    setRefreshKey((key) => key + 1);
+  };
 
   const remove = async (id: string) => {
     if (!confirm(t("rooms.confirmDelete"))) return;
@@ -172,12 +210,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
         ) : undefined
       }
     >
-      {single && (
-        <nav className="text-xs text-muted-foreground mb-3">
-          <Link to="/properties" className="hover:underline">{t("nav.properties")}</Link> / {single.name} / {t("nav.rooms")}
-        </nav>
-      )}
-      <div className="mb-5 grid gap-2 rounded-lg border border-border bg-card p-3 shadow-soft sm:grid-cols-2 lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(150px,auto))_auto]">
+      <div className="mb-3 grid gap-2 border-y border-border bg-card py-3 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1.4fr)_repeat(3,minmax(150px,auto))_auto]">
         <label className="relative min-w-0 sm:col-span-2 lg:col-span-1">
           <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("rooms.searchPlaceholder")} className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm" />
@@ -205,72 +238,22 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       </div>
 
       {properties.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-4 text-sm space-y-2">
+        <div className="border border-border bg-card p-4 text-sm">
           <p>{t("pensions.noPensions")}</p>
-          <p className="text-muted-foreground">
-            <Link to="/properties" className="text-primary underline underline-offset-2">{t("nav.properties")}</Link>
-          </p>
         </div>
       ) : (
-        <div className="space-y-6">
-        {cities.map((city) => {
-          const cityProps = properties.filter((p) => p.city_id === city.id && (!pFilter || p.id === pFilter));
-          if (cityProps.length === 0) return null;
-          return (
-            <div key={city.id}>
-              <h3 className="text-sm font-semibold tracking-tight mb-2">{city.name}</h3>
-              <div className="space-y-3">
-                {cityProps.map((p) => {
-                  const all = rooms.filter((r) => r.property_id === p.id);
-                  const propRooms = list.filter((r) => r.property_id === p.id);
-                  const free = all.filter((r) => r.status === "available" || r.status === "cleaned").length;
-                  const dirty = all.filter((r) => r.status === "cleaning_required" || r.status === "cleaning_in_progress").length;
-                  const filtering = !!(pFilter || tFilter || filter !== "all" || q);
-                  if (filtering && propRooms.length === 0) return null;
-                  return (
-                    <details key={p.id} open={filtering || !!pFilter} className="group/d overflow-hidden rounded-lg border border-border bg-card shadow-soft">
-                      <summary className="grid cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 bg-muted/40 px-3 py-3 sm:px-4">
-                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-accent text-accent-foreground transition-transform group-open/d:rotate-90">›</span>
-                        <span className="min-w-0"><span className="block truncate font-display text-sm font-semibold">{p.name}</span><span className="block truncate text-xs text-muted-foreground">{p.address}</span></span>
-                        <span className="hidden text-xs text-muted-foreground sm:block">{t("rooms.propertySummary", { rooms: all.length, free, cleaning: dirty })}</span>
-                        <Link to="/properties/$id/rooms" params={{ id: p.id }} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border text-xs hover:bg-accent">
-                          {t("rooms.manage")}
-                        </Link>
-                      </summary>
-                      {propRooms.length === 0 ? (
-                        <div className="px-4 py-3 text-xs text-muted-foreground">{t("rooms.noRooms")}</div>
-                      ) : (
-                        <div className="divide-y divide-border/60 border-t border-border">
-                          {propRooms.map((r) => {
-                            const meta = statusMeta[r.status];
-                            const roomType = roomTypes.find((rt) => rt.id === r.room_type_id);
-                            const typeName = roomType?.name;
-                            const cleaner = cleaners.find((c) => c.id === r.default_cleaner_id);
-                            const visual = roomTypeVisual(roomType?.code);
-                            return (
-                              <div key={r.id} className="group/row grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/40 sm:grid-cols-[110px_minmax(160px,1fr)_90px_minmax(140px,1fr)_120px_auto] sm:px-4">
-                                <div className="flex min-w-0 items-center gap-2"><span className={`h-2.5 w-2.5 shrink-0 rounded-full ${visual.marker}`} /><span className="truncate font-semibold">#{r.number}</span></div>
-                                <div className="col-start-1 flex min-w-0 items-center gap-2 text-xs text-muted-foreground sm:col-start-auto sm:text-sm"><Users className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{r.capacity} · {typeName ?? t("rooms.withoutRoomType")}</span></div>
-                                <div className="hidden text-xs text-muted-foreground sm:block">{floorLabel(r.floor)}</div>
-                                <div className="hidden truncate text-xs text-muted-foreground sm:block">{cleaner?.full_name ?? t("rooms.notAssigned")}</div>
-                                <div className="row-span-2 sm:row-span-1"><Badge tone={meta.tone}>{t(`status.${r.status}`)}</Badge></div>
-                                <div className="flex shrink-0 gap-1">
-                                  <Button variant="ghost" size="icon" onClick={() => setEditing(r)} title={t("common.edit")}><Pencil className="h-4 w-4" /></Button>
-                                  <Button variant="ghost" size="icon" onClick={() => remove(r.id)} title={t("common.delete")} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                                </div>
-                              </div>
-                            );
-                           })}
-                         </div>
-                      )}
-                    </details>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        <>
+          <div className="mb-3 grid grid-cols-2 border border-border bg-card sm:grid-cols-4">
+            {([ ["available", rooms.filter((r) => ["available", "cleaned"].includes(r.status)).length], ["occupied", rooms.filter((r) => ["occupied", "checkout_today"].includes(r.status)).length], ["cleaning_required", rooms.filter((r) => ["cleaning_required", "cleaning_in_progress"].includes(r.status)).length], ["maintenance", rooms.filter((r) => r.status === "maintenance").length] ] as const).map(([status, count]) => (
+              <button key={status} onClick={() => setFilter(status)} className="border-b border-r border-border px-4 py-3 text-left last:border-r-0 sm:border-b-0"><span className="block text-xs text-muted-foreground">{t(`status.${status}`)}</span><strong className="mt-1 block font-display text-xl">{count}</strong></button>
+            ))}
+          </div>
+          {selected.size > 0 && <div className="mb-3 flex flex-wrap items-center gap-2 border border-foreground bg-foreground px-3 py-2 text-background"><span className="mr-auto text-sm font-medium">{t("rooms.selectedCount", { count: selected.size })}</span><select value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value as RoomStatus)} className="h-8 rounded-sm border border-background/30 bg-foreground px-2 text-xs">{(Object.keys(statusMeta) as RoomStatus[]).map((status) => <option key={status} value={status}>{t(`status.${status}`)}</option>)}</select><Button size="sm" variant="secondary" onClick={() => applyBulkStatus(bulkStatus)} disabled={bulkSaving}>{t("rooms.applyStatus")}</Button><Button size="sm" variant="secondary" onClick={() => applyBulkStatus("cleaning_required")} disabled={bulkSaving}><Sparkles className="h-4 w-4" />{t("rooms.sendToCleaning")}</Button></div>}
+          <div className="overflow-hidden border border-border bg-card">
+            {list.length === 0 ? <div className="p-5 text-sm text-muted-foreground">{t("rooms.noRooms")}</div> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] border-collapse text-sm"><thead className="sticky top-0 z-10 bg-muted"><tr className="border-b border-border text-left text-xs font-medium text-muted-foreground"><th className="w-11 px-3 py-2"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} aria-label={t("rooms.selectPage")} /></th><th className="px-3 py-2">{t("rooms.roomNumber")}</th><th className="px-3 py-2">{t("rooms.property")}</th><th className="px-3 py-2">{t("rooms.roomType")}</th><th className="px-3 py-2">{t("rooms.status")}</th><th className="px-3 py-2">{t("rooms.keyCode")}</th><th className="px-3 py-2">{t("rooms.capacity")}</th><th className="px-3 py-2">{t("rooms.floor")}</th><th className="w-24 px-3 py-2 text-right">{t("rooms.actions")}</th></tr></thead><tbody className="divide-y divide-border">{visibleRooms.map((room) => { const property = properties.find((item) => item.id === room.property_id); const roomType = roomTypes.find((item) => item.id === room.room_type_id); const codeVisible = revealedCodes.has(room.id); return <tr key={room.id} className="group transition-colors hover:bg-muted/60"><td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(room.id)} onChange={() => toggleRoom(room.id)} aria-label={t("rooms.selectRoom", { room: room.number })} /></td><td className="px-3 py-2.5 font-semibold">{room.number}</td><td className="max-w-52 px-3 py-2.5"><span className="block truncate font-medium">{property?.name ?? "—"}</span><span className="block truncate text-xs text-muted-foreground">{property?.address}</span></td><td className="px-3 py-2.5">{roomType?.name ?? t("rooms.withoutRoomType")}</td><td className="px-3 py-2.5"><Badge tone={statusMeta[room.status].tone}>{t(`status.${room.status}`)}</Badge></td><td className="px-3 py-2.5"><div className="flex items-center gap-1.5 font-mono"><span>{room.key_code ? (codeVisible ? room.key_code : "••••") : "—"}</span>{room.key_code && <Button variant="ghost" size="icon" onClick={() => setRevealedCodes((current) => { const next = new Set(current); if (next.has(room.id)) next.delete(room.id); else next.add(room.id); return next; })} title={codeVisible ? t("rooms.hideKeyCode") : t("rooms.showKeyCode")}>{codeVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>}</div></td><td className="px-3 py-2.5"><span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{room.capacity}</span></td><td className="px-3 py-2.5 text-muted-foreground">{floorLabel(room.floor)}</td><td className="px-3 py-2 text-right"><Button variant="ghost" size="icon" onClick={() => setEditing(room)} title={t("common.edit")}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => remove(room.id)} title={t("common.delete")} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></td></tr>; })}</tbody></table></div>}
+          </div>
+          {pageCount > 1 && <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground"><span>{t("rooms.page", { page, pages: pageCount })}</span><div className="flex gap-1"><Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage((value) => value - 1)}>{t("rooms.previous")}</Button><Button size="sm" variant="outline" disabled={page === pageCount} onClick={() => setPage((value) => value + 1)}>{t("rooms.next")}</Button></div></div>}
+        </>
       )}
 
       <RoomDialog
