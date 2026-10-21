@@ -62,7 +62,7 @@ function SettingsLayout() {
                     if (isChildRoute) navigate({ to: "/settings" });
                   }
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "bg-accent font-medium" : "hover:bg-accent/50 text-muted-foreground"}`}
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "brand-tile font-medium shadow-sm" : "hover:bg-accent/50 text-muted-foreground"}`}
               >
                 <Icon className="w-4 h-4" /> {t(`pages.settings.tabs.${x.key}`)}
               </button>
