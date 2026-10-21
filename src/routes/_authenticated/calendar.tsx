@@ -388,6 +388,12 @@ function CalendarPage() {
         </div>
       }
     >
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <StatCard label="Belegt heute" value={occupiedToday} highlight />
+        <StatCard label="Frei heute" value={freeToday} />
+        <StatCard label="Reinigung ausstehend" value={needsCleaningCount} tone="warning" />
+        <StatCard label="Wartung" value={maintenanceCount} tone="muted" />
+      </div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <select
           value={propertyId}
