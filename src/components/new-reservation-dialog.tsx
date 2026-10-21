@@ -378,11 +378,11 @@ export function NewReservationDialog({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Zimmer ({lines.length})
+                {t("newRes.rooms", { count: lines.length })}
               </h3>
               <Button type="button" variant="outline" size="sm" onClick={addLine}>
                 <Plus className="w-3.5 h-3.5" />
-                Zimmer hinzufügen
+                {t("newRes.addRoom")}
               </Button>
             </div>
 
@@ -397,7 +397,7 @@ export function NewReservationDialog({
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
                       <div className="col-span-2 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Pension
+                          {t("newRes.property")}
                         </Label>
                         <Select
                           value={l.propertyId}
@@ -417,7 +417,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-2 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Zimmer
+                          {t("newRes.room")}
                         </Label>
                         <Select
                           value={l.roomId}
@@ -438,7 +438,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Check-In
+                          {t("newRes.checkIn")}
                         </Label>
                         <Input
                           type="date"
@@ -449,7 +449,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Check-Out
+                          {t("newRes.checkOut")}
                         </Label>
                         <Input
                           type="date"
@@ -475,7 +475,7 @@ export function NewReservationDialog({
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-4 border-t border-border">
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Gäste
+                          {t("common.guests")}
                         </Label>
                         <Input
                           type="number"
@@ -489,7 +489,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-9 space-y-1.5">
                         <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Betrag (€)
+                          {t("newRes.amount")}
                         </Label>
                         <Input
                           type="number"
@@ -503,20 +503,20 @@ export function NewReservationDialog({
                         />
                         {l.listPrice != null && (
                           <p className="text-[11px] text-muted-foreground">
-                            Berechnet: €{l.listPrice.toFixed(2)}
-                            {l.revenue !== l.listPrice && ` · Abweichung €${(l.listPrice - l.revenue).toFixed(2)}`}
+                            {t("newRes.calculated", { price: l.listPrice.toFixed(2) })}
+                            {l.revenue !== l.listPrice && t("newRes.deviation", { amount: (l.listPrice - l.revenue).toFixed(2) })}
                           </p>
                         )}
                       </div>
                       {l.listPrice != null && l.revenue !== l.listPrice && (
                         <div className="col-span-full space-y-1.5">
                           <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Begründung für Preisänderung *
+                            {t("newRes.discountReason")}
                           </Label>
                           <Input
                             value={l.discountReason}
                             onChange={(e) => updateLine(l.uid, { discountReason: e.target.value })}
-                            placeholder="z. B. Stammgast, Langzeitaufenthalt"
+                            placeholder={t("newRes.discountPlaceholder")}
                             className="bg-background"
                           />
                         </div>
@@ -532,12 +532,12 @@ export function NewReservationDialog({
         {/* Footer */}
         <DialogFooter className="px-6 py-5 border-t border-border bg-muted/30 gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Abbrechen
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={saving}>
             {saving
-              ? "Speichern…"
-              : `Speichern${lines.length > 1 ? ` (${lines.length} Zimmer)` : ""}`}
+              ? t("newRes.saving")
+              : lines.length > 1 ? t("newRes.saveN", { count: lines.length }) : t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>
