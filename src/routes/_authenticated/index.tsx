@@ -112,33 +112,55 @@ function Dashboard() {
         </Button>
       }
     >
-      <div>
-        <div className="grid grid-cols-2 overflow-hidden border border-border bg-card lg:grid-cols-4">
-          {[
-            { label: t("dashboard.totalRooms"), value: totalRooms, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), tone: "primary", to: "/rooms", search: {} },
-            { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), tone: "info", to: "/reservations", search: {} },
-            { label: t("dashboard.available"), value: available, tone: "success", to: "/rooms", search: { status: "available" } },
-            { label: t("dashboard.cleaningPending"), value: cleaningPending, tone: "warning", to: "/cleaning", search: {} },
-            { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, tone: "primary", to: "/cleaning", search: {} },
-            { label: t("dashboard.completedToday"), value: completedToday, tone: "success", to: "/cleaning", search: {} },
-            { label: t("dashboard.checkoutsToday"), value: checkoutToday, tone: "warning", to: "/reservations", search: {} },
-            { label: t("dashboard.maintenance"), value: maintenance, tone: "destructive", to: "/rooms", search: { status: "maintenance" } },
-          ].map((k) => (
-            <Link
-              key={k.label}
-              to={k.to as any}
-              search={k.search as any}
-              className="group border-b border-r border-border p-4 transition-colors hover:bg-muted lg:[&:nth-child(n+5)]:border-b-0"
-            >
-              <div className="flex items-start justify-between">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{k.label}</div>
-                <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className={`mt-2 text-3xl font-semibold tabular-nums text-${k.tone}`}>{k.value}</div>
-              {k.hint && <div className="mt-1 text-xs text-muted-foreground">{k.hint}</div>}
-            </Link>
-          ))}
+      <div className="brand-hero highway-pan relative overflow-hidden rounded-2xl p-6 md:p-8 shadow-elevated">
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden>
+          <path d="M-50 230 C 300 160, 800 300, 1250 180" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="2" />
+          <path className="highway-dash" d="M-50 190 C 300 120, 800 260, 1250 140" fill="none" stroke="var(--brand-orange)" strokeWidth="3" strokeDasharray="40 30" strokeLinecap="round" opacity="0.7" />
+        </svg>
+        <div className="relative flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <div className="text-xs uppercase tracking-widest opacity-70">
+              {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
+            </div>
+            <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">{t("dashboard.title")}</h2>
+            <p className="mt-1 text-sm opacity-75">{t("dashboard.properties", { count: data?.propsCount ?? 0 })} · {totalRooms} {t("dashboard.totalRooms")}</p>
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="text-5xl md:text-6xl font-light tabular-nums">{totalRooms ? Math.round((occupied / totalRooms) * 100) : 0}%</div>
+            <div className="pb-2 text-xs uppercase tracking-wide opacity-75">{t("dashboard.occupied")}</div>
+          </div>
         </div>
+        <div className="relative mt-5 h-2 overflow-hidden rounded-full bg-[color:var(--brand-cream)]/15">
+          <div className="h-full rounded-full transition-all" style={{ width: `${totalRooms ? (occupied / totalRooms) * 100 : 0}%`, background: "linear-gradient(90deg, var(--brand-orange), color-mix(in oklab, var(--brand-orange) 60%, var(--brand-cream)))" }} />
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          { label: t("dashboard.totalRooms"), value: totalRooms, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), tone: "primary", to: "/rooms", search: {} },
+          { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), tone: "info", to: "/reservations", search: {} },
+          { label: t("dashboard.available"), value: available, tone: "success", to: "/rooms", search: { status: "available" } },
+          { label: t("dashboard.cleaningPending"), value: cleaningPending, tone: "warning", to: "/cleaning", search: {} },
+          { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, tone: "primary", to: "/cleaning", search: {} },
+          { label: t("dashboard.completedToday"), value: completedToday, tone: "success", to: "/cleaning", search: {} },
+          { label: t("dashboard.checkoutsToday"), value: checkoutToday, tone: "warning", to: "/reservations", search: {} },
+          { label: t("dashboard.maintenance"), value: maintenance, tone: "destructive", to: "/rooms", search: { status: "maintenance" } },
+        ].map((k) => (
+          <Link
+            key={k.label}
+            to={k.to as any}
+            search={k.search as any}
+            className="brand-card group relative overflow-hidden rounded-xl border border-border p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            <span className={`absolute inset-y-0 left-0 w-1 bg-${k.tone}`} />
+            <div className="flex items-start justify-between">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{k.label}</div>
+              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className={`mt-2 text-3xl font-semibold tabular-nums text-${k.tone}`}>{k.value}</div>
+            {k.hint && <div className="mt-1 text-xs text-muted-foreground">{k.hint}</div>}
+          </Link>
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 mt-6">
