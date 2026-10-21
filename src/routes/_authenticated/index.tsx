@@ -18,10 +18,10 @@ import {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Pensify" },
-      { name: "description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
-      { property: "og:title", content: "Dashboard — Pensify" },
-      { property: "og:description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
+      { title: "Panel — Pensify" },
+      { name: "description", content: "Pansiyonlar, odalar ve temizlik için günlük genel bakış." },
+      { property: "og:title", content: "Panel — Pensify" },
+      { property: "og:description", content: "Pansiyonlar, odalar ve temizlik için günlük genel bakış." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
