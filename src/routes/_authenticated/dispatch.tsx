@@ -33,7 +33,7 @@ function DispatchPage() {
   const date = data.scheduledFor.split("-").reverse().join(".");
 
   return (
-    <AppShell title={copy.title} subtitle={`${copy.subtitle} · ${date}`} actions={<Button asChild variant="outline" size="sm"><Link to="/cleaning">{copy.assign}<ArrowRight className="h-4 w-4 ml-2" /></Link></Button>}>
+    <AppShell title={copy.title} subtitle={`${copy.subtitle} · ${date}`} actions={<Button asChild variant="outline" size="sm"><Link to="/cleaning" aria-label={copy.assign} title={copy.assign}><span className="hidden sm:inline">{copy.assign}</span><ArrowRight className="h-4 w-4 sm:ml-2" /></Link></Button>}>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <Kpi icon={ClipboardList} label={copy.tasks} value={data.tasks.length} highlight />
         <Kpi icon={Users} label={copy.employees} value={data.cleaners.length} />
