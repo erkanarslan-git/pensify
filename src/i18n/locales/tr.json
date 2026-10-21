@@ -679,7 +679,13 @@
     "problemRoom": "Sorunlu oda",
     "roomsCount": "{{count}} oda",
     "dragToMove": "Taşımak için sürükleyin",
-    "pastEditNote": "(Geçmiş — sadece yönetici/admin/sahip düzenleyebilir)"
+    "pastEditNote": "(Geçmiş — sadece yönetici/admin/sahip düzenleyebilir)",
+    "colRoom": "Oda",
+    "keyboardHint": "Klavye navigasyonunu etkinleştirmek için G tuşuna basın (veya buraya tıklayın). Sonra: ok tuşları, Enter, ?",
+    "roomsOccupiedToday": "{{count}} oda · bugün dolu: {{occupied}}",
+    "shortcuts": "Klavye kısayolları",
+    "conflictLine": "Çakışma: oda bu dönemde zaten dolu",
+    "helpToggle": "Bu yardımı aç/kapat"
   },
   "newRes": {
     "title": "Yeni Rezervasyon",

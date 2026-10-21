@@ -679,7 +679,13 @@
     "problemRoom": "Problem-Zimmer",
     "roomsCount": "{{count}} Zimmer",
     "dragToMove": "Ziehen zum Verschieben",
-    "pastEditNote": "(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)"
+    "pastEditNote": "(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)",
+    "colRoom": "Zimmer",
+    "keyboardHint": "Drücke G (oder klicke hier), um die Tastatur-Navigation zu aktivieren. Danach: Pfeiltasten, Enter, ?",
+    "roomsOccupiedToday": "{{count}} Zimmer · heute belegt: {{occupied}}",
+    "shortcuts": "Tastatur-Kürzel",
+    "conflictLine": "Konflikt: Zimmer in diesem Zeitraum bereits belegt",
+    "helpToggle": "Diese Hilfe ein-/ausblenden"
   },
   "newRes": {
     "title": "Neue Buchung",

@@ -679,7 +679,13 @@
     "problemRoom": "Problem room",
     "roomsCount": "{{count}} rooms",
     "dragToMove": "Drag to move",
-    "pastEditNote": "(Past — only managers/admins/owners may edit)"
+    "pastEditNote": "(Past — only managers/admins/owners may edit)",
+    "colRoom": "Room",
+    "keyboardHint": "Press G (or click here) to activate keyboard navigation. Then: arrow keys, Enter, ?",
+    "roomsOccupiedToday": "{{count}} rooms · occupied today: {{occupied}}",
+    "shortcuts": "Keyboard shortcuts",
+    "conflictLine": "Conflict: room already booked in this period",
+    "helpToggle": "Toggle this help"
   },
   "newRes": {
     "title": "New booking",
