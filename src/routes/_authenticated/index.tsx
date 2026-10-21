@@ -132,32 +132,32 @@ function Dashboard() {
           <div className="mt-2 text-sm opacity-85">{occupied} / {totalRooms} {t("dashboard.totalRooms")}</div>
         </Link>
         {[
-          { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" } },
+          { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, tile: "tile-success" },
           "split",
           { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {} },
         ].map((k) => typeof k === "string" ? (
           <div key="split" className="grid grid-cols-2 gap-3">
             {[
-              { label: t("dashboard.cleaningPending"), value: cleaningRooms, hint: `${cleaningPending} ${t("nav.cleaning")}`, to: "/rooms", search: { status: "cleaning_required" }, tone: "text-warning-foreground dark:text-warning" },
-              { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, tone: "text-destructive" },
+              { label: t("dashboard.cleaningPending"), value: cleaningRooms, hint: `${cleaningPending} ${t("nav.cleaning")}`, to: "/rooms", search: { status: "cleaning_required" }, tile: "tile-warning" },
+              { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, tile: "tile-destructive" },
             ].map((s) => (
               <Link key={s.label} to={s.to as any} search={s.search as any}
-                className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:shadow-elevated">
-                <span className="truncate text-sm font-medium">{s.label}</span>
-                <div className={`mt-4 text-4xl font-semibold tabular-nums ${s.tone}`}>{s.value}</div>
-                <div className="mt-2 truncate text-xs text-muted-foreground">{s.hint}</div>
+                className={`group flex min-w-0 flex-col rounded-2xl p-4 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${s.tile}`}>
+                <span className="text-sm font-medium opacity-95">{s.label}</span>
+                <div className="mt-3 text-4xl font-semibold tabular-nums text-white">{s.value}</div>
+                <div className="mt-2 truncate text-xs opacity-85">{s.hint}</div>
               </Link>
             ))}
           </div>
         ) : (
           <Link key={k.label} to={k.to as any} search={k.search as any}
-            className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition hover:shadow-elevated">
+            className={`group rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${k.tile ?? "border border-border bg-card"}`}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{k.label}</span>
-              <span className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition group-hover:bg-primary group-hover:text-primary-foreground"><ArrowUpRight className="h-4 w-4" /></span>
+              <span className={`grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition ${k.tile ? "border border-white/40 text-white group-hover:bg-white group-hover:text-foreground" : "border border-border group-hover:bg-primary group-hover:text-primary-foreground"}`}><ArrowUpRight className="h-4 w-4" /></span>
             </div>
-            <div className="mt-4 text-5xl font-semibold tabular-nums text-foreground">{k.value}</div>
-            <div className="mt-2 text-sm text-muted-foreground">{k.hint}</div>
+            <div className={`mt-4 text-5xl font-semibold tabular-nums ${k.tile ? "text-white" : "text-foreground"}`}>{k.value}</div>
+            <div className={`mt-2 text-sm ${k.tile ? "opacity-85" : "text-muted-foreground"}`}>{k.hint}</div>
           </Link>
         ))}
       </div>
