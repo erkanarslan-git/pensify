@@ -188,3 +188,4 @@
     radial-gradient(120% 80% at 100% 0%, color-mix(in oklab, var(--brand-orange) 9%, transparent), transparent 60%),
     linear-gradient(160deg, var(--card), color-mix(in oklab, var(--card) 92%, var(--brand-navy)));
 }
+@source inline("bg-primary bg-info bg-success bg-warning bg-destructive text-primary text-info text-success text-warning text-destructive");
