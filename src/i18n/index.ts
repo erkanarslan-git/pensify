@@ -6,6 +6,7 @@ import en from "./locales/en.json";
 import tr from "./locales/tr.json";
 import { attendanceTranslations } from "./attendance";
 import { teamSafetyTranslations } from "./team-safety";
+import { bookingAvailabilityTranslations } from "./booking-availability";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -16,9 +17,9 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources: {
-        de: { translation: { ...de, attendance: attendanceTranslations.de, teamSafety: teamSafetyTranslations.de } },
-        en: { translation: { ...en, attendance: attendanceTranslations.en, teamSafety: teamSafetyTranslations.en } },
-        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, teamSafety: teamSafetyTranslations.tr } },
+        de: { translation: { ...de, attendance: attendanceTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de } },
+        en: { translation: { ...en, attendance: attendanceTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en } },
+        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr } },
       },
       fallbackLng: "de",
       supportedLngs: SUPPORTED_LANGS as unknown as string[],

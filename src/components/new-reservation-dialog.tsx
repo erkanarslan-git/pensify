@@ -22,11 +22,13 @@ import { toast } from "sonner";
 import { Plus, Trash2, User, Building2 } from "lucide-react";
 import { sourceLabel, type ActiveChannel } from "@/lib/guest-color";
 import { useEnabledChannels } from "@/lib/channels";
+import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
+import { useTranslation } from "react-i18next";
 
 type Channel = ActiveChannel;
 
 interface Property { id: string; name: string }
-interface Room { id: string; number: string; property_id: string }
+interface Room extends BookableRoom { number: string }
 
 interface RoomLine {
   uid: string;
@@ -64,6 +66,8 @@ export function NewReservationDialog({
   initialRoomNumber,
   onCreated,
 }: Props) {
+  const { t } = useTranslation();
+  const [stays, setStays] = useState<RoomStay[]>([]);
   const today = new Date().toISOString().slice(0, 10);
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -84,10 +88,14 @@ export function NewReservationDialog({
   useEffect(() => {
     if (!open) return;
     (async () => {
-      const [{ data: props }, { data: rms }] = await Promise.all([
+      const [ps, rs, ss] = await Promise.all([
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id").order("number"),
+        supabase.from("rooms").select("id,number,property_id,status,active").order("number"),
+        supabase.from("reservations").select("id,room_id,check_in,check_out,status,deleted_at").is("deleted_at", null).not("status", "in", "(cancelled,no_show)"),
       ]);
+      if (ps.error || rs.error || ss.error) { setRooms([]); setLines([]); toast.error(t("bookingAvailability.failed")); return; }
+      const props = ps.data, rms = rs.data;
+      setStays(ss.data ?? []);
       const p = (props ?? []) as Property[];
       const r = (rms ?? []) as Room[];
       setProperties(p);
@@ -97,7 +105,7 @@ export function NewReservationDialog({
       let pid = initialPropertyId && p.some((x) => x.id === initialPropertyId)
         ? initialPropertyId
         : (p[0]?.id ?? "");
-      const matching = r.filter((x) => x.property_id === pid);
+      const matching = r.filter((x) => x.property_id === pid && canBookRoom(x, startDate, addDays(startDate, 1), ss.data ?? []));
       const initRoom =
         (initialRoomNumber && matching.find((x) => x.number === initialRoomNumber)) ||
         matching[0];
@@ -117,6 +125,14 @@ export function NewReservationDialog({
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    setLines((current) => current.map((line) => {
+      const room = rooms.find((x) => x.id === line.roomId);
+      return room && !canBookRoom(room, line.checkIn, line.checkOut, stays) ? { ...line, roomId: "", listPrice: null } : line;
+    }));
+  }, [open, rooms, stays, priceKeyForAvailability(lines)]);
 
   // Auto-fill price from the room's rate plan whenever room or dates change.
   // Manual edits to the price stay until room/dates change again.
@@ -149,7 +165,7 @@ export function NewReservationDialog({
         if (l.uid !== id) return l;
         const next = { ...l, ...patch };
         if (patch.propertyId && patch.propertyId !== l.propertyId) {
-          const first = rooms.find((r) => r.property_id === patch.propertyId);
+          const first = rooms.find((r) => r.property_id === patch.propertyId && canBookRoom(r, next.checkIn, next.checkOut, stays));
           next.roomId = first?.id ?? "";
         }
         return next;
@@ -160,7 +176,7 @@ export function NewReservationDialog({
   const addLine = () => {
     const last = lines[lines.length - 1];
     const pid = last?.propertyId ?? properties[0]?.id ?? "";
-    const firstRoom = rooms.find((r) => r.property_id === pid);
+    const firstRoom = rooms.find((r) => r.property_id === pid && canBookRoom(r, last?.checkIn ?? today, last?.checkOut ?? addDays(today, 1), stays));
     setLines((ls) => [
       ...ls,
       {
@@ -185,6 +201,8 @@ export function NewReservationDialog({
     if (customerType === "person" && !guestName.trim()) return toast.error("Gastname erforderlich");
     if (lines.length === 0) return toast.error("Mindestens ein Zimmer hinzufügen");
     for (const l of lines) {
+      const room = rooms.find((x) => x.id === l.roomId);
+      if (!room || !canBookRoom(room, l.checkIn, l.checkOut, stays)) return toast.error(t("bookingAvailability.unavailable"));
       if (!l.propertyId || !l.roomId)
         return toast.error("Pension und Zimmer in jeder Zeile wählen");
       if (l.checkOut <= l.checkIn)
@@ -221,6 +239,7 @@ export function NewReservationDialog({
     setSaving(false);
 
     if (error) {
+      if (error.message.includes("room_not_bookable")) { toast.error(t("bookingAvailability.unavailable")); return; }
       toast.error("Buchung konnte nicht gespeichert werden", { description: error.message });
       return;
     }
@@ -369,7 +388,7 @@ export function NewReservationDialog({
 
             <div className="space-y-3">
               {lines.map((l) => {
-                const propRooms = rooms.filter((r) => r.property_id === l.propertyId);
+                const propRooms = rooms.filter((r) => r.property_id === l.propertyId && canBookRoom(r, l.checkIn, l.checkOut, stays));
                 return (
                   <div
                     key={l.uid}
@@ -402,10 +421,11 @@ export function NewReservationDialog({
                         </Label>
                         <Select
                           value={l.roomId}
+                          disabled={propRooms.length === 0}
                           onValueChange={(v) => updateLine(l.uid, { roomId: v })}
                         >
                           <SelectTrigger className="bg-background">
-                            <SelectValue />
+                            <SelectValue placeholder={t("bookingAvailability.empty")} />
                           </SelectTrigger>
                           <SelectContent>
                             {propRooms.map((r) => (
