@@ -130,15 +130,15 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
   return (
     <>
       {activeTab === "general" && (
-        <Section title="Allgemein">
+        <Section title={t("pages.settings.generalTitle")}>
           <p className="text-sm text-muted-foreground">
-            Hauptsprache der Anwendung ist Deutsch. Weitere Optionen findest du in den anderen Reitern.
+            {t("pages.settings.generalText")}
           </p>
         </Section>
       )}
 
       {activeTab === "language" && (
-        <Section title="Sprache der Oberfläche">
+        <Section title={t("pages.settings.languageTitle")}>
           <div className="grid sm:grid-cols-3 gap-2 max-w-md">
             {LANGS.map((l) => {
               const active = i18n.resolvedLanguage === l.code;
@@ -153,49 +153,49 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-3">{t("common.language")}: <strong>{i18n.resolvedLanguage}</strong></p>
+          <p className="text-xs text-muted-foreground mt-3">{t("pages.settings.currentLanguage")}: <strong>{i18n.resolvedLanguage}</strong></p>
         </Section>
       )}
 
       {activeTab === "notifications" && (
-        <Section title="Benachrichtigungen">
+        <Section title={t("pages.settings.notificationsTitle")}>
           <div className="space-y-3 max-w-md">
-            <Toggle label="E-Mail Benachrichtigungen" value={emailNotif} onChange={(v) => { setEmailNotif(v); save("emailNotif", v ? "1" : "0"); }} />
-            <Toggle label="Browser-Benachrichtigungen" value={browserNotif} onChange={(v) => { setBrowserNotif(v); save("browserNotif", v ? "1" : "0"); }} />
-            <Toggle label="WhatsApp-Benachrichtigungen" value={whatsappNotif} onChange={(v) => { setWhatsappNotif(v); save("whatsappNotif", v ? "1" : "0"); }} />
+            <Toggle label={t("pages.settings.emailNotif")} value={emailNotif} onChange={(v) => { setEmailNotif(v); save("emailNotif", v ? "1" : "0"); }} />
+            <Toggle label={t("pages.settings.browserNotif")} value={browserNotif} onChange={(v) => { setBrowserNotif(v); save("browserNotif", v ? "1" : "0"); }} />
+            <Toggle label={t("pages.settings.whatsappNotif")} value={whatsappNotif} onChange={(v) => { setWhatsappNotif(v); save("whatsappNotif", v ? "1" : "0"); }} />
           </div>
         </Section>
       )}
 
       {activeTab === "email" && (
-        <Section title="E-Mail Versand">
+        <Section title={t("pages.settings.emailTitle")}>
           <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
-            <Field label="Absender (Von)" value={emailFrom} onChange={(v) => { setEmailFrom(v); save("emailFrom", v); }} placeholder="buchung@meinepension.de" />
-            <Field label="Antwort an" value={emailReply} onChange={(v) => { setEmailReply(v); save("emailReply", v); }} placeholder="kontakt@meinepension.de" />
+            <Field label={t("pages.settings.emailFrom")} value={emailFrom} onChange={(v) => { setEmailFrom(v); save("emailFrom", v); }} placeholder="buchung@meinepension.de" />
+            <Field label={t("pages.settings.emailReply")} value={emailReply} onChange={(v) => { setEmailReply(v); save("emailReply", v); }} placeholder="kontakt@meinepension.de" />
           </div>
-          <p className="text-xs text-muted-foreground mt-3">Diese Adressen werden für Buchungs-Bestätigungen und Benachrichtigungen verwendet.</p>
+          <p className="text-xs text-muted-foreground mt-3">{t("pages.settings.emailHint")}</p>
         </Section>
       )}
 
       {activeTab === "company" && (
-        <Section title="Unternehmen">
+        <Section title={t("pages.settings.companyTitle")}>
           <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
-            <Field label="Firmenname" value={companyName} onChange={(v) => { setCompanyName(v); save("companyName", v); }} />
-            <Field label="USt-IdNr." value={companyTax} onChange={(v) => { setCompanyTax(v); save("companyTax", v); }} />
-            <Field label="Anschrift" value={companyAddress} onChange={(v) => { setCompanyAddress(v); save("companyAddress", v); }} className="sm:col-span-2" />
+            <Field label={t("pages.settings.companyName")} value={companyName} onChange={(v) => { setCompanyName(v); save("companyName", v); }} />
+            <Field label={t("pages.settings.companyTax")} value={companyTax} onChange={(v) => { setCompanyTax(v); save("companyTax", v); }} />
+            <Field label={t("pages.settings.companyAddress")} value={companyAddress} onChange={(v) => { setCompanyAddress(v); save("companyAddress", v); }} className="sm:col-span-2" />
           </div>
         </Section>
       )}
 
       {activeTab === "appearance" && (
-        <Section title="Darstellung">
-          <p className="text-sm text-muted-foreground">Hell/Dunkel-Modus kannst du oben rechts in der Kopfzeile umschalten.</p>
+        <Section title={t("pages.settings.appearanceTitle")}>
+          <p className="text-sm text-muted-foreground">{t("pages.settings.appearanceText")}</p>
         </Section>
       )}
 
       {activeTab === "channels" && (
-        <Section title="Kanal-Farben">
-          <p className="text-sm text-muted-foreground mb-4">Diese Farben werden im Kalender als linke Randmarkierung und in der Legende verwendet.</p>
+        <Section title={t("pages.settings.channelsTitle")}>
+          <p className="text-sm text-muted-foreground mb-4">{t("pages.settings.channelsText")}</p>
           <div className="space-y-2 max-w-md">
             {ACTIVE_CHANNELS.map((ch) => (
               <div key={ch} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border">
@@ -210,7 +210,7 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
                 <code className="text-xs text-muted-foreground w-20">{channelColors[ch]}</code>
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={resetColors}>Auf Standard zurücksetzen</Button>
+            <Button variant="outline" size="sm" onClick={resetColors}>{t("pages.settings.resetColors")}</Button>
           </div>
         </Section>
       )}
