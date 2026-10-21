@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/me")({
-  head: () => ({ meta: [{ title: "Meine Schicht — Pensify" }, { name: "description", content: "Eigene Arbeitszeiten und Schichtstatus in Pensify." }, { property: "og:title", content: "Meine Schicht — Pensify" }, { property: "og:description", content: "Eigene Arbeitszeiten und Schichtstatus in Pensify." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Vardiyam — Pensify" }, { name: "description", content: "Pensify'da kendi çalışma saatleriniz ve vardiya durumunuz." }, { property: "og:title", content: "Vardiyam — Pensify" }, { property: "og:description", content: "Pensify'da kendi çalışma saatleriniz ve vardiya durumunuz." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: MePage,
 });
 

@@ -12,7 +12,7 @@ import ReactMarkdown from "react-markdown";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/ai")({
-  head: () => ({ meta: [{ title: "KI Assistent — Pensify" }, { name: "description", content: "Betriebliche Fragen mit dem Pensify Assistenten klären." }, { property: "og:title", content: "KI Assistent — Pensify" }, { property: "og:description", content: "Betriebliche Fragen mit dem Pensify Assistenten klären." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "AI Asistan — Pensify" }, { name: "description", content: "Pensify asistanıyla işletme sorularınızı yanıtlayın." }, { property: "og:title", content: "AI Asistan — Pensify" }, { property: "og:description", content: "Pensify asistanıyla işletme sorularınızı yanıtlayın." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AiPage,
 });
 
