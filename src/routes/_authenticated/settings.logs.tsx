@@ -75,11 +75,11 @@ function AuditLogsContent() {
     <div className="space-y-4">
 
       <Section
-        title="Audit-Protokoll"
+        title={t("pages.logs.title")}
         action={
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Info className="w-3.5 h-3.5" />
-            Aufbewahrung: 14 Tage
+            {t("pages.logs.retention")}
           </div>
         }
       >
@@ -87,29 +87,29 @@ function AuditLogsContent() {
           <input
             value={email}
             onChange={(e) => { setEmail(e.target.value); setPage(0); }}
-            placeholder="Benutzer (E-Mail)…"
+            placeholder={t("pages.logs.filterEmail")}
             className="px-3 py-2 rounded-md border border-input bg-card text-sm"
           />
           <input
             value={entityId}
             onChange={(e) => { setEntityId(e.target.value); setPage(0); }}
-            placeholder="Datensatz-ID (LN)…"
+            placeholder={t("pages.logs.filterEntityId")}
             className="px-3 py-2 rounded-md border border-input bg-card text-sm"
           />
           <Select value={entity || "__all__"} onValueChange={(v) => { setEntity(v === "__all__" ? "" : v); setPage(0); }} disabled={entitiesLoading}>
-            <SelectTrigger className="text-sm"><SelectValue placeholder="Entität" /></SelectTrigger>
+            <SelectTrigger className="text-sm"><SelectValue placeholder={t("pages.logs.entity")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">Alle Entitäten</SelectItem>
+              <SelectItem value="__all__">{t("pages.logs.allEntities")}</SelectItem>
               {(entities ?? []).map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={action || "__all__"} onValueChange={(v) => { setAction(v === "__all__" ? "" : v); setPage(0); }}>
-            <SelectTrigger className="text-sm"><SelectValue placeholder="Aktion" /></SelectTrigger>
+            <SelectTrigger className="text-sm"><SelectValue placeholder={t("pages.logs.action")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">Alle Aktionen</SelectItem>
-              <SelectItem value="INSERT">Erstellen</SelectItem>
-              <SelectItem value="UPDATE">Ändern</SelectItem>
-              <SelectItem value="DELETE">Löschen</SelectItem>
+              <SelectItem value="__all__">{t("pages.logs.allActions")}</SelectItem>
+              <SelectItem value="INSERT">{t("pages.logs.create")}</SelectItem>
+              <SelectItem value="UPDATE">{t("pages.logs.update")}</SelectItem>
+              <SelectItem value="DELETE">{t("pages.logs.delete")}</SelectItem>
             </SelectContent>
           </Select>
           <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(0); }}
@@ -118,7 +118,7 @@ function AuditLogsContent() {
             className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
         </div>
         <div className="flex justify-end mb-3">
-          <Button variant="outline" size="sm" onClick={reset}>Filter zurücksetzen</Button>
+          <Button variant="outline" size="sm" onClick={reset}>{t("pages.logs.resetFilters")}</Button>
         </div>
 
         <div className="rounded-xl border border-border overflow-hidden">
