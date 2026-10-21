@@ -174,3 +174,6 @@
 @utility highway-dash { animation: highway-dash 6s linear infinite; }
 @utility highway-drift { animation: highway-drift 18s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .highway-dash, .highway-drift { animation: none; } }
+@keyframes highway-pan { 0%,100% { background-position: 0% 0% } 50% { background-position: 100% 100% } }
+@utility highway-pan { animation: highway-pan 30s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .highway-pan { animation: none; } }
