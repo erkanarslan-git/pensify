@@ -19,3 +19,5 @@
 - [x] Reinigung: vollständige Vor-/Zurück-Statuswechsel für berechtigte Leitung; Zimmerstatus folgt automatisch
 - [x] Zimmerübersicht: kompakte Liste, globale Suche/Filter, sichere Schlüsselcode-Anzeige, responsive Dialoge
 - [ ] Dispatch/Team Komplett-Test, restliche i18n-Durchsicht außerhalb Zimmer/Reinigung
+
+- [ ] Tesisler: kartlardaki gereksiz boşlukları kaldır, onaylı mavi tasarıma uyarla; kullanım akışları sonrasında birlikte incelenecek
