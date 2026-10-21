@@ -148,7 +148,7 @@ export function NewReservationDialog({
       });
       if (quotedKeys.current[l.uid] !== key) return;
       if (error) {
-        toast.error("Preis konnte nicht berechnet werden", { description: error.message });
+        toast.error(t("newRes.errPrice"), { description: error.message });
         return;
       }
       const price = data == null ? null : Number(data);
@@ -197,18 +197,18 @@ export function NewReservationDialog({
     setLines((ls) => (ls.length > 1 ? ls.filter((l) => l.uid !== id) : ls));
 
   const submit = async () => {
-    if (customerType === "company" && !companyName.trim()) return toast.error("Firmenname erforderlich");
-    if (customerType === "person" && !guestName.trim()) return toast.error("Gastname erforderlich");
-    if (lines.length === 0) return toast.error("Mindestens ein Zimmer hinzufügen");
+    if (customerType === "company" && !companyName.trim()) return toast.error(t("newRes.errCompanyName"));
+    if (customerType === "person" && !guestName.trim()) return toast.error(t("newRes.errGuestName"));
+    if (lines.length === 0) return toast.error(t("newRes.errMinRoom"));
     for (const l of lines) {
       const room = rooms.find((x) => x.id === l.roomId);
       if (!room || !canBookRoom(room, l.checkIn, l.checkOut, stays)) return toast.error(t("bookingAvailability.unavailable"));
       if (!l.propertyId || !l.roomId)
-        return toast.error("Pension und Zimmer in jeder Zeile wählen");
+        return toast.error(t("newRes.errSelectRoom"));
       if (l.checkOut <= l.checkIn)
-        return toast.error("Check-out muss nach Check-in liegen");
+        return toast.error(t("newRes.errDates"));
       if (l.listPrice != null && l.revenue !== l.listPrice && !l.discountReason.trim())
-        return toast.error("Begründung für abweichenden Preis erforderlich");
+        return toast.error(t("newRes.errDiscountReason"));
     }
 
     setSaving(true);
@@ -240,10 +240,10 @@ export function NewReservationDialog({
 
     if (error) {
       if (error.message.includes("room_not_bookable")) { toast.error(t("bookingAvailability.unavailable")); return; }
-      toast.error("Buchung konnte nicht gespeichert werden", { description: error.message });
+      toast.error(t("newRes.errSave"), { description: error.message });
       return;
     }
-    toast.success(lines.length > 1 ? `${lines.length} Zimmer gespeichert` : "Buchung erstellt");
+    toast.success(lines.length > 1 ? t("newRes.createdN", { count: lines.length }) : t("newRes.created"));
     onOpenChange(false);
     onCreated?.();
     setGuestName("");
@@ -258,8 +258,8 @@ export function NewReservationDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
         <DialogHeader className="px-6 py-5 border-b border-border">
-          <DialogTitle>Neue Buchung</DialogTitle>
-          <DialogDescription>Ein Gast, ein oder mehrere Zimmer.</DialogDescription>
+          <DialogTitle>{t("newRes.title")}</DialogTitle>
+          <DialogDescription>{t("newRes.subtitle")}</DialogDescription>
         </DialogHeader>
 
         {/* Body */}
@@ -267,7 +267,7 @@ export function NewReservationDialog({
           {/* Guest information */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-full space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Bucht eine Person oder eine Firma? *</Label>
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.personOrCompany")}</Label>
               <div role="radiogroup" className="grid grid-cols-2 gap-2">
                 {(["person", "company"] as const).map((k) => (
                   <button
@@ -279,7 +279,7 @@ export function NewReservationDialog({
                     className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-sm font-medium ${customerType === k ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card hover:bg-accent"}`}
                   >
                     {k === "person" ? <User className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
-                    {k === "person" ? "Privatperson" : "Firma"}
+                    {k === "person" ? t("newRes.person") : t("newRes.company")}
                   </button>
                 ))}
               </div>
