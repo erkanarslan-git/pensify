@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound } from "lucide-react";
+import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX } from "lucide-react";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -141,9 +141,22 @@ function TeamPage() {
 
   const pendingRequests = (requests.data ?? []).filter((r: any) => r.status === "pending");
   const groups = Array.from(new Set(PERMISSIONS.map((p) => p.group)));
+  const isBannedUser = (u: any) => !!u.banned_until && new Date(u.banned_until) > new Date();
+  const stats = {
+    users: users.data?.length ?? 0,
+    requests: pendingRequests.length,
+    banned: (users.data ?? []).filter(isBannedUser).length,
+    noRole: (users.data ?? []).filter((u: any) => (u.roles ?? []).length === 0).length,
+  };
 
   return (
     <AppShell title="Team & Rollen" subtitle="Zugriffsanfragen, Rollen und Berechtigungen verwalten">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <StatCard highlight icon={<Users className="w-4 h-4" />} label="Benutzer" value={stats.users} />
+        <StatCard icon={<Inbox className="w-4 h-4" />} label="Offene Anfragen" value={stats.requests} />
+        <StatCard icon={<Lock className="w-4 h-4" />} label="Gesperrt" value={stats.banned} />
+        <StatCard icon={<UserX className="w-4 h-4" />} label="Ohne Rolle" value={stats.noRole} />
+      </div>
       {/* Access requests */}
       {pendingRequests.length > 0 && (
         <Section title={`Offene Zugriffsanfragen (${pendingRequests.length})`}>
@@ -184,7 +197,7 @@ function TeamPage() {
           <UserPlus className="w-3.5 h-3.5 mr-1" /> Neuer Benutzer
         </Button>
       </div>
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
             <tr>
@@ -200,7 +213,7 @@ function TeamPage() {
               const missing = ALL_ROLES.filter((r) => !u.roles.includes(r));
               const isBanned = !!u.banned_until && new Date(u.banned_until) > new Date();
               return (
-                <tr key={u.user_id} className={`border-t border-border ${isBanned ? "opacity-60" : ""}`}>
+                <tr key={u.user_id} className={`border-t border-border hover:bg-accent/40 transition-colors ${isBanned ? "opacity-60" : ""}`}>
                   <td className="p-3 font-medium">{u.full_name || "—"}</td>
                   <td className="p-3 text-muted-foreground">{u.email}</td>
                   <td className="p-3">
@@ -269,7 +282,7 @@ function TeamPage() {
       </div>
 
       {/* Role permissions matrix — editable */}
-      <div className="mt-6 rounded-xl border border-border bg-card overflow-hidden">
+      <div className="mt-6 rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold">Berechtigungen pro Rolle</div>
@@ -525,5 +538,14 @@ function PropertyAccessDialog({ userId, userName }: { userId: string; userName: 
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: number; highlight?: boolean }) {
+  return (
+    <div className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
+      <div className="text-3xl font-semibold mt-1 tabular-nums">{value}</div>
+    </div>
   );
 }
