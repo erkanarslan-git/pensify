@@ -198,8 +198,8 @@ function CalendarPage() {
         if (ct.status === "problem") entry.issue = ct.notes ?? "Sorun bildirildi";
         cleaningByRoom.set(ct.room_id, entry);
       }
-      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null }[]).map((r) => ({
-        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor,
+      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null; status: string }[]).map((r) => ({
+        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor, status: r.status,
         needsCleaning: cleaningByRoom.get(r.id)?.needsCleaning ?? false,
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
