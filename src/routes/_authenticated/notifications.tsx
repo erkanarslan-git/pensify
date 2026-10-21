@@ -108,18 +108,18 @@ function NotificationsPage() {
         </Group>
 
         <Group title={t("pages.notifications.delayedCleanings")} icon={Clock} tone="destructive">
-          {(data?.delayed ?? []).map((t) => (
-            <Item key={t.id} title={`${t("pages.notifications.room")} ${t.room?.number ?? "?"} — ${t.property?.name ?? ""}`}
-              sub={t("pages.notifications.dueSince", { date: fmtDateTime(t.due_at) })}
+          {(data?.delayed ?? []).map((task) => (
+            <Item key={task.id} title={`${t("pages.notifications.room")} ${task.room?.number ?? "?"} — ${task.property?.name ?? ""}`}
+              sub={t("pages.notifications.dueSince", { date: fmtDateTime(task.due_at) })}
               badge={<Badge tone="destructive">{t("pages.notifications.overdue")}</Badge>} />
           ))}
           {(!data?.delayed?.length) && <Empty text={t("pages.notifications.allOnTime")} />}
         </Group>
 
         <Group title={t("pages.notifications.problemReports")} icon={AlertTriangle} tone="destructive">
-          {(data?.problems ?? []).map((t) => (
-            <Item key={t.id} title={`${t("pages.notifications.room")} ${t.room?.number ?? "?"}`}
-              sub={`${t.property?.name ?? ""} · ${t.notes ?? t("pages.notifications.problemReported")}`}
+          {(data?.problems ?? []).map((task) => (
+            <Item key={task.id} title={`${t("pages.notifications.room")} ${task.room?.number ?? "?"}`}
+              sub={`${task.property?.name ?? ""} · ${task.notes ?? t("pages.notifications.problemReported")}`}
               badge={<Badge tone="destructive">{t("pages.notifications.actionNeeded")}</Badge>} />
           ))}
           {(!data?.problems?.length) && <Empty text={t("pages.notifications.noProblems")} />}
