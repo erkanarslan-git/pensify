@@ -179,7 +179,7 @@ function CleaningPage() {
                     const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
                     return (
-                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm">
+                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm hover:bg-accent/40 transition-colors">
                         <div className="w-20 font-semibold">#{room?.number ?? "—"}</div>
                         <div className="w-28 text-muted-foreground tabular-nums">
                           {due.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
