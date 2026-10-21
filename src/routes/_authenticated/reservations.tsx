@@ -145,18 +145,18 @@ function ReservationsPage() {
         </button>
       }
     >
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <StatCard icon={<LogIn className="w-4 h-4" />} label="Anreisen heute" value={arrivals} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+        <StatCard highlight icon={<LogIn className="w-4 h-4" />} label="Anreisen heute" value={arrivals} />
         <StatCard icon={<LogOut className="w-4 h-4" />} label="Abreisen heute" value={departures} />
         <StatCard icon={<BedDouble className="w-4 h-4" />} label="Gäste im Haus" value={staying} />
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="inline-flex flex-wrap gap-1 p-1 mb-3 rounded-xl bg-muted">
         {periods.map((p) => (
           <button
             key={p.id}
             onClick={() => setPeriod(p.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${period === p.id ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${period === p.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
             {p.label}
           </button>
@@ -206,56 +206,70 @@ function ReservationsPage() {
             const gArr = g.items.filter((r) => active(r) && r.check_in === today).length;
             const gDep = g.items.filter((r) => active(r) && r.check_out === today).length;
             return (
-              <details key={g.id} open className="group rounded-xl border border-border bg-card">
+              <details key={g.id} open className="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                 <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none">
                   <div className="flex items-center gap-2 min-w-0">
                     <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-0 -rotate-90" />
                     <span className="font-semibold truncate">{g.name}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{g.items.length}</span>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {g.items.length} Buchungen · {gArr} Anreise · {gDep} Abreise
+                    {gArr} Anreise · {gDep} Abreise
                   </span>
                 </summary>
+                <div className="hidden md:grid grid-cols-[minmax(0,1fr)_64px_190px_110px_80px_auto] gap-4 px-4 py-2 border-t border-border bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <span>Gast</span><span>Zimmer</span><span>Zeitraum</span><span>Status</span><span className="text-right">Betrag</span><span className="w-[120px]" />
+                </div>
                 <div className="border-t border-border divide-y divide-border/60">
                   {g.items.map((r) => {
                     const locked = isLocked(r);
                     const st = statusLabel[r.status] ?? { label: r.status, tone: "muted" as const };
+                    const color = sourceColor(r.channel);
                     return (
                       <div
                         key={r.id}
-                        className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm border-l-4 ${r.check_out < today ? "opacity-70" : ""}`}
-                        style={{ borderLeftColor: sourceColor(r.channel), background: `color-mix(in oklab, ${sourceColor(r.channel)} 10%, transparent)` }}
+                        className={`grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(0,1fr)_64px_190px_110px_80px_auto] items-center gap-x-4 gap-y-1 px-4 py-3 text-sm hover:bg-accent/40 transition-colors ${r.check_out < today ? "opacity-60" : ""}`}
                       >
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 text-primary-foreground" style={{ background: sourceColor(r.channel) }}>{sourceLabel(r.channel)}</span>
-                        <div className="min-w-[160px] flex-1">
-                          <div className="font-medium">{r.customer_type === "company" ? (r.company_name ?? r.guest_name) : r.guest_name} <span className="ml-1 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-border text-muted-foreground">{r.customer_type === "company" ? "Firma" : "Privat"}</span></div>
-                          {r.customer_type === "company" && r.company_name && r.guest_name !== r.company_name && <div className="text-xs text-muted-foreground">Gast: {r.guest_name}</div>}
-                          <div className="text-xs text-muted-foreground">
-                            {sourceLabel(r.channel)} · {r.guests_count} Gäste
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="w-1 self-stretch rounded-full shrink-0" style={{ background: color }} />
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">
+                              {r.customer_type === "company" ? (r.company_name ?? r.guest_name) : r.guest_name}
+                              <span className="ml-1.5 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-border text-muted-foreground">{r.customer_type === "company" ? "Firma" : "Privat"}</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                              <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
+                              {sourceLabel(r.channel)} · {r.guests_count} Gäste
+                              {r.customer_type === "company" && r.company_name && r.guest_name !== r.company_name && <> · Gast: {r.guest_name}</>}
+                            </div>
                           </div>
                         </div>
-                        <span className="w-16 text-muted-foreground">#{r.room?.number ?? "—"}</span>
-                        <span className="w-44 tabular-nums">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
-                        <span className="w-24"><Badge tone={st.tone}>{st.label}</Badge></span>
-                        <span className="w-20 text-right font-medium tabular-nums">€{Number(r.revenue ?? 0).toLocaleString("de-DE")}</span>
-                        <button
-                          onClick={() => setEditId(r.id)}
-                          disabled={locked}
-                          title={locked ? "Abgelaufene Buchung — nur Admin/Inhaber" : "Bearbeiten"}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-input bg-card text-xs hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {locked ? <Lock className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
-                          {locked ? "Gesperrt" : "Bearbeiten"}
-                        </button>
-                        {!locked && (
+                        <span className="md:hidden text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString("de-DE")}</span>
+                        <span className="hidden md:block text-muted-foreground tabular-nums">{r.room?.number ?? "—"}</span>
+                        <span className="text-xs md:text-sm tabular-nums text-muted-foreground md:text-foreground">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
+                        <span className="md:block text-right md:text-left"><Badge tone={st.tone}>{st.label}</Badge></span>
+                        <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString("de-DE")}</span>
+                        <div className="col-span-2 md:col-span-1 flex justify-end gap-1.5 w-full md:w-[120px]">
                           <button
-                            onClick={() => softDelete(r)}
-                            title="Löschen (in den Papierkorb)"
-                            className="inline-flex items-center px-2 py-1 rounded-md border border-input bg-card text-xs text-destructive hover:bg-destructive/10"
+                            onClick={() => setEditId(r.id)}
+                            disabled={locked}
+                            title={locked ? "Abgelaufene Buchung — nur Admin/Inhaber" : "Bearbeiten"}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-input bg-card text-xs hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            {locked ? <Lock className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
+                            {locked ? "Gesperrt" : "Bearbeiten"}
                           </button>
-                        )}
+                          {!locked && (
+                            <button
+                              onClick={() => softDelete(r)}
+                              title="Löschen (in den Papierkorb)"
+                              aria-label="Löschen"
+                              className="inline-flex items-center px-2 py-1.5 rounded-lg border border-input bg-card text-xs text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -277,11 +291,11 @@ function ReservationsPage() {
   );
 }
 
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: number; highlight?: boolean }) {
   return (
-    <div className="rounded-xl border border-border bg-card px-4 py-3">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">{icon} {label}</div>
-      <div className="text-2xl font-semibold mt-1 tabular-nums">{value}</div>
+    <div className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
+      <div className="text-3xl font-semibold mt-1 tabular-nums">{value}</div>
     </div>
   );
 }
