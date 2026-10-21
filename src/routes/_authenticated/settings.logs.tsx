@@ -217,14 +217,16 @@ function shortId(id: string) {
 }
 
 function ActionBadge({ action }: { action: string }) {
+  const { t } = useTranslation();
   const tone: Record<string, "success" | "warning" | "destructive" | "info" | "primary" | "muted"> = {
     INSERT: "success", UPDATE: "info", DELETE: "destructive",
   };
-  const label: Record<string, string> = { INSERT: "Erstellen", UPDATE: "Ändern", DELETE: "Löschen" };
-  return <Badge tone={tone[action] ?? "muted"}>{label[action] ?? action}</Badge>;
+  const labelKey: Record<string, string> = { INSERT: "create", UPDATE: "update", DELETE: "delete" };
+  return <Badge tone={tone[action] ?? "muted"}>{labelKey[action] ? t(`pages.logs.${labelKey[action]}`) : action}</Badge>;
 }
 
 function DiffSummary({ diff }: { diff: any }) {
+  const { t } = useTranslation();
   if (!diff) return <span className="text-muted-foreground">—</span>;
   const oldObj = diff?.old ?? {};
   const newObj = diff?.new ?? {};
@@ -241,7 +243,7 @@ function DiffSummary({ diff }: { diff: any }) {
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-md">
-        <div className="text-xs font-medium mb-1">Geänderte Felder ({keys.size})</div>
+        <div className="text-xs font-medium mb-1">{t("pages.logs.changedFields", { count: keys.size })}</div>
         <div className="text-xs">{Array.from(keys).join(", ")}</div>
       </TooltipContent>
     </Tooltip>
@@ -249,6 +251,8 @@ function DiffSummary({ diff }: { diff: any }) {
 }
 
 function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { t } = useTranslation();
+  const locale = useLocale();
   const fetchLog = useServerFn(getAuditLog);
   const { data, isLoading } = useQuery({
     queryKey: ["audit-log", id],
@@ -260,7 +264,7 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Log-Detail
+            {t("pages.logs.detail")}
             {data && <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted">LN {shortId(data.id)}</span>}
           </DialogTitle>
         </DialogHeader>
@@ -269,21 +273,21 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
         ) : (
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Zeit" value={new Date(data.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })} />
-              <Field label="Benutzer" value={data.actor_email || "System"} />
-              <Field label="Entität" value={data.entity} />
-              <Field label="Datensatz-ID" value={data.entity_id || "—"} mono />
-              <Field label="Aktion" value={<ActionBadge action={data.action} />} />
-              <Field label="Log-ID" value={data.id} mono />
+              <Field label={t("pages.logs.time")} value={new Date(data.created_at).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE })} />
+              <Field label={t("pages.logs.user")} value={data.actor_email || t("pages.logs.system")} />
+              <Field label={t("pages.logs.entity")} value={data.entity} />
+              <Field label={t("pages.logs.recordId")} value={data.entity_id || "—"} mono />
+              <Field label={t("pages.logs.action")} value={<ActionBadge action={data.action} />} />
+              <Field label={t("pages.logs.logId")} value={data.id} mono />
             </div>
             <div>
-              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Vorher</div>
+              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">{t("pages.logs.before")}</div>
               <pre className="text-xs p-3 rounded-md bg-muted/60 border border-border overflow-auto max-h-64 whitespace-pre-wrap">
 {JSON.stringify((data.diff as any)?.old ?? null, null, 2)}
               </pre>
             </div>
             <div>
-              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Nachher</div>
+              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">{t("pages.logs.after")}</div>
               <pre className="text-xs p-3 rounded-md bg-muted/60 border border-border overflow-auto max-h-64 whitespace-pre-wrap">
 {JSON.stringify((data.diff as any)?.new ?? null, null, 2)}
               </pre>
