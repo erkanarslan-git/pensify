@@ -19,3 +19,5 @@
 - Room status changes go through set_rooms_status and invalidate operational summaries. Why: bulk updates must be atomic and immediately visible everywhere.
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
+
+- Property summary cards use natural-height CSS columns, not equal-height rows, so room-type counts do not leave empty card interiors. Why: keep location summaries compact without truncating names.

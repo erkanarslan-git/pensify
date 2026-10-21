@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import i18n from "@/i18n";
-import { roomTypeVisual } from "@/lib/room-type-visuals";
 
 export const Route = createFileRoute("/_authenticated/properties/")({
   head: () => ({ meta: [
