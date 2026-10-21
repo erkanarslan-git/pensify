@@ -52,19 +52,6 @@ function AuthPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden text-[color:var(--brand-cream)]" style={{ background: "var(--gradient-brand-night)" }}>
-      {/* Road pattern */}
-      <svg className="highway-drift pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden>
-        <defs>
-          <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.18" />
-          </pattern>
-        </defs>
-        <rect width="1200" height="800" fill="url(#dots)" />
-        {[0, 1, 2].map((i) => (
-          <path key={i} d={`M-100 ${620 - i * 140} C 300 ${520 - i * 140}, 700 ${760 - i * 140}, 1300 ${560 - i * 140}`} fill="none" stroke="currentColor" strokeOpacity={0.12 + i * 0.05} strokeWidth="2" />
-        ))}
-        <path className="highway-dash" d="M-100 480 C 300 380, 700 620, 1300 420" fill="none" stroke="var(--brand-orange)" strokeWidth="3" strokeDasharray="40 30" strokeLinecap="round" opacity="0.7" />
-      </svg>
 
       <div className="absolute right-4 top-4 z-10 flex gap-1">
         {(["de", "en", "tr"] as const).map((l) => (
