@@ -16,7 +16,7 @@
 - Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
 - Organization membership creates/updates the linked cleaner profile through a database trigger; the staff roster is role-driven and user creation lives in Team. Why: one identity, automatic role changes, no manual linking.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
-- Room status changes go through set_rooms_status and invalidate operational summaries. Why: bulk updates must be atomic and immediately visible everywhere.
+- Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
 
