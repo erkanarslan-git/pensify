@@ -232,6 +232,13 @@
       "when": 1792597933766,
       "tag": "0032_clock_start_for_cleaning_task",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792600087930,
+      "tag": "0033_maintenance_rooms_unsellable",
+      "breakpoints": true
     }
   ]
 }
