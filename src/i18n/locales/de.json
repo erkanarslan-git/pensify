@@ -248,7 +248,8 @@
     "cleaningCompletion": "Tägliche Reinigungsquote",
     "properties_one": "{{count}} Pension",
     "properties_other": "{{count}} Pensionen",
-    "occupancyRate": "{{rate}}% Belegung"
+    "occupancyRate": "{{rate}}% Belegung",
+    "noActiveTasks": "Keine aktiven Aufgaben"
   },
   "auth": {
     "welcomeTitle": "Willkommen bei Pensify",

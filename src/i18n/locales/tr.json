@@ -248,7 +248,8 @@
     "cleaningCompletion": "Günlük temizlik tamamlanma",
     "properties_one": "{{count}} lokasyon",
     "properties_other": "{{count}} lokasyon",
-    "occupancyRate": "%{{rate}} doluluk"
+    "occupancyRate": "%{{rate}} doluluk",
+    "noActiveTasks": "Aktif görev yok"
   },
   "auth": {
     "welcomeTitle": "Pensify'a hoş geldiniz",

@@ -248,7 +248,8 @@
     "cleaningCompletion": "Daily cleaning completion",
     "properties_one": "{{count}} location",
     "properties_other": "{{count}} locations",
-    "occupancyRate": "{{rate}}% occupancy"
+    "occupancyRate": "{{rate}}% occupancy",
+    "noActiveTasks": "No active tasks"
   },
   "auth": {
     "welcomeTitle": "Welcome to Pensify",
