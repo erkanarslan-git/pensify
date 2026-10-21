@@ -393,7 +393,7 @@ export function Badge({ tone, children }: {
   };
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${map[tone]}`}>
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap px-2 py-0.5 rounded-full text-xs font-medium border ${map[tone]}`}>
       {children}
     </span>
   );

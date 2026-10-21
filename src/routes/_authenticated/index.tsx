@@ -60,12 +60,14 @@ function Dashboard() {
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
   const inHouse = data?.inHouse ?? [];
-  // Occupancy comes from today's reservations, not from the static room label.
+  // Occupied = rooms with a guest staying tonight OR rooms manually marked occupied.
   const occupiedIds = new Set(inHouse.filter((r) => r.check_out > today).map((r) => r.room_id));
+  for (const r of rooms) if (r.status === "occupied") occupiedIds.add(r.id);
   const checkoutIds = new Set(inHouse.filter((r) => r.check_out === today).map((r) => r.room_id));
   const totalRooms = rooms.length;
   const occupied = occupiedIds.size;
   const maintenance = rooms.filter((r) => r.status === "maintenance").length;
+  const cleaningRooms = rooms.filter((r) => !occupiedIds.has(r.id) && ["cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
   const available = rooms.filter((r) => !occupiedIds.has(r.id) && !["maintenance", "cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
   const cleaningPending = tasks.filter((t) => t.status === "pending" || t.status === "accepted").length;
   const cleaningInProgress = tasks.filter((t) => t.status === "in_progress").length;
