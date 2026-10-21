@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
-  head: () => ({ meta: [{ title: "Benachrichtigungen — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Benachrichtigungen — Pensify" }, { name: "description", content: "Aktuelle Aufgaben und dringende Hinweise in Pensify." }, { property: "og:title", content: "Benachrichtigungen — Pensify" }, { property: "og:description", content: "Aktuelle Aufgaben und dringende Hinweise in Pensify." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: NotificationsPage,
 });
 

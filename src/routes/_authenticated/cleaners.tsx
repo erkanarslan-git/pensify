@@ -18,6 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { EmployeeAttendance } from "@/components/employee-attendance";
+import { CalendarDays } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -50,6 +52,7 @@ function CleanersPage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<(Partial<CleanerRow> & { password?: string }) | null>(null);
   const [deleting, setDeleting] = useState<CleanerRow | null>(null);
+  const [attendanceUser, setAttendanceUser] = useState<CleanerRow | null>(null);
   const createUser = useServerFn(adminCreateUser);
 
   const cleaners = useQuery({
@@ -76,7 +79,7 @@ function CleanersPage() {
   const save = useMutation({
     mutationFn: async (c: Partial<CleanerRow> & { password?: string }) => {
       const payload = {
-        full_name: c.full_name!,
+        full_name: c.full_name?.trim() ?? "",
         phone: c.phone || null,
         email: c.email || null,
         hourly_rate: c.hourly_rate ?? null,
@@ -177,6 +180,7 @@ function CleanersPage() {
             <div className="text-sm font-semibold tabular-nums">{c.hourly_rate == null ? "—" : `€${Number(c.hourly_rate).toFixed(2)}`}</div>
             <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? t("cleaners.active") : t("cleaners.inactive")}</Badge></div>
             <div className="flex justify-end gap-1">
+              <Button size="icon" variant="ghost" title={t("attendance.manage")} aria-label={t("attendance.manage")} onClick={() => setAttendanceUser(c)}><CalendarDays className="h-4 w-4" /></Button>
               <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setEditing(c)}>
                 <Pencil className="w-3 h-3 mr-1" /> {t("common.edit")}
               </Button>
@@ -189,6 +193,9 @@ function CleanersPage() {
       </div>
 
       {/* Edit dialog */}
+      <Dialog open={!!attendanceUser} onOpenChange={open => !open && setAttendanceUser(null)}>
+        <DialogContent className="sm:max-w-2xl"><DialogHeader><DialogTitle>{attendanceUser?.full_name} · {t("attendance.title")}</DialogTitle></DialogHeader>{attendanceUser?.user_id ? <EmployeeAttendance userId={attendanceUser.user_id} /> : <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}</DialogContent>
+      </Dialog>
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader>

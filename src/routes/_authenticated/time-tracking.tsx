@@ -11,9 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import i18n from "@/i18n";
+import { EmployeeAttendance } from "@/components/employee-attendance";
 
 export const Route = createFileRoute("/_authenticated/time-tracking")({
-  head: () => ({ meta: [{ title: `${i18n.t("nav.timeTracking")} — Pensify` }] }),
+  head: () => ({ meta: [{ title: `${i18n.t("nav.timeTracking")} — Pensify` }, { name: "description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:title", content: "Arbeitszeiten — Pensify" }, { property: "og:description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TimeTrackingPage,
 });
 
@@ -248,6 +249,7 @@ function TimeTrackingPage() {
       }
     >
       <div className="space-y-4">
+        <EmployeeAttendance />
         <Section title={t("timeTracking.filters")}>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-2 items-end">
             <div className="col-span-2 md:col-span-2">

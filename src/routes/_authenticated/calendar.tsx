@@ -13,7 +13,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  head: () => ({ meta: [{ title: "Calendar — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Kalender — Pensify" }, { name: "description", content: "Zimmerbelegung und Reservierungen im Pensify Kalender." }, { property: "og:title", content: "Kalender — Pensify" }, { property: "og:description", content: "Zimmerbelegung und Reservierungen im Pensify Kalender." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CalendarPage,
 });
 

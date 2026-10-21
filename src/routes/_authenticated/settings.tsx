@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Einstellungen — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Einstellungen — Pensify" }, { name: "description", content: "Pensify Einstellungen und Unternehmensdaten verwalten." }, { property: "og:title", content: "Einstellungen — Pensify" }, { property: "og:description", content: "Pensify Einstellungen und Unternehmensdaten verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsLayout,
 });
 

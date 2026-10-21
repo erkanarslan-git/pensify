@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { ChevronLeft, ChevronRight, FileText, Eye, Info } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings/logs")({
-  head: () => ({ meta: [{ title: "Audit Logs — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Audit Logs — Pensify" }, { name: "description", content: "Änderungen und Aktivitäten in Pensify nachverfolgen." }, { property: "og:title", content: "Audit Logs — Pensify" }, { property: "og:description", content: "Änderungen und Aktivitäten in Pensify nachverfolgen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AuditLogsContent,
 });
 

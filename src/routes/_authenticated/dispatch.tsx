@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
-  head: () => ({ meta: [{ title: "Aufgabenverteilung — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Aufgabenverteilung — Pensify" }, { name: "description", content: "Tägliche Reinigungsaufgaben in Pensify verteilen." }, { property: "og:title", content: "Aufgabenverteilung — Pensify" }, { property: "og:description", content: "Tägliche Reinigungsaufgaben in Pensify verteilen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DispatchPage,
 });
 

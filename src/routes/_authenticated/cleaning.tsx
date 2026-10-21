@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
-  head: () => ({ meta: [{ title: "Reinigung — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Reinigung — Pensify" }, { name: "description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:title", content: "Reinigung — Pensify" }, { property: "og:description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CleaningPage,
 });
 
