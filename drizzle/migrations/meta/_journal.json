@@ -211,6 +211,13 @@
       "when": 1791195826584,
       "tag": "0029_wubook_multiple_accounts_per_org",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792590758949,
+      "tag": "0030_employee_workdays_and_absences",
+      "breakpoints": true
     }
   ]
 }

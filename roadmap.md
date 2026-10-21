@@ -1,5 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+- [ ] Çalışan bazlı çalışma günleri ve hastalık/izin kaydı; aylık raporda saatlerden ayrı gösterim ve test
+- [ ] Menülerin onaylı mavi tasarımla uyumunu kontrol et
+
 - [x] Buchung löschen → Papierkorb (nur Admin sieht, Wiederherstellen/Endgültig löschen, wer/wann/Grund)
 - [x] Schlüsselbox-Code pro Zimmer
 - [x] Dashboard: modernes Design, Glow/Animation, Zahlen anklickbar, Belegung aus heutigen Buchungen

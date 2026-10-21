@@ -18,9 +18,10 @@ import { ALL_ROLES, ROLE_LABEL, PERMISSIONS, type AppRole } from "@/lib/permissi
 import { adminCreateUser, adminDeleteUser, adminSetUserBanned, adminResetUserPassword } from "@/lib/admin-users.functions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { usePermissions } from "@/hooks/use-permissions";
+import { EmployeeAttendance } from "@/components/employee-attendance";
 
 export const Route = createFileRoute("/_authenticated/team")({
-  head: () => ({ meta: [{ title: "Team — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Team — Pensify" }, { name: "description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:title", content: "Team — Pensify" }, { property: "og:description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TeamPage,
 });
 
@@ -435,6 +436,7 @@ function TeamPage() {
                 </PanelSection>
 
                 <UserWorkHours userId={u.user_id} />
+                <EmployeeAttendance userId={u.user_id} />
                 <UserActivity userId={u.user_id} />
 
                 <PanelSection title="Zugang & Sicherheit">

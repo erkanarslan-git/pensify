@@ -920,6 +920,111 @@ export type Database = {
           },
         ]
       }
+      employee_absences: {
+        Row: {
+          cancelled: boolean
+          correction_reason: string
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          kind: string
+          member_id: string
+          note: string
+          organization_id: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          cancelled?: boolean
+          correction_reason?: string
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          kind: string
+          member_id: string
+          note?: string
+          organization_id: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          cancelled?: boolean
+          correction_reason?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          kind?: string
+          member_id?: string
+          note?: string
+          organization_id?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_absences_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_absences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_work_schedules: {
+        Row: {
+          created_at: string
+          effective_from: string
+          id: string
+          member_id: string
+          organization_id: string
+          updated_at: string
+          weekdays: number[]
+        }
+        Insert: {
+          created_at?: string
+          effective_from: string
+          id?: string
+          member_id: string
+          organization_id: string
+          updated_at?: string
+          weekdays?: number[]
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          id?: string
+          member_id?: string
+          organization_id?: string
+          updated_at?: string
+          weekdays?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_work_schedules_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_work_schedules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_outbox: {
         Row: {
           attempts: number
