@@ -22,3 +22,4 @@
 
 - Property summary cards use natural-height CSS columns, not equal-height rows, so room-type counts do not leave empty card interiors. Why: keep location summaries compact without truncating names.
 - Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
+- Dispatch presents all daily tasks in expandable employee rows with localized labels; keep dispatch sending and assignment logic unchanged. Why: compact lists must not hide tasks or trigger outbound actions.
