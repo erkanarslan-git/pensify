@@ -223,6 +223,7 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
 }
 
 function ProfileTab() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState("");
@@ -252,31 +253,31 @@ function ProfileTab() {
         id: u.user.id, full_name: fullName, avatar_url: avatarUrl || null, locale, updated_at: new Date().toISOString(),
       });
       if (error) throw error;
-      toast.success("Profil gespeichert");
+      toast.success(t("pages.settings.profileSaved"));
     } catch (e: any) {
       toast.error(e.message);
     } finally { setSaving(false); }
   }
 
-  if (loading) return <Section title="Profil"><p className="text-sm text-muted-foreground">Lade…</p></Section>;
+  if (loading) return <Section title={t("pages.settings.tabs.profile")}><p className="text-sm text-muted-foreground">{t("pages.settings.profileLoading")}</p></Section>;
 
   return (
-    <Section title="Mein Profil">
+    <Section title={t("pages.settings.profileTitle")}>
       <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">E-Mail</span>
+          <span className="text-xs text-muted-foreground">{t("pages.settings.profileEmail")}</span>
           <input value={email} disabled className="px-3 py-2 rounded-md border border-input bg-muted text-sm text-muted-foreground" />
         </label>
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Voller Name</span>
+          <span className="text-xs text-muted-foreground">{t("pages.settings.profileName")}</span>
           <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
         </label>
         <label className="grid gap-1 sm:col-span-2">
-          <span className="text-xs text-muted-foreground">Avatar-URL</span>
+          <span className="text-xs text-muted-foreground">{t("pages.settings.profileAvatar")}</span>
           <input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://…" className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
         </label>
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Sprache</span>
+          <span className="text-xs text-muted-foreground">{t("pages.settings.profileLanguage")}</span>
           <select value={locale} onChange={(e) => setLocale(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm">
             <option value="de">Deutsch</option>
             <option value="en">English</option>
@@ -285,43 +286,44 @@ function ProfileTab() {
         </label>
       </div>
       <div className="mt-4">
-        <Button onClick={save} disabled={saving}>Speichern</Button>
+        <Button onClick={save} disabled={saving}>{t("pages.settings.save")}</Button>
       </div>
     </Section>
   );
 }
 
 function SecurityTab() {
+  const { t } = useTranslation();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function change() {
-    if (pw.length < 8) return toast.error("Mindestens 8 Zeichen");
-    if (pw !== pw2) return toast.error("Passwörter stimmen nicht überein");
+    if (pw.length < 8) return toast.error(t("pages.settings.passwordTooShort"));
+    if (pw !== pw2) return toast.error(t("pages.settings.passwordMismatch"));
     setBusy(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) throw error;
-      toast.success("Passwort geändert");
+      toast.success(t("pages.settings.passwordChanged"));
       setPw(""); setPw2("");
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   }
 
   return (
-    <Section title="Sicherheit">
+    <Section title={t("pages.settings.securityTitle")}>
       <div className="grid sm:grid-cols-2 gap-3 max-w-2xl">
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Neues Passwort</span>
+          <span className="text-xs text-muted-foreground">{t("pages.settings.newPassword")}</span>
           <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
         </label>
         <label className="grid gap-1">
-          <span className="text-xs text-muted-foreground">Neues Passwort (wiederholen)</span>
+          <span className="text-xs text-muted-foreground">{t("pages.settings.newPasswordRepeat")}</span>
           <input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
         </label>
       </div>
       <div className="mt-4">
-        <Button onClick={change} disabled={busy}>Passwort ändern</Button>
+        <Button onClick={change} disabled={busy}>{t("pages.settings.changePassword")}</Button>
       </div>
     </Section>
   );
