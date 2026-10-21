@@ -225,6 +225,13 @@
       "when": 1792596560186,
       "tag": "0031_role_driven_cleaner_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792597933766,
+      "tag": "0032_clock_start_for_cleaning_task",
+      "breakpoints": true
     }
   ]
 }
