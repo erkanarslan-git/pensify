@@ -109,7 +109,25 @@
       "title": "WhatsApp"
     },
     "notifications": {
-      "title": "Notifications"
+      "title": "Action Center",
+      "subtitle": "What needs attention today",
+      "upcomingCheckouts": "Upcoming check-outs (7 days)",
+      "delayedCleanings": "Delayed cleanings",
+      "problemReports": "Problem reports",
+      "maintenance": "Maintenance",
+      "room": "Room",
+      "noCheckouts": "No check-outs in the next 7 days",
+      "allOnTime": "Everything on schedule",
+      "dueSince": "Due since {{date}}",
+      "overdue": "Overdue",
+      "problemReported": "Problem reported",
+      "actionNeeded": "Action needed",
+      "noProblems": "No problems reported",
+      "outOfService": "Out of service",
+      "changedBy": "{{name}} · {{date}}",
+      "unknownUser": "Unknown user",
+      "maintenanceBadge": "Maintenance",
+      "noMaintenance": "No warnings"
     },
     "analytics": {
       "title": "Analytics"

@@ -253,6 +253,13 @@
       "when": 1792608535435,
       "tag": "0035_room_cleaning_status_creates_task",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792610015712,
+      "tag": "0036_rooms_status_audit",
+      "breakpoints": true
     }
   ]
 }
