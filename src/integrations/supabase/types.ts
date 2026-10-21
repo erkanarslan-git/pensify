@@ -1714,6 +1714,8 @@ export type Database = {
           source_title: string | null
           source_url: string | null
           status: Database["public"]["Enums"]["room_status"]
+          status_changed_at: string | null
+          status_changed_by: string | null
           updated_at: string
         }
         Insert: {
@@ -1737,6 +1739,8 @@ export type Database = {
           source_title?: string | null
           source_url?: string | null
           status?: Database["public"]["Enums"]["room_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           updated_at?: string
         }
         Update: {
@@ -1760,6 +1764,8 @@ export type Database = {
           source_title?: string | null
           source_url?: string | null
           status?: Database["public"]["Enums"]["room_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           updated_at?: string
         }
         Relationships: [
