@@ -50,10 +50,6 @@ export function LockScreen({ name, email, onUnlock, onSignOut }: {
     <div role="dialog" aria-modal="true" aria-label={c.locked}
       className="highway-pan fixed inset-0 z-[100] overflow-hidden text-[color:var(--brand-cream)]"
       style={{ background: "var(--gradient-brand-night)", backgroundSize: "200% 200%" }}>
-      <svg className="highway-drift pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden>
-        <path d="M-100 620 C 300 520, 700 760, 1300 560" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="2" />
-        <path className="highway-dash" d="M-100 480 C 300 380, 700 620, 1300 420" fill="none" stroke="var(--brand-orange)" strokeWidth="3" strokeDasharray="40 30" strokeLinecap="round" opacity="0.6" />
-      </svg>
 
       <div className="relative z-10 flex min-h-full flex-col items-center justify-center px-5 py-12 text-center">
         <div className="text-6xl font-light tabular-nums md:text-7xl">{time}</div>

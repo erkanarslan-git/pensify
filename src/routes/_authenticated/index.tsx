@@ -10,7 +10,7 @@ import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { sourceColor, sourceLabel } from "@/lib/guest-color";
 import { formatDateDE } from "@/lib/date-de";
 import {
-  AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
+  BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 
@@ -112,53 +112,49 @@ function Dashboard() {
         </Button>
       }
     >
-      <div className="brand-hero highway-pan relative overflow-hidden rounded-2xl p-6 md:p-8 shadow-elevated">
-        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden>
-          <path d="M-50 230 C 300 160, 800 300, 1250 180" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="2" />
-          <path className="highway-dash" d="M-50 190 C 300 120, 800 260, 1250 140" fill="none" stroke="var(--brand-orange)" strokeWidth="3" strokeDasharray="40 30" strokeLinecap="round" opacity="0.7" />
-        </svg>
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <div className="text-xs uppercase tracking-widest opacity-70">
-              {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
-            </div>
-            <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">{t("dashboard.title")}</h2>
-            <p className="mt-1 text-sm opacity-75">{t("dashboard.properties", { count: data?.propsCount ?? 0 })} · {totalRooms} {t("dashboard.totalRooms")}</p>
-          </div>
-          <div className="flex items-end gap-3">
-            <div className="text-5xl md:text-6xl font-light tabular-nums">{totalRooms ? Math.round((occupied / totalRooms) * 100) : 0}%</div>
-            <div className="pb-2 text-xs uppercase tracking-wide opacity-75">{t("dashboard.occupied")}</div>
-          </div>
-        </div>
-        <div className="relative mt-5 h-2 overflow-hidden rounded-full bg-[color:var(--brand-cream)]/15">
-          <div className="h-full rounded-full transition-all" style={{ width: `${totalRooms ? (occupied / totalRooms) * 100 : 0}%`, background: "linear-gradient(90deg, var(--brand-orange), color-mix(in oklab, var(--brand-orange) 60%, var(--brand-cream)))" }} />
-        </div>
+      <div className="mb-5">
+        <h2 className="text-3xl font-semibold tracking-tight">{t("dashboard.title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
+        </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Link to="/reservations" className="brand-tile group relative overflow-hidden rounded-2xl p-5 shadow-elevated transition hover:brightness-110">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium opacity-90">{t("dashboard.occupied")}</span>
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-card text-primary"><ArrowUpRight className="h-4 w-4" /></span>
+          </div>
+          <div className="mt-4 text-5xl font-semibold tabular-nums">{totalRooms ? Math.round((occupied / totalRooms) * 100) : 0} %</div>
+          <div className="mt-2 text-sm opacity-85">{occupied} / {totalRooms} {t("dashboard.totalRooms")}</div>
+        </Link>
         {[
-          { label: t("dashboard.totalRooms"), value: totalRooms, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), tone: "primary", to: "/rooms", search: {} },
-          { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), tone: "info", to: "/reservations", search: {} },
-          { label: t("dashboard.available"), value: available, tone: "success", to: "/rooms", search: { status: "available" } },
-          { label: t("dashboard.cleaningPending"), value: cleaningPending, tone: "warning", to: "/cleaning", search: {} },
-          { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, tone: "primary", to: "/cleaning", search: {} },
-          { label: t("dashboard.completedToday"), value: completedToday, tone: "success", to: "/cleaning", search: {} },
-          { label: t("dashboard.checkoutsToday"), value: checkoutToday, tone: "warning", to: "/reservations", search: {} },
-          { label: t("dashboard.maintenance"), value: maintenance, tone: "destructive", to: "/rooms", search: { status: "maintenance" } },
+          { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" } },
+          { label: t("dashboard.cleaningPending"), value: cleaningPending, hint: `${cleaningInProgress} ${t("dashboard.cleaningInProgress")}`, to: "/cleaning", search: {} },
+          { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {} },
         ].map((k) => (
-          <Link
-            key={k.label}
-            to={k.to as any}
-            search={k.search as any}
-            className="brand-card group relative overflow-hidden rounded-xl border border-border p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elevated"
-          >
-            <span className={`absolute inset-y-0 left-0 w-1 bg-${k.tone}`} />
-            <div className="flex items-start justify-between">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{k.label}</div>
-              <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Link key={k.label} to={k.to as any} search={k.search as any}
+            className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition hover:shadow-elevated">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{k.label}</span>
+              <span className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition group-hover:bg-primary group-hover:text-primary-foreground"><ArrowUpRight className="h-4 w-4" /></span>
             </div>
-            <div className={`mt-2 text-3xl font-semibold tabular-nums text-${k.tone}`}>{k.value}</div>
-            {k.hint && <div className="mt-1 text-xs text-muted-foreground">{k.hint}</div>}
+            <div className="mt-4 text-5xl font-semibold tabular-nums text-foreground">{k.value}</div>
+            <div className="mt-2 text-sm text-muted-foreground">{k.hint}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {[
+          { label: t("dashboard.totalRooms"), value: totalRooms, to: "/rooms", search: {} },
+          { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, to: "/cleaning", search: {} },
+          { label: t("dashboard.completedToday"), value: completedToday, to: "/cleaning", search: {} },
+          { label: t("dashboard.maintenance"), value: maintenance, to: "/rooms", search: { status: "maintenance" } },
+        ].map((k) => (
+          <Link key={k.label} to={k.to as any} search={k.search as any}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+            {k.label} <span className="font-semibold tabular-nums text-primary">{k.value}</span>
           </Link>
         ))}
       </div>
@@ -185,19 +181,15 @@ function Dashboard() {
           <Section title={t("dashboard.weeklyOccupancy")}>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weekly} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="occ" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <BarChart data={weekly} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} unit="%" />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Area type="monotone" dataKey="rate" stroke="var(--color-chart-1)" strokeWidth={2.5} fill="url(#occ)" />
-                </AreaChart>
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
+                  <Bar dataKey="rate" radius={[8, 8, 8, 8]} maxBarSize={56}>
+                    {weekly.map((_, i) => (<Cell key={i} fill={i === weekly.length - 1 ? "var(--color-chart-2)" : "var(--color-chart-1)"} />))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </Section>

@@ -61,12 +61,16 @@
   /* Pension Highway brand */
   --brand-navy: oklch(0.33 0.09 258);
   --brand-navy-deep: oklch(0.2 0.06 260);
-  --brand-orange: oklch(0.6 0.16 45);
+  --brand-orange: oklch(0.6 0.19 260); /* accent = bright blue (no orange per brand rule) */
+  --brand-sky: oklch(0.78 0.1 250);
   --brand-cream: oklch(0.98 0.01 80);
   --gradient-brand-night:
-    radial-gradient(60% 50% at 85% 15%, color-mix(in oklab, var(--brand-orange) 45%, transparent), transparent 70%),
-    radial-gradient(50% 60% at 10% 90%, color-mix(in oklab, oklch(0.55 0.12 240) 55%, transparent), transparent 70%),
-    linear-gradient(150deg, var(--brand-navy-deep), var(--brand-navy) 55%, oklch(0.26 0.08 265));
+    radial-gradient(70% 60% at 85% 10%, oklch(0.55 0.18 258 / 0.55), transparent 70%),
+    radial-gradient(60% 60% at 0% 100%, oklch(0.42 0.14 255 / 0.6), transparent 70%),
+    linear-gradient(150deg, oklch(0.24 0.08 262), oklch(0.33 0.12 260) 55%, oklch(0.28 0.1 258));
+  --gradient-brand-tile:
+    radial-gradient(90% 90% at 100% 0%, oklch(0.62 0.18 258 / 0.7), transparent 60%),
+    linear-gradient(140deg, oklch(0.36 0.13 262), oklch(0.48 0.17 258));
   --background: oklch(0.975 0.006 250);
   --foreground: oklch(0.285 0 0);
   --card: oklch(1 0 0);
@@ -91,9 +95,9 @@
   --info-foreground: oklch(0.22 0.05 250);
   --border: oklch(0.86 0.006 250);
   --input: oklch(0.82 0.006 250);
-  --ring: oklch(0.6 0.16 45);
+  --ring: oklch(0.55 0.17 258);
   --chart-1: oklch(0.45 0.12 258);
-  --chart-2: oklch(0.65 0.16 45);
+  --chart-2: oklch(0.6 0.19 260);
   --chart-3: oklch(0.74 0.11 160);
   --chart-4: oklch(0.82 0.11 55);
   --chart-5: oklch(0.7 0.13 250);
@@ -171,11 +175,11 @@
 
 @keyframes highway-dash { to { stroke-dashoffset: -400; } }
 @keyframes highway-drift { 0%,100% { transform: translate3d(0,0,0) } 50% { transform: translate3d(-3%,2%,0) } }
-@utility highway-dash { animation: highway-dash 6s linear infinite; }
-@utility highway-drift { animation: highway-drift 18s ease-in-out infinite; }
+@utility highway-dash { animation: none; }
+@utility highway-drift { animation: none; }
 @media (prefers-reduced-motion: reduce) { .highway-dash, .highway-drift { animation: none; } }
 @keyframes highway-pan { 0%,100% { background-position: 0% 0% } 50% { background-position: 100% 100% } }
-@utility highway-pan { animation: highway-pan 30s ease-in-out infinite; }
+@utility highway-pan { animation: none; }
 @media (prefers-reduced-motion: reduce) { .highway-pan { animation: none; } }
 
 @utility brand-hero {
@@ -185,7 +189,9 @@
 }
 @utility brand-card {
   background:
-    radial-gradient(120% 80% at 100% 0%, color-mix(in oklab, var(--brand-orange) 9%, transparent), transparent 60%),
+    radial-gradient(120% 80% at 100% 0%, oklch(0.6 0.19 260 / 0.06), transparent 60%),
     linear-gradient(160deg, var(--card), color-mix(in oklab, var(--card) 92%, var(--brand-navy)));
 }
 @source inline("bg-primary bg-info bg-success bg-warning bg-destructive text-primary text-info text-success text-warning text-destructive");
+
+@utility brand-tile { background: var(--gradient-brand-tile); color: oklch(0.99 0.005 250); }
