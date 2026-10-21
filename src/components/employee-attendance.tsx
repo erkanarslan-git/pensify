@@ -91,8 +91,10 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
     onError: () => toast.error(t("attendance.failed")),
   });
   function exportCsv() {
-    const rows = [[t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.worked")]];
-    report.forEach(r => r.days.forEach(d => rows.push([name(r.member.user_id), d.date, t(`attendance.${d.status}`), d.worked ? t("common.yes") : t("common.no")])));
+    const rows = [[t("attendance.employee"), t("attendance.actualHours"), ...kinds.map(k => t(`attendance.${k}`))]];
+    report.forEach(r => rows.push([name(r.member.user_id), (r.minutes / 60).toFixed(2), ...kinds.map(k => String(r.counts[k]))]));
+    rows.push([], [t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.worked")]);
+    report.forEach(r => r.days.forEach(d => rows.push([name(r.member.user_id), d.date, t(`attendance.${d.status}`), d.worked ? "1" : "0"])));
     const csv = "\uFEFF" + rows.map(row => row.map(cell => `"${(/^[=+@\-]/.test(cell) ? "'" : "") + cell.replace(/"/g, '""')}"`).join(";")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a"); a.href = url; a.download = `attendance-${month}.csv`; a.click(); URL.revokeObjectURL(url);
