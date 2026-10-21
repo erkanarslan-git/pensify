@@ -1,10 +1,11 @@
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
-import { AlertTriangle, Clock, Wrench, LogOut } from "lucide-react";
+import { AlertTriangle, Clock, Wrench, LogOut, ScrollText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Eylem Merkezi — Pensify" }, { name: "description", content: "Pensify'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:title", content: "Eylem Merkezi — Pensify" }, { property: "og:description", content: "Pensify'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -13,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 function NotificationsPage() {
   const { t, i18n } = useTranslation();
+  const perms = usePermissions();
+  const canSeeLogs = perms.roles.some((r) => r === "owner" || r === "admin");
   const today = new Date().toISOString().slice(0, 10);
   const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
   const locale = i18n.language?.startsWith("tr") ? "tr-TR" : i18n.language?.startsWith("en") ? "en-GB" : "de-DE";
@@ -96,7 +99,13 @@ function NotificationsPage() {
   );
 
   return (
-    <AppShell title={t("pages.notifications.title")} subtitle={t("pages.notifications.subtitle")}>
+    <AppShell title={t("pages.notifications.title")} subtitle={t("pages.notifications.subtitle")}
+      actions={canSeeLogs ? (
+        <Link to="/settings/logs"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium hover:bg-accent transition-colors">
+          <ScrollText className="w-4 h-4" /> {t("pages.notifications.viewLogs")}
+        </Link>
+      ) : null}>
       <div className="grid lg:grid-cols-2 gap-4">
         <Group title={t("pages.notifications.upcomingCheckouts")} icon={LogOut} tone="warning">
           {(data?.checkouts ?? []).map((r) => (

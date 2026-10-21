@@ -2,6 +2,7 @@ import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { Section, Badge } from "@/components/app-shell";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listAuditLogs, listAuditEntities, getAuditLog } from "@/lib/audit-logs.functions";
@@ -19,7 +20,14 @@ export const Route = createFileRoute("/_authenticated/settings/logs")({
 
 const PAGE_SIZE = 50;
 
+function useLocale() {
+  const { i18n } = useTranslation();
+  return i18n.language?.startsWith("tr") ? "tr-TR" : i18n.language?.startsWith("en") ? "en-GB" : "de-DE";
+}
+
 function AuditLogsContent() {
+  const { t } = useTranslation();
+  const locale = useLocale();
   const [page, setPage] = useState(0);
   const [entity, setEntity] = useState("");
   const [action, setAction] = useState("");
@@ -67,11 +75,11 @@ function AuditLogsContent() {
     <div className="space-y-4">
 
       <Section
-        title="Audit-Protokoll"
+        title={t("pages.logs.title")}
         action={
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Info className="w-3.5 h-3.5" />
-            Aufbewahrung: 14 Tage
+            {t("pages.logs.retention")}
           </div>
         }
       >
@@ -79,29 +87,29 @@ function AuditLogsContent() {
           <input
             value={email}
             onChange={(e) => { setEmail(e.target.value); setPage(0); }}
-            placeholder="Benutzer (E-Mail)…"
+            placeholder={t("pages.logs.filterEmail")}
             className="px-3 py-2 rounded-md border border-input bg-card text-sm"
           />
           <input
             value={entityId}
             onChange={(e) => { setEntityId(e.target.value); setPage(0); }}
-            placeholder="Datensatz-ID (LN)…"
+            placeholder={t("pages.logs.filterEntityId")}
             className="px-3 py-2 rounded-md border border-input bg-card text-sm"
           />
           <Select value={entity || "__all__"} onValueChange={(v) => { setEntity(v === "__all__" ? "" : v); setPage(0); }} disabled={entitiesLoading}>
-            <SelectTrigger className="text-sm"><SelectValue placeholder="Entität" /></SelectTrigger>
+            <SelectTrigger className="text-sm"><SelectValue placeholder={t("pages.logs.entity")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">Alle Entitäten</SelectItem>
+              <SelectItem value="__all__">{t("pages.logs.allEntities")}</SelectItem>
               {(entities ?? []).map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={action || "__all__"} onValueChange={(v) => { setAction(v === "__all__" ? "" : v); setPage(0); }}>
-            <SelectTrigger className="text-sm"><SelectValue placeholder="Aktion" /></SelectTrigger>
+            <SelectTrigger className="text-sm"><SelectValue placeholder={t("pages.logs.action")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">Alle Aktionen</SelectItem>
-              <SelectItem value="INSERT">Erstellen</SelectItem>
-              <SelectItem value="UPDATE">Ändern</SelectItem>
-              <SelectItem value="DELETE">Löschen</SelectItem>
+              <SelectItem value="__all__">{t("pages.logs.allActions")}</SelectItem>
+              <SelectItem value="INSERT">{t("pages.logs.create")}</SelectItem>
+              <SelectItem value="UPDATE">{t("pages.logs.update")}</SelectItem>
+              <SelectItem value="DELETE">{t("pages.logs.delete")}</SelectItem>
             </SelectContent>
           </Select>
           <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(0); }}
@@ -110,19 +118,19 @@ function AuditLogsContent() {
             className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
         </div>
         <div className="flex justify-end mb-3">
-          <Button variant="outline" size="sm" onClick={reset}>Filter zurücksetzen</Button>
+          <Button variant="outline" size="sm" onClick={reset}>{t("pages.logs.resetFilters")}</Button>
         </div>
 
         <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/60">
               <tr>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Zeit</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Benutzer</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Entität</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Datensatz</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Aktion</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Änderungen</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.time")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.user")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.entity")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.record")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.action")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.changes")}</th>
                 <th className="text-right px-3 py-2 font-medium text-muted-foreground">LN</th>
               </tr>
             </thead>
@@ -142,17 +150,17 @@ function AuditLogsContent() {
               ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                    Keine Logs gefunden.
+                    {t("pages.logs.noLogs")}
                   </td>
                 </tr>
               ) : (
                 rows.map((row) => (
                   <tr key={row.id} className="border-t border-border hover:bg-muted/30">
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums text-xs">
-                      {new Date(row.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
+                      {new Date(row.created_at).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE })}
                     </td>
                     <td className="px-3 py-2">
-                      <div className="font-medium">{row.actor_email || "System"}</div>
+                      <div className="font-medium">{row.actor_email || t("pages.logs.system")}</div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
@@ -169,7 +177,7 @@ function AuditLogsContent() {
                       <button
                         onClick={() => setOpenId(row.id)}
                         className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border hover:bg-muted text-xs font-mono"
-                        title="Details anzeigen"
+                        title={t("pages.logs.showDetails")}
                       >
                         <Eye className="w-3 h-3" />
                         {shortId(row.id)}
@@ -184,14 +192,14 @@ function AuditLogsContent() {
 
         <div className="flex items-center justify-between mt-4">
           <div className="text-xs text-muted-foreground">
-            {total} Einträge · Seite {page + 1} von {totalPages}
+            {t("pages.logs.entries", { count: total, page: page + 1, pages: totalPages })}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || isLoading}>
-              <ChevronLeft className="w-4 h-4 mr-1" /> Zurück
+              <ChevronLeft className="w-4 h-4 mr-1" /> {t("pages.logs.back")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1 || isLoading}>
-              Weiter <ChevronRight className="w-4 h-4 ml-1" />
+              {t("pages.logs.next")} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>
@@ -209,14 +217,16 @@ function shortId(id: string) {
 }
 
 function ActionBadge({ action }: { action: string }) {
+  const { t } = useTranslation();
   const tone: Record<string, "success" | "warning" | "destructive" | "info" | "primary" | "muted"> = {
     INSERT: "success", UPDATE: "info", DELETE: "destructive",
   };
-  const label: Record<string, string> = { INSERT: "Erstellen", UPDATE: "Ändern", DELETE: "Löschen" };
-  return <Badge tone={tone[action] ?? "muted"}>{label[action] ?? action}</Badge>;
+  const labelKey: Record<string, string> = { INSERT: "create", UPDATE: "update", DELETE: "delete" };
+  return <Badge tone={tone[action] ?? "muted"}>{labelKey[action] ? t(`pages.logs.${labelKey[action]}`) : action}</Badge>;
 }
 
 function DiffSummary({ diff }: { diff: any }) {
+  const { t } = useTranslation();
   if (!diff) return <span className="text-muted-foreground">—</span>;
   const oldObj = diff?.old ?? {};
   const newObj = diff?.new ?? {};
@@ -233,7 +243,7 @@ function DiffSummary({ diff }: { diff: any }) {
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-md">
-        <div className="text-xs font-medium mb-1">Geänderte Felder ({keys.size})</div>
+        <div className="text-xs font-medium mb-1">{t("pages.logs.changedFields", { count: keys.size })}</div>
         <div className="text-xs">{Array.from(keys).join(", ")}</div>
       </TooltipContent>
     </Tooltip>
@@ -241,6 +251,8 @@ function DiffSummary({ diff }: { diff: any }) {
 }
 
 function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { t } = useTranslation();
+  const locale = useLocale();
   const fetchLog = useServerFn(getAuditLog);
   const { data, isLoading } = useQuery({
     queryKey: ["audit-log", id],
@@ -252,7 +264,7 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Log-Detail
+            {t("pages.logs.detail")}
             {data && <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted">LN {shortId(data.id)}</span>}
           </DialogTitle>
         </DialogHeader>
@@ -261,21 +273,21 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
         ) : (
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Zeit" value={new Date(data.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })} />
-              <Field label="Benutzer" value={data.actor_email || "System"} />
-              <Field label="Entität" value={data.entity} />
-              <Field label="Datensatz-ID" value={data.entity_id || "—"} mono />
-              <Field label="Aktion" value={<ActionBadge action={data.action} />} />
-              <Field label="Log-ID" value={data.id} mono />
+              <Field label={t("pages.logs.time")} value={new Date(data.created_at).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE })} />
+              <Field label={t("pages.logs.user")} value={data.actor_email || t("pages.logs.system")} />
+              <Field label={t("pages.logs.entity")} value={data.entity} />
+              <Field label={t("pages.logs.recordId")} value={data.entity_id || "—"} mono />
+              <Field label={t("pages.logs.action")} value={<ActionBadge action={data.action} />} />
+              <Field label={t("pages.logs.logId")} value={data.id} mono />
             </div>
             <div>
-              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Vorher</div>
+              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">{t("pages.logs.before")}</div>
               <pre className="text-xs p-3 rounded-md bg-muted/60 border border-border overflow-auto max-h-64 whitespace-pre-wrap">
 {JSON.stringify((data.diff as any)?.old ?? null, null, 2)}
               </pre>
             </div>
             <div>
-              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Nachher</div>
+              <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">{t("pages.logs.after")}</div>
               <pre className="text-xs p-3 rounded-md bg-muted/60 border border-border overflow-auto max-h-64 whitespace-pre-wrap">
 {JSON.stringify((data.diff as any)?.new ?? null, null, 2)}
               </pre>

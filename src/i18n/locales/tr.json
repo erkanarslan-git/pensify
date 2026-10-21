@@ -127,7 +127,8 @@
       "changedBy": "{{name}} · {{date}}",
       "unknownUser": "Bilinmeyen kullanıcı",
       "maintenanceBadge": "Bakım",
-      "noMaintenance": "Bakımda oda yok"
+      "noMaintenance": "Bakımda oda yok",
+      "viewLogs": "İşlem Geçmişi"
     },
     "analytics": {
       "title": "Analizler"
@@ -135,6 +136,53 @@
     "properties": {
       "title": "Lokasyonlar",
       "subtitle": "{{cities}} şehirde {{count}} lokasyon"
+    },
+    "logs": {
+      "title": "İşlem Geçmişi",
+      "retention": "Saklama: 14 gün",
+      "filterEmail": "Kullanıcı (e-posta)…",
+      "filterEntityId": "Kayıt No…",
+      "entity": "Kayıt türü",
+      "action": "İşlem",
+      "allEntities": "Tüm kayıt türleri",
+      "allActions": "Tüm işlemler",
+      "create": "Oluşturma",
+      "update": "Değiştirme",
+      "delete": "Silme",
+      "resetFilters": "Filtreleri sıfırla",
+      "time": "Zaman",
+      "user": "Kullanıcı",
+      "record": "Kayıt",
+      "changes": "Değişiklikler",
+      "noLogs": "Kayıt bulunamadı.",
+      "entries": "{{count}} kayıt · Sayfa {{page}} / {{pages}}",
+      "back": "Geri",
+      "next": "İleri",
+      "detail": "Kayıt detayı",
+      "before": "Önce",
+      "after": "Sonra",
+      "system": "Sistem",
+      "showDetails": "Detayları göster",
+      "changedFields": "Değişen alanlar ({{count}})",
+      "recordId": "Kayıt ID",
+      "logId": "Log ID"
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "subtitle": "Dil, bildirimler, e-posta ve daha fazlası",
+      "tabs": {
+        "general": "Genel",
+        "profile": "Profil",
+        "language": "Dil",
+        "notifications": "Bildirimler",
+        "email": "E-posta",
+        "company": "Şirket",
+        "appearance": "Görünüm",
+        "channels": "Kanal renkleri",
+        "security": "Güvenlik",
+        "logs": "İşlem Geçmişi",
+        "import": "Veri içe aktarma"
+      }
     }
   },
   "pensions": {

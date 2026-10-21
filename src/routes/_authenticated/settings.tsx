@@ -14,18 +14,18 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import";
 
-const tabs: { key: TabKey; label: string; icon: typeof Globe }[] = [
-  { key: "general", label: "Allgemein", icon: Globe },
-  { key: "profile", label: "Profil", icon: UserIcon },
-  { key: "language", label: "Sprache", icon: Languages },
-  { key: "notifications", label: "Benachrichtigungen", icon: Bell },
-  { key: "email", label: "E-Mail", icon: Mail },
-  { key: "company", label: "Unternehmen", icon: Building2 },
-  { key: "appearance", label: "Darstellung", icon: Palette },
-  { key: "channels", label: "Kanal-Farben", icon: Paintbrush },
-  { key: "security", label: "Sicherheit", icon: Shield },
-  { key: "logs", label: "Audit Logs", icon: ScrollText },
-  { key: "import", label: "Datenimport", icon: FileUp },
+const tabs: { key: TabKey; icon: typeof Globe }[] = [
+  { key: "general", icon: Globe },
+  { key: "profile", icon: UserIcon },
+  { key: "language", icon: Languages },
+  { key: "notifications", icon: Bell },
+  { key: "email", icon: Mail },
+  { key: "company", icon: Building2 },
+  { key: "appearance", icon: Palette },
+  { key: "channels", icon: Paintbrush },
+  { key: "security", icon: Shield },
+  { key: "logs", icon: ScrollText },
+  { key: "import", icon: FileUp },
 ];
 
 function SettingsLayout() {
@@ -43,7 +43,7 @@ function SettingsLayout() {
   const isChildRoute = pathname !== "/settings";
 
   return (
-    <AppShell title="Einstellungen" subtitle="Sprache, Benachrichtigungen, E-Mail und mehr">
+    <AppShell title={t("pages.settings.title")} subtitle={t("pages.settings.subtitle")}>
       <div className="grid lg:grid-cols-[220px_1fr] gap-4">
         <aside className="rounded-xl border border-border bg-card p-2 h-fit">
           {tabs.map((x) => {
@@ -64,7 +64,7 @@ function SettingsLayout() {
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "bg-accent font-medium" : "hover:bg-accent/50 text-muted-foreground"}`}
               >
-                <Icon className="w-4 h-4" /> {x.label}
+                <Icon className="w-4 h-4" /> {t(`pages.settings.tabs.${x.key}`)}
               </button>
             );
           })}
