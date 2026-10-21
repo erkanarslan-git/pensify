@@ -237,6 +237,7 @@
     "available": "Müsait",
     "cleaningPending": "Temizlik Bekliyor",
     "cleaningInProgress": "Temizlik Sürüyor",
+    "roomsCleaningInProgress": "Temizlenen oda",
     "completedToday": "Bugün Tamamlanan",
     "checkoutsToday": "Bugünkü Çıkışlar",
     "maintenance": "Bakım",

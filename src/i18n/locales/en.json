@@ -237,6 +237,7 @@
     "available": "Available",
     "cleaningPending": "Cleaning Pending",
     "cleaningInProgress": "Cleaning In Progress",
+    "roomsCleaningInProgress": "Rooms being cleaned",
     "completedToday": "Completed Today",
     "checkoutsToday": "Check-outs Today",
     "maintenance": "Maintenance",
