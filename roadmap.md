@@ -1,5 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+- [ ] Görev Dağıtım'ın amacı, görev yönetimi ve mesaj gönderim kanalı kullanıcıya açıklansın; tüm ekranlar ve otomatik işlemler Almanya saatine sabitlensin, diğer saat dilimi seçenekleri kaldırılsın ve test edilsin.
+
 - [x] Günlük renkli liste, yazdırma/CSV çıktısı; ücretler yalnız detayda; 31 günlük liste ve mobil taşma kontrol edildi
 - [x] Kullanıcı ekleme Ekip'te; temizlikçi görünümü role bağlı, profil otomatik; Manager şef görünümü; ana roller korunur, silmede iki kez isim onayı, personel pasifleştirme kayıtları korur
 - [x] Çalışan bazlı çalışma günleri ve hastalık/izin kaydı; aylık raporda saatlerden ayrı gösterim, 7 hesap testi ve kayıt/yeniden açma/iptal kontrolü
