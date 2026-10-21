@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useMemo, useState } from "react";
-import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles, Undo2, RotateCcw } from "lucide-react";
+import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles, Undo2, RotateCcw, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -117,16 +117,25 @@ function CleaningPage() {
       title={t("pages.cleaning.title")}
       subtitle={t("cleaning.subtitle", { open: counts.open, unassigned: counts.unassigned })}
     >
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <StatCard highlight icon={<Sparkles className="w-4 h-4" />} label={t("cleaning.toDo")} value={counts.open} onClick={() => setView("open")} />
+        <StatCard icon={<AlertTriangle className="w-4 h-4" />} label={t("cleaning.problems")} value={counts.problem} onClick={() => setView("problem")} />
+        <StatCard icon={<Check className="w-4 h-4" />} label={t("cleaning.done")} value={counts.done} onClick={() => setView("done")} />
+        <StatCard icon={<UserX className="w-4 h-4" />} label={t("cleaning.notAssigned")} value={counts.unassigned} />
+      </div>
+
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        {views.map((v) => (
-          <button
-            key={v.id}
-            onClick={() => setView(v.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${view === v.id ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
-          >
-            {v.label} ({v.n})
-          </button>
-        ))}
+        <div className="inline-flex flex-wrap gap-1 p-1 rounded-xl bg-muted">
+          {views.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => setView(v.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === v.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {v.label} ({v.n})
+            </button>
+          ))}
+        </div>
         <select value={prop} onChange={(e) => setProp(e.target.value)} className="ml-auto px-3 py-2 rounded-md border border-input bg-card text-sm">
           <option value="all">{t("rooms.allProperties")}</option>
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -151,11 +160,12 @@ function CleaningPage() {
             const gOpen = g.items.filter((x) => isOpen(x.status)).length;
             const gProb = g.items.filter((x) => x.status === "problem").length;
             return (
-              <details key={g.id} open className="group rounded-xl border border-border bg-card">
+              <details key={g.id} open className="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                 <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none">
                   <div className="flex items-center gap-2 min-w-0">
                     <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform -rotate-90 group-open:rotate-0" />
                     <span className="font-semibold truncate">{g.name}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{g.items.length}</span>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
                     {t("cleaning.groupSummary", { total: g.items.length, open: gOpen })}{gProb > 0 ? ` · ${t("cleaning.problemCount", { count: gProb })}` : ""}
@@ -169,7 +179,7 @@ function CleaningPage() {
                     const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
                     return (
-                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm">
+                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm hover:bg-accent/40 transition-colors">
                         <div className="w-20 font-semibold">#{room?.number ?? "—"}</div>
                         <div className="w-28 text-muted-foreground tabular-nums">
                           {due.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
@@ -206,40 +216,40 @@ function CleaningPage() {
                           
                           {/* Reversal Buttons */}
                           {task.status === "accepted" && (
-                            <button onClick={() => update(task.id, "pending")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "pending")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
                           {task.status === "in_progress" && (
-                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
                           {task.status === "completed" && (
-                            <button onClick={() => update(task.id, "in_progress")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "in_progress")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
                           {task.status === "problem" && (
-                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
 
                           {isOpen(task.status) && (
-                            <button onClick={() => update(task.id, "problem")} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5">
+                            <button onClick={() => update(task.id, "problem")} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5">
                               <AlertTriangle className="w-3 h-3" />
                             </button>
                           )}
 
                           {canAssign && (
-                            <button onClick={() => update(task.id, "pending")} title={t("common.reset")} className="text-xs px-2 py-1.5 rounded-md border border-warning/30 text-warning hover:bg-warning/5">
+                            <button onClick={() => update(task.id, "pending")} title={t("common.reset")} className="text-xs px-2 py-1.5 rounded-lg border border-warning/30 text-warning hover:bg-warning/5">
                               <RotateCcw className="w-3 h-3" />
                             </button>
                           )}
 
                           {name && (
-                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title={t("cleaning.notify")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title={t("cleaning.notify")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <MessageCircle className="w-3 h-3" />
                             </button>
                           )}
@@ -259,8 +269,26 @@ function CleaningPage() {
 
 function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
+    <button onClick={onClick} className="text-xs px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
       {icon} {children}
     </button>
   );
+}
+
+function StatCard({ icon, label, value, highlight, onClick }: { icon: React.ReactNode; label: string; value: number; highlight?: boolean; onClick?: () => void }) {
+  const body = (
+    <>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
+      <div className="text-3xl font-semibold mt-1 tabular-nums">{value}</div>
+    </>
+  );
+  const cls = `rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`;
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={`${cls} w-full text-left hover:ring-2 hover:ring-primary/40 transition-shadow`}>
+        {body}
+      </button>
+    );
+  }
+  return <div className={cls}>{body}</div>;
 }
