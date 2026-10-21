@@ -1,6 +1,6 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
-- [ ] Görev Dağıtım'ın amacı, görev yönetimi ve mesaj gönderim kanalı kullanıcıya açıklansın; tüm ekranlar ve otomatik işlemler Almanya saatine sabitlensin, diğer saat dilimi seçenekleri kaldırılsın ve test edilsin.
+- [x] Görev Dağıtım'ın yalnız günlük özet olduğu, görev atamalarının Temizlik'te yapıldığı ve WhatsApp'ın bağlı olmadığı açıklandı; mesajlar deneme olarak etiketlendi. Saat gösterimleri ve otomatik görev zamanlaması Berlin'e sabitlendi, kayıtlı İstanbul ayarı düzeltildi; 11 test ve İstanbul saatindeki cihazla giriş yapılmış ekran/Temizlik geçişi kontrol edildi. Dolu gün ve gerçek mesaj gönderimi doğrulanmadı.
 
 - [x] Günlük renkli liste, yazdırma/CSV çıktısı; ücretler yalnız detayda; 31 günlük liste ve mobil taşma kontrol edildi
 - [x] Kullanıcı ekleme Ekip'te; temizlikçi görünümü role bağlı, profil otomatik; Manager şef görünümü; ana roller korunur, silmede iki kez isim onayı, personel pasifleştirme kayıtları korur

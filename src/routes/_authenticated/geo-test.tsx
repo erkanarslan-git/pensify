@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -135,7 +136,7 @@ function GeoTestPage() {
                 value={`±${Math.round(geo.reading.accuracy)} m`}
                 tone={geo.reading.accuracy <= 50 ? "ok" : geo.reading.accuracy <= 200 ? "warn" : "bad"}
               />
-              <Stat label="Zaman" value={new Date(geo.reading.ts).toLocaleTimeString()} />
+              <Stat label="Zaman" value={new Date(geo.reading.ts).toLocaleTimeString("de-DE", { timeZone: BUSINESS_TIME_ZONE })} />
             </div>
           ) : null}
           {geo.reading && (
