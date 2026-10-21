@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
+import { LoginFlow } from "@/components/login-flow";
 import logo from "@/assets/pension-highway-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
@@ -27,9 +28,9 @@ export const Route = createFileRoute("/auth")({
 });
 
 const COPY = {
-  de: { title: "Willkommen zurück", sub: "Interner Zugang für das Team", email: "E-Mail", pw: "Passwort", btn: "Anmelden", forgot: "Passwort vergessen oder kein Zugang? Bitte wende dich an deinen Administrator.", secure: "Geschützter Bereich · nur für Mitarbeitende", err: "E-Mail oder Passwort ist falsch." },
-  en: { title: "Welcome back", sub: "Internal access for staff", email: "Email", pw: "Password", btn: "Sign in", forgot: "Forgot your password or no access? Please contact your administrator.", secure: "Protected area · staff only", err: "Email or password is incorrect." },
-  tr: { title: "Tekrar hoş geldin", sub: "Ekip için iç erişim", email: "E-posta", pw: "Şifre", btn: "Giriş yap", forgot: "Şifreni mi unuttun veya erişimin yok mu? Lütfen yöneticine başvur.", secure: "Korumalı alan · sadece çalışanlar", err: "E-posta veya şifre hatalı." },
+  de: { flow: { eyebrow: "Pension Highway · Workspace", title: "Ein guter Tag beginnt mit Überblick.", sub: "Standorte, Buchungen und dein Team. Alles an einem Ort, damit der Alltag einfacher wird.", res: "Reservierung", room: "Zimmer", roomSub: "Vorbereitet", guests: "Zufriedene Gäste", guestsSub: "Willkommen bei uns", direct: "Direkt", web: "Webseite", caption: "So greifen die Abläufe ineinander · Illustration", team: "Der Arbeitsbereich für das Pension Highway Team" }, title: "Willkommen zurück", sub: "Interner Zugang für das Team", email: "E-Mail", pw: "Passwort", btn: "Anmelden", forgot: "Passwort vergessen oder kein Zugang? Bitte wende dich an deinen Administrator.", secure: "Geschützter Bereich · nur für Mitarbeitende", err: "E-Mail oder Passwort ist falsch." },
+  en: { flow: { eyebrow: "Pension Highway · Workspace", title: "A good day starts with an overview.", sub: "Locations, bookings and your team. All in one place to make every day easier.", res: "Reservation", room: "Room", roomSub: "Prepared", guests: "Happy guests", guestsSub: "Welcome to us", direct: "Direct", web: "Website", caption: "How the workflows connect · Illustration", team: "The workspace for the Pension Highway team" }, title: "Welcome back", sub: "Internal access for staff", email: "Email", pw: "Password", btn: "Sign in", forgot: "Forgot your password or no access? Please contact your administrator.", secure: "Protected area · staff only", err: "Email or password is incorrect." },
+  tr: { flow: { eyebrow: "Pension Highway · Çalışma alanı", title: "İyi bir gün genel bakışla başlar.", sub: "Tesisler, rezervasyonlar ve ekibin. Her şey tek yerde, günlük iş kolaylaşsın diye.", res: "Rezervasyon", room: "Oda", roomSub: "Hazırlandı", guests: "Mutlu misafirler", guestsSub: "Hoş geldiniz", direct: "Direkt", web: "Web sitesi", caption: "İş akışları nasıl birleşiyor · Görsel", team: "Pension Highway ekibinin çalışma alanı" }, title: "Tekrar hoş geldin", sub: "Ekip için iç erişim", email: "E-posta", pw: "Şifre", btn: "Giriş yap", forgot: "Şifreni mi unuttun veya erişimin yok mu? Lütfen yöneticine başvur.", secure: "Korumalı alan · sadece çalışanlar", err: "E-posta veya şifre hatalı." },
 } as const;
 
 function AuthPage() {
@@ -62,7 +63,11 @@ function AuthPage() {
         ))}
       </div>
 
-      <main className="relative z-10 grid min-h-screen place-items-center px-5 py-16">
+      <main className="relative z-10 grid min-h-screen lg:grid-cols-[1.15fr_1fr]">
+        <section className="hidden px-12 py-14 lg:block xl:px-16">
+          <LoginFlow c={c.flow} />
+        </section>
+        <div className="grid place-items-center px-5 py-16">
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-[color:var(--brand-cream)]/15 bg-[color:var(--brand-cream)] p-8 text-[color:var(--brand-navy-deep)] shadow-2xl">
             <img src={logo.url} alt="Pension Highway – Stay here!" className="mx-auto h-auto w-64" />
@@ -89,6 +94,7 @@ function AuthPage() {
           <p className="mt-5 flex items-center justify-center gap-1.5 text-xs opacity-70">
             <ShieldCheck className="h-3.5 w-3.5" /> {c.secure}
           </p>
+        </div>
         </div>
       </main>
     </div>
