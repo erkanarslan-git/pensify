@@ -168,3 +168,9 @@
 @keyframes rise-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
 @utility animate-rise-in { animation: rise-in 0.5s cubic-bezier(.2,.8,.2,1) both; }
 @media (prefers-reduced-motion: reduce) { .animate-rise-in { animation: none; } }
+
+@keyframes highway-dash { to { stroke-dashoffset: -400; } }
+@keyframes highway-drift { 0%,100% { transform: translate3d(0,0,0) } 50% { transform: translate3d(-3%,2%,0) } }
+@utility highway-dash { animation: highway-dash 6s linear infinite; }
+@utility highway-drift { animation: highway-drift 18s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .highway-dash, .highway-drift { animation: none; } }
