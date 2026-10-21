@@ -19,6 +19,8 @@ INSERT INTO public.organizations(id, name, slug, timezone, default_currency, loc
  ('b0000000-0000-0000-0000-00000000000b', 'Test B', 'test-b-iso', 'Europe/Istanbul', 'EUR', 'de');
 
 -- fake user ids (organization_members has no FK to auth.users)
+-- Synthetic memberships intentionally lack auth identities; skip profile provisioning for this fixture only.
+ALTER TABLE public.organization_members DISABLE TRIGGER membership_cleaner_profile;
 -- A admin, B admin, B property_manager (assigned P_B1), B reception (none), B cleaner (none), B cleaner w/ task
 INSERT INTO public.organization_members(id, organization_id, user_id, role) VALUES
  ('10000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-00000000000a','aaaaaaaa-0000-0000-0000-000000000001','admin'),
@@ -26,6 +28,7 @@ INSERT INTO public.organization_members(id, organization_id, user_id, role) VALU
  ('10000000-0000-0000-0000-000000000003','b0000000-0000-0000-0000-00000000000b','bbbbbbbb-0000-0000-0000-000000000002','property_manager'),
  ('10000000-0000-0000-0000-000000000004','b0000000-0000-0000-0000-00000000000b','bbbbbbbb-0000-0000-0000-000000000003','reception'),
  ('10000000-0000-0000-0000-000000000005','b0000000-0000-0000-0000-00000000000b','bbbbbbbb-0000-0000-0000-000000000004','cleaner');
+ALTER TABLE public.organization_members ENABLE TRIGGER membership_cleaner_profile;
 
 INSERT INTO public.cities(id, organization_id, name, country) VALUES
  ('c0000000-0000-0000-0000-00000000000a','a0000000-0000-0000-0000-00000000000a','CityA','DE'),

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireOrgRole, ADMIN_ROLES } from "@/lib/org-auth.server";
 import { z } from "zod";
+import { canDeleteTeamUser } from "@/lib/team-safety";
 
 const ROLES = ["owner", "admin", "manager", "reception", "cleaner"] as const;
 
@@ -67,7 +68,7 @@ export const adminCreateUser = createServerFn({ method: "POST" })
         if (memberError) throw memberError;
       }
       if (data.role === "cleaner") {
-        const { error: cleanerError } = await supabaseAdmin.from("cleaners").insert({
+        const { error: cleanerError } = await supabaseAdmin.from("cleaners").update({
           organization_id: orgId,
           user_id: uid,
           full_name: data.full_name?.trim() || data.email.split("@")[0],
@@ -76,7 +77,7 @@ export const adminCreateUser = createServerFn({ method: "POST" })
           hourly_rate: data.cleaner?.hourly_rate ?? null,
           notes: data.cleaner?.notes?.trim() || null,
           active: true,
-        });
+        }).eq("organization_id", orgId).eq("user_id", uid);
         if (cleanerError) throw cleanerError;
       }
     } catch (cause) {
@@ -97,6 +98,14 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
     await assertTargetInOrg(supabaseAdmin, orgId, data.userId);
     const owners = await orgOwners(supabaseAdmin, orgId);
     const isOwner = owners.includes(data.userId);
+    const [{ data: targetMember, error: targetError }, { count: otherCount, error: otherError }] = await Promise.all([
+      supabaseAdmin.from("organization_members").select("role").eq("organization_id", orgId).eq("user_id", data.userId).maybeSingle(),
+      supabaseAdmin.from("organization_members").select("id", { count: "exact", head: true }).eq("user_id", data.userId).neq("organization_id", orgId),
+    ]);
+    if (targetError || otherError) throw new Error("Benutzer konnte nicht geprüft werden.");
+    if (!canDeleteTeamUser(context.userId, data.userId, callerRole, targetMember?.role ?? "", owners.length, otherCount ?? 0)) {
+      throw new Error("Löschen nicht erlaubt. Bei mehreren Organisationen bleibt das Konto geschützt; nutze die Kontoverwaltung.");
+    }
     if (isOwner && owners.length <= 1) throw new Error("Letzten Inhaber kann man nicht löschen.");
     if (callerRole !== "owner") {
       const { data: target } = await supabaseAdmin.from("organization_members").select("role")

@@ -2274,6 +2274,18 @@ export type Database = {
           qr_token: string
         }[]
       }
+      list_team_cleaners: {
+        Args: never
+        Returns: {
+          active: boolean
+          email: string
+          full_name: string
+          id: string
+          notes: string
+          phone: string
+          user_id: string
+        }[]
+      }
       move_rooms_to_type: {
         Args: { _from_type: string; _to_type: string }
         Returns: number

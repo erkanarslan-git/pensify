@@ -218,6 +218,13 @@
       "when": 1792590758949,
       "tag": "0030_employee_workdays_and_absences",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792596560186,
+      "tag": "0031_role_driven_cleaner_profiles",
+      "breakpoints": true
     }
   ]
 }

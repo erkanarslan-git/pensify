@@ -5,6 +5,7 @@ import de from "./locales/de.json";
 import en from "./locales/en.json";
 import tr from "./locales/tr.json";
 import { attendanceTranslations } from "./attendance";
+import { teamSafetyTranslations } from "./team-safety";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -15,9 +16,9 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources: {
-        de: { translation: { ...de, attendance: attendanceTranslations.de } },
-        en: { translation: { ...en, attendance: attendanceTranslations.en } },
-        tr: { translation: { ...tr, attendance: attendanceTranslations.tr } },
+        de: { translation: { ...de, attendance: attendanceTranslations.de, teamSafety: teamSafetyTranslations.de } },
+        en: { translation: { ...en, attendance: attendanceTranslations.en, teamSafety: teamSafetyTranslations.en } },
+        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, teamSafety: teamSafetyTranslations.tr } },
       },
       fallbackLng: "de",
       supportedLngs: SUPPORTED_LANGS as unknown as string[],
