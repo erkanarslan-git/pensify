@@ -1,5 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+- [ ] Panel/Odalar sayı farkı: silinmiş rezervasyonları dışla, aynı oda durum kaynağını kullan; oda ve temizlik görevi sayılarını ayır ve giriş yapılmış ekranda doğrula.
+
 - [x] Görev Dağıtım'ın yalnız günlük özet olduğu, görev atamalarının Temizlik'te yapıldığı ve WhatsApp'ın bağlı olmadığı açıklandı; mesajlar deneme olarak etiketlendi. Saat gösterimleri ve otomatik görev zamanlaması Berlin'e sabitlendi, kayıtlı İstanbul ayarı düzeltildi; 11 test ve İstanbul saatindeki cihazla giriş yapılmış ekran/Temizlik geçişi kontrol edildi. Dolu gün ve gerçek mesaj gönderimi doğrulanmadı.
 
 - [x] Günlük renkli liste, yazdırma/CSV çıktısı; ücretler yalnız detayda; 31 günlük liste ve mobil taşma kontrol edildi
