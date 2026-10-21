@@ -186,7 +186,7 @@ function CalendarPage() {
     (async () => {
       const [{ data: props }, { data: rms }, { data: res }, { data: tasks }] = await Promise.all([
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id,floor").order("floor", { ascending: true, nullsFirst: true }).order("number"),
+        supabase.from("rooms").select("id,number,property_id,floor,status").order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status").neq("status", "cancelled"),
         supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "problem"]),
       ]);
