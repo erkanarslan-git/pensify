@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
-import { Mail, Phone, Plus, Pencil, Trash2, UserCheck, UserX } from "lucide-react";
+import { Mail, Phone, Plus, Pencil, Trash2, UserCheck, UserX, Users, Euro, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
