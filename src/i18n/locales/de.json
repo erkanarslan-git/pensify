@@ -633,5 +633,12 @@
     "deleted": "Mitarbeiter gelöscht.",
     "deleteTitle": "Mitarbeiter löschen?",
     "deleteDescription": "{{name}} wird endgültig gelöscht. Auch vergangene Zeiteinträge werden entfernt."
+  },
+  "roles": {
+    "owner": "Inhaber",
+    "admin": "Administrator",
+    "manager": "Manager",
+    "reception": "Rezeption",
+    "cleaner": "Reinigungskraft"
   }
 }

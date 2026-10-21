@@ -633,5 +633,12 @@
     "deleted": "Staff member deleted.",
     "deleteTitle": "Delete staff member?",
     "deleteDescription": "{{name}} will be permanently deleted. Past time entries will also be removed."
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Administrator",
+    "manager": "Manager",
+    "reception": "Reception",
+    "cleaner": "Cleaner"
   }
 }

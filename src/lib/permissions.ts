@@ -10,6 +10,12 @@ export const ROLE_LABEL: Record<AppRole, string> = {
   cleaner: "Reinigungskraft",
 };
 
+// Localized role label; falls back to the German catalog label.
+export function roleLabel(role: AppRole, t: (key: string) => string): string {
+  const v = t(`roles.${role}`);
+  return v && v !== `roles.${role}` ? v : ROLE_LABEL[role];
+}
+
 export type Permission = { key: string; label: string; group: string; defaultRoles: AppRole[] };
 
 export const PERMISSIONS: Permission[] = [

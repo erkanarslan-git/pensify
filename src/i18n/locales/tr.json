@@ -633,5 +633,12 @@
     "deleted": "Personel silindi.",
     "deleteTitle": "Personel silinsin mi?",
     "deleteDescription": "{{name}} kalıcı olarak silinecek. Geçmiş çalışma kayıtları da kaldırılacak."
+  },
+  "roles": {
+    "owner": "İşletme Sahibi",
+    "admin": "Yönetici",
+    "manager": "Müdür",
+    "reception": "Resepsiyon",
+    "cleaner": "Temizlik Personeli"
   }
 }
