@@ -195,3 +195,13 @@
 @source inline("bg-primary bg-info bg-success bg-warning bg-destructive text-primary text-info text-success text-warning text-destructive");
 
 @utility brand-tile { background: var(--gradient-brand-tile); color: oklch(0.99 0.005 250); }
+
+@media print {
+  body:has(.attendance-print-report) * { visibility: hidden; }
+  body:has(.attendance-print-report) .attendance-print-report,
+  body:has(.attendance-print-report) .attendance-print-report * { visibility: visible; }
+  body:has(.attendance-print-report) .attendance-print-report { position: absolute; inset: 0; width: 100%; }
+  body:has(.attendance-print-report) [role="dialog"] { position: static; transform: none; overflow: visible; max-height: none; max-width: none; border: none; box-shadow: none; }
+  .attendance-print-report { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .attendance-print-report tr { break-inside: avoid; }
+}

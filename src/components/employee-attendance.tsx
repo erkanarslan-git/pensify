@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { format, endOfMonth, parseISO } from "date-fns";
-import { Download } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { attendanceDays, localWorkDate } from "@/lib/attendance";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -14,6 +14,14 @@ import { toast } from "sonner";
 
 const weekdayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const kinds = ["sick", "leave", "excused", "unexcused"];
+const dayTones: Record<string, string> = {
+  worked: "border-success/40 bg-success/10 text-success-foreground dark:text-success",
+  sick: "border-warning/40 bg-warning/10 text-warning-foreground dark:text-warning",
+  missing: "border-destructive/40 bg-destructive/10 text-destructive",
+  unexcused: "border-destructive/40 bg-destructive/10 text-destructive",
+  leave: "border-info/40 bg-info/10 text-info-foreground dark:text-info",
+  excused: "border-info/40 bg-info/10 text-info-foreground dark:text-info",
+};
 
 export function EmployeeAttendance({ userId }: { userId?: string }) {
   const { t } = useTranslation();
@@ -93,7 +101,7 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
     const rows = [[t("attendance.employee"), t("attendance.actualHours"), ...kinds.map(k => t(`attendance.${k}`))]];
     report.forEach(r => rows.push([name(r.member.user_id), (r.minutes / 60).toFixed(2), ...kinds.map(k => String(r.counts[k]))]));
     rows.push([], [t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.worked")]);
-    report.forEach(r => r.days.forEach(d => rows.push([name(r.member.user_id), d.date, t(`attendance.${d.status}`), d.worked ? "1" : "0"])));
+    report.forEach(r => r.days.forEach(d => rows.push([name(r.member.user_id), format(parseISO(d.date), "dd.MM.yyyy"), t(`attendance.${d.status}`), d.worked ? t("common.yes") : t("common.no")])));
     const csv = "\uFEFF" + rows.map(row => row.map(cell => `"${(/^[=+@\-]/.test(cell) ? "'" : "") + cell.replace(/"/g, '""')}"`).join(";")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a"); a.href = url; a.download = `attendance-${month}.csv`; a.click(); URL.revokeObjectURL(url);
@@ -133,9 +141,12 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
         </TabsContent>}
 
         <TabsContent value="month" className="space-y-3 pt-2">
-          <div className="flex flex-wrap items-end justify-between gap-2"><Label className="grid gap-1">{t("attendance.month")}<Input aria-label={t("attendance.month")} type="month" value={month} onChange={e => { if (e.target.value) setMonth(e.target.value); }} /></Label><Button size="sm" variant="outline" onClick={exportCsv} disabled={!data}><Download className="mr-1 h-4 w-4" />{t("attendance.export")}</Button></div>
-          <div className="text-sm">{t("attendance.actualHours")}: <b>{((current?.minutes ?? 0) / 60).toFixed(2)}</b> · {t("attendance.separate")}: <b>{current?.days.filter(d => kinds.includes(d.status)).length ?? 0}</b></div>
-          <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">{current?.days.map(d => <div key={d.date} className={`rounded-md border px-2 py-1.5 text-xs ${d.absence ? "border-primary/30 bg-primary/10" : "border-border bg-muted/30"}`}><span className="font-medium">{format(parseISO(d.date), "dd.MM.")}</span><div className={d.status === "missing" ? "text-warning" : "text-muted-foreground"}>{t(`attendance.${d.status}`)}</div>{d.absence && d.worked && <div className="text-warning">{t("attendance.conflict")}</div>}</div>)}</div>
+          <div className="flex flex-wrap items-end justify-between gap-2"><Label className="grid gap-1">{t("attendance.month")}<Input aria-label={t("attendance.month")} type="month" value={month} onChange={e => { if (e.target.value) setMonth(e.target.value); }} /></Label><div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => window.print()} disabled={!current}><Printer className="mr-1 h-4 w-4" />{t("attendance.print")}</Button><Button size="sm" variant="outline" onClick={exportCsv} disabled={!data}><Download className="mr-1 h-4 w-4" />{t("attendance.export")}</Button></div></div>
+          <div className="attendance-print-report space-y-3">
+            <h4 className="font-semibold">{name(member.user_id)} · {month}</h4>
+            <div className="text-sm">{t("attendance.actualHours")}: <b>{((current?.minutes ?? 0) / 60).toFixed(2)}</b> · {t("attendance.separate")}: <b>{current?.days.filter(d => kinds.includes(d.status)).length ?? 0}</b></div>
+            <table className="w-full text-sm"><thead><tr className="border-b border-border text-left text-muted-foreground"><th className="px-2 py-2 font-medium">{t("attendance.date")}</th><th className="px-2 py-2 font-medium">{t("attendance.status")}</th></tr></thead><tbody>{current?.days.map(d => <tr key={d.date} className={`border-b ${dayTones[d.status] ?? "border-border bg-muted/30 text-muted-foreground"}`}><td className="whitespace-nowrap px-2 py-2 tabular-nums">{format(parseISO(d.date), "dd.MM.yyyy")} <span className="ml-1 text-xs">{t(`attendance.${weekdayKeys[(parseISO(d.date).getDay() + 6) % 7]}`)}</span></td><td className="px-2 py-2"><span>{t(`attendance.${d.status}`)}</span>{d.absence && d.worked && <div className="text-xs font-medium">{t("attendance.conflict")}</div>}</td></tr>)}</tbody></table>
+          </div>
         </TabsContent>
       </Tabs>}
     </>}

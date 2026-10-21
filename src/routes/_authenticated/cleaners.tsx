@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
-import { Mail, Phone, Plus, Pencil, Trash2, UserCheck, UserX, Users, Euro, Search } from "lucide-react";
+import { Mail, Phone, Plus, Pencil, Trash2, UserCheck, UserX, Users, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { EmployeeAttendance } from "@/components/employee-attendance";
 import { CalendarDays } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
+import { deletionNameMatches } from "@/lib/team-safety";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -50,6 +52,9 @@ type CleanerRow = {
 function CleanersPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const { can } = usePermissions();
+  const canManage = can("manage_team");
+  const [confirmName, setConfirmName] = useState("");
   const [editing, setEditing] = useState<(Partial<CleanerRow> & { password?: string }) | null>(null);
   const [deleting, setDeleting] = useState<CleanerRow | null>(null);
   const [attendanceUser, setAttendanceUser] = useState<CleanerRow | null>(null);
@@ -59,11 +64,8 @@ function CleanersPage() {
     queryKey: ["cleaners"],
     queryFn: async () => {
       const [{ data, error }, ratesRes] = await Promise.all([
-        supabase
-          .from("cleaners")
-          .select("id,user_id,full_name,phone,email,active,notes,created_at,updated_at")
-          .order("created_at", { ascending: false }),
-        supabase.rpc("admin_list_cleaner_rates"),
+        supabase.rpc("list_team_cleaners"),
+        canManage ? supabase.rpc("admin_list_cleaner_rates") : Promise.resolve({ data: [], error: null }),
       ]);
       if (error) throw error;
       const rateMap = new Map<string, number | null>();
@@ -111,13 +113,13 @@ function CleanersPage() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("cleaners").delete().eq("id", id);
+      const { error } = await supabase.from("cleaners").update({ active: false }).eq("id", id).select("id").single();
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cleaners"] });
       setDeleting(null);
-      toast.success(t("cleaners.deleted"));
+      toast.success(t("common.saved", { defaultValue: "Gespeichert" }));
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -128,24 +130,19 @@ function CleanersPage() {
   const shown = list.filter((c) =>
     (statusFilter === "all" || (statusFilter === "active" ? c.active : !c.active)) &&
     `${c.full_name} ${c.email ?? ""} ${c.phone ?? ""}`.toLowerCase().includes(search.trim().toLowerCase()));
-  const rates = list.filter((c) => c.hourly_rate != null).map((c) => Number(c.hourly_rate));
-  const avgRate = rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null;
 
   return (
     <AppShell
       title={t("pages.cleaners.title")}
       subtitle={t("pages.cleaners.subtitle", { count: list.filter((c) => c.active).length })}
       actions={
-        <Button onClick={() => setEditing({ active: true })} size="sm">
-          <Plus className="w-4 h-4 mr-1" /> {t("common.add")}
-        </Button>
+        canManage ? <Button asChild size="sm"><Link to="/team"><Users className="w-4 h-4 mr-1" />{t("teamSafety.addInTeam")}</Link></Button> : undefined
       }
     >
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
         <StaffStat highlight icon={<Users className="w-4 h-4" />} label={t("cleaners.active")} value={list.filter((c) => c.active).length} onClick={() => setStatusFilter("active")} />
         <StaffStat icon={<UserX className="w-4 h-4" />} label={t("cleaners.inactive")} value={list.filter((c) => !c.active).length} onClick={() => setStatusFilter("inactive")} />
         <StaffStat icon={<UserCheck className="w-4 h-4" />} label={t("cleaners.accountActive")} value={list.filter((c) => c.user_id).length} />
-        <StaffStat icon={<Euro className="w-4 h-4" />} label={t("cleaners.hourlyRate")} value={avgRate == null ? "—" : `€${avgRate.toFixed(2)}`} />
       </div>
 
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
@@ -164,12 +161,13 @@ function CleanersPage() {
               className="w-full h-9 pl-9 pr-3 rounded-xl border border-input bg-card text-sm" />
           </div>
         </div>
-        <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] gap-4 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium text-muted-foreground md:grid">
-          <span>{t("cleaners.staff")}</span><span>{t("cleaners.contact")}</span><span>{t("cleaners.hourlyRate")}</span><span>{t("cleaners.status")}</span><span className="text-right">{t("cleaners.action")}</span>
+        <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_110px_150px] gap-4 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium text-muted-foreground md:grid">
+          <span>{t("cleaners.staff")}</span><span>{t("cleaners.contact")}</span><span>{t("cleaners.status")}</span><span className="text-right">{t("cleaners.action")}</span>
         </div>
-        {shown.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">—</div>}
+        {cleaners.isError && <p className="p-4 text-sm text-destructive">{t("teamSafety.loadFailed")}</p>}
+        {!cleaners.isError && shown.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">—</div>}
         {shown.map((c) => (
-          <div key={c.id} className={`grid gap-3 border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/40 transition-colors md:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] md:items-center ${c.active ? "" : "opacity-60"}`}>
+          <div key={c.id} className={`grid gap-3 border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/40 transition-colors md:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_110px_150px] md:items-center ${c.active ? "" : "opacity-60"}`}>
             <div className="flex items-center gap-3 min-w-0">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
                 {c.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
@@ -177,16 +175,15 @@ function CleanersPage() {
               <div className="min-w-0"><div className="truncate font-medium">{c.full_name}</div><div className={`mt-0.5 flex items-center gap-1 text-xs ${c.user_id ? "text-primary" : "text-muted-foreground"}`}>{c.user_id ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}{c.user_id ? t("cleaners.accountActive") : t("cleaners.legacyNoAccount")}</div></div>
             </div>
             <div className="space-y-1 text-sm text-muted-foreground">{c.phone && <div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{c.phone}</div>}{c.email && <div className="flex items-center gap-1.5 truncate"><Mail className="h-3.5 w-3.5" />{c.email}</div>}</div>
-            <div className="text-sm font-semibold tabular-nums">{c.hourly_rate == null ? "—" : `€${Number(c.hourly_rate).toFixed(2)}`}</div>
             <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? t("cleaners.active") : t("cleaners.inactive")}</Badge></div>
             <div className="flex justify-end gap-1">
               <Button size="icon" variant="ghost" title={t("attendance.manage")} aria-label={t("attendance.manage")} onClick={() => setAttendanceUser(c)}><CalendarDays className="h-4 w-4" /></Button>
-              <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setEditing(c)}>
+              {canManage && <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setEditing(c)}>
                 <Pencil className="w-3 h-3 mr-1" /> {t("common.edit")}
-              </Button>
-              <Button size="sm" variant="ghost" className="rounded-lg hover:text-destructive" onClick={() => setDeleting(c)}>
+              </Button>}
+              {canManage && c.active && <Button size="sm" variant="ghost" aria-label={t("teamSafety.deactivate")} title={t("teamSafety.deactivate")} className="rounded-lg hover:text-destructive" onClick={() => { setConfirmName(""); setDeleting(c); }}>
                 <Trash2 className="w-3 h-3" />
-              </Button>
+              </Button>}
             </div>
           </div>
         ))}
@@ -252,14 +249,15 @@ function CleanersPage() {
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("cleaners.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("teamSafety.deactivate")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("cleaners.deleteDescription", { name: deleting?.full_name })}
+              {deleting?.full_name} · {t("teamSafety.deactivateHint")}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <Label className="grid gap-2">{t("teamSafety.typeName")}<Input value={confirmName} onChange={e => setConfirmName(e.target.value)} /></Label>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleting && remove.mutate(deleting.id)}>{t("common.delete")}</AlertDialogAction>
+            <AlertDialogAction disabled={!deletionNameMatches(confirmName, deleting?.full_name ?? "") || remove.isPending} onClick={() => deleting && remove.mutate(deleting.id)}>{t("teamSafety.deactivate")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

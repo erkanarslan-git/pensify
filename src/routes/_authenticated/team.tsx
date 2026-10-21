@@ -19,6 +19,8 @@ import { adminCreateUser, adminDeleteUser, adminSetUserBanned, adminResetUserPas
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { usePermissions } from "@/hooks/use-permissions";
 import { EmployeeAttendance } from "@/components/employee-attendance";
+import { useTranslation } from "react-i18next";
+import { deletionNameMatches } from "@/lib/team-safety";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Team — Pensify" }, { name: "description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:title", content: "Team — Pensify" }, { property: "og:description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -30,6 +32,7 @@ const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"
 };
 
 function TeamPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { userId: currentUserId, isOwner: iAmOwner } = usePermissions();
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
@@ -82,16 +85,7 @@ function TeamPage() {
       const { error } = await supabase.rpc("admin_set_role", { _user_id: userId, _role: role });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); setAdding(null); toast.success("Rolle vergeben"); },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const removeRole = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      const { error } = await supabase.rpc("admin_remove_role", { _user_id: userId, _role: role });
-      if (error) throw error;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success("Rolle entfernt"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); qc.invalidateQueries({ queryKey: ["cleaners"] }); qc.invalidateQueries({ queryKey: ["my-permissions"] }); setAdding(null); toast.success("Rolle vergeben"); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -402,7 +396,7 @@ function TeamPage() {
                     {(u.roles as AppRole[]).map((r) => (
                       <span key={r} className="inline-flex items-center gap-1 rounded-full border border-border pl-2 pr-1 py-0.5 text-xs">
                         <Shield className="w-3 h-3" /> {ROLE_LABEL[r]}
-                        <button className="rounded-full p-0.5 text-muted-foreground hover:text-destructive" onClick={() => removeRole.mutate({ userId: u.user_id, role: r })} title="Rolle entfernen"><X className="w-3 h-3" /></button>
+                        <Lock className="h-3 w-3 text-muted-foreground" />
                       </span>
                     ))}
                   </div>
@@ -413,10 +407,12 @@ function TeamPage() {
                         <SelectContent>{missing.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}</SelectContent>
                       </Select>
                       <Button size="sm" variant="outline" onClick={() => addRole.mutate({ userId: u.user_id, role: adding?.userId === u.user_id ? adding.role : missing[0] })}>
-                        <Plus className="w-3 h-3 mr-1" /> Hinzufügen
+                        <Shield className="w-3 h-3 mr-1" /> {t("teamSafety.changeRole")}
                       </Button>
                     </div>
                   )}
+                  <p className="mt-2 text-xs text-muted-foreground">{t("teamSafety.coreRoles")}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("teamSafety.chief")}</p>
                 </PanelSection>
 
                 <PanelSection title="Zugewiesene Standorte" action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
@@ -479,6 +475,7 @@ function TeamPage() {
         onCreate={async (payload) => {
           await createFn({ data: payload });
           qc.invalidateQueries({ queryKey: ["admin-users"] });
+          qc.invalidateQueries({ queryKey: ["cleaners"] });
           toast.success("Benutzer angelegt");
           setCreateOpen(false);
         }}
@@ -488,12 +485,14 @@ function TeamPage() {
 }
 
 function DeleteUserDialog({ user, onClose, onConfirm }: { user: any | null; onClose: () => void; onConfirm: (id: string) => void }) {
+  const { t } = useTranslation();
   const [typed, setTyped] = useState("");
+  const [finalStep, setFinalStep] = useState(false);
   const name = (user?.full_name || user?.email || "").trim();
   const isPrivileged = !!user && (user.roles.includes("admin") || user.roles.includes("owner"));
-  const ok = typed.trim() === name && name.length > 0;
+  const ok = deletionNameMatches(typed, name);
   return (
-    <Dialog open={!!user} onOpenChange={(o) => { if (!o) { setTyped(""); onClose(); } }}>
+    <Dialog open={!!user} onOpenChange={(o) => { if (!o) { setTyped(""); setFinalStep(false); onClose(); } }}>
       <DialogContent className="max-w-md">
         <DialogHeader><DialogTitle>Benutzer endgültig löschen</DialogTitle></DialogHeader>
         <div className="space-y-3 text-sm">
@@ -504,6 +503,7 @@ function DeleteUserDialog({ user, onClose, onConfirm }: { user: any | null; onCl
               <span>Diese Person ist Administrator/Inhaber. Nur der Inhaber darf sie löschen.</span>
             </div>
           )}
+          {finalStep && <p className="border border-destructive/40 bg-destructive/10 p-3 font-medium text-destructive">{t("teamSafety.confirmAgain")}</p>}
           <label className="grid gap-1">
             <span className="text-xs text-muted-foreground">Zur Bestätigung den Namen eingeben: <b className="text-foreground">{name}</b></span>
             <input autoFocus value={typed} onChange={(e) => setTyped(e.target.value)}
@@ -511,9 +511,9 @@ function DeleteUserDialog({ user, onClose, onConfirm }: { user: any | null; onCl
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => { setTyped(""); onClose(); }}>Abbrechen</Button>
-          <Button variant="destructive" disabled={!ok} onClick={() => { setTyped(""); onConfirm(user.user_id); }}>
-            <Trash2 className="w-3.5 h-3.5 mr-1" /> Endgültig löschen
+          <Button variant="outline" onClick={() => { setTyped(""); setFinalStep(false); onClose(); }}>Abbrechen</Button>
+          <Button variant="destructive" disabled={!ok} onClick={() => { if (!finalStep) { setFinalStep(true); setTyped(""); return; } setTyped(""); setFinalStep(false); onConfirm(user.user_id); }}>
+            <Trash2 className="w-3.5 h-3.5 mr-1" /> {finalStep ? t("common.delete") : t("teamSafety.continue")}
           </Button>
         </DialogFooter>
       </DialogContent>
