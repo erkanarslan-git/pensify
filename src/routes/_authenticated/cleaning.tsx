@@ -160,11 +160,12 @@ function CleaningPage() {
             const gOpen = g.items.filter((x) => isOpen(x.status)).length;
             const gProb = g.items.filter((x) => x.status === "problem").length;
             return (
-              <details key={g.id} open className="group rounded-xl border border-border bg-card">
+              <details key={g.id} open className="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                 <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none">
                   <div className="flex items-center gap-2 min-w-0">
                     <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform -rotate-90 group-open:rotate-0" />
                     <span className="font-semibold truncate">{g.name}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{g.items.length}</span>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
                     {t("cleaning.groupSummary", { total: g.items.length, open: gOpen })}{gProb > 0 ? ` · ${t("cleaning.problemCount", { count: gProb })}` : ""}
