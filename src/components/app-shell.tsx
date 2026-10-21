@@ -5,7 +5,6 @@ import {
   BedDouble,
   Sparkles,
   Users,
-  Send,
   Bell,
   BarChart3,
   Building2,
@@ -76,7 +75,6 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/cleaning", labelKey: "nav.cleaning", icon: Sparkles },
       { to: "/cleaners", labelKey: "nav.cleaners", icon: Users },
-      { to: "/dispatch", labelKey: "nav.dispatch", icon: Send },
     ],
   },
   {
