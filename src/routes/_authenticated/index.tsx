@@ -220,8 +220,8 @@ function Dashboard() {
                 <Pie data={channelData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4} strokeWidth={0}>
                   {channelData.map((c, i) => (<Cell key={i} fill={sourceColor(c.name)} />))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v as any, sourceLabel(String(n))]} />
-                <Legend verticalAlign="bottom" height={36} iconSize={8} formatter={(v) => sourceLabel(String(v))} wrapperStyle={{ fontSize: 11, color: "var(--color-muted-foreground)" }} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v as any, sourceLabel(String(n), (k) => t(k))]} />
+                <Legend verticalAlign="bottom" height={36} iconSize={8} formatter={(v) => sourceLabel(String(v), (k) => t(k))} wrapperStyle={{ fontSize: 11, color: "var(--color-muted-foreground)" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
