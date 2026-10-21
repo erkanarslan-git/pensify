@@ -109,7 +109,25 @@
       "title": "WhatsApp"
     },
     "notifications": {
-      "title": "Bildirimler"
+      "title": "Eylem Merkezi",
+      "subtitle": "Bugün dikkat gerektirenler",
+      "upcomingCheckouts": "Yaklaşan çıkışlar (7 gün)",
+      "delayedCleanings": "Geciken temizlikler",
+      "problemReports": "Sorun bildirimleri",
+      "maintenance": "Bakım",
+      "room": "Oda",
+      "noCheckouts": "Önümüzdeki 7 günde çıkış yok",
+      "allOnTime": "Her şey zamanında",
+      "dueSince": "{{date}} tarihinden beri gecikiyor",
+      "overdue": "Gecikti",
+      "problemReported": "Sorun bildirildi",
+      "actionNeeded": "Müdahale gerekli",
+      "noProblems": "Bildirilen sorun yok",
+      "outOfService": "Hizmet dışı",
+      "changedBy": "{{name}} · {{date}}",
+      "unknownUser": "Bilinmeyen kullanıcı",
+      "maintenanceBadge": "Bakım",
+      "noMaintenance": "Bakımda oda yok"
     },
     "analytics": {
       "title": "Analizler"

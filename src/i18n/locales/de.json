@@ -109,7 +109,25 @@
       "title": "WhatsApp"
     },
     "notifications": {
-      "title": "Benachrichtigungen"
+      "title": "Benachrichtigungen",
+      "subtitle": "Was heute Aufmerksamkeit braucht",
+      "upcomingCheckouts": "Anstehende Check-outs (7 Tage)",
+      "delayedCleanings": "Verspätete Reinigungen",
+      "problemReports": "Problemmeldungen",
+      "maintenance": "Wartung",
+      "room": "Zimmer",
+      "noCheckouts": "Keine Check-outs in den nächsten 7 Tagen",
+      "allOnTime": "Alles im Zeitplan",
+      "dueSince": "Fällig seit {{date}}",
+      "overdue": "Überfällig",
+      "problemReported": "Problem gemeldet",
+      "actionNeeded": "Aktion nötig",
+      "noProblems": "Keine Probleme gemeldet",
+      "outOfService": "Außer Betrieb",
+      "changedBy": "{{name}} · {{date}}",
+      "unknownUser": "Unbekannter Nutzer",
+      "maintenanceBadge": "Wartung",
+      "noMaintenance": "Keine Warnungen"
     },
     "analytics": {
       "title": "Analysen"
