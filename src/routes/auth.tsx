@@ -2,9 +2,9 @@ import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
-import { Hotel, Loader2 } from "lucide-react";
+import { Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
+import logo from "@/assets/pension-highway-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -14,252 +14,108 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in — Pensify" },
-      { name: "description", content: "Sign in to manage your pension and guesthouse operations." },
+      { title: "Anmelden — Pension Highway" },
+      { name: "description", content: "Interner Zugang für das Team von Pension Highway." },
+      { property: "og:title", content: "Anmelden — Pension Highway" },
+      { property: "og:description", content: "Interner Zugang für das Team von Pension Highway." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: AuthPage,
 });
 
+const COPY = {
+  de: { title: "Willkommen zurück", sub: "Interner Zugang für das Team", email: "E-Mail", pw: "Passwort", btn: "Anmelden", forgot: "Passwort vergessen oder kein Zugang? Bitte wende dich an deinen Administrator.", secure: "Geschützter Bereich · nur für Mitarbeitende", err: "E-Mail oder Passwort ist falsch." },
+  en: { title: "Welcome back", sub: "Internal access for staff", email: "Email", pw: "Password", btn: "Sign in", forgot: "Forgot your password or no access? Please contact your administrator.", secure: "Protected area · staff only", err: "Email or password is incorrect." },
+  tr: { title: "Tekrar hoş geldin", sub: "Ekip için iç erişim", email: "E-posta", pw: "Şifre", btn: "Giriş yap", forgot: "Şifreni mi unuttun veya erişimin yok mu? Lütfen yöneticine başvur.", secure: "Korumalı alan · sadece çalışanlar", err: "E-posta veya şifre hatalı." },
+} as const;
+
 function AuthPage() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const lang = (["de", "en", "tr"].includes(i18n.resolvedLanguage ?? "") ? i18n.resolvedLanguage : "de") as keyof typeof COPY;
+  const c = COPY[lang];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: fullName, locale: i18n.language },
-          },
-        });
-        if (error) throw error;
-        toast.success(t("auth.signedUp"));
-        const { data } = await supabase.auth.getSession();
-        if (data.session) navigate({ to: "/" });
-        else toast.message(t("auth.checkEmail"));
-      } else if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw error;
-        toast.success(t("auth.resetEmailSent"));
-        setMode("signin");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success(t("auth.signedIn"));
-        navigate({ to: "/" });
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("auth.invalidCredentials");
-      toast.error(message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleGoogle() {
-    setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error(result.error.message);
-      setBusy(false);
-      return;
-    }
-    if (result.redirected) return;
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    setBusy(false);
+    if (error) return toast.error(c.err);
     navigate({ to: "/" });
   }
 
-
-  const langs = [
-    { code: "de", label: "DE" },
-    { code: "en", label: "EN" },
-    { code: "tr", label: "TR" },
-  ];
-
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden"
-           style={{ background: "var(--gradient-soft)" }}>
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft">
-            <Hotel className="w-5 h-5" />
+    <div className="relative min-h-screen overflow-hidden text-[color:var(--brand-cream)]" style={{ background: "var(--gradient-brand-night)" }}>
+      {/* Road pattern */}
+      <svg className="highway-drift pointer-events-none absolute inset-0 h-full w-full opacity-40" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden>
+        <defs>
+          <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.18" />
+          </pattern>
+        </defs>
+        <rect width="1200" height="800" fill="url(#dots)" />
+        {[0, 1, 2].map((i) => (
+          <path key={i} d={`M-100 ${620 - i * 140} C 300 ${520 - i * 140}, 700 ${760 - i * 140}, 1300 ${560 - i * 140}`} fill="none" stroke="currentColor" strokeOpacity={0.12 + i * 0.05} strokeWidth="2" />
+        ))}
+        <path className="highway-dash" d="M-100 480 C 300 380, 700 620, 1300 420" fill="none" stroke="var(--brand-orange)" strokeWidth="3" strokeDasharray="40 30" strokeLinecap="round" opacity="0.7" />
+      </svg>
+
+      <div className="absolute right-4 top-4 z-10 flex gap-1">
+        {(["de", "en", "tr"] as const).map((l) => (
+          <button key={l} onClick={() => i18n.changeLanguage(l)}
+            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${lang === l ? "bg-[color:var(--brand-cream)] text-[color:var(--brand-navy-deep)]" : "text-[color:var(--brand-cream)]/70 hover:bg-[color:var(--brand-cream)]/10"}`}>
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      <main className="relative z-10 grid min-h-screen place-items-center px-5 py-16">
+        <div className="w-full max-w-md">
+          <div className="rounded-2xl border border-[color:var(--brand-cream)]/15 bg-[color:var(--brand-cream)] p-8 text-[color:var(--brand-navy-deep)] shadow-2xl">
+            <img src={logo.url} alt="Pension Highway – Stay here!" className="mx-auto h-auto w-64" />
+            <div className="mt-6 text-center">
+              <h1 className="text-xl font-semibold">{c.title}</h1>
+              <p className="mt-1 text-sm opacity-70">{c.sub}</p>
+            </div>
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <Field icon={<Mail className="h-4 w-4" />} label={c.email}>
+                <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-transparent py-2.5 text-sm outline-none" />
+              </Field>
+              <Field icon={<Lock className="h-4 w-4" />} label={c.pw}>
+                <input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-transparent py-2.5 text-sm outline-none" />
+              </Field>
+              <button type="submit" disabled={busy}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-semibold text-[color:var(--brand-cream)] shadow-lg transition hover:brightness-110 disabled:opacity-60"
+                style={{ background: "linear-gradient(120deg, var(--brand-orange), color-mix(in oklab, var(--brand-orange) 70%, var(--brand-navy)))" }}>
+                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                {c.btn}
+              </button>
+            </form>
+            <p className="mt-5 text-center text-xs leading-relaxed opacity-70">{c.forgot}</p>
           </div>
-          <div>
-            <div className="font-semibold tracking-tight">{t("app.name")}</div>
-            <div className="text-xs text-muted-foreground -mt-0.5">{t("app.tagline")}</div>
-          </div>
-        </div>
-        <div>
-          <h2 className="text-4xl font-semibold tracking-tight leading-tight text-foreground/90">
-            {t("auth.welcomeTitle")}
-          </h2>
-          <p className="mt-3 text-muted-foreground max-w-md">
-            {t("auth.welcomeSubtitle")}
+          <p className="mt-5 flex items-center justify-center gap-1.5 text-xs opacity-70">
+            <ShieldCheck className="h-3.5 w-3.5" /> {c.secure}
           </p>
         </div>
-        <div className="text-xs text-muted-foreground">© Pensify</div>
-      </div>
-
-      <div className="flex flex-col">
-        <div className="flex justify-end p-4 gap-1">
-          {langs.map((l) => (
-            <button
-              key={l.code}
-              onClick={() => i18n.changeLanguage(l.code)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                i18n.resolvedLanguage === l.code
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent/50"
-              }`}
-            >
-              {l.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 grid place-items-center px-6 pb-12">
-          <div className="w-full max-w-sm">
-            {mode !== "forgot" && (
-              <div className="flex gap-1 p-1 bg-muted rounded-xl mb-6">
-                {(["signin", "signup"] as const).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMode(m)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      mode === m
-                        ? "bg-card text-foreground shadow-soft"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {m === "signin" ? t("auth.signInTab") : t("auth.signUpTab")}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {mode === "forgot" && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold">{t("auth.forgotTitle")}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{t("auth.forgotSubtitle")}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-3">
-              {mode === "signup" && (
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">{t("common.fullName")}</label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="mt-1 w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">{t("common.email")}</label>
-                <input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("auth.emailPlaceholder")}
-                  className="mt-1 w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm"
-                />
-              </div>
-              {mode !== "forgot" && (
-                <div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-muted-foreground">{t("common.password")}</label>
-                    {mode === "signin" && (
-                      <button
-                        type="button"
-                        onClick={() => setMode("forgot")}
-                        className="text-xs font-medium text-primary hover:underline"
-                      >
-                        {t("auth.forgotLink")}
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t("auth.passwordPlaceholder")}
-                    className="mt-1 w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 text-sm"
-                  />
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={busy}
-                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 disabled:opacity-60 shadow-soft"
-              >
-                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                {mode === "signin"
-                  ? t("common.signIn")
-                  : mode === "signup"
-                    ? t("auth.createAccount")
-                    : t("auth.sendResetEmail")}
-              </button>
-              {mode === "forgot" && (
-                <button
-                  type="button"
-                  onClick={() => setMode("signin")}
-                  className="w-full text-center text-xs text-muted-foreground hover:text-foreground py-1"
-                >
-                  {t("auth.backToSignIn")}
-                </button>
-              )}
-            </form>
-
-            {mode !== "forgot" && (
-              <>
-                <div className="flex items-center gap-3 my-4">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">{t("common.or")}</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
-
-                <button
-                  onClick={handleGoogle}
-                  disabled={busy}
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg border border-border bg-card font-medium text-sm hover:bg-accent disabled:opacity-60"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#EA4335" d="M12 11v3.2h5.4c-.2 1.4-1.7 4-5.4 4-3.3 0-5.9-2.7-5.9-6s2.6-6 5.9-6c1.8 0 3.1.8 3.8 1.5l2.6-2.5C16.7 3.7 14.5 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.1-1.2H12z"/>
-                  </svg>
-                  {t("common.continueWithGoogle")}
-                </button>
-              </>
-            )}
-
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              {t("auth.termsHint")}
-            </p>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
 
+function Field({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium opacity-70">{label}</span>
+      <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--brand-navy)]/20 bg-white/70 px-3 focus-within:border-[color:var(--brand-orange)] focus-within:ring-2 focus-within:ring-[color:var(--brand-orange)]/25">
+        <span className="opacity-50">{icon}</span>
+        {children}
+      </div>
+    </label>
+  );
+}
