@@ -13,7 +13,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  head: () => ({ meta: [{ title: "Kalender — Pensify" }, { name: "description", content: "Zimmerbelegung und Reservierungen im Pensify Kalender." }, { property: "og:title", content: "Kalender — Pensify" }, { property: "og:description", content: "Zimmerbelegung und Reservierungen im Pensify Kalender." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Takvim — Pensify" }, { name: "description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pensify" }, { property: "og:description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CalendarPage,
 });
 
@@ -99,7 +99,7 @@ function CalendarPage() {
   function tryOpenNew(payload: { date: string; propertyId?: string; roomNumber?: string }) {
     if (isPastDate(payload.date)) {
       if (!canCreatePast) {
-        toast.error("Vergangene Buchungen", { description: "Nur Manager, Admin oder Inhaber können vergangene Daten anlegen." });
+        toast.error(t("calendar.pastTitle"), { description: t("calendar.pastCreateDenied") });
         return;
       }
       if (isManagerOnly) {
@@ -142,7 +142,7 @@ function CalendarPage() {
           const newIn = addDaysIso(d.res.checkIn, cur.days);
           const newOut = addDaysIso(d.res.checkOut, cur.days);
           if (isPastDate(newIn) && !canCreatePast) {
-            toast.error("Vergangene Buchungen", { description: "Verschieben in die Vergangenheit nur für Manager/Admin/Inhaber." });
+            toast.error(t("calendar.pastTitle"), { description: t("calendar.pastMoveDenied") });
           } else {
             setPendingMove({ res: d.res, checkIn: newIn, checkOut: newOut });
           }
@@ -159,7 +159,7 @@ function CalendarPage() {
   async function confirmMove() {
     if (!pendingMove?.res.realId) return;
     if (moveConflict) {
-      toast.error("Konflikt", { description: "Das Zimmer ist in diesem Zeitraum bereits belegt." });
+      toast.error(t("calendar.conflictTitle"), { description: t("calendar.conflictDesc") });
       return;
     }
     setSavingMove(true);
@@ -169,10 +169,10 @@ function CalendarPage() {
       .eq("id", pendingMove.res.realId);
     setSavingMove(false);
     if (error) {
-      toast.error("Verschieben fehlgeschlagen", { description: error.message });
+      toast.error(t("calendar.moveFailed"), { description: error.message });
       return;
     }
-    toast.success("Buchung verschoben");
+    toast.success(t("calendar.moved"));
     setPendingMove(null);
     setRefreshKey((k) => k + 1);
   }
@@ -376,7 +376,7 @@ function CalendarPage() {
           <button
             onClick={() => setShowHelp(true)}
             className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
-            title="Tastatur-Kürzel (?)"
+            title={t("calendar.keyboardShortcuts")}
           >
             <Keyboard className="w-4 h-4" />
           </button>
@@ -396,10 +396,10 @@ function CalendarPage() {
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <StatCard label="Belegt heute" value={occupiedTodayCount} highlight />
-        <StatCard label="Frei heute" value={freeTodayCount} />
-        <StatCard label="Reinigung ausstehend" value={needsCleaningCount} tone="warning" />
-        <StatCard label="Wartung" value={maintenanceCount} tone="muted" />
+        <StatCard label={t("calendar.occupiedToday")} value={occupiedTodayCount} highlight />
+        <StatCard label={t("calendar.freeToday")} value={freeTodayCount} />
+        <StatCard label={t("calendar.cleaningPending")} value={needsCleaningCount} tone="warning" />
+        <StatCard label={t("status.maintenance")} value={maintenanceCount} tone="muted" />
       </div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <select
@@ -407,7 +407,7 @@ function CalendarPage() {
           onChange={(e) => setPropertyId(e.target.value)}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm"
         >
-          <option value="all">Alle Pensionen</option>
+          <option value="all">{t("calendar.allPensions")}</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
@@ -415,7 +415,7 @@ function CalendarPage() {
         <input
           value={roomQ}
           onChange={(e) => setRoomQ(e.target.value)}
-          placeholder="Zimmer-Nr…"
+          placeholder={t("calendar.roomNrPlaceholder")}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
         />
         <div className="relative">
@@ -424,7 +424,7 @@ function CalendarPage() {
             onChange={(e) => { setGuestQ(e.target.value); setSuggestOpen(true); }}
             onFocus={() => setSuggestOpen(true)}
             onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
-            placeholder="Gast oder Buchungs-Code…"
+            placeholder={t("calendar.guestSearchPlaceholder")}
             className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
           />
           {suggestOpen && searchQ && suggestions.length > 0 && (
@@ -476,18 +476,18 @@ function CalendarPage() {
 
       {/* Kanal-Legende */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3 text-[11px] text-muted-foreground">
-        <span className="uppercase tracking-wide font-medium">Kanal:</span>
+        <span className="uppercase tracking-wide font-medium">{t("calendar.channelLegend")}</span>
         {ACTIVE_CHANNELS.map((s) => (
           <span key={s} className="inline-flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: sourceColor(s) }} />
-            {sourceLabel(s)}
+            {sourceLabel(s, (k) => t(k))}
           </span>
         ))}
       </div>
 
 
 
-      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
+      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${t("calendar.roomsCount", { count: filteredRooms.length })}`}>
         <TooltipProvider delayDuration={150}>
         <div
           ref={gridFocusRef}
