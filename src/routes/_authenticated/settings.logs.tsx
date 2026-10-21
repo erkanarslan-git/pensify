@@ -2,6 +2,7 @@ import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { Section, Badge } from "@/components/app-shell";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listAuditLogs, listAuditEntities, getAuditLog } from "@/lib/audit-logs.functions";
@@ -19,7 +20,14 @@ export const Route = createFileRoute("/_authenticated/settings/logs")({
 
 const PAGE_SIZE = 50;
 
+function useLocale() {
+  const { i18n } = useTranslation();
+  return i18n.language?.startsWith("tr") ? "tr-TR" : i18n.language?.startsWith("en") ? "en-GB" : "de-DE";
+}
+
 function AuditLogsContent() {
+  const { t } = useTranslation();
+  const locale = useLocale();
   const [page, setPage] = useState(0);
   const [entity, setEntity] = useState("");
   const [action, setAction] = useState("");
