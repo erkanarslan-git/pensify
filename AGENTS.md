@@ -21,3 +21,4 @@
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
 
 - Property summary cards use natural-height CSS columns, not equal-height rows, so room-type counts do not leave empty card interiors. Why: keep location summaries compact without truncating names.
+- Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
