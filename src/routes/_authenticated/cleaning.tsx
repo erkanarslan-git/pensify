@@ -34,7 +34,7 @@ interface Task {
 }
 interface Room { id: string; number: string; floor: number | null }
 interface Property { id: string; name: string }
-interface Cleaner { id: string; full_name: string; active: boolean }
+interface Cleaner { id: string; full_name: string; active: boolean; user_id: string | null }
 
 function CleaningPage() {
   const { t } = useTranslation();
@@ -46,21 +46,24 @@ function CleaningPage() {
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["cleaning-page"],
     queryFn: async () => {
-      const [ts, rm, pr, cl] = await Promise.all([
+      const [userRes, ts, rm, pr, cl] = await Promise.all([
+        supabase.auth.getUser(),
         supabase.from("cleaning_tasks")
           .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes")
           .order("due_at", { ascending: true }),
         supabase.from("rooms").select("id,number,floor"),
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("cleaners").select("id,full_name,active").order("full_name"),
+        supabase.from("cleaners").select("id,full_name,active,user_id").order("full_name"),
       ]);
       const err = ts.error ?? rm.error ?? pr.error ?? cl.error;
       if (err) throw err;
+      const uid = userRes.data.user?.id ?? null;
       return {
         tasks: (ts.data ?? []) as Task[],
         rooms: (rm.data ?? []) as Room[],
         properties: (pr.data ?? []) as Property[],
         cleaners: (cl.data ?? []) as Cleaner[],
+        myCleanerId: (cl.data ?? []).find((c) => c.user_id === uid)?.id ?? null,
       };
     },
   });
