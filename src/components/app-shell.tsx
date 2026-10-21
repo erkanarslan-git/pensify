@@ -5,7 +5,6 @@ import {
   BedDouble,
   Sparkles,
   Users,
-  Send,
   Bell,
   BarChart3,
   Building2,
