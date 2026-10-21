@@ -360,6 +360,13 @@ function CalendarPage() {
     setStart(d);
   };
 
+  const occupiedTodayCount = rooms.filter((r) =>
+    reservations.some((res) => res.roomId === r.id && res.checkIn <= today && res.checkOut > today),
+  ).length;
+  const freeTodayCount = rooms.length - occupiedTodayCount;
+  const needsCleaningCount = rooms.filter((r) => r.needsCleaning).length;
+  const maintenanceCount = rooms.filter((r) => r.status === "maintenance").length;
+
   return (
     <AppShell
       title={t("pages.calendar.title")}
