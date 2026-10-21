@@ -135,7 +135,7 @@ function Dashboard() {
           { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" } },
           "split",
           { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {} },
-        ].map((k) => k === "split" ? (
+        ].map((k) => typeof k === "string" ? (
           <div key="split" className="grid grid-cols-2 gap-3">
             {[
               { label: t("dashboard.cleaningPending"), value: cleaningRooms, hint: `${cleaningPending} ${t("nav.cleaning")}`, to: "/rooms", search: { status: "cleaning_required" }, tone: "text-warning-foreground dark:text-warning" },
