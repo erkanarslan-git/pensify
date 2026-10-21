@@ -133,9 +133,23 @@ function Dashboard() {
         </Link>
         {[
           { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" } },
-          { label: t("dashboard.cleaningPending"), value: cleaningPending, hint: `${cleaningInProgress} ${t("dashboard.cleaningInProgress")}`, to: "/cleaning", search: {} },
+          "split",
           { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {} },
-        ].map((k) => (
+        ].map((k) => k === "split" ? (
+          <div key="split" className="grid grid-cols-2 gap-3">
+            {[
+              { label: t("dashboard.cleaningPending"), value: cleaningRooms, hint: `${cleaningPending} ${t("nav.cleaning")}`, to: "/rooms", search: { status: "cleaning_required" }, tone: "text-warning-foreground dark:text-warning" },
+              { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, tone: "text-destructive" },
+            ].map((s) => (
+              <Link key={s.label} to={s.to as any} search={s.search as any}
+                className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:shadow-elevated">
+                <span className="truncate text-sm font-medium">{s.label}</span>
+                <div className={`mt-4 text-4xl font-semibold tabular-nums ${s.tone}`}>{s.value}</div>
+                <div className="mt-2 truncate text-xs text-muted-foreground">{s.hint}</div>
+              </Link>
+            ))}
+          </div>
+        ) : (
           <Link key={k.label} to={k.to as any} search={k.search as any}
             className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition hover:shadow-elevated">
             <div className="flex items-center justify-between">
@@ -153,7 +167,6 @@ function Dashboard() {
           { label: t("dashboard.totalRooms"), value: totalRooms, to: "/rooms", search: {} },
           { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, to: "/cleaning", search: {} },
           { label: t("dashboard.completedToday"), value: completedToday, to: "/cleaning", search: {} },
-          { label: t("dashboard.maintenance"), value: maintenance, to: "/rooms", search: { status: "maintenance" } },
         ].map((k) => (
           <Link key={k.label} to={k.to as any} search={k.search as any}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
