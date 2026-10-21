@@ -367,13 +367,14 @@ export function Kpi({ label, value, hint, accent }: {
     info: "text-info",
     primary: "text-primary",
   }[accent ?? "primary"];
+  const hero = accent === "primary";
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{label}</div>
-      <div className={`mt-2 text-3xl font-semibold tracking-tight ${accent ? accentClass : ""}`}>
+    <div className={`rounded-2xl p-5 shadow-sm ${hero ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`text-xs uppercase tracking-wide font-medium ${hero ? "opacity-80" : "text-muted-foreground"}`}>{label}</div>
+      <div className={`mt-2 text-3xl font-semibold tracking-tight tabular-nums ${accent && !hero ? accentClass : ""}`}>
         {value}
       </div>
-      {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
+      {hint && <div className={`mt-1 text-xs ${hero ? "opacity-80" : "text-muted-foreground"}`}>{hint}</div>}
     </div>
   );
 }
