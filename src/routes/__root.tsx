@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "Pensify — Pension & Guesthouse Operations" },
       { name: "twitter:description", content: "Manage bookings, rooms, cleaning shifts, and staff across all your pensions from one dashboard." },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [{ rel: "stylesheet", href: appCss }, { rel: "icon", type: "image/png", href: "/favicon.png" }],
   }),
   shellComponent: RootShell,
   component: RootComponent,

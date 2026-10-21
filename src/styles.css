@@ -58,6 +58,15 @@
 /* Paper & Ink — restrained editorial surfaces with semantic operational states */
 :root {
   --radius: 0.375rem;
+  /* Pension Highway brand */
+  --brand-navy: oklch(0.33 0.09 258);
+  --brand-navy-deep: oklch(0.2 0.06 260);
+  --brand-orange: oklch(0.6 0.16 45);
+  --brand-cream: oklch(0.98 0.01 80);
+  --gradient-brand-night:
+    radial-gradient(60% 50% at 85% 15%, color-mix(in oklab, var(--brand-orange) 45%, transparent), transparent 70%),
+    radial-gradient(50% 60% at 10% 90%, color-mix(in oklab, oklch(0.55 0.12 240) 55%, transparent), transparent 70%),
+    linear-gradient(150deg, var(--brand-navy-deep), var(--brand-navy) 55%, oklch(0.26 0.08 265));
   --background: oklch(0.975 0.003 250);
   --foreground: oklch(0.285 0 0);
   --card: oklch(1 0 0);
@@ -159,3 +168,9 @@
 @keyframes rise-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
 @utility animate-rise-in { animation: rise-in 0.5s cubic-bezier(.2,.8,.2,1) both; }
 @media (prefers-reduced-motion: reduce) { .animate-rise-in { animation: none; } }
+
+@keyframes highway-dash { to { stroke-dashoffset: -400; } }
+@keyframes highway-drift { 0%,100% { transform: translate3d(0,0,0) } 50% { transform: translate3d(-3%,2%,0) } }
+@utility highway-dash { animation: highway-dash 6s linear infinite; }
+@utility highway-drift { animation: highway-drift 18s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .highway-dash, .highway-drift { animation: none; } }
