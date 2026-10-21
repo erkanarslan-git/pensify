@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
+import brandLogo from "@/assets/pension-highway-logo.png.asset.json";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -198,14 +199,14 @@ export function AppShell({ title, subtitle, actions, children }: {
 
   const SidebarContent = ({ onNavigate, mini = false }: { onNavigate?: () => void; mini?: boolean }) => (
     <>
-      <div className={`h-16 flex items-center border-b border-sidebar-border ${mini ? "justify-center px-2" : "gap-2.5 px-5"}`}>
-        <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft shrink-0">
-          <Hotel className="w-4 h-4" />
-        </div>
-        {!mini && (
-          <div className="min-w-0">
-            <div className="text-sm font-semibold tracking-tight truncate">{t("app.name")}</div>
-            <div className="text-[11px] text-muted-foreground -mt-0.5 truncate">{t("app.tagline")}</div>
+      <div className={`h-16 flex items-center border-b border-sidebar-border ${mini ? "justify-center px-2" : "px-4"}`}>
+        {mini ? (
+          <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-soft shrink-0">
+            <Hotel className="w-4 h-4" />
+          </div>
+        ) : (
+          <div className="rounded-lg bg-[color:var(--brand-cream)] px-2 py-1.5 shadow-soft">
+            <img src={brandLogo.url} alt="Pension Highway" className="h-8 w-auto" />
           </div>
         )}
       </div>
