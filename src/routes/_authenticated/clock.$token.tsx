@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/clock/$token")({
-  head: () => ({ meta: [{ title: `${i18n.t("timeTracking.clockTitle")} — Pensify` }] }),
+  head: () => ({ meta: [{ title: "Zeiterfassung — Pensify" }, { name: "description", content: "Arbeitszeiten am Pensify Standort erfassen." }, { property: "og:title", content: "Zeiterfassung — Pensify" }, { property: "og:description", content: "Arbeitszeiten am Pensify Standort erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ClockPage,
 });
 

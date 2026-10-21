@@ -18,7 +18,7 @@ type Search = { property?: string };
 export const Route = createFileRoute("/_authenticated/reservations")({
   validateSearch: (s: Record<string, unknown>): Search =>
     typeof s.property === "string" && s.property ? { property: s.property } : {},
-  head: () => ({ meta: [{ title: "Buchungen — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Buchungen — Pensify" }, { name: "description", content: "Reservierungen und Anreisen in Pensify verwalten." }, { property: "og:title", content: "Buchungen — Pensify" }, { property: "og:description", content: "Reservierungen und Anreisen in Pensify verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ReservationsPage,
 });
 

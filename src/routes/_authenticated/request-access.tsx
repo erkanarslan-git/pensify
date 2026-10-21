@@ -6,7 +6,7 @@ import { ALL_ROLES, ROLE_LABEL, type AppRole } from "@/lib/permissions";
 import { Hotel, LogOut, Send } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/request-access")({
-  head: () => ({ meta: [{ title: "Zugriff anfragen — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Zugriff anfragen — Pensify" }, { name: "description", content: "Zugriff auf Pensify beim Administrator anfragen." }, { property: "og:title", content: "Zugriff anfragen — Pensify" }, { property: "og:description", content: "Zugriff auf Pensify beim Administrator anfragen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: RequestAccessPage,
 });
 

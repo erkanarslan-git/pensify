@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/me")({
-  head: () => ({ meta: [{ title: "Vardiyam — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Meine Schicht — Pensify" }, { name: "description", content: "Eigene Arbeitszeiten und Schichtstatus in Pensify." }, { property: "og:title", content: "Meine Schicht — Pensify" }, { property: "og:description", content: "Eigene Arbeitszeiten und Schichtstatus in Pensify." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: MePage,
 });
 

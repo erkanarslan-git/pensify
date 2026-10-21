@@ -16,6 +16,10 @@ export const Route = createFileRoute("/_authenticated/settings/import")({
     meta: [
       { title: "Datenimport — Pensify" },
       { name: "description", content: "Pensionen, Zimmertypen und Zimmer aus WordPress-Exporten prüfen und importieren." },
+      { property: "og:title", content: "Datenimport — Pensify" },
+      { property: "og:description", content: "Pensionen, Zimmertypen und Zimmer aus WordPress-Exporten prüfen und importieren." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ImportPage,

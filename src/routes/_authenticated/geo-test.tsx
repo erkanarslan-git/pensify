@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Loader2, CheckCircle2, XCircle, AlertTriangle, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/geo-test")({
-  head: () => ({ meta: [{ title: "Geofence Test — Pensify" }] }),
+  head: () => ({ meta: [{ title: "Geofence Test — Pensify" }, { name: "description", content: "Standortprüfung für die Pensify Zeiterfassung." }, { property: "og:title", content: "Geofence Test — Pensify" }, { property: "og:description", content: "Standortprüfung für die Pensify Zeiterfassung." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: GeoTestPage,
 });
 
