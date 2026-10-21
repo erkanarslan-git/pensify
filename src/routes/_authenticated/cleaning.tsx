@@ -216,40 +216,40 @@ function CleaningPage() {
                           
                           {/* Reversal Buttons */}
                           {task.status === "accepted" && (
-                            <button onClick={() => update(task.id, "pending")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "pending")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
                           {task.status === "in_progress" && (
-                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
                           {task.status === "completed" && (
-                            <button onClick={() => update(task.id, "in_progress")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "in_progress")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
                           {task.status === "problem" && (
-                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <Undo2 className="w-3 h-3" />
                             </button>
                           )}
 
                           {isOpen(task.status) && (
-                            <button onClick={() => update(task.id, "problem")} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-md border border-destructive/30 text-destructive hover:bg-destructive/5">
+                            <button onClick={() => update(task.id, "problem")} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5">
                               <AlertTriangle className="w-3 h-3" />
                             </button>
                           )}
 
                           {canAssign && (
-                            <button onClick={() => update(task.id, "pending")} title={t("common.reset")} className="text-xs px-2 py-1.5 rounded-md border border-warning/30 text-warning hover:bg-warning/5">
+                            <button onClick={() => update(task.id, "pending")} title={t("common.reset")} className="text-xs px-2 py-1.5 rounded-lg border border-warning/30 text-warning hover:bg-warning/5">
                               <RotateCcw className="w-3 h-3" />
                             </button>
                           )}
 
                           {name && (
-                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title={t("cleaning.notify")} className="text-xs px-2 py-1.5 rounded-md border border-border hover:bg-accent">
+                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title={t("cleaning.notify")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
                               <MessageCircle className="w-3 h-3" />
                             </button>
                           )}
@@ -269,7 +269,7 @@ function CleaningPage() {
 
 function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="text-xs px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
+    <button onClick={onClick} className="text-xs px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
       {icon} {children}
     </button>
   );
