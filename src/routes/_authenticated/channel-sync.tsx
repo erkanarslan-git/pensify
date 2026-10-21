@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Clock } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Clock, LayoutDashboard, PlugZap, FlaskConical, History, LockKeyhole, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WuBookStatus } from "@/components/wubook-status";
 import { WuBookTestPanel } from "@/components/wubook-test-panel";
 import { WuBookPilotPanel } from "@/components/wubook-pilot-panel";
@@ -95,24 +96,49 @@ function ChannelSyncPage() {
   }
 
   return (
-    <AppShell title="Kanäle" subtitle="Woher Buchungen kommen und ob die Verbindung funktioniert">
+    <AppShell title="Kanal-Synchronisierung" subtitle="Buchungskanäle & Verbindungsstatus">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <Stat icon={ArrowDownToLine} label="Letzte Buchung eingegangen" value={ago(lastIn)} />
-        <Stat icon={ArrowUpFromLine} label="Zuletzt an WuBook gesendet" value={ago(lastSent)} />
-        <Stat icon={Clock} label="Wartet auf Versand" value={String(pending)} />
+        <Stat icon={ArrowDownToLine} label="Letzte Buchung" value={ago(lastIn)} highlight />
+        <Stat icon={ArrowUpFromLine} label="Letzter Versand" value={ago(lastSent)} />
+        <Stat icon={Clock} label="Warteschlange" value={String(pending)} />
         <Stat icon={AlertTriangle} label="Fehlgeschlagen" value={String(failed)} tone={failed ? "destructive" : undefined} />
       </div>
 
-      <WuBookStatus />
-      <WuBookPilotPanel />
-      <WuBookTestPanel />
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 mb-5">
+        <div className="flex items-center gap-3 min-w-0">
+          <LockKeyhole className="h-5 w-5 shrink-0 text-primary" />
+          <div>
+            <p className="font-medium text-sm text-primary">Live-Versand deaktiviert</p>
+            <p className="text-xs text-muted-foreground">Keine Preise oder Verfügbarkeiten werden an Buchungsportale gesendet.</p>
+          </div>
+        </div>
+        <Badge tone="muted">Pilotbetrieb</Badge>
+      </div>
+
+      <Tabs defaultValue="overview">
+        <TabsList aria-label="Kanalbereiche" className="grid h-auto w-full grid-cols-2 sm:grid-cols-4 gap-1 bg-primary/5 p-1 mb-5">
+          {[
+            { value: "overview", label: "Übersicht", icon: LayoutDashboard },
+            ...(isAdmin ? [
+              { value: "connection", label: "Verbindung", icon: PlugZap },
+              { value: "tests", label: "Diagnose", icon: FlaskConical },
+            ] : []),
+            { value: "history", label: "Verlauf", icon: History },
+          ].map(({ value, label, icon: Icon }) => (
+            <TabsTrigger key={value} value={value} className="gap-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Icon className="h-4 w-4" />{label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="overview" className="space-y-5">
+          <WuBookStatus />
 
       {(data?.conflicts.length ?? 0) > 0 && (
         <div className="mt-4">
-          <Section title={`Überschneidungen (${data!.conflicts.length})`} action={<Badge tone="destructive">Aktion nötig</Badge>}>
+          <Section title={`Überschneidungen (${data?.conflicts.length ?? 0})`} action={<Badge tone="destructive">Aktion nötig</Badge>}>
             <div className="space-y-2">
-              {data!.conflicts.map((c) => (
-                <div key={c.id} className="flex items-center justify-between p-3 rounded-md border border-destructive/40 bg-destructive/5 text-sm">
+              {data?.conflicts.map((c) => (
+                <div key={c.id} className="flex flex-wrap gap-3 items-center justify-between p-3 rounded-md border border-destructive/40 bg-destructive/5 text-sm">
                   <div>{sourceLabel(c.incoming_channel)} · {c.check_in} → {c.check_out}</div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => resolveConflict(c.id, "ignored")}>Ignorieren</Button>
@@ -142,18 +168,23 @@ function ChannelSyncPage() {
                     <div>{s?.count ?? 0} Buchungen (30 Tage)</div>
                     <div>Letzte: {ago(s?.last)}</div>
                   </div>
-                  <Switch checked={on} disabled={!isAdmin} onCheckedChange={(v) => toggle(ch, v)} />
+                  <Switch aria-label={`${sourceLabel(ch)} bei manuellen Buchungen anbieten`} checked={on} disabled={!isAdmin} onCheckedChange={(v) => toggle(ch, v)} />
                 </div>
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-6">
-            Booking.com, Airbnb, Expedia und Check24 werden im WuBook-Konto verbunden (WuBook → Channel Manager). Pensify spricht nur mit WuBook. Ausgeschaltete Kanäle können bei „Neue Buchung“ nicht ausgewählt werden; Buchungen über WuBook kommen trotzdem an.
-          </p>
+          <p className="text-xs text-muted-foreground mt-6">Manuelle Buchungsauswahl · Eingehende WuBook-Buchungen bleiben unverändert.</p>
         </Section>
       </div>
 
-      <div className="mt-4">
+        </TabsContent>
+        {isAdmin && <TabsContent value="connection" className="space-y-5">
+          <WuBookPilotPanel />
+        </TabsContent>}
+        {isAdmin && <TabsContent value="tests" className="space-y-5">
+          <WuBookTestPanel />
+        </TabsContent>}
+        <TabsContent value="history">
         <Section title="Letzte Übertragungen">
           <div className="divide-y divide-border -m-5">
             {outbox.map((o) => (
@@ -171,16 +202,17 @@ function ChannelSyncPage() {
             {outbox.length === 0 && <div className="px-5 py-6 text-sm text-muted-foreground">Noch keine Übertragungen</div>}
           </div>
         </Section>
-      </div>
+        </TabsContent>
+      </Tabs>
     </AppShell>
   );
 }
 
-function Stat({ icon: Icon, label, value, tone }: { icon: any; label: string; value: string; tone?: "destructive" }) {
+function Stat({ icon: Icon, label, value, tone, highlight }: { icon: LucideIcon; label: string; value: string; tone?: "destructive"; highlight?: boolean }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="w-3.5 h-3.5" />{label}</div>
-      <div className={`text-lg font-semibold mt-1 ${tone === "destructive" ? "text-destructive" : ""}`}>{value}</div>
+    <div className={`rounded-2xl p-4 min-w-0 ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`flex items-center gap-2 text-xs ${highlight ? "text-primary-foreground/80" : "text-muted-foreground"}`}><Icon className="w-4 h-4 shrink-0" />{label}</div>
+      <div className={`text-xl font-semibold mt-2 break-words ${tone === "destructive" ? "text-destructive" : ""}`}>{value}</div>
     </div>
   );
 }
