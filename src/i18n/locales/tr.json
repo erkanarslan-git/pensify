@@ -676,7 +676,10 @@
     "helpEnter": "Dolu: rezervasyonu düzenle · Boş: yeni rezervasyon",
     "helpEsc": "Pencereleri / yardımı kapat",
     "legendColor": "Renk = Misafir, kenar = Kanal",
-    "problemRoom": "Sorunlu oda"
+    "problemRoom": "Sorunlu oda",
+    "roomsCount": "{{count}} oda",
+    "dragToMove": "Taşımak için sürükleyin",
+    "pastEditNote": "(Geçmiş — sadece yönetici/admin/sahip düzenleyebilir)"
   },
   "newRes": {
     "title": "Yeni Rezervasyon",

@@ -676,7 +676,10 @@
     "helpEnter": "Belegt: Buchung bearbeiten · Frei: neue Buchung",
     "helpEsc": "Dialoge / Hilfe schließen",
     "legendColor": "Farbe = Gast, Rand = Kanal",
-    "problemRoom": "Problem-Zimmer"
+    "problemRoom": "Problem-Zimmer",
+    "roomsCount": "{{count}} Zimmer",
+    "dragToMove": "Ziehen zum Verschieben",
+    "pastEditNote": "(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)"
   },
   "newRes": {
     "title": "Neue Buchung",
