@@ -132,7 +132,7 @@ export function NewReservationDialog({
       const room = rooms.find((x) => x.id === line.roomId);
       return room && !canBookRoom(room, line.checkIn, line.checkOut, stays) ? { ...line, roomId: "", listPrice: null } : line;
     }));
-  }, [open, rooms, stays, priceKeyForAvailability(lines)]);
+  }, [open, rooms, stays, lines.map((l) => `${l.roomId}|${l.checkIn}|${l.checkOut}`).join(",")]);
 
   // Auto-fill price from the room's rate plan whenever room or dates change.
   // Manual edits to the price stay until room/dates change again.

@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { History, User as UserIcon, Clock, Lock } from "lucide-react";
 import { usePermissions } from "@/hooks/use-permissions";
+import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
+import { useTranslation } from "react-i18next";
 
 type Channel = "booking" | "airbnb" | "check24" | "woocommerce" | "phone" | "direct" | "walkin" | "website" | "ical";
 import { sourceLabel } from "@/lib/guest-color";
@@ -12,7 +14,7 @@ const STATUSES = ["confirmed", "tentative", "cancelled", "no_show", "checked_in"
 type Status = typeof STATUSES[number];
 
 interface Property { id: string; name: string }
-interface Room { id: string; number: string; property_id: string }
+interface Room extends BookableRoom { number: string }
 
 interface AuditEntry {
   id: string;
@@ -55,6 +57,8 @@ const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_p
   "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes"] as const;
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
+  const { t } = useTranslation();
+  const [stays, setStays] = useState<RoomStay[]>([]);
   const perms = usePermissions();
   const enabledChannels = useEnabledChannels();
   const [loading, setLoading] = useState(false);
@@ -76,14 +80,20 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     setLoading(true);
     setShowHistory(false);
     (async () => {
-      const [{ data: res }, { data: props }, { data: rms }, { data: hist }] = await Promise.all([
+      const [resResult, propsResult, roomsResult, histResult, staysResult] = await Promise.all([
         supabase.from("reservations").select("*").eq("id", reservationId).single(),
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id").order("number"),
+        supabase.from("rooms").select("id,number,property_id,status,active").order("number"),
         supabase.from("audit_logs").select("id,action,created_at,actor_email,diff")
           .eq("entity", "reservations").eq("entity_id", reservationId)
           .order("created_at", { ascending: false }).limit(50),
+        supabase.from("reservations").select("id,room_id,check_in,check_out,status,deleted_at").is("deleted_at", null).not("status", "in", "(cancelled,no_show)"),
       ]);
+      if (resResult.error || propsResult.error || roomsResult.error || staysResult.error) {
+        setR(null); setRooms([]); setLoading(false); toast.error(t("bookingAvailability.failed")); return;
+      }
+      const res = resResult.data, props = propsResult.data, rms = roomsResult.data, hist = histResult.data;
+      setStays(staysResult.data ?? []);
       if (res) setR(res as Reservation);
       setProperties((props ?? []) as Property[]);
       setRooms((rms ?? []) as Room[]);
@@ -119,13 +129,16 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     if (isCompany && !r.company_name?.trim()) return toast.error("Firmenname ist erforderlich");
     if (!r.guest_name.trim()) return toast.error("Gastname ist erforderlich");
     if (r.check_out <= r.check_in) return toast.error("Abreise muss nach der Anreise liegen");
+    const room = rooms.find((x) => x.id === r.room_id);
+    if (!["cancelled", "no_show"].includes(r.status) && (!room || !canBookRoom(room, r.check_in, r.check_out, stays, r.id)))
+      return toast.error(t("bookingAvailability.unavailable"));
 
     setSaving(true);
     const { error } = await supabase.from("reservations").update({
       property_id: r.property_id,
       room_id: r.room_id,
       customer_type: isCompany ? "company" : "person",
-      company_name: isCompany ? r.company_name!.trim() : null,
+      company_name: isCompany ? r.company_name?.trim() ?? null : null,
       guest_name: r.guest_name.trim(),
       guest_email: r.guest_email?.trim() || null,
       guest_phone: r.guest_phone?.trim() || null,
@@ -140,6 +153,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     }).eq("id", r.id);
     setSaving(false);
     if (error) {
+      if (error.message.includes("room_not_bookable")) { toast.error(t("bookingAvailability.unavailable")); return; }
       toast.error("Güncellenemedi", { description: error.message });
       return;
     }
@@ -148,7 +162,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     onSaved?.();
   };
 
-  const propRooms = r ? rooms.filter((x) => x.property_id === r.property_id) : [];
+  const propRooms = r ? rooms.filter((x) => x.property_id === r.property_id && canBookRoom(x, r.check_in, r.check_out, stays, r.id)) : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,8 +218,8 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <span className="text-xs text-muted-foreground">Lokasyon</span>
                 <select value={r.property_id} onChange={(e) => {
                   update("property_id", e.target.value);
-                  const first = rooms.find((x) => x.property_id === e.target.value);
-                  if (first) update("room_id", first.id);
+                  const first = rooms.find((x) => x.property_id === e.target.value && canBookRoom(x, r.check_in, r.check_out, stays, r.id));
+                  update("room_id", first?.id ?? "");
                 }} className="px-3 py-2 rounded-md border border-input bg-card">
                   {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
@@ -214,6 +228,8 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <span className="text-xs text-muted-foreground">Oda</span>
                 <select value={r.room_id} onChange={(e) => update("room_id", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
+                  {!propRooms.some((x) => x.id === r.room_id) && <option value={r.room_id} disabled>{t("bookingAvailability.unavailable")}</option>}
+                  {propRooms.length === 0 && <option value="" disabled>{t("bookingAvailability.empty")}</option>}
                   {propRooms.map((rm) => <option key={rm.id} value={rm.id}>#{rm.number}</option>)}
                 </select>
               </label>
