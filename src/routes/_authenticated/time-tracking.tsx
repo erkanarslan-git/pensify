@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import i18n from "@/i18n";
 import { EmployeeAttendance } from "@/components/employee-attendance";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/time-tracking")({
   head: () => ({ meta: [{ title: `${i18n.t("nav.timeTracking")} — Pensify` }, { name: "description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:title", content: "Arbeitszeiten — Pensify" }, { property: "og:description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -239,30 +240,9 @@ function TimeTrackingPage() {
     URL.revokeObjectURL(url);
   }
 
-  return (
-    <AppShell
-      title={t("nav.timeTracking")}
-      subtitle={t("timeTracking.adminSubtitle")}
-      actions={
-        <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
-          <Download className="w-4 h-4" /> CSV
-        </Button>
-      }
-    >
-      <div className="space-y-4">
-        {(() => {
-          const L = ({ tr: ["Şu an çalışan", "Toplam saat", "Kayıt", "Ödenmemiş"], de: ["Jetzt aktiv", "Stunden gesamt", "Einträge", "Unbezahlt"], en: ["Active now", "Total hours", "Entries", "Unpaid"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Active now", "Total hours", "Entries", "Unpaid"];
-          const mins = entries.reduce((s, e) => s + (e.clock_out_at ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
-          return (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Kpi accent="primary" label={L[0]} value={entries.filter((e) => !e.clock_out_at).length} />
-              <Kpi label={L[1]} value={`${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`} />
-              <Kpi label={L[2]} value={entries.length} />
-              <Kpi accent="warning" label={L[3]} value={entries.filter((e) => e.clock_out_at && !e.paid_at).length} />
-            </div>
-          );
-        })()}
-        <EmployeeAttendance />
+  const TL = ({ tr: ["Vardiyalar", "Ödeme özeti", "Çalışma planı ve izinler"], de: ["Schichten", "Abrechnung", "Arbeitsplan & Abwesenheiten"], en: ["Shifts", "Pay summary", "Work plan & absences"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Shifts", "Pay summary", "Work plan & absences"];
+
+  const filters = (
         <Section title={t("timeTracking.filters")}>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-2 items-end">
             <div className="col-span-2 md:col-span-2">
@@ -312,7 +292,39 @@ function TimeTrackingPage() {
             </label>
           </div>
         </Section>
+  );
 
+  return (
+    <AppShell
+      title={t("nav.timeTracking")}
+      subtitle={t("timeTracking.adminSubtitle")}
+      actions={
+        <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
+          <Download className="w-4 h-4" /> CSV
+        </Button>
+      }
+    >
+      <div className="space-y-4">
+        {(() => {
+          const L = ({ tr: ["Şu an çalışan", "Toplam saat", "Kayıt", "Ödenmemiş"], de: ["Jetzt aktiv", "Stunden gesamt", "Einträge", "Unbezahlt"], en: ["Active now", "Total hours", "Entries", "Unpaid"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Active now", "Total hours", "Entries", "Unpaid"];
+          const mins = entries.reduce((s, e) => s + (e.clock_out_at ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
+          return (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Kpi accent="primary" label={L[0]} value={entries.filter((e) => !e.clock_out_at).length} />
+              <Kpi label={L[1]} value={`${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`} />
+              <Kpi label={L[2]} value={entries.length} />
+              <Kpi accent="warning" label={L[3]} value={entries.filter((e) => e.clock_out_at && !e.paid_at).length} />
+            </div>
+          );
+        })()}
+        <Tabs defaultValue="shifts">
+          <TabsList className="h-auto flex-wrap">
+            <TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
+            <TabsTrigger value="pay">{TL[1]}</TabsTrigger>
+            <TabsTrigger value="plan">{TL[2]}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="pay" className="mt-4 space-y-4">
+        {filters}
         <Section title={t("timeTracking.summary")}>
           <div className="mb-3 flex flex-wrap gap-3">
             <Badge tone="info"><Clock className="w-3 h-3" /> {Math.floor(summary.totalMin / 60)}h {summary.totalMin % 60}m {t("timeTracking.totalTime")}</Badge>
@@ -347,7 +359,10 @@ function TimeTrackingPage() {
             </div>
           )}
         </Section>
+          </TabsContent>
 
+          <TabsContent value="shifts" className="mt-4 space-y-4">
+        {filters}
         <Section title={t("timeTracking.shiftDetails")}>
           {isLoading ? (
             <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
@@ -412,6 +427,9 @@ function TimeTrackingPage() {
             </div>
           )}
         </Section>
+          </TabsContent>
+          <TabsContent value="plan" className="mt-4"><EmployeeAttendance /></TabsContent>
+        </Tabs>
       </div>
     </AppShell>
   );

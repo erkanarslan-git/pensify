@@ -60,12 +60,14 @@ function Dashboard() {
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
   const inHouse = data?.inHouse ?? [];
-  // Occupancy comes from today's reservations, not from the static room label.
+  // Occupied = rooms with a guest staying tonight OR rooms manually marked occupied.
   const occupiedIds = new Set(inHouse.filter((r) => r.check_out > today).map((r) => r.room_id));
+  for (const r of rooms) if (r.status === "occupied") occupiedIds.add(r.id);
   const checkoutIds = new Set(inHouse.filter((r) => r.check_out === today).map((r) => r.room_id));
   const totalRooms = rooms.length;
   const occupied = occupiedIds.size;
   const maintenance = rooms.filter((r) => r.status === "maintenance").length;
+  const cleaningRooms = rooms.filter((r) => !occupiedIds.has(r.id) && ["cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
   const available = rooms.filter((r) => !occupiedIds.has(r.id) && !["maintenance", "cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
   const cleaningPending = tasks.filter((t) => t.status === "pending" || t.status === "accepted").length;
   const cleaningInProgress = tasks.filter((t) => t.status === "in_progress").length;
@@ -131,9 +133,23 @@ function Dashboard() {
         </Link>
         {[
           { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" } },
-          { label: t("dashboard.cleaningPending"), value: cleaningPending, hint: `${cleaningInProgress} ${t("dashboard.cleaningInProgress")}`, to: "/cleaning", search: {} },
+          "split",
           { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {} },
-        ].map((k) => (
+        ].map((k) => typeof k === "string" ? (
+          <div key="split" className="grid grid-cols-2 gap-3">
+            {[
+              { label: t("dashboard.cleaningPending"), value: cleaningRooms, hint: `${cleaningPending} ${t("nav.cleaning")}`, to: "/rooms", search: { status: "cleaning_required" }, tone: "text-warning-foreground dark:text-warning" },
+              { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, tone: "text-destructive" },
+            ].map((s) => (
+              <Link key={s.label} to={s.to as any} search={s.search as any}
+                className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:shadow-elevated">
+                <span className="truncate text-sm font-medium">{s.label}</span>
+                <div className={`mt-4 text-4xl font-semibold tabular-nums ${s.tone}`}>{s.value}</div>
+                <div className="mt-2 truncate text-xs text-muted-foreground">{s.hint}</div>
+              </Link>
+            ))}
+          </div>
+        ) : (
           <Link key={k.label} to={k.to as any} search={k.search as any}
             className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition hover:shadow-elevated">
             <div className="flex items-center justify-between">
@@ -151,7 +167,6 @@ function Dashboard() {
           { label: t("dashboard.totalRooms"), value: totalRooms, to: "/rooms", search: {} },
           { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, to: "/cleaning", search: {} },
           { label: t("dashboard.completedToday"), value: completedToday, to: "/cleaning", search: {} },
-          { label: t("dashboard.maintenance"), value: maintenance, to: "/rooms", search: { status: "maintenance" } },
         ].map((k) => (
           <Link key={k.label} to={k.to as any} search={k.search as any}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
