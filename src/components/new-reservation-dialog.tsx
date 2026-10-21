@@ -287,39 +287,39 @@ export function NewReservationDialog({
             {customerType === "company" && (
               <>
                 <div className="col-span-full space-y-2">
-                  <Label htmlFor="companyName" className="text-xs text-muted-foreground uppercase tracking-wider">Firmenname *</Label>
+                  <Label htmlFor="companyName" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.companyName")}</Label>
                   <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={200} className="bg-card" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyContact" className="text-xs text-muted-foreground uppercase tracking-wider">Ansprechpartner</Label>
+                  <Label htmlFor="companyContact" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.contactPerson")}</Label>
                   <Input id="companyContact" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} maxLength={200} className="bg-card" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyVat" className="text-xs text-muted-foreground uppercase tracking-wider">USt-IdNr.</Label>
+                  <Label htmlFor="companyVat" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.vatId")}</Label>
                   <Input id="companyVat" value={companyVat} onChange={(e) => setCompanyVat(e.target.value)} maxLength={50} placeholder="DE123456789" className="bg-card" />
                 </div>
                 <div className="col-span-full space-y-2">
-                  <Label htmlFor="companyAddress" className="text-xs text-muted-foreground uppercase tracking-wider">Rechnungsadresse</Label>
+                  <Label htmlFor="companyAddress" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.billingAddress")}</Label>
                   <Input id="companyAddress" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} maxLength={300} placeholder="Straße, PLZ, Ort" className="bg-card" />
                 </div>
               </>
             )}
             <div className="col-span-full space-y-2">
               <Label htmlFor="guestName" className="text-xs text-muted-foreground uppercase tracking-wider">
-                {customerType === "company" ? "Name des Gastes (optional)" : "Gastname *"}
+                {customerType === "company" ? t("newRes.guestNameOptional") : t("newRes.guestName")}
               </Label>
               <Input
                 id="guestName"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
                 maxLength={100}
-                placeholder={customerType === "company" ? "Wer übernachtet? (z. B. Monteur)" : "Vor- und Nachname"}
+                placeholder={customerType === "company" ? t("newRes.guestNameCompanyPlaceholder") : t("newRes.guestNamePlaceholder")}
                 className="bg-card"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="guestEmail" className="text-xs text-muted-foreground uppercase tracking-wider">
-                E-Mail
+                {t("common.email")}
               </Label>
               <Input
                 id="guestEmail"
@@ -332,7 +332,7 @@ export function NewReservationDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="guestPhone" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Telefon
+                {t("newRes.phone")}
               </Label>
               <Input
                 id="guestPhone"
@@ -345,7 +345,7 @@ export function NewReservationDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="channel" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Kanal
+                {t("newRes.channel")}
               </Label>
               <Select value={channel} onValueChange={(v) => setChannel(v as Channel)}>
                 <SelectTrigger id="channel" className="bg-card">
@@ -354,7 +354,7 @@ export function NewReservationDialog({
                 <SelectContent>
                   {enabledChannels.map((c) => (
                     <SelectItem key={c} value={c}>
-                      {sourceLabel(c)}
+                      {sourceLabel(c, (k) => t(k))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -362,7 +362,7 @@ export function NewReservationDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Notiz
+                {t("newRes.note")}
               </Label>
               <Input
                 id="notes"
