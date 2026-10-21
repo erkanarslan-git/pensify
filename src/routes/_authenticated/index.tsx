@@ -143,10 +143,7 @@ function Dashboard() {
             ].map((s) => (
               <Link key={s.label} to={s.to as any} search={s.search as any}
                 className={`group flex min-w-0 flex-col rounded-2xl p-4 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${s.tile}`}>
-                <span className="flex items-start justify-between gap-2 text-sm font-medium opacity-95">
-                  <span className="min-w-0">{s.label}</span>
-                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/40 text-white"><ArrowUpRight className="h-3.5 w-3.5" /></span>
-                </span>
+                <span className="text-sm font-medium opacity-95">{s.label}</span>
                 <div className="mt-3 text-4xl font-semibold tabular-nums text-white">{s.value}</div>
                 <div className="mt-2 truncate text-xs opacity-85">{s.hint}</div>
               </Link>
