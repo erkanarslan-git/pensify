@@ -260,6 +260,13 @@
       "when": 1792610015712,
       "tag": "0036_rooms_status_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1792610534626,
+      "tag": "0037_cleaning_task_due_end_of_day",
+      "breakpoints": true
     }
   ]
 }
