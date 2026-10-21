@@ -502,7 +502,7 @@ function CalendarPage() {
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
               <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
-                <span>Zimmer</span>
+                <span>{t("calendar.colRoom")}</span>
                 {!gridFocused && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -516,7 +516,7 @@ function CalendarPage() {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-[240px] text-xs">
-                      Drücke <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">G</kbd> (oder klicke hier), um die Tastatur-Navigation zu aktivieren. Danach: Pfeiltasten, Enter, ?
+                      {t("calendar.keyboardHint")}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -551,7 +551,7 @@ function CalendarPage() {
                     >
                       <span className="font-semibold truncate text-primary">{p.name}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {groupRooms.length} Zimmer · heute belegt: {occupiedToday}
+                        {t("calendar.roomsOccupiedToday", { count: groupRooms.length, occupied: occupiedToday })}
                       </span>
                     </div>,
                   );
@@ -698,7 +698,7 @@ function CalendarPage() {
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> {t("calendar.cleaningPending")}</div>
           <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> {t("calendar.problemRoom")}</div>
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-            <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> Tastatur-Kürzel
+            <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> {t("calendar.shortcuts")}
           </button>
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
@@ -710,7 +710,7 @@ function CalendarPage() {
             <span className="font-medium">{pendingMove.res.guestName}</span>
             <span className="text-muted-foreground"> · {pendingMove.res.checkIn} → {pendingMove.res.checkOut} wird zu </span>
             <span className="font-medium">{pendingMove.checkIn} → {pendingMove.checkOut}</span>
-            {moveConflict && <span className="block text-destructive text-xs mt-0.5">Konflikt: Zimmer in diesem Zeitraum bereits belegt</span>}
+            {moveConflict && <span className="block text-destructive text-xs mt-0.5">{t("calendar.conflictLine")}</span>}
           </div>
           <button
             onClick={confirmMove}
@@ -758,7 +758,7 @@ function CalendarPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Keyboard className="w-4 h-4" />
-                <h3 className="font-semibold">Tastatur-Kürzel</h3>
+                <h3 className="font-semibold">{t("calendar.shortcuts")}</h3>
               </div>
               <button onClick={() => setShowHelp(false)} className="p-1 rounded hover:bg-accent" title="Schließen">
                 <X className="w-4 h-4" />
@@ -772,8 +772,8 @@ function CalendarPage() {
                 { keys: ["↑", "↓", "←", "→"], desc: t("calendar.helpNavCells") },
                 { keys: ["←", "→"], desc: t("calendar.helpNavEdge") },
                 { keys: ["Enter"], desc: t("calendar.helpEnter") },
-                { keys: ["?"], desc: "Diese Hilfe ein-/ausblenden" },
-                { keys: ["Esc"], desc: "Dialoge / Hilfe schließen" },
+                { keys: ["?"], desc: t("calendar.helpToggle") },
+                { keys: ["Esc"], desc: t("calendar.helpEsc") },
               ].map((row, i) => (
                 <div key={i} className="flex items-center justify-between gap-3 py-1.5 border-b border-border last:border-0">
                   <span className="text-muted-foreground">{row.desc}</span>
