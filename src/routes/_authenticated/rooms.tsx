@@ -51,9 +51,9 @@ export interface Room {
 }
 
 export const statusMeta: Record<RoomStatus, { tone: "success" | "warning" | "destructive" | "muted" | "info" | "primary" }> = {
-  available: { tone: "success" }, occupied: { tone: "primary" }, checkout_today: { tone: "info" },
+  available: { tone: "success" }, occupied: { tone: "primary" }, checkout_today: { tone: "muted" },
   cleaning_required: { tone: "warning" }, cleaning_in_progress: { tone: "warning" },
-  cleaned: { tone: "success" }, maintenance: { tone: "destructive" },
+  cleaned: { tone: "info" }, maintenance: { tone: "destructive" },
 };
 
 export const floorLabel = (f: number | null) =>

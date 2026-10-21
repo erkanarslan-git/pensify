@@ -192,7 +192,7 @@
     "in_progress": "In progress",
     "completed": "Completed",
     "problem": "Problem",
-    "cleaned": "Clean"
+    "cleaned": "Cleaned (ready)"
   },
   "timeTracking": {
     "qrSubtitle": "Printable QR card for cleaners",
