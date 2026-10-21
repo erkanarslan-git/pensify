@@ -30,7 +30,7 @@ function startOfDay(d: Date) {
 }
 
 interface UnifiedProperty { id: string; name: string }
-interface UnifiedRoom { id: string; number: string; propertyId: string; floor?: number | null; needsCleaning?: boolean; issue?: string | null }
+interface UnifiedRoom { id: string; number: string; propertyId: string; floor?: number | null; status?: string; needsCleaning?: boolean; issue?: string | null }
 interface UnifiedRes {
   id: string;
   roomId: string;
@@ -186,7 +186,7 @@ function CalendarPage() {
     (async () => {
       const [{ data: props }, { data: rms }, { data: res }, { data: tasks }] = await Promise.all([
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id,floor").order("floor", { ascending: true, nullsFirst: true }).order("number"),
+        supabase.from("rooms").select("id,number,property_id,floor,status").order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status").neq("status", "cancelled"),
         supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "problem"]),
       ]);
@@ -198,8 +198,8 @@ function CalendarPage() {
         if (ct.status === "problem") entry.issue = ct.notes ?? "Sorun bildirildi";
         cleaningByRoom.set(ct.room_id, entry);
       }
-      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null }[]).map((r) => ({
-        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor,
+      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null; status: string }[]).map((r) => ({
+        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor, status: r.status,
         needsCleaning: cleaningByRoom.get(r.id)?.needsCleaning ?? false,
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
@@ -360,6 +360,13 @@ function CalendarPage() {
     setStart(d);
   };
 
+  const occupiedTodayCount = rooms.filter((r) =>
+    reservations.some((res) => res.roomId === r.id && res.checkIn <= today && res.checkOut > today),
+  ).length;
+  const freeTodayCount = rooms.length - occupiedTodayCount;
+  const needsCleaningCount = rooms.filter((r) => r.needsCleaning).length;
+  const maintenanceCount = rooms.filter((r) => r.status === "maintenance").length;
+
   return (
     <AppShell
       title={t("pages.calendar.title")}
@@ -388,6 +395,12 @@ function CalendarPage() {
         </div>
       }
     >
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <StatCard label="Belegt heute" value={occupiedTodayCount} highlight />
+        <StatCard label="Frei heute" value={freeTodayCount} />
+        <StatCard label="Reinigung ausstehend" value={needsCleaningCount} tone="warning" />
+        <StatCard label="Wartung" value={maintenanceCount} tone="muted" />
+      </div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <select
           value={propertyId}
@@ -534,9 +547,9 @@ function CalendarPage() {
                     <div
                       key={`${p.id}-header`}
                       style={{ gridColumn: "1 / -1" }}
-                      className="flex items-center justify-between gap-3 px-3 py-2 mt-2 first:mt-0 rounded-md bg-accent/50 border border-border text-sm"
+                      className="flex items-center justify-between gap-3 px-3 py-2 mt-2 first:mt-0 rounded-lg bg-primary/10 border border-primary/20 text-sm"
                     >
-                      <span className="font-semibold truncate">{p.name}</span>
+                      <span className="font-semibold truncate text-primary">{p.name}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {groupRooms.length} Zimmer · heute belegt: {occupiedToday}
                       </span>
@@ -888,6 +901,21 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
           <ChevronRight className="w-5 h-5" />
         </button>
       )}
+    </div>
+  );
+}
+
+function StatCard({ label, value, highlight, tone }: {
+  label: string;
+  value: number;
+  highlight?: boolean;
+  tone?: "warning" | "muted";
+}) {
+  const toneClass = tone === "warning" ? "text-warning" : tone === "muted" ? "text-muted-foreground" : "text-primary";
+  return (
+    <div className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{label}</div>
+      <div className={`text-3xl font-semibold mt-1 tabular-nums ${highlight ? "" : toneClass}`}>{value}</div>
     </div>
   );
 }
