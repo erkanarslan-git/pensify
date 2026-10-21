@@ -1,5 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+- [ ] Dört renkli panel kartı toplam 84 odayı kapsasın; sarı bekleyen/devam eden temizliği birleştirsin, dolu ana değer oda sayısı olsun.
+
 - [x] Panel/Odalar sayı farkı: silinmiş rezervasyonlar dışlandı, ortak oda durum kaynağı kullanılıyor; belirsiz görev alt sayısı kaldırıldı. 12 test geçti; giriş yapılmış ekranda her ikisi 3 dolu, 78 müsait, 2 temizlik bekleyen ve 1 temizlenen oda olarak doğrulandı.
 
 - [x] Görev Dağıtım'ın yalnız günlük özet olduğu, görev atamalarının Temizlik'te yapıldığı ve WhatsApp'ın bağlı olmadığı açıklandı; mesajlar deneme olarak etiketlendi. Saat gösterimleri ve otomatik görev zamanlaması Berlin'e sabitlendi, kayıtlı İstanbul ayarı düzeltildi; 11 test ve İstanbul saatindeki cihazla giriş yapılmış ekran/Temizlik geçişi kontrol edildi. Dolu gün ve gerçek mesaj gönderimi doğrulanmadı.

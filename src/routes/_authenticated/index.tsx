@@ -62,7 +62,7 @@ function Dashboard() {
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
   const summary = summarizeRooms(rooms);
-  const { total: totalRooms, occupied, maintenance, available, cleaningPending, cleaningInProgress, checkouts: checkoutToday } = summary;
+  const { total: totalRooms, occupied, maintenance, available, cleaning, checkouts: checkoutToday } = summary;
   const completedToday = tasks.filter((t) => t.status === "completed" && (t.due_at ?? "").slice(0, 10) === today).length;
 
   // Weekly occupancy from reservations (last 7 days incl. today)
@@ -119,8 +119,8 @@ function Dashboard() {
             <span className="text-sm font-medium opacity-90">{t("dashboard.occupied")}</span>
             <span className="grid h-8 w-8 place-items-center rounded-full bg-card text-primary"><ArrowUpRight className="h-4 w-4" /></span>
           </div>
-          <div className="mt-4 text-5xl font-semibold tabular-nums">{totalRooms ? Math.round((occupied / totalRooms) * 100) : 0} %</div>
-          <div className="mt-2 text-sm opacity-85">{occupied} / {totalRooms} {t("dashboard.totalRooms")}</div>
+          <div className="mt-4 text-5xl font-semibold tabular-nums">{occupied}</div>
+          <div className="mt-2 text-sm opacity-85">{t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 })}</div>
         </Link>
         {[
           { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, tile: "tile-success" },
@@ -129,7 +129,7 @@ function Dashboard() {
         ].map((k) => typeof k === "string" ? (
           <div key="split" className="grid grid-cols-2 gap-3">
             {[
-              { label: t("dashboard.cleaningPending"), value: cleaningPending, hint: t("nav.rooms"), to: "/rooms", search: { status: "cleaning_required" }, tile: "tile-warning" },
+              { label: t("nav.cleaning"), value: cleaning, hint: t("nav.rooms"), to: "/cleaning", search: {}, tile: "tile-warning" },
               { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, tile: "tile-destructive" },
             ].map((s) => (
               <Link key={s.label} to={s.to as any} search={s.search as any}
@@ -156,7 +156,6 @@ function Dashboard() {
       <div className="mt-3 flex flex-wrap gap-2">
         {[
           { label: t("dashboard.totalRooms"), value: totalRooms, to: "/rooms", search: {} },
-          { label: t("dashboard.roomsCleaningInProgress"), value: cleaningInProgress, to: "/rooms", search: { status: "cleaning_in_progress" } },
           { label: t("dashboard.completedToday"), value: completedToday, to: "/cleaning", search: {} },
         ].map((k) => (
           <Link key={k.label} to={k.to as any} search={k.search as any}
