@@ -2223,6 +2223,15 @@ export type Database = {
         }
         Returns: string
       }
+      clock_start_for_task: {
+        Args: {
+          _accuracy: number
+          _lat: number
+          _lng: number
+          _task_id: string
+        }
+        Returns: string
+      }
       clock_stop: {
         Args: { _entry_id: string; _lat: number; _lng: number }
         Returns: undefined
