@@ -66,11 +66,6 @@ function NotificationsPage() {
     new Date(iso).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE, dateStyle: "short", timeStyle: "short" });
 
   const Group = ({ title, icon: Icon, tone, children }: { title: string; icon: any; tone: "warning" | "destructive" | "muted"; children: React.ReactNode }) => {
-    const toneClass: Record<string, string> = {
-      warning: "bg-warning/15 text-warning-foreground",
-      destructive: "bg-destructive/10 text-destructive",
-      muted: "bg-muted text-muted-foreground",
-    };
     return (
       <div className="rounded-xl border border-border bg-card shadow-soft">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border">

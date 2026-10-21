@@ -85,8 +85,8 @@ function AiPage() {
           <div ref={scrollRef} className="h-[52vh] overflow-y-auto -m-5 p-5 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center py-10">
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-primary/10 grid place-items-center mb-3">
-                  <Sparkles className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 mx-auto rounded-2xl brand-tile shadow-sm grid place-items-center mb-3">
+                  <Sparkles className="w-6 h-6" />
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   Doluluk, boş odalar, ciro veya öneri sorabilirsiniz.

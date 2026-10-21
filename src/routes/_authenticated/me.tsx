@@ -214,10 +214,10 @@ function MePage() {
       </header>
 
       <main className="max-w-md mx-auto p-4 space-y-4">
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <div className="text-xs uppercase text-muted-foreground">Merhaba</div>
+        <div className="rounded-2xl brand-tile p-5 shadow-soft">
+          <div className="text-xs uppercase opacity-80">Merhaba</div>
           <div className="text-xl font-semibold">{cleaner?.full_name || user.email}</div>
-          {cleaner?.phone && <div className="text-xs text-muted-foreground mt-0.5">{cleaner.phone}</div>}
+          {cleaner?.phone && <div className="text-xs opacity-80 mt-0.5">{cleaner.phone}</div>}
         </div>
 
         {!cleaner && (
