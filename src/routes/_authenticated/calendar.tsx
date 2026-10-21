@@ -510,7 +510,7 @@ function CalendarPage() {
                         type="button"
                         onClick={() => gridFocusRef.current?.focus()}
                         className="inline-flex items-center justify-center w-5 h-5 rounded text-primary hover:bg-primary/10 animate-pulse"
-                        aria-label="Tastatur-Navigation aktivieren"
+                        aria-label={t("calendar.keyboardNavActivate")}
                       >
                         <MousePointerClick className="w-3.5 h-3.5" />
                       </button>
@@ -562,7 +562,7 @@ function CalendarPage() {
                       <div className="font-medium truncate flex items-center gap-1.5">
                         {r.floor != null && (
                           <span
-                            title={r.floor === 0 ? "Erdgeschoss" : `${r.floor}. Obergeschoss`}
+                            title={r.floor === 0 ? t("calendar.groundFloor") : t("calendar.upperFloor", { floor: r.floor })}
                             className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground"
                           >
                             {r.floor === 0 ? "EG" : `${r.floor}.OG`}
@@ -578,7 +578,7 @@ function CalendarPage() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
-                              Reinigung ausstehend
+                              {t("calendar.cleaningPending")}
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -652,7 +652,7 @@ function CalendarPage() {
                                  color: c.fg,
                                  borderLeft: `3px solid ${sc}`,
                                }}
-                               title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? "\nZiehen zum Verschieben" : ""}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
+                               title={`${occupant.guestName} · ${sourceLabel(occupant.source, (k) => t(k))}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? `\n${t("calendar.dragToMove")}` : ""}${occPast && !canCreatePast ? `\n${t("calendar.pastEditNote")}` : ""}`}
                              >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
@@ -660,7 +660,7 @@ function CalendarPage() {
                                    onMouseDown={(e) => e.stopPropagation()}
                                    onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
                                   className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                  title={occPast && !canCreatePast ? "Ansehen" : "Bearbeiten"}
+                                  title={occPast && !canCreatePast ? t("calendar.view") : t("common.edit")}
                                 >
                                   <Pencil className="w-3 h-3" />
                                 </button>
@@ -694,9 +694,9 @@ function CalendarPage() {
         </div>
         </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
-          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
-          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Problem-Zimmer</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> {t("calendar.legendColor")}</div>
+          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> {t("calendar.cleaningPending")}</div>
+          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> {t("calendar.problemRoom")}</div>
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
             <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> Tastatur-Kürzel
           </button>
@@ -716,14 +716,14 @@ function CalendarPage() {
             onClick={confirmMove}
             disabled={savingMove || moveConflict}
             className="w-9 h-9 rounded-md bg-success text-success-foreground grid place-items-center hover:opacity-90 disabled:opacity-50"
-            title="Verschieben bestätigen (Enter)"
+            title={t("calendar.confirmMove")}
           >
             <Check className="w-4 h-4" />
           </button>
           <button
             onClick={() => setPendingMove(null)}
             className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
-            title="Abbrechen (Esc)"
+            title={t("calendar.cancelEsc")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -769,9 +769,9 @@ function CalendarPage() {
             </p>
             <div className="space-y-2 text-sm">
               {[
-                { keys: ["↑", "↓", "←", "→"], desc: "Zwischen Zellen navigieren" },
-                { keys: ["←", "→"], desc: "Am Rand: vorherige / nächste Periode" },
-                { keys: ["Enter"], desc: "Belegt: Buchung bearbeiten · Frei: neue Buchung" },
+                { keys: ["↑", "↓", "←", "→"], desc: t("calendar.helpNavCells") },
+                { keys: ["←", "→"], desc: t("calendar.helpNavEdge") },
+                { keys: ["Enter"], desc: t("calendar.helpEnter") },
                 { keys: ["?"], desc: "Diese Hilfe ein-/ausblenden" },
                 { keys: ["Esc"], desc: "Dialoge / Hilfe schließen" },
               ].map((row, i) => (
