@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Building2, Plus, Pencil, Trash2, QrCode, DoorOpen, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { roomTypeVisual } from "@/lib/room-type-visuals";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -182,7 +183,8 @@ function PropertiesPage() {
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5" aria-label={t("propertyRooms.typeDistribution")}>
                         {Object.values(stats[p.id]?.types ?? {}).map((roomType) => {
-                          return <span key={`${p.id}-${roomType.code}`} title={`${roomType.name}: ${roomType.count}`} className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-primary/15 bg-primary/5 px-2 py-1 text-[11px] text-primary"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" /><span className="min-w-0 break-words">{roomType.name} · {roomType.count}</span></span>;
+                          const visual = roomTypeVisual(roomType.code);
+                          return <span key={`${p.id}-${roomType.code}`} title={`${roomType.name}: ${roomType.count}`} className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] ${visual.border} ${visual.surface} ${visual.text}`}><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${visual.marker}`} /><span className="min-w-0 break-words">{roomType.name} · {roomType.count}</span></span>;
                         })}
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
