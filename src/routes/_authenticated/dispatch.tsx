@@ -9,6 +9,7 @@ import { getTodayDispatch } from "@/lib/dispatch.functions";
 import { Eye, Users, ClipboardList, MessageCircle, UserX, Clock, ChevronDown, ArrowRight, type LucideIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { dispatchTranslations } from "@/i18n/dispatch";
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({ meta: [{ title: "Aufgabenverteilung — Pensify" }, { name: "description", content: "Tägliche Reinigungsaufgaben in Pensify verteilen." }, { property: "og:title", content: "Aufgabenverteilung — Pensify" }, { property: "og:description", content: "Tägliche Reinigungsaufgaben in Pensify verteilen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -27,7 +28,7 @@ function DispatchPage() {
 
   const settings = data.settings as Record<string, unknown>;
   const morningTime = String(settings["dispatch.morning_time"] || "08:00");
-  const timezone = String(settings["dispatch.timezone"] || "Europe/Berlin");
+  const timezone = BUSINESS_TIME_ZONE;
   const enabled = settings["dispatch.enabled"] === true;
   const unassigned = data.tasks.filter((task) => !task.cleaner_id);
   const date = data.scheduledFor.split("-").reverse().join(".");
@@ -42,7 +43,7 @@ function DispatchPage() {
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:justify-between items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 mb-6">
         <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-primary"><Clock className="h-4 w-4 shrink-0" /><span>{enabled ? copy.autoOn : copy.autoOff}</span></div>
-        <span className="text-xs text-muted-foreground text-right">{morningTime}<span className="block sm:inline sm:ml-2">{timezone}</span></span>
+        <span className="text-xs text-muted-foreground text-right">{morningTime}<span className="block sm:inline sm:ml-2">{copy.germanyTime}</span></span>
       </div>
       {unassigned.length > 0 && <section className="mb-6">
         <div className="flex items-center gap-2 mb-3"><UserX className="h-4 w-4 text-warning" /><h2 className="font-semibold">{copy.unassigned}</h2><Badge tone="warning">{unassigned.length}</Badge></div>
@@ -70,7 +71,7 @@ function DispatchPage() {
                 </ul>
                 {tasks.length === 0 && <p className="text-sm text-muted-foreground py-2">{copy.noTasks}</p>}
                 <div className="flex flex-wrap gap-3 items-center pt-3">
-                  {message ? <><Badge tone={message.status === "sent" ? "success" : message.status === "failed" ? "destructive" : "muted"}>{message.status === "sent" ? copy.sent : message.status === "failed" ? copy.failed : message.status} · {message.sent_at ? new Date(message.sent_at).toLocaleTimeString(lang, {timeZone: timezone, hour: "2-digit", minute: "2-digit"}) : "—"}</Badge><Button size="sm" variant="outline" onClick={() => setPreviewBody(message.body)}><Eye className="h-4 w-4 mr-2" />{copy.preview}</Button></> : <span className="text-xs text-muted-foreground">{copy.noMessage}</span>}
+                  {message ? <><Badge tone={message.provider === "simulation" ? "muted" : message.status === "sent" ? "success" : message.status === "failed" ? "destructive" : "muted"}>{message.provider === "simulation" ? copy.simulation : message.status === "sent" ? copy.sent : message.status === "failed" ? copy.failed : message.status} · {message.sent_at ? new Date(message.sent_at).toLocaleTimeString(lang, {timeZone: timezone, hour: "2-digit", minute: "2-digit"}) : "—"}</Badge><Button size="sm" variant="outline" onClick={() => setPreviewBody(message.body)}><Eye className="h-4 w-4 mr-2" />{copy.preview}</Button></> : <span className="text-xs text-muted-foreground">{copy.noMessage}</span>}
                 </div>
               </div>
             </details>;

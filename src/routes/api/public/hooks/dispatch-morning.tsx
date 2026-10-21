@@ -2,16 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { safeEqual } from "@/lib/http-security.server";
+import { businessDate, businessTime, businessDayBounds } from "@/lib/business-time";
 
 const PUBLIC_BASE = "https://project--c3bce140-98e6-40ed-a35c-6ad0fa40d481.lovable.app";
 
-function todayISO(tz: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-}
-
-function nowHHMM(tz: string): string {
-  return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
-}
 
 function renderMessage(template: string, cleanerName: string, items: { propertyName: string; roomNumber: string; link: string }[]) {
   const liste = items
@@ -42,10 +36,10 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-morning")({
         if (!ok) return new Response("Unauthorized", { status: 401 });
 
         // Process every active organization independently. Never assume an implicit organization.
-        const { data: orgs } = await supabase.from("organizations").select("id, timezone").eq("active", true);
+        const { data: orgs } = await supabase.from("organizations").select("id").eq("active", true);
         const summary: any[] = [];
         for (const org of orgs ?? []) {
-          summary.push(await runForOrganization(supabase, org.id, org.timezone));
+          summary.push(await runForOrganization(supabase, org.id));
         }
         return Response.json({ organizations: summary });
       },
@@ -53,7 +47,7 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-morning")({
   },
 });
 
-async function runForOrganization(supabase: any, orgId: string, orgTz: string | null) {
+async function runForOrganization(supabase: any, orgId: string) {
   const log = (status: string, detail: any) =>
     supabase.from("cron_executions").insert({
       organization_id: orgId, job: "dispatch-morning", status, detail, finished_at: new Date().toISOString(),
@@ -64,11 +58,11 @@ async function runForOrganization(supabase: any, orgId: string, orgTz: string | 
     for (const r of settingsRows ?? []) s[r.key] = r.value;
 
     if (s["dispatch.enabled"] !== true) return { orgId, skipped: "disabled" };
-    const tz = s["dispatch.timezone"] || orgTz || "Europe/Berlin";
     const target = s["dispatch.morning_time"] || "08:00";
     const template = s["dispatch.message_template"] || "Günaydın {ad}!\n{liste}";
-    const today = todayISO(tz);
-    const hhmm = nowHHMM(tz);
+    const today = businessDate();
+    const hhmm = businessTime();
+    const { start: dayStart, end: dayEnd } = businessDayBounds(today);
     if (s["dispatch.last_run_date"] === today) return { orgId, skipped: "already_ran_today", today };
     if (hhmm < target) return { orgId, skipped: "before_target", now: hhmm, target };
 
@@ -82,8 +76,8 @@ async function runForOrganization(supabase: any, orgId: string, orgTz: string | 
         .eq("organization_id", orgId)
         .eq("cleaner_id", c.id)
         .in("status", ["pending", "accepted", "in_progress"])
-        .gte("due_at", `${today}T00:00:00Z`)
-        .lte("due_at", `${today}T23:59:59Z`)
+        .gte("due_at", dayStart)
+        .lt("due_at", dayEnd)
         .order("due_at", { ascending: true });
       if (!tasks || tasks.length === 0) { results.push({ cleanerId: c.id, skipped: "no_tasks" }); continue; }
       const items = tasks.map((t: any) => ({

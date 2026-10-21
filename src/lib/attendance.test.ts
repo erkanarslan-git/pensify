@@ -29,4 +29,7 @@ describe("individual workdays and separate absences", () => {
   it("uses the organization timezone for overnight clock-ins", () => {
     expect(localWorkDate("2026-10-20T23:30:00Z","Europe/Berlin")).toBe("2026-10-21");
   });
+  it("keeps attendance on Germany's date despite legacy timezone settings", () => {
+    expect(localWorkDate("2026-12-20T21:30:00Z", "Europe/Istanbul")).toBe("2026-12-20");
+  });
 });

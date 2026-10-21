@@ -1,4 +1,5 @@
 import { addDays, format, getISODay, parseISO } from "date-fns";
+import { businessDate } from "./business-time";
 
 export type WorkSchedule = { member_id: string; effective_from: string; weekdays: number[] };
 export type Absence = { id: string; member_id: string; start_date: string; end_date: string; kind: string; note: string; cancelled: boolean; created_at: string };
@@ -18,6 +19,6 @@ export function attendanceDays(memberId: string, from: string, to: string, sched
   return days;
 }
 
-export function localWorkDate(timestamp: string, timezone: string): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(timestamp));
+export function localWorkDate(timestamp: string, _timezone?: string): string {
+  return businessDate(new Date(timestamp));
 }
