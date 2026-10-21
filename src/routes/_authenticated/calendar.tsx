@@ -396,8 +396,8 @@ function CalendarPage() {
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <StatCard label="Belegt heute" value={occupiedToday} highlight />
-        <StatCard label="Frei heute" value={freeToday} />
+        <StatCard label="Belegt heute" value={occupiedTodayCount} highlight />
+        <StatCard label="Frei heute" value={freeTodayCount} />
         <StatCard label="Reinigung ausstehend" value={needsCleaningCount} tone="warning" />
         <StatCard label="Wartung" value={maintenanceCount} tone="muted" />
       </div>
