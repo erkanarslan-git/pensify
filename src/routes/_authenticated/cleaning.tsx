@@ -274,3 +274,21 @@ function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: Rea
     </button>
   );
 }
+
+function StatCard({ icon, label, value, highlight, onClick }: { icon: React.ReactNode; label: string; value: number; highlight?: boolean; onClick?: () => void }) {
+  const body = (
+    <>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
+      <div className="text-3xl font-semibold mt-1 tabular-nums">{value}</div>
+    </>
+  );
+  const cls = `rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`;
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={`${cls} w-full text-left hover:ring-2 hover:ring-primary/40 transition-shadow`}>
+        {body}
+      </button>
+    );
+  }
+  return <div className={cls}>{body}</div>;
+}
