@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { useMemo, useState } from "react";
@@ -363,9 +364,9 @@ function TimeTrackingPage() {
                       <tr key={e.id} className="border-b border-border last:border-0">
                         <td className="px-5 py-2">{e.cleaners?.full_name}</td>
                         <td className="px-5 py-2">{e.properties?.name}</td>
-                        <td className="px-5 py-2 text-xs whitespace-nowrap">{new Date(e.clock_in_at).toLocaleString()}</td>
+                        <td className="px-5 py-2 text-xs whitespace-nowrap">{new Date(e.clock_in_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</td>
                         <td className="px-5 py-2 text-xs whitespace-nowrap">
-                          {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString() : <Badge tone="warning">{t("timeTracking.active")}</Badge>}
+                          {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : <Badge tone="warning">{t("timeTracking.active")}</Badge>}
                         </td>
                         <td className="px-5 py-2">{e.clock_out_at ? `${Math.floor(min / 60)}h ${min % 60}m` : "—"}</td>
                         <td className="px-5 py-2">

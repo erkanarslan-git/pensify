@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { useEffect, useState } from "react";
@@ -249,7 +250,7 @@ function ShiftLive({ entry }: { entry: { clock_in_at: string; break_minutes: num
     <div className="text-center">
       <div className="text-5xl font-mono font-semibold tabular-nums">{h}h {m.toString().padStart(2, "0")}m</div>
       <div className="text-xs text-muted-foreground mt-1">
-        {t("timeTracking.startedAt")} {new Date(entry.clock_in_at).toLocaleTimeString()}
+        {t("timeTracking.startedAt")} {new Date(entry.clock_in_at).toLocaleTimeString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
         {breakTotal > 0 && <> · {t("timeTracking.breakMin", { m: breakTotal })}</>}
         {entry.break_started_at && <> · <span className="text-warning">{t("timeTracking.onBreak")}</span></>}
       </div>

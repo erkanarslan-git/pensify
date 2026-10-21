@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -173,7 +174,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
             {r && (
               <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <UserIcon className="w-3 h-3" />
-                Oluşturan: {creatorEmail ?? "—"} · {new Date(r.created_at).toLocaleString()}
+                Oluşturan: {creatorEmail ?? "—"} · {new Date(r.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
               </span>
             )}
           </DialogDescription>
@@ -316,7 +317,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                       <div key={h.id} className="rounded-md border border-border p-2 text-xs">
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Clock className="w-3 h-3" />
-                          {new Date(h.created_at).toLocaleString()}
+                          {new Date(h.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
                           <span className="px-1.5 py-0.5 rounded bg-accent">{h.action}</span>
                           <span className="ml-auto">{h.actor_email ?? "sistem"}</span>
                         </div>

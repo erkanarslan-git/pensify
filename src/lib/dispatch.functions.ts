@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireOrgRole, ADMIN_ROLES } from "@/lib/org-auth.server";
+import { BUSINESS_TIME_ZONE, businessDate, businessDayBounds } from "@/lib/business-time";
 
 const PUBLIC_BASE = "https://project--c3bce140-98e6-40ed-a35c-6ad0fa40d481.lovable.app";
 
@@ -10,6 +11,7 @@ async function loadSettings(supabase: any, orgId: string): Promise<SettingsMap> 
   const { data } = await supabase.from("app_settings").select("key,value").eq("organization_id", orgId);
   const m: SettingsMap = {};
   for (const r of data ?? []) m[r.key] = r.value;
+  m["dispatch.timezone"] = BUSINESS_TIME_ZONE;
   return m;
 }
 
@@ -18,11 +20,7 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   catch { throw new Error("Forbidden"); }
 }
 
-function todayISO(tz: string): string {
-  // YYYY-MM-DD in given TZ
-  const d = new Date();
-  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-}
+const todayISO = businessDate;
 
 function renderMessage(template: string, cleanerName: string, items: { propertyName: string; roomNumber: string; link: string }[]) {
   const liste = items
@@ -51,15 +49,14 @@ async function buildAndSendForCleaner(
   if (!cleaner || !cleaner.active) return { cleanerId, skipped: true, reason: "inactive" };
 
   // tasks for that cleaner due that day (open)
-  const dayStart = `${scheduledFor}T00:00:00Z`;
-  const dayEnd = `${scheduledFor}T23:59:59Z`;
+  const { start: dayStart, end: dayEnd } = businessDayBounds(scheduledFor);
   const { data: tasks } = await supabase
     .from("cleaning_tasks")
     .select("id, room_id, property_id, status, due_at, rooms:room_id (number), properties:property_id (name)")
     .eq("cleaner_id", cleanerId)
     .in("status", ["pending", "accepted", "in_progress"])
     .gte("due_at", dayStart)
-    .lte("due_at", dayEnd)
+    .lt("due_at", dayEnd)
     .order("due_at", { ascending: true });
 
   if (!tasks || tasks.length === 0) return { cleanerId, skipped: true, reason: "no_tasks" };
@@ -100,9 +97,8 @@ export const dispatchMorningTasks = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { orgId } = await assertAdmin(context);
     const settings = await loadSettings(context.supabase, orgId);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
     const template = (settings["dispatch.message_template"] as string) || "Günaydın {ad}!\n{liste}";
-    const scheduledFor = todayISO(tz);
+    const scheduledFor = todayISO();
 
     let cleanerIds = data.cleanerIds;
     if (!cleanerIds || cleanerIds.length === 0) {
@@ -126,10 +122,8 @@ export const getTodayDispatch = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { orgId } = await assertAdmin(context);
     const settings = await loadSettings(context.supabase, orgId);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
-    const scheduledFor = todayISO(tz);
-    const dayStart = `${scheduledFor}T00:00:00Z`;
-    const dayEnd = `${scheduledFor}T23:59:59Z`;
+    const scheduledFor = todayISO();
+    const { start: dayStart, end: dayEnd } = businessDayBounds(scheduledFor);
 
     const { data: cleaners } = await context.supabase
       .from("cleaners")
@@ -141,11 +135,11 @@ export const getTodayDispatch = createServerFn({ method: "GET" })
       .from("cleaning_tasks")
       .select("id, cleaner_id, status, room_id, property_id, rooms:room_id (number), properties:property_id (name)")
       .gte("due_at", dayStart)
-      .lte("due_at", dayEnd);
+      .lt("due_at", dayEnd);
 
     const { data: messages } = await context.supabase
       .from("dispatch_messages")
-      .select("id, cleaner_id, sent_at, trigger, task_ids, body, status")
+      .select("id, cleaner_id, sent_at, trigger, task_ids, body, status, provider")
       .eq("scheduled_for", scheduledFor)
       .order("sent_at", { ascending: false });
 
@@ -272,9 +266,7 @@ export const simulateReply = createServerFn({ method: "POST" })
   .inputValidator((d: { cleanerId: string; text?: string; action?: ActionKind; taskId?: string }) => d)
   .handler(async ({ data, context }) => {
     const { orgId } = await assertAdmin(context);
-    const settings = await loadSettings(context.supabase, orgId);
-    const tz = (settings["dispatch.timezone"] as string) || "Europe/Berlin";
-    const scheduledFor = todayISO(tz);
+    const scheduledFor = todayISO();
 
     let action: ActionKind | null = data.action ?? null;
     let taskId: string | null = data.taskId ?? null;
@@ -313,7 +305,7 @@ export const saveDispatchSettings = createServerFn({ method: "POST" })
     const { orgId } = await assertAdmin(context);
     const rows: { key: string; value: any }[] = [];
     if (data.morningTime !== undefined) rows.push({ key: "dispatch.morning_time", value: data.morningTime });
-    if (data.timezone !== undefined) rows.push({ key: "dispatch.timezone", value: data.timezone });
+    rows.push({ key: "dispatch.timezone", value: BUSINESS_TIME_ZONE });
     if (data.enabled !== undefined) rows.push({ key: "dispatch.enabled", value: data.enabled });
     if (data.template !== undefined) rows.push({ key: "dispatch.message_template", value: data.template });
     for (const r of rows) {

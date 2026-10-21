@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { Section, Badge } from "@/components/app-shell";
 import { useState } from "react";
@@ -148,7 +149,7 @@ function AuditLogsContent() {
                 rows.map((row) => (
                   <tr key={row.id} className="border-t border-border hover:bg-muted/30">
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums text-xs">
-                      {new Date(row.created_at).toLocaleString("de-DE")}
+                      {new Date(row.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
                     </td>
                     <td className="px-3 py-2">
                       <div className="font-medium">{row.actor_email || "System"}</div>
@@ -260,7 +261,7 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
         ) : (
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Zeit" value={new Date(data.created_at).toLocaleString("de-DE")} />
+              <Field label="Zeit" value={new Date(data.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })} />
               <Field label="Benutzer" value={data.actor_email || "System"} />
               <Field label="Entität" value={data.entity} />
               <Field label="Datensatz-ID" value={data.entity_id || "—"} mono />

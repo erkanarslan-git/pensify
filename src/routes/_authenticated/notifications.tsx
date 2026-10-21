@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { AlertTriangle, Clock, Wrench, LogOut } from "lucide-react";
@@ -97,7 +98,7 @@ function NotificationsPage() {
         <Group title="Verspätete Reinigungen" icon={Clock} tone="destructive">
           {(data?.delayed ?? []).map((t) => (
             <Item key={t.id} title={`Zimmer ${t.room?.number ?? "?"} — ${t.property?.name ?? ""}`}
-              sub={`Fällig seit ${new Date(t.due_at).toLocaleString()}`}
+              sub={`Fällig seit ${new Date(t.due_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}`}
               badge={<Badge tone="destructive">Überfällig</Badge>} />
           ))}
           {(!data?.delayed?.length) && <Empty text="Alles im Zeitplan" />}
