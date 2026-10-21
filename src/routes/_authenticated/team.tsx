@@ -89,15 +89,6 @@ function TeamPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const removeRole = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      const { error } = await supabase.rpc("admin_remove_role", { _user_id: userId, _role: role });
-      if (error) throw error;
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success("Rolle entfernt"); },
-    onError: (e: any) => toast.error(e.message),
-  });
-
   const setRolePerm = useMutation({
     mutationFn: async ({ role, permission, allowed }: { role: AppRole; permission: string; allowed: boolean }) => {
       const { data: orgId } = await supabase.rpc("active_organization_id");
