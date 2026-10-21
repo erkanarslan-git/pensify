@@ -120,6 +120,13 @@ function CleanersPage() {
   });
 
   const list = cleaners.data ?? [];
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const shown = list.filter((c) =>
+    (statusFilter === "all" || (statusFilter === "active" ? c.active : !c.active)) &&
+    `${c.full_name} ${c.email ?? ""} ${c.phone ?? ""}`.toLowerCase().includes(search.trim().toLowerCase()));
+  const rates = list.filter((c) => c.hourly_rate != null).map((c) => Number(c.hourly_rate));
+  const avgRate = rates.length ? rates.reduce((a, b) => a + b, 0) / rates.length : null;
 
   return (
     <AppShell
@@ -131,33 +138,54 @@ function CleanersPage() {
         </Button>
       }
     >
-      <div className="overflow-hidden border border-border bg-card">
-        <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] gap-4 border-b border-border bg-muted px-4 py-2 text-xs font-medium text-muted-foreground md:grid">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <StaffStat highlight icon={<Users className="w-4 h-4" />} label={t("cleaners.active")} value={list.filter((c) => c.active).length} onClick={() => setStatusFilter("active")} />
+        <StaffStat icon={<UserX className="w-4 h-4" />} label={t("cleaners.inactive")} value={list.filter((c) => !c.active).length} onClick={() => setStatusFilter("inactive")} />
+        <StaffStat icon={<UserCheck className="w-4 h-4" />} label={t("cleaners.accountActive")} value={list.filter((c) => c.user_id).length} />
+        <StaffStat icon={<Euro className="w-4 h-4" />} label={t("cleaners.hourlyRate")} value={avgRate == null ? "—" : `€${avgRate.toFixed(2)}`} />
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="flex flex-wrap items-center gap-2 p-4 border-b border-border">
+          <div className="inline-flex rounded-xl bg-muted p-1">
+            {(["all", "active", "inactive"] as const).map((k) => (
+              <button key={k} onClick={() => setStatusFilter(k)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${statusFilter === k ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                {k === "all" ? t("common.all", { defaultValue: "Alle" }) : k === "active" ? t("cleaners.active") : t("cleaners.inactive")}
+              </button>
+            ))}
+          </div>
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("common.search", { defaultValue: "Suchen…" })}
+              className="w-full h-9 pl-9 pr-3 rounded-xl border border-input bg-card text-sm" />
+          </div>
+        </div>
+        <div className="hidden grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] gap-4 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-medium text-muted-foreground md:grid">
           <span>{t("cleaners.staff")}</span><span>{t("cleaners.contact")}</span><span>{t("cleaners.hourlyRate")}</span><span>{t("cleaners.status")}</span><span className="text-right">{t("cleaners.action")}</span>
         </div>
-        {list.map((c) => {
-          return (
-            <div key={c.id} className="grid gap-3 border-b border-border p-4 last:border-b-0 md:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] md:items-center">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-muted text-xs font-semibold">
-                  {c.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                </div>
-                <div className="min-w-0"><div className="truncate font-medium">{c.full_name}</div><div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">{c.user_id ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}{c.user_id ? t("cleaners.accountActive") : t("cleaners.legacyNoAccount")}</div></div>
+        {shown.length === 0 && <div className="p-6 text-center text-sm text-muted-foreground">—</div>}
+        {shown.map((c) => (
+          <div key={c.id} className={`grid gap-3 border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/40 transition-colors md:grid-cols-[minmax(180px,1.2fr)_minmax(180px,1fr)_130px_110px_150px] md:items-center ${c.active ? "" : "opacity-60"}`}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                {c.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
               </div>
-              <div className="space-y-1 text-sm text-muted-foreground">{c.phone && <div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{c.phone}</div>}{c.email && <div className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{c.email}</div>}</div>
-              <div className="text-sm font-medium">{c.hourly_rate == null ? "—" : `€${Number(c.hourly_rate).toFixed(2)}`}</div>
-              <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? t("cleaners.active") : t("cleaners.inactive")}</Badge></div>
-              <div className="flex justify-end gap-1">
-                <Button size="sm" variant="outline" onClick={() => setEditing(c)}>
-                  <Pencil className="w-3 h-3 mr-1" /> {t("common.edit")}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setDeleting(c)}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
+              <div className="min-w-0"><div className="truncate font-medium">{c.full_name}</div><div className={`mt-0.5 flex items-center gap-1 text-xs ${c.user_id ? "text-primary" : "text-muted-foreground"}`}>{c.user_id ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}{c.user_id ? t("cleaners.accountActive") : t("cleaners.legacyNoAccount")}</div></div>
             </div>
-          );
-        })}
+            <div className="space-y-1 text-sm text-muted-foreground">{c.phone && <div className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />{c.phone}</div>}{c.email && <div className="flex items-center gap-1.5 truncate"><Mail className="h-3.5 w-3.5" />{c.email}</div>}</div>
+            <div className="text-sm font-semibold tabular-nums">{c.hourly_rate == null ? "—" : `€${Number(c.hourly_rate).toFixed(2)}`}</div>
+            <div><Badge tone={c.active ? "success" : "muted"}>{c.active ? t("cleaners.active") : t("cleaners.inactive")}</Badge></div>
+            <div className="flex justify-end gap-1">
+              <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setEditing(c)}>
+                <Pencil className="w-3 h-3 mr-1" /> {t("common.edit")}
+              </Button>
+              <Button size="sm" variant="ghost" className="rounded-lg hover:text-destructive" onClick={() => setDeleting(c)}>
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Edit dialog */}
@@ -229,5 +257,15 @@ function CleanersPage() {
         </AlertDialogContent>
       </AlertDialog>
     </AppShell>
+  );
+}
+
+function StaffStat({ icon, label, value, highlight, onClick }: { icon: React.ReactNode; label: string; value: number | string; highlight?: boolean; onClick?: () => void }) {
+  return (
+    <button type="button" onClick={onClick} disabled={!onClick}
+      className={`text-left rounded-2xl px-5 py-4 shadow-sm transition ${highlight ? "brand-tile" : "border border-border bg-card"} ${onClick ? "hover:ring-2 hover:ring-primary/30" : "cursor-default"}`}>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
+      <div className="text-3xl font-semibold mt-1 tabular-nums">{value}</div>
+    </button>
   );
 }
