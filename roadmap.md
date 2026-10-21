@@ -14,7 +14,7 @@
 - [x] Zeiterfassung: Büro-QR (Geofence) + Außendienst Auto-Clock-in beim ersten Reinigungsstart (clock_start_for_task, GPS-Prüfung, einmal pro Tag; Checkout weiterhin manuell/QR)
 - [ ] Login ohne Registrierung/Google, neues Design
 - [x] Buchungsformular Privat/Firma (Neu + Bearbeiten)
-- [ ] Wartung → Zimmer aus Buchungsauswahl + WuBook-Sperre
+- [ ] Wartung → Zimmer aus Buchungsauswahl + WuBook-Sperre (in Arbeit; Pilot-Sync bleibt aus)
 - [x] Reinigung: vollständige Vor-/Zurück-Statuswechsel für berechtigte Leitung; Zimmerstatus folgt automatisch
 - [x] Zimmerübersicht: kompakte Liste, globale Suche/Filter, sichere Schlüsselcode-Anzeige, responsive Dialoge
 - [ ] Dispatch/Team Komplett-Test, restliche i18n-Durchsicht außerhalb Zimmer/Reinigung
