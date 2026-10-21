@@ -66,7 +66,7 @@ function Dashboard() {
   const totalRooms = rooms.length;
   const occupied = occupiedIds.size;
   const maintenance = rooms.filter((r) => r.status === "maintenance").length;
-  const available = rooms.filter((r) => !occupiedIds.has(r.id) && r.status !== "maintenance").length;
+  const available = rooms.filter((r) => !occupiedIds.has(r.id) && !["maintenance", "cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
   const cleaningPending = tasks.filter((t) => t.status === "pending" || t.status === "accepted").length;
   const cleaningInProgress = tasks.filter((t) => t.status === "in_progress").length;
   const completedToday = tasks.filter((t) => t.status === "completed" && (t.due_at ?? "").slice(0, 10) === today).length;

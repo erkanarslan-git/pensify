@@ -1,6 +1,6 @@
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Section, Badge } from "@/components/app-shell";
+import { AppShell, Section, Badge, Kpi } from "@/components/app-shell";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -250,6 +250,18 @@ function TimeTrackingPage() {
       }
     >
       <div className="space-y-4">
+        {(() => {
+          const L = ({ tr: ["Şu an çalışan", "Toplam saat", "Kayıt", "Ödenmemiş"], de: ["Jetzt aktiv", "Stunden gesamt", "Einträge", "Unbezahlt"], en: ["Active now", "Total hours", "Entries", "Unpaid"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Active now", "Total hours", "Entries", "Unpaid"];
+          const mins = entries.reduce((s, e) => s + (e.clock_out_at ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
+          return (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Kpi accent="primary" label={L[0]} value={entries.filter((e) => !e.clock_out_at).length} />
+              <Kpi label={L[1]} value={`${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`} />
+              <Kpi label={L[2]} value={entries.length} />
+              <Kpi accent="warning" label={L[3]} value={entries.filter((e) => e.clock_out_at && !e.paid_at).length} />
+            </div>
+          );
+        })()}
         <EmployeeAttendance />
         <Section title={t("timeTracking.filters")}>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-2 items-end">

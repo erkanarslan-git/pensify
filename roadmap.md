@@ -26,3 +26,8 @@
 - [x] Kanal senkron: mavi tasarım, sade genel bakış; bağlantı/pilot, testler ve geçmiş ayrı sekmelerde. Giriş yapılmış hesapta sekmeler ve mobil taşma kontrol edildi; mevcut yetkiler ve kapalı canlı gönderim korundu. Yalnız sahibin erişimi daha sonra ele alınacak.
 - [x] Görev Dağıtım: mavi özetler, açılabilir çalışan listesi, görev listesinde altı kayıt sınırı kaldırıldı; DE/EN/TR metinler. Giriş yapılmış hesapta satır açma, Temizlik bağlantısı ve telefon görünümü kontrol edildi; gönderim kuralları değişmedi.
 - [x] Görev Dağıtım menüden kaldırıldı (atama Temizlik ekranında; WhatsApp bağlanınca geri gelebilir)
+- [x] Genel Bakış "Müsait" temizlik bekleyen odaları saymıyor
+- [x] Kanal Senkron yalnız sahibe açık
+- [x] Zaman Takibi + Analitik mavi özet kartları
+- [ ] Ayarlar, Bildirimler, AI Asistan, Profil mavi tasarım
+- [ ] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
