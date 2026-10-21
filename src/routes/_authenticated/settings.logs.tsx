@@ -125,12 +125,12 @@ function AuditLogsContent() {
           <table className="w-full text-sm">
             <thead className="bg-muted/60">
               <tr>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Zeit</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Benutzer</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Entität</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Datensatz</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Aktion</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Änderungen</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.time")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.user")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.entity")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.record")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.action")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{t("pages.logs.changes")}</th>
                 <th className="text-right px-3 py-2 font-medium text-muted-foreground">LN</th>
               </tr>
             </thead>
@@ -150,17 +150,17 @@ function AuditLogsContent() {
               ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                    Keine Logs gefunden.
+                    {t("pages.logs.noLogs")}
                   </td>
                 </tr>
               ) : (
                 rows.map((row) => (
                   <tr key={row.id} className="border-t border-border hover:bg-muted/30">
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums text-xs">
-                      {new Date(row.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
+                      {new Date(row.created_at).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE })}
                     </td>
                     <td className="px-3 py-2">
-                      <div className="font-medium">{row.actor_email || "System"}</div>
+                      <div className="font-medium">{row.actor_email || t("pages.logs.system")}</div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ function AuditLogsContent() {
                       <button
                         onClick={() => setOpenId(row.id)}
                         className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border hover:bg-muted text-xs font-mono"
-                        title="Details anzeigen"
+                        title={t("pages.logs.showDetails")}
                       >
                         <Eye className="w-3 h-3" />
                         {shortId(row.id)}
@@ -192,14 +192,14 @@ function AuditLogsContent() {
 
         <div className="flex items-center justify-between mt-4">
           <div className="text-xs text-muted-foreground">
-            {total} Einträge · Seite {page + 1} von {totalPages}
+            {t("pages.logs.entries", { count: total, page: page + 1, pages: totalPages })}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || isLoading}>
-              <ChevronLeft className="w-4 h-4 mr-1" /> Zurück
+              <ChevronLeft className="w-4 h-4 mr-1" /> {t("pages.logs.back")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1 || isLoading}>
-              Weiter <ChevronRight className="w-4 h-4 ml-1" />
+              {t("pages.logs.next")} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>
