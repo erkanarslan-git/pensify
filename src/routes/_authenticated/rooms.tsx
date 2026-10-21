@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
+import { summarizeRooms } from "@/lib/room-summary";
 
 const ROOM_STATUSES = ["available", "occupied", "cleaning_required", "cleaning_in_progress", "cleaned", "checkout_today", "maintenance"];
 
@@ -104,7 +105,8 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
         if (res.error) console.error(`[rooms] ${name} query failed:`, res.error.code, res.error.message);
       }
       if (failed) {
-        const e = failed[1]!;
+        const e = failed[1];
+        if (!e) return;
         console.error(`[rooms] ${failed[0]} query failed:`, e.code, e.message);
         setLoadError(`${failed[0]}: ${e.code ?? ""} ${e.message}`);
         setLoading(false);
@@ -122,6 +124,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
 
   const properties = propertyId ? allProperties.filter((p) => p.id === propertyId) : allProperties;
   const rooms = propertyId ? allRooms.filter((r) => r.property_id === propertyId) : allRooms;
+  const summary = summarizeRooms(rooms);
   const needle = q.trim().toLocaleLowerCase();
   const list = rooms
     .filter((r) => filter === "all" || r.status === filter)
@@ -248,7 +251,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {([ ["available", rooms.filter((r) => ["available", "cleaned"].includes(r.status)).length], ["occupied", rooms.filter((r) => ["occupied", "checkout_today"].includes(r.status)).length], ["cleaning_required", rooms.filter((r) => ["cleaning_required", "cleaning_in_progress"].includes(r.status)).length], ["maintenance", rooms.filter((r) => r.status === "maintenance").length] ] as const).map(([status, count]) => (
+            {([ ["available", summary.available], ["occupied", summary.occupied], ["cleaning_required", summary.cleaning], ["maintenance", summary.maintenance] ] as const).map(([status, count]) => (
               <button key={status} onClick={() => setFilter(status)} className={`rounded-2xl px-5 py-4 text-left shadow-sm transition-colors ${status === "available" ? "brand-tile" : "border border-border bg-card hover:bg-accent/40"} ${filter === status ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}><span className={`block text-xs ${status === "available" ? "opacity-80" : "text-muted-foreground"}`}>{t(`status.${status}`)}</span><strong className="mt-1 block text-3xl font-semibold tabular-nums">{count}</strong></button>
             ))}
           </div>

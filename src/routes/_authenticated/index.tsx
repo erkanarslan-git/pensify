@@ -1,4 +1,5 @@
-import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
+import { BUSINESS_TIME_ZONE, businessDate } from "@/lib/business-time";
+import { summarizeRooms } from "@/lib/room-summary";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { ArrowUpRight, Plus } from "lucide-react";
@@ -32,26 +33,27 @@ export const Route = createFileRoute("/_authenticated/")({
 function Dashboard() {
   const { t, i18n } = useTranslation();
   const [newOpen, setNewOpen] = useState(false);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = businessDate();
 
   const { data, refetch } = useQuery({
     queryKey: ["dashboard"],
     staleTime: 0,
     refetchOnMount: "always",
     queryFn: async () => {
-      const [rooms, tasks, res, props, inHouse] = await Promise.all([
+      const [rooms, tasks, res, props, live] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name)"),
-        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").gte("check_out", today).neq("status", "cancelled").order("check_out").limit(6),
+        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(6),
         supabase.from("properties").select("id"),
-        supabase.from("reservations").select("room_id,check_out").lte("check_in", today).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)"),
+        supabase.from("room_operational_status").select("room_id,status"),
       ]);
+      for (const result of [rooms, tasks, res, props, live]) if (result.error) throw result.error;
+      const liveMap = new Map((live.data ?? []).map(room => [room.room_id, room.status]));
       return {
-        rooms: (rooms.data ?? []) as any[],
+        rooms: (rooms.data ?? []).map(room => ({ ...room, status: liveMap.get(room.id) ?? room.status })),
         tasks: (tasks.data ?? []) as any[],
         upcoming: (res.data ?? []) as any[],
         propsCount: (props.data ?? []).length,
-        inHouse: (inHouse.data ?? []) as { room_id: string; check_out: string }[],
       };
     },
   });
@@ -59,20 +61,9 @@ function Dashboard() {
   const rooms = data?.rooms ?? [];
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
-  const inHouse = data?.inHouse ?? [];
-  // Occupied = rooms with a guest staying tonight OR rooms manually marked occupied.
-  const occupiedIds = new Set(inHouse.filter((r) => r.check_out > today).map((r) => r.room_id));
-  for (const r of rooms) if (r.status === "occupied") occupiedIds.add(r.id);
-  const checkoutIds = new Set(inHouse.filter((r) => r.check_out === today).map((r) => r.room_id));
-  const totalRooms = rooms.length;
-  const occupied = occupiedIds.size;
-  const maintenance = rooms.filter((r) => r.status === "maintenance").length;
-  const cleaningRooms = rooms.filter((r) => !occupiedIds.has(r.id) && ["cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
-  const available = rooms.filter((r) => !occupiedIds.has(r.id) && !["maintenance", "cleaning_required", "cleaning_in_progress"].includes(r.status)).length;
-  const cleaningPending = tasks.filter((t) => t.status === "pending" || t.status === "accepted").length;
-  const cleaningInProgress = tasks.filter((t) => t.status === "in_progress").length;
+  const summary = summarizeRooms(rooms);
+  const { total: totalRooms, occupied, maintenance, available, cleaningPending, cleaningInProgress, checkouts: checkoutToday } = summary;
   const completedToday = tasks.filter((t) => t.status === "completed" && (t.due_at ?? "").slice(0, 10) === today).length;
-  const checkoutToday = checkoutIds.size;
 
   // Weekly occupancy from reservations (last 7 days incl. today)
   const { data: weekRes } = useQuery({
@@ -80,7 +71,7 @@ function Dashboard() {
     queryFn: async () => {
       const start = new Date(); start.setDate(start.getDate() - 6);
       const startIso = start.toISOString().slice(0, 10);
-      const { data } = await supabase.from("reservations").select("check_in,check_out,channel").gte("check_out", startIso).neq("status", "cancelled");
+      const { data } = await supabase.from("reservations").select("check_in,check_out,channel").is("deleted_at", null).gte("check_out", startIso).not("status", "in", "(cancelled,no_show)");
       return data ?? [];
     },
   });
@@ -138,7 +129,7 @@ function Dashboard() {
         ].map((k) => typeof k === "string" ? (
           <div key="split" className="grid grid-cols-2 gap-3">
             {[
-              { label: t("dashboard.cleaningPending"), value: cleaningRooms, hint: `${cleaningPending} ${t("nav.cleaning")}`, to: "/rooms", search: { status: "cleaning_required" }, tile: "tile-warning" },
+              { label: t("dashboard.cleaningPending"), value: cleaningPending, hint: t("nav.rooms"), to: "/rooms", search: { status: "cleaning_required" }, tile: "tile-warning" },
               { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, tile: "tile-destructive" },
             ].map((s) => (
               <Link key={s.label} to={s.to as any} search={s.search as any}
@@ -165,7 +156,7 @@ function Dashboard() {
       <div className="mt-3 flex flex-wrap gap-2">
         {[
           { label: t("dashboard.totalRooms"), value: totalRooms, to: "/rooms", search: {} },
-          { label: t("dashboard.cleaningInProgress"), value: cleaningInProgress, to: "/cleaning", search: {} },
+          { label: t("dashboard.roomsCleaningInProgress"), value: cleaningInProgress, to: "/rooms", search: { status: "cleaning_in_progress" } },
           { label: t("dashboard.completedToday"), value: completedToday, to: "/cleaning", search: {} },
         ].map((k) => (
           <Link key={k.label} to={k.to as any} search={k.search as any}

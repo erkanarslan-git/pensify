@@ -274,6 +274,13 @@
       "when": 1792610656424,
       "tag": "0038_grant_rooms_status_audit_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1792614309517,
+      "tag": "0039_exclude_trashed_stays_from_room_status",
+      "breakpoints": true
     }
   ]
 }

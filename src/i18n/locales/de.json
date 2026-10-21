@@ -237,6 +237,7 @@
     "available": "Verfügbar",
     "cleaningPending": "Reinigung offen",
     "cleaningInProgress": "Reinigung läuft",
+    "roomsCleaningInProgress": "Zimmer in Reinigung",
     "completedToday": "Heute erledigt",
     "checkoutsToday": "Check-outs heute",
     "maintenance": "Wartung",
