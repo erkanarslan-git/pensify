@@ -674,7 +674,9 @@
     "helpNavCells": "Navigate between cells",
     "helpNavEdge": "At edge: previous / next period",
     "helpEnter": "Occupied: edit booking · Free: new booking",
-    "helpEsc": "Close dialogs / help"
+    "helpEsc": "Close dialogs / help",
+    "legendColor": "Color = guest, edge = channel",
+    "problemRoom": "Problem room"
   },
   "newRes": {
     "title": "New booking",

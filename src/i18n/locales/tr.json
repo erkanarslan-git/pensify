@@ -674,7 +674,9 @@
     "helpNavCells": "Hücreler arasında gezin",
     "helpNavEdge": "Kenarda: önceki / sonraki dönem",
     "helpEnter": "Dolu: rezervasyonu düzenle · Boş: yeni rezervasyon",
-    "helpEsc": "Pencereleri / yardımı kapat"
+    "helpEsc": "Pencereleri / yardımı kapat",
+    "legendColor": "Renk = Misafir, kenar = Kanal",
+    "problemRoom": "Sorunlu oda"
   },
   "newRes": {
     "title": "Yeni Rezervasyon",
