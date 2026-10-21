@@ -246,6 +246,13 @@
       "when": 1792608194528,
       "tag": "0034_allow_status_changes_maintenance_rooms",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792608535435,
+      "tag": "0035_room_cleaning_status_creates_task",
+      "breakpoints": true
     }
   ]
 }

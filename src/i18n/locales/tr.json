@@ -192,7 +192,7 @@
     "in_progress": "Sürüyor",
     "completed": "Tamamlandı",
     "problem": "Sorun",
-    "cleaned": "Temiz"
+    "cleaned": "Temizlendi (hazır)"
   },
   "timeTracking": {
     "qrSubtitle": "Temizlikçiler için yazdırılabilir QR kartı",
