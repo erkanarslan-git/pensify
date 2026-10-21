@@ -239,6 +239,13 @@
       "when": 1792600087930,
       "tag": "0033_maintenance_rooms_unsellable",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792608194528,
+      "tag": "0034_allow_status_changes_maintenance_rooms",
+      "breakpoints": true
     }
   ]
 }

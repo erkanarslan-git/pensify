@@ -65,6 +65,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [r, setR] = useState<Reservation | null>(null);
+  const [original, setOriginal] = useState<Reservation | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [history, setHistory] = useState<AuditEntry[]>([]);
@@ -95,7 +96,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       }
       const res = resResult.data, props = propsResult.data, rms = roomsResult.data, hist = histResult.data;
       setStays(staysResult.data ?? []);
-      if (res) setR(res as Reservation);
+      if (res) { setR(res as Reservation); setOriginal(res as Reservation); }
       setProperties((props ?? []) as Property[]);
       setRooms((rms ?? []) as Room[]);
       setHistory((hist ?? []) as AuditEntry[]);
@@ -131,7 +132,10 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     if (!r.guest_name.trim()) return toast.error("Gastname ist erforderlich");
     if (r.check_out <= r.check_in) return toast.error("Abreise muss nach der Anreise liegen");
     const room = rooms.find((x) => x.id === r.room_id);
-    if (!["cancelled", "no_show"].includes(r.status) && (!room || !canBookRoom(room, r.check_in, r.check_out, stays, r.id)))
+    const orig = original;
+    const stayUnchanged = !!orig && orig.room_id === r.room_id && orig.check_in === r.check_in && orig.check_out === r.check_out
+      && !["cancelled", "no_show"].includes(orig.status);
+    if (!stayUnchanged && !["cancelled", "no_show"].includes(r.status) && (!room || !canBookRoom(room, r.check_in, r.check_out, stays, r.id)))
       return toast.error(t("bookingAvailability.unavailable"));
 
     setSaving(true);
