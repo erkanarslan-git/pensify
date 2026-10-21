@@ -22,8 +22,10 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   RefreshCw,
+  Lock,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { LockScreen } from "@/components/lock-screen";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,6 +173,16 @@ export function AppShell({ title, subtitle, actions, children }: {
     .join("")
     .toUpperCase();
 
+  const [locked, setLocked] = useState(false);
+  useEffect(() => {
+    if (localStorage.getItem("pensify.locked") === "1") setLocked(true);
+  }, []);
+  const lock = () => { localStorage.setItem("pensify.locked", "1"); setLocked(true); };
+  const unlock = () => { localStorage.removeItem("pensify.locked"); setLocked(false); };
+  const lockLabel = { de: "Bildschirm sperren", en: "Lock screen", tr: "Ekranı kilitle" }[
+    (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr"
+  ] ?? "Bildschirm sperren";
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -313,6 +325,14 @@ export function AppShell({ title, subtitle, actions, children }: {
           <div className="flex items-center gap-2 justify-self-end">
             {actions}
             <button
+              onClick={lock}
+              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+              aria-label={lockLabel}
+              title={lockLabel}
+            >
+              <Lock className="w-4 h-4" />
+            </button>
+            <button
               onClick={() => setDark((d) => !d)}
               className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
               aria-label={t("common.theme")}
@@ -323,6 +343,14 @@ export function AppShell({ title, subtitle, actions, children }: {
         </header>
         <div className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</div>
       </main>
+      {locked && profile?.email && (
+        <LockScreen
+          name={(profile.full_name || profile.email).split(" ")[0]}
+          email={profile.email}
+          onUnlock={unlock}
+          onSignOut={() => { unlock(); handleSignOut(); }}
+        />
+      )}
     </div>
   );
 }
