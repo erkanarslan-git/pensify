@@ -72,12 +72,40 @@ function CleaningPage() {
   const rooms = useMemo(() => new Map((data?.rooms ?? []).map((r) => [r.id, r])), [data]);
   const properties = data?.properties ?? [];
   const cleaners = data?.cleaners ?? [];
+  const myCleanerId = data?.myCleanerId ?? null;
   const cleanerName = (id: string | null) => (id ? cleaners.find((c) => c.id === id)?.full_name : undefined);
+
+  // Field staff: starting an assigned task auto-starts the work shift (GPS-verified, once per day).
+  const autoClockIn = async (taskId: string) => {
+    const position = await new Promise<GeolocationPosition | null>((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve(pos),
+        () => resolve(null),
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 12000 },
+      );
+    });
+    if (!position) {
+      toast.warning(t("cleaning.shiftNoLocation"));
+      return;
+    }
+    const { error } = await supabase.rpc("clock_start_for_task", {
+      _task_id: taskId,
+      _lat: position.coords.latitude,
+      _lng: position.coords.longitude,
+      _accuracy: position.coords.accuracy,
+    });
+    if (error) toast.warning(t("cleaning.shiftStartFailed"));
+    else toast.success(t("cleaning.shiftStarted"));
+  };
 
   const update = async (id: string, status: CleaningStatus) => {
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     toast.success(t("cleaning.statusChanged", { status: t(`status.${status}`) }));
+    if (status === "in_progress" && myCleanerId && tasks.find((x) => x.id === id)?.cleaner_id === myCleanerId) {
+      void autoClockIn(id);
+    }
     refetch();
   };
 
