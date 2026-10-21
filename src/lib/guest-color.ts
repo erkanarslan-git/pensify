@@ -59,6 +59,7 @@ const SOURCE_LABEL: Record<ActiveChannel, string> = {
   website: "Website",
   direct: "Privat (Telefon/E-Mail)",
 };
-export function sourceLabel(src: string): string {
-  return SOURCE_LABEL[normalizeChannel(src)];
+export function sourceLabel(src: string, t?: (key: string) => string): string {
+  const ch = normalizeChannel(src);
+  return t ? t(`channels.${ch}`) : SOURCE_LABEL[ch];
 }

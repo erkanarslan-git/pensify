@@ -252,7 +252,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <span className="text-xs text-muted-foreground">Kanal</span>
                 <select value={r.channel} onChange={(e) => update("channel", e.target.value as Channel)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
-                  {Array.from(new Set<string>([r.channel, ...enabledChannels])).map((c) => <option key={c} value={c}>{sourceLabel(c)}</option>)}
+                  {Array.from(new Set<string>([r.channel, ...enabledChannels])).map((c) => <option key={c} value={c}>{sourceLabel(c, (k) => t(k))}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">
@@ -274,12 +274,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                   onChange={(e) => update("revenue", Math.max(0, +e.target.value || 0))}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
                 {r.list_price != null && (
-                  <span className="text-[11px] text-muted-foreground">Berechnet: €{Number(r.list_price).toFixed(2)}</span>
+                  <span className="text-[11px] text-muted-foreground">{t("editRes.calculated", { price: Number(r.list_price).toFixed(2) })}</span>
                 )}
               </label>
               {r.list_price != null && Number(r.revenue) !== Number(r.list_price) && (
                 <label className="col-span-full grid gap-1">
-                  <span className="text-xs text-muted-foreground">Begründung für Preisänderung *</span>
+                  <span className="text-xs text-muted-foreground">{t("editRes.discountReason")}</span>
                   <input value={r.discount_reason ?? ""} onChange={(e) => update("discount_reason", e.target.value)}
                     className="px-3 py-2 rounded-md border border-input bg-card" />
                 </label>
@@ -348,11 +348,11 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
 
             <DialogFooter>
               <button onClick={() => onOpenChange(false)} disabled={saving}
-                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? "Schließen" : "Abbrechen"}</button>
+                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? t("editRes.close") : t("common.cancel")}</button>
               {!readOnly && (
                 <button onClick={submit} disabled={saving}
                   className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
-                  {saving ? "Speichern…" : "Speichern"}
+                  {saving ? t("newRes.saving") : t("common.save")}
                 </button>
               )}
             </DialogFooter>

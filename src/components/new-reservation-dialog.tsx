@@ -148,7 +148,7 @@ export function NewReservationDialog({
       });
       if (quotedKeys.current[l.uid] !== key) return;
       if (error) {
-        toast.error("Preis konnte nicht berechnet werden", { description: error.message });
+        toast.error(t("newRes.errPrice"), { description: error.message });
         return;
       }
       const price = data == null ? null : Number(data);
@@ -197,18 +197,18 @@ export function NewReservationDialog({
     setLines((ls) => (ls.length > 1 ? ls.filter((l) => l.uid !== id) : ls));
 
   const submit = async () => {
-    if (customerType === "company" && !companyName.trim()) return toast.error("Firmenname erforderlich");
-    if (customerType === "person" && !guestName.trim()) return toast.error("Gastname erforderlich");
-    if (lines.length === 0) return toast.error("Mindestens ein Zimmer hinzufügen");
+    if (customerType === "company" && !companyName.trim()) return toast.error(t("newRes.errCompanyName"));
+    if (customerType === "person" && !guestName.trim()) return toast.error(t("newRes.errGuestName"));
+    if (lines.length === 0) return toast.error(t("newRes.errMinRoom"));
     for (const l of lines) {
       const room = rooms.find((x) => x.id === l.roomId);
       if (!room || !canBookRoom(room, l.checkIn, l.checkOut, stays)) return toast.error(t("bookingAvailability.unavailable"));
       if (!l.propertyId || !l.roomId)
-        return toast.error("Pension und Zimmer in jeder Zeile wählen");
+        return toast.error(t("newRes.errSelectRoom"));
       if (l.checkOut <= l.checkIn)
-        return toast.error("Check-out muss nach Check-in liegen");
+        return toast.error(t("newRes.errDates"));
       if (l.listPrice != null && l.revenue !== l.listPrice && !l.discountReason.trim())
-        return toast.error("Begründung für abweichenden Preis erforderlich");
+        return toast.error(t("newRes.errDiscountReason"));
     }
 
     setSaving(true);
@@ -240,10 +240,10 @@ export function NewReservationDialog({
 
     if (error) {
       if (error.message.includes("room_not_bookable")) { toast.error(t("bookingAvailability.unavailable")); return; }
-      toast.error("Buchung konnte nicht gespeichert werden", { description: error.message });
+      toast.error(t("newRes.errSave"), { description: error.message });
       return;
     }
-    toast.success(lines.length > 1 ? `${lines.length} Zimmer gespeichert` : "Buchung erstellt");
+    toast.success(lines.length > 1 ? t("newRes.createdN", { count: lines.length }) : t("newRes.created"));
     onOpenChange(false);
     onCreated?.();
     setGuestName("");
@@ -258,8 +258,8 @@ export function NewReservationDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
         <DialogHeader className="px-6 py-5 border-b border-border">
-          <DialogTitle>Neue Buchung</DialogTitle>
-          <DialogDescription>Ein Gast, ein oder mehrere Zimmer.</DialogDescription>
+          <DialogTitle>{t("newRes.title")}</DialogTitle>
+          <DialogDescription>{t("newRes.subtitle")}</DialogDescription>
         </DialogHeader>
 
         {/* Body */}
@@ -267,7 +267,7 @@ export function NewReservationDialog({
           {/* Guest information */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-full space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Bucht eine Person oder eine Firma? *</Label>
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.personOrCompany")}</Label>
               <div role="radiogroup" className="grid grid-cols-2 gap-2">
                 {(["person", "company"] as const).map((k) => (
                   <button
@@ -279,7 +279,7 @@ export function NewReservationDialog({
                     className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-sm font-medium ${customerType === k ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card hover:bg-accent"}`}
                   >
                     {k === "person" ? <User className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
-                    {k === "person" ? "Privatperson" : "Firma"}
+                    {k === "person" ? t("newRes.person") : t("newRes.company")}
                   </button>
                 ))}
               </div>
@@ -287,39 +287,39 @@ export function NewReservationDialog({
             {customerType === "company" && (
               <>
                 <div className="col-span-full space-y-2">
-                  <Label htmlFor="companyName" className="text-xs text-muted-foreground uppercase tracking-wider">Firmenname *</Label>
+                  <Label htmlFor="companyName" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.companyName")}</Label>
                   <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} maxLength={200} className="bg-card" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyContact" className="text-xs text-muted-foreground uppercase tracking-wider">Ansprechpartner</Label>
+                  <Label htmlFor="companyContact" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.contactPerson")}</Label>
                   <Input id="companyContact" value={companyContact} onChange={(e) => setCompanyContact(e.target.value)} maxLength={200} className="bg-card" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyVat" className="text-xs text-muted-foreground uppercase tracking-wider">USt-IdNr.</Label>
+                  <Label htmlFor="companyVat" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.vatId")}</Label>
                   <Input id="companyVat" value={companyVat} onChange={(e) => setCompanyVat(e.target.value)} maxLength={50} placeholder="DE123456789" className="bg-card" />
                 </div>
                 <div className="col-span-full space-y-2">
-                  <Label htmlFor="companyAddress" className="text-xs text-muted-foreground uppercase tracking-wider">Rechnungsadresse</Label>
+                  <Label htmlFor="companyAddress" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.billingAddress")}</Label>
                   <Input id="companyAddress" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} maxLength={300} placeholder="Straße, PLZ, Ort" className="bg-card" />
                 </div>
               </>
             )}
             <div className="col-span-full space-y-2">
               <Label htmlFor="guestName" className="text-xs text-muted-foreground uppercase tracking-wider">
-                {customerType === "company" ? "Name des Gastes (optional)" : "Gastname *"}
+                {customerType === "company" ? t("newRes.guestNameOptional") : t("newRes.guestName")}
               </Label>
               <Input
                 id="guestName"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
                 maxLength={100}
-                placeholder={customerType === "company" ? "Wer übernachtet? (z. B. Monteur)" : "Vor- und Nachname"}
+                placeholder={customerType === "company" ? t("newRes.guestNameCompanyPlaceholder") : t("newRes.guestNamePlaceholder")}
                 className="bg-card"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="guestEmail" className="text-xs text-muted-foreground uppercase tracking-wider">
-                E-Mail
+                {t("common.email")}
               </Label>
               <Input
                 id="guestEmail"
@@ -332,7 +332,7 @@ export function NewReservationDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="guestPhone" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Telefon
+                {t("newRes.phone")}
               </Label>
               <Input
                 id="guestPhone"
@@ -345,7 +345,7 @@ export function NewReservationDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="channel" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Kanal
+                {t("newRes.channel")}
               </Label>
               <Select value={channel} onValueChange={(v) => setChannel(v as Channel)}>
                 <SelectTrigger id="channel" className="bg-card">
@@ -354,7 +354,7 @@ export function NewReservationDialog({
                 <SelectContent>
                   {enabledChannels.map((c) => (
                     <SelectItem key={c} value={c}>
-                      {sourceLabel(c)}
+                      {sourceLabel(c, (k) => t(k))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -362,7 +362,7 @@ export function NewReservationDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-xs text-muted-foreground uppercase tracking-wider">
-                Notiz
+                {t("newRes.note")}
               </Label>
               <Input
                 id="notes"
@@ -378,11 +378,11 @@ export function NewReservationDialog({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Zimmer ({lines.length})
+                {t("newRes.rooms", { count: lines.length })}
               </h3>
               <Button type="button" variant="outline" size="sm" onClick={addLine}>
                 <Plus className="w-3.5 h-3.5" />
-                Zimmer hinzufügen
+                {t("newRes.addRoom")}
               </Button>
             </div>
 
@@ -397,7 +397,7 @@ export function NewReservationDialog({
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
                       <div className="col-span-2 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Pension
+                          {t("newRes.property")}
                         </Label>
                         <Select
                           value={l.propertyId}
@@ -417,7 +417,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-2 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Zimmer
+                          {t("newRes.room")}
                         </Label>
                         <Select
                           value={l.roomId}
@@ -438,7 +438,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Check-In
+                          {t("newRes.checkIn")}
                         </Label>
                         <Input
                           type="date"
@@ -449,7 +449,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Check-Out
+                          {t("newRes.checkOut")}
                         </Label>
                         <Input
                           type="date"
@@ -475,7 +475,7 @@ export function NewReservationDialog({
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-4 border-t border-border">
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
-                          Gäste
+                          {t("common.guests")}
                         </Label>
                         <Input
                           type="number"
@@ -489,7 +489,7 @@ export function NewReservationDialog({
                       </div>
                       <div className="col-span-1 sm:col-span-9 space-y-1.5">
                         <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Betrag (€)
+                          {t("newRes.amount")}
                         </Label>
                         <Input
                           type="number"
@@ -503,20 +503,20 @@ export function NewReservationDialog({
                         />
                         {l.listPrice != null && (
                           <p className="text-[11px] text-muted-foreground">
-                            Berechnet: €{l.listPrice.toFixed(2)}
-                            {l.revenue !== l.listPrice && ` · Abweichung €${(l.listPrice - l.revenue).toFixed(2)}`}
+                            {t("newRes.calculated", { price: l.listPrice.toFixed(2) })}
+                            {l.revenue !== l.listPrice && t("newRes.deviation", { amount: (l.listPrice - l.revenue).toFixed(2) })}
                           </p>
                         )}
                       </div>
                       {l.listPrice != null && l.revenue !== l.listPrice && (
                         <div className="col-span-full space-y-1.5">
                           <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Begründung für Preisänderung *
+                            {t("newRes.discountReason")}
                           </Label>
                           <Input
                             value={l.discountReason}
                             onChange={(e) => updateLine(l.uid, { discountReason: e.target.value })}
-                            placeholder="z. B. Stammgast, Langzeitaufenthalt"
+                            placeholder={t("newRes.discountPlaceholder")}
                             className="bg-background"
                           />
                         </div>
@@ -532,12 +532,12 @@ export function NewReservationDialog({
         {/* Footer */}
         <DialogFooter className="px-6 py-5 border-t border-border bg-muted/30 gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Abbrechen
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={saving}>
             {saving
-              ? "Speichern…"
-              : `Speichern${lines.length > 1 ? ` (${lines.length} Zimmer)` : ""}`}
+              ? t("newRes.saving")
+              : lines.length > 1 ? t("newRes.saveN", { count: lines.length }) : t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

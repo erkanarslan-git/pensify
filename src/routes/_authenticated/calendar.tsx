@@ -13,7 +13,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  head: () => ({ meta: [{ title: "Kalender — Pensify" }, { name: "description", content: "Zimmerbelegung und Reservierungen im Pensify Kalender." }, { property: "og:title", content: "Kalender — Pensify" }, { property: "og:description", content: "Zimmerbelegung und Reservierungen im Pensify Kalender." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Takvim — Pensify" }, { name: "description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pensify" }, { property: "og:description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CalendarPage,
 });
 
@@ -99,7 +99,7 @@ function CalendarPage() {
   function tryOpenNew(payload: { date: string; propertyId?: string; roomNumber?: string }) {
     if (isPastDate(payload.date)) {
       if (!canCreatePast) {
-        toast.error("Vergangene Buchungen", { description: "Nur Manager, Admin oder Inhaber können vergangene Daten anlegen." });
+        toast.error(t("calendar.pastTitle"), { description: t("calendar.pastCreateDenied") });
         return;
       }
       if (isManagerOnly) {
@@ -142,7 +142,7 @@ function CalendarPage() {
           const newIn = addDaysIso(d.res.checkIn, cur.days);
           const newOut = addDaysIso(d.res.checkOut, cur.days);
           if (isPastDate(newIn) && !canCreatePast) {
-            toast.error("Vergangene Buchungen", { description: "Verschieben in die Vergangenheit nur für Manager/Admin/Inhaber." });
+            toast.error(t("calendar.pastTitle"), { description: t("calendar.pastMoveDenied") });
           } else {
             setPendingMove({ res: d.res, checkIn: newIn, checkOut: newOut });
           }
@@ -159,7 +159,7 @@ function CalendarPage() {
   async function confirmMove() {
     if (!pendingMove?.res.realId) return;
     if (moveConflict) {
-      toast.error("Konflikt", { description: "Das Zimmer ist in diesem Zeitraum bereits belegt." });
+      toast.error(t("calendar.conflictTitle"), { description: t("calendar.conflictDesc") });
       return;
     }
     setSavingMove(true);
@@ -169,10 +169,10 @@ function CalendarPage() {
       .eq("id", pendingMove.res.realId);
     setSavingMove(false);
     if (error) {
-      toast.error("Verschieben fehlgeschlagen", { description: error.message });
+      toast.error(t("calendar.moveFailed"), { description: error.message });
       return;
     }
-    toast.success("Buchung verschoben");
+    toast.success(t("calendar.moved"));
     setPendingMove(null);
     setRefreshKey((k) => k + 1);
   }
@@ -376,7 +376,7 @@ function CalendarPage() {
           <button
             onClick={() => setShowHelp(true)}
             className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
-            title="Tastatur-Kürzel (?)"
+            title={t("calendar.keyboardShortcuts")}
           >
             <Keyboard className="w-4 h-4" />
           </button>
@@ -396,10 +396,10 @@ function CalendarPage() {
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <StatCard label="Belegt heute" value={occupiedTodayCount} highlight />
-        <StatCard label="Frei heute" value={freeTodayCount} />
-        <StatCard label="Reinigung ausstehend" value={needsCleaningCount} tone="warning" />
-        <StatCard label="Wartung" value={maintenanceCount} tone="muted" />
+        <StatCard label={t("calendar.occupiedToday")} value={occupiedTodayCount} highlight />
+        <StatCard label={t("calendar.freeToday")} value={freeTodayCount} />
+        <StatCard label={t("calendar.cleaningPending")} value={needsCleaningCount} tone="warning" />
+        <StatCard label={t("status.maintenance")} value={maintenanceCount} tone="muted" />
       </div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <select
@@ -407,7 +407,7 @@ function CalendarPage() {
           onChange={(e) => setPropertyId(e.target.value)}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm"
         >
-          <option value="all">Alle Pensionen</option>
+          <option value="all">{t("calendar.allPensions")}</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
@@ -415,7 +415,7 @@ function CalendarPage() {
         <input
           value={roomQ}
           onChange={(e) => setRoomQ(e.target.value)}
-          placeholder="Zimmer-Nr…"
+          placeholder={t("calendar.roomNrPlaceholder")}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
         />
         <div className="relative">
@@ -424,7 +424,7 @@ function CalendarPage() {
             onChange={(e) => { setGuestQ(e.target.value); setSuggestOpen(true); }}
             onFocus={() => setSuggestOpen(true)}
             onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
-            placeholder="Gast oder Buchungs-Code…"
+            placeholder={t("calendar.guestSearchPlaceholder")}
             className="px-3 py-2 rounded-md border border-input bg-card text-sm w-64"
           />
           {suggestOpen && searchQ && suggestions.length > 0 && (
@@ -476,18 +476,18 @@ function CalendarPage() {
 
       {/* Kanal-Legende */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-3 text-[11px] text-muted-foreground">
-        <span className="uppercase tracking-wide font-medium">Kanal:</span>
+        <span className="uppercase tracking-wide font-medium">{t("calendar.channelLegend")}</span>
         {ACTIVE_CHANNELS.map((s) => (
           <span key={s} className="inline-flex items-center gap-1">
             <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: sourceColor(s) }} />
-            {sourceLabel(s)}
+            {sourceLabel(s, (k) => t(k))}
           </span>
         ))}
       </div>
 
 
 
-      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${filteredRooms.length} Zimmer`}>
+      <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${t("calendar.roomsCount", { count: filteredRooms.length })}`}>
         <TooltipProvider delayDuration={150}>
         <div
           ref={gridFocusRef}
@@ -502,7 +502,7 @@ function CalendarPage() {
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
               <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
-                <span>Zimmer</span>
+                <span>{t("calendar.colRoom")}</span>
                 {!gridFocused && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -510,13 +510,13 @@ function CalendarPage() {
                         type="button"
                         onClick={() => gridFocusRef.current?.focus()}
                         className="inline-flex items-center justify-center w-5 h-5 rounded text-primary hover:bg-primary/10 animate-pulse"
-                        aria-label="Tastatur-Navigation aktivieren"
+                        aria-label={t("calendar.keyboardNavActivate")}
                       >
                         <MousePointerClick className="w-3.5 h-3.5" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-[240px] text-xs">
-                      Drücke <kbd className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">G</kbd> (oder klicke hier), um die Tastatur-Navigation zu aktivieren. Danach: Pfeiltasten, Enter, ?
+                      {t("calendar.keyboardHint")}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -551,7 +551,7 @@ function CalendarPage() {
                     >
                       <span className="font-semibold truncate text-primary">{p.name}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {groupRooms.length} Zimmer · heute belegt: {occupiedToday}
+                        {t("calendar.roomsOccupiedToday", { count: groupRooms.length, occupied: occupiedToday })}
                       </span>
                     </div>,
                   );
@@ -562,7 +562,7 @@ function CalendarPage() {
                       <div className="font-medium truncate flex items-center gap-1.5">
                         {r.floor != null && (
                           <span
-                            title={r.floor === 0 ? "Erdgeschoss" : `${r.floor}. Obergeschoss`}
+                            title={r.floor === 0 ? t("calendar.groundFloor") : t("calendar.upperFloor", { floor: r.floor })}
                             className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground"
                           >
                             {r.floor === 0 ? "EG" : `${r.floor}.OG`}
@@ -578,7 +578,7 @@ function CalendarPage() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
-                              Reinigung ausstehend
+                              {t("calendar.cleaningPending")}
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -652,7 +652,7 @@ function CalendarPage() {
                                  color: c.fg,
                                  borderLeft: `3px solid ${sc}`,
                                }}
-                               title={`${occupant.guestName} · ${sourceLabel(occupant.source)}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? "\nZiehen zum Verschieben" : ""}${occPast && !canCreatePast ? "\n(Vergangen — nur Manager/Admin/Inhaber dürfen bearbeiten)" : ""}`}
+                               title={`${occupant.guestName} · ${sourceLabel(occupant.source, (k) => t(k))}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? `\n${t("calendar.dragToMove")}` : ""}${occPast && !canCreatePast ? `\n${t("calendar.pastEditNote")}` : ""}`}
                              >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
@@ -660,7 +660,7 @@ function CalendarPage() {
                                    onMouseDown={(e) => e.stopPropagation()}
                                    onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
                                   className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                  title={occPast && !canCreatePast ? "Ansehen" : "Bearbeiten"}
+                                  title={occPast && !canCreatePast ? t("calendar.view") : t("common.edit")}
                                 >
                                   <Pencil className="w-3 h-3" />
                                 </button>
@@ -694,11 +694,11 @@ function CalendarPage() {
         </div>
         </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> Farbe = Gast, Rand = Kanal</div>
-          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> Reinigung ausstehend</div>
-          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Problem-Zimmer</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> {t("calendar.legendColor")}</div>
+          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> {t("calendar.cleaningPending")}</div>
+          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> {t("calendar.problemRoom")}</div>
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-            <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> Tastatur-Kürzel
+            <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> {t("calendar.shortcuts")}
           </button>
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
@@ -710,20 +710,20 @@ function CalendarPage() {
             <span className="font-medium">{pendingMove.res.guestName}</span>
             <span className="text-muted-foreground"> · {pendingMove.res.checkIn} → {pendingMove.res.checkOut} wird zu </span>
             <span className="font-medium">{pendingMove.checkIn} → {pendingMove.checkOut}</span>
-            {moveConflict && <span className="block text-destructive text-xs mt-0.5">Konflikt: Zimmer in diesem Zeitraum bereits belegt</span>}
+            {moveConflict && <span className="block text-destructive text-xs mt-0.5">{t("calendar.conflictLine")}</span>}
           </div>
           <button
             onClick={confirmMove}
             disabled={savingMove || moveConflict}
             className="w-9 h-9 rounded-md bg-success text-success-foreground grid place-items-center hover:opacity-90 disabled:opacity-50"
-            title="Verschieben bestätigen (Enter)"
+            title={t("calendar.confirmMove")}
           >
             <Check className="w-4 h-4" />
           </button>
           <button
             onClick={() => setPendingMove(null)}
             className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
-            title="Abbrechen (Esc)"
+            title={t("calendar.cancelEsc")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -758,7 +758,7 @@ function CalendarPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Keyboard className="w-4 h-4" />
-                <h3 className="font-semibold">Tastatur-Kürzel</h3>
+                <h3 className="font-semibold">{t("calendar.shortcuts")}</h3>
               </div>
               <button onClick={() => setShowHelp(false)} className="p-1 rounded hover:bg-accent" title="Schließen">
                 <X className="w-4 h-4" />
@@ -769,11 +769,11 @@ function CalendarPage() {
             </p>
             <div className="space-y-2 text-sm">
               {[
-                { keys: ["↑", "↓", "←", "→"], desc: "Zwischen Zellen navigieren" },
-                { keys: ["←", "→"], desc: "Am Rand: vorherige / nächste Periode" },
-                { keys: ["Enter"], desc: "Belegt: Buchung bearbeiten · Frei: neue Buchung" },
-                { keys: ["?"], desc: "Diese Hilfe ein-/ausblenden" },
-                { keys: ["Esc"], desc: "Dialoge / Hilfe schließen" },
+                { keys: ["↑", "↓", "←", "→"], desc: t("calendar.helpNavCells") },
+                { keys: ["←", "→"], desc: t("calendar.helpNavEdge") },
+                { keys: ["Enter"], desc: t("calendar.helpEnter") },
+                { keys: ["?"], desc: t("calendar.helpToggle") },
+                { keys: ["Esc"], desc: t("calendar.helpEsc") },
               ].map((row, i) => (
                 <div key={i} className="flex items-center justify-between gap-3 py-1.5 border-b border-border last:border-0">
                   <span className="text-muted-foreground">{row.desc}</span>

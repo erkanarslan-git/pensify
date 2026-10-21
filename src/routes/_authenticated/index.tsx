@@ -18,10 +18,10 @@ import {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Pensify" },
-      { name: "description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
-      { property: "og:title", content: "Dashboard — Pensify" },
-      { property: "og:description", content: "Tägliche Übersicht über Pensionen, Zimmer und Reinigung." },
+      { title: "Panel — Pensify" },
+      { name: "description", content: "Pansiyonlar, odalar ve temizlik için günlük genel bakış." },
+      { property: "og:title", content: "Panel — Pensify" },
+      { property: "og:description", content: "Pansiyonlar, odalar ve temizlik için günlük genel bakış." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [newOpen, setNewOpen] = useState(false);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -118,7 +118,7 @@ function Dashboard() {
       <div className="mb-5">
         <h2 className="text-3xl font-semibold tracking-tight">{t("dashboard.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
+          {new Date().toLocaleDateString(i18n.language, { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
         </p>
       </div>
 
@@ -181,14 +181,14 @@ function Dashboard() {
             {tasks.filter((t) => t.status !== "completed").slice(0, 6).map((task) => (
               <div key={task.id} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{task.property?.name} · Zimmer {task.room?.number}</div>
-                  <div className="text-xs text-muted-foreground">Fällig {task.due_at ? new Date(task.due_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
+                  <div className="text-sm font-medium truncate">{task.property?.name} · {t("resv.thRoom")} {task.room?.number}</div>
+                  <div className="text-xs text-muted-foreground">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
                 </div>
-                <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{task.status}</Badge>
+                <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{t(`status.${task.status}`)}</Badge>
               </div>
             ))}
             {tasks.filter((t) => t.status !== "completed").length === 0 && (
-              <div className="text-sm text-muted-foreground">Keine aktiven Aufgaben</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.noActiveTasks")}</div>
             )}
           </div>
         </Section>
@@ -220,8 +220,8 @@ function Dashboard() {
                 <Pie data={channelData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4} strokeWidth={0}>
                   {channelData.map((c, i) => (<Cell key={i} fill={sourceColor(c.name)} />))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v as any, sourceLabel(String(n))]} />
-                <Legend verticalAlign="bottom" height={36} iconSize={8} formatter={(v) => sourceLabel(String(v))} wrapperStyle={{ fontSize: 11, color: "var(--color-muted-foreground)" }} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v as any, sourceLabel(String(n), (k) => t(k))]} />
+                <Legend verticalAlign="bottom" height={36} iconSize={8} formatter={(v) => sourceLabel(String(v), (k) => t(k))} wrapperStyle={{ fontSize: 11, color: "var(--color-muted-foreground)" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -241,7 +241,7 @@ function Dashboard() {
                     </div>
                     <div className="min-w-0">
                       <div className="text-sm font-medium truncate">{r.guest_name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{r.property?.name} · Zimmer {r.room?.number} · {sourceLabel(r.channel)}</div>
+                      <div className="text-xs text-muted-foreground truncate">{r.property?.name} · {t("resv.thRoom")} {r.room?.number} · {sourceLabel(r.channel, (k) => t(k))}</div>
                     </div>
                   </div>
                   <div className="text-right">
