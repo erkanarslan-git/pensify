@@ -117,16 +117,25 @@ function CleaningPage() {
       title={t("pages.cleaning.title")}
       subtitle={t("cleaning.subtitle", { open: counts.open, unassigned: counts.unassigned })}
     >
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <StatCard highlight icon={<Sparkles className="w-4 h-4" />} label={t("cleaning.toDo")} value={counts.open} onClick={() => setView("open")} />
+        <StatCard icon={<AlertTriangle className="w-4 h-4" />} label={t("cleaning.problems")} value={counts.problem} onClick={() => setView("problem")} />
+        <StatCard icon={<Check className="w-4 h-4" />} label={t("cleaning.done")} value={counts.done} onClick={() => setView("done")} />
+        <StatCard icon={<UserX className="w-4 h-4" />} label={t("cleaning.notAssigned")} value={counts.unassigned} />
+      </div>
+
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        {views.map((v) => (
-          <button
-            key={v.id}
-            onClick={() => setView(v.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border ${view === v.id ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
-          >
-            {v.label} ({v.n})
-          </button>
-        ))}
+        <div className="inline-flex flex-wrap gap-1 p-1 rounded-xl bg-muted">
+          {views.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => setView(v.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === v.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {v.label} ({v.n})
+            </button>
+          ))}
+        </div>
         <select value={prop} onChange={(e) => setProp(e.target.value)} className="ml-auto px-3 py-2 rounded-md border border-input bg-card text-sm">
           <option value="all">{t("rooms.allProperties")}</option>
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
