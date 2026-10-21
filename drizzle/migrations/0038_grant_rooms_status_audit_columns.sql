@@ -1,0 +1,1 @@
+GRANT SELECT (status_changed_by, status_changed_at) ON public.rooms TO authenticated;
