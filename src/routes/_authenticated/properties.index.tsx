@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Section, Badge } from "@/components/app-shell";
+import { AppShell, Badge } from "@/components/app-shell";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Building2, Plus, Pencil, Trash2, QrCode } from "lucide-react";
+import { MapPin, Building2, Plus, Pencil, Trash2, QrCode, DoorOpen, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -107,6 +107,7 @@ function PropertiesPage() {
 
   function openCreate() { setEditing(null); setOpen(true); }
   function openEdit(p: PropertyRow) { setEditing(p); setOpen(true); }
+  const totals = Object.values(stats).reduce((sum, row) => ({ total: sum.total + row.total, free: sum.free + row.free, cleaning: sum.cleaning + row.cleaning }), { total: 0, free: 0, cleaning: 0 });
 
   return (
     <AppShell
@@ -118,6 +119,19 @@ function PropertiesPage() {
         </Button>
       }
     >
+      <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {[
+          { label: t("nav.properties"), value: properties.length, icon: Building2, highlight: true },
+          { label: t("common.rooms"), value: totals.total, icon: DoorOpen },
+          { label: t("propertyRooms.ov.free"), value: totals.free, icon: MapPin },
+          { label: t("propertyRooms.ov.cleaning"), value: totals.cleaning, icon: Sparkles },
+        ].map(({ label, value, icon: Icon, highlight }) => (
+          <div key={label} className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+            <div className={`flex items-center gap-2 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}><Icon className="h-4 w-4" />{label}</div>
+            <div className="mt-1 text-3xl font-semibold tabular-nums">{isLoading ? "—" : value}</div>
+          </div>
+        ))}
+      </div>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
       ) : properties.length === 0 ? (
@@ -133,58 +147,57 @@ function PropertiesPage() {
             if (list.length === 0) return null;
             return (
               <div key={c.id}>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 text-primary">
                   <MapPin className="w-4 h-4 text-primary" />
-                  <h2 className="text-base font-semibold tracking-tight">{c.name}</h2>
-                  <span className="text-xs text-muted-foreground">· {list.length}</span>
+                  <h2 className="text-base font-semibold">{c.name}</h2>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs tabular-nums">{list.length}</span>
                 </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="columns-1 gap-4 md:columns-2 xl:columns-3">
                   {list.map((p) => (
-                    <Section
-                      key={p.id}
-                      title={p.name}
-                      action={
-                        <div className="flex gap-1">
+                    <article key={p.id} className="mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-border bg-card shadow-soft" data-property-card>
+                      <div className="flex items-start justify-between gap-2 border-b border-primary/10 bg-primary/5 px-4 py-3">
+                        <Link to="/properties/$id/rooms" params={{ id: p.id }} className="min-w-0 text-sm font-semibold text-primary hover:underline">{p.name}</Link>
+                        <div className="flex shrink-0 gap-0.5">
                           <Link to="/properties/$id/qr" params={{ id: p.id }}>
                             <Button variant="ghost" size="icon" className="h-7 w-7" title="QR">
                               <QrCode className="w-3.5 h-3.5" />
                             </Button>
                           </Link>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" title={t("pensions.editPension")} aria-label={`${t("pensions.editPension")}: ${p.name}`} onClick={() => openEdit(p)}>
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
                           <DeleteButton id={p.id} name={p.name} />
                         </div>
-                      }
-                    >
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Building2 className="w-3 h-3" /> {p.address}
+                      </div>
+                      <div className="p-4">
+                      <div className="text-xs text-muted-foreground flex items-start gap-1.5">
+                        <MapPin className="mt-0.5 h-3 w-3 shrink-0" /> <span className="min-w-0 break-words">{p.address}</span>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs">
                         {!p.active && <Badge tone="muted">{t("common.inactive")}</Badge>}
-                        <Badge tone="info">{stats[p.id]?.total ?? 0} Zimmer</Badge>
-                        <Badge tone="success">{stats[p.id]?.free ?? 0} frei</Badge>
+                        <Badge tone="info">{stats[p.id]?.total ?? 0} {t("common.rooms")}</Badge>
+                        <Badge tone="info">{t("propertyRooms.ov.free")}: {stats[p.id]?.free ?? 0}</Badge>
                         {(stats[p.id]?.cleaning ?? 0) > 0 && (
-                          <Badge tone="warning">{stats[p.id]?.cleaning} Reinigung</Badge>
+                          <Badge tone="warning">{stats[p.id]?.cleaning} {t("propertyRooms.ov.cleaning")}</Badge>
                         )}
                       </div>
                       <div className="mt-3 flex flex-wrap gap-1.5" aria-label={t("propertyRooms.typeDistribution")}>
                         {Object.values(stats[p.id]?.types ?? {}).map((roomType) => {
-                          const visual = roomTypeVisual(roomType.code);
-                          return <span key={`${p.id}-${roomType.code}`} title={`${roomType.name}: ${roomType.count}`} className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] ${visual.border} ${visual.surface} ${visual.text}`}><span className={`h-2 w-2 rounded-full ${visual.marker}`} />{roomType.name} · {roomType.count}</span>;
+                          return <span key={`${p.id}-${roomType.code}`} title={`${roomType.name}: ${roomType.count}`} className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-primary/15 bg-primary/5 px-2 py-1 text-[11px] text-primary"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" /><span className="min-w-0 break-words">{roomType.name} · {roomType.count}</span></span>;
                         })}
                       </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         <Link to="/properties/$id/rooms" params={{ id: p.id }}>
                           <Button size="sm" className="w-full gap-1.5">
-                            <Building2 className="w-4 h-4" /> Zimmer
+                            <Building2 className="w-4 h-4" /> {t("common.rooms")}
                           </Button>
                         </Link>
                         <Link to="/reservations" search={{ property: p.id }}>
-                          <Button size="sm" variant="outline" className="w-full">Buchungen</Button>
+                          <Button size="sm" variant="outline" className="w-full">{t("nav.reservations")}</Button>
                         </Link>
                       </div>
-                    </Section>
+                      </div>
+                    </article>
                   ))}
                 </div>
               </div>
