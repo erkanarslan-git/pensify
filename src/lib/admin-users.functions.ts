@@ -90,7 +90,7 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { userId: string }) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { orgId } = await assertAdmin(context);
+    const { orgId, role: callerRole } = await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("Du kannst dich nicht selbst löschen.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Prevent deleting the last owner
@@ -98,6 +98,11 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
     const owners = await orgOwners(supabaseAdmin, orgId);
     const isOwner = owners.includes(data.userId);
     if (isOwner && owners.length <= 1) throw new Error("Letzten Inhaber kann man nicht löschen.");
+    if (callerRole !== "owner") {
+      const { data: target } = await supabaseAdmin.from("organization_members").select("role")
+        .eq("organization_id", orgId).eq("user_id", data.userId).maybeSingle();
+      if (isOwner || target?.role === "admin") throw new Error("Nur der Inhaber darf Administratoren oder Inhaber löschen.");
+    }
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
     return { ok: true };

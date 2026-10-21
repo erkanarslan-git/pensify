@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX, Search, Building2, ChevronRight, Mail, Clock, History } from "lucide-react";
+import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX, Search, Building2, ChevronRight, Mail, Clock, History, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -30,7 +30,8 @@ const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"
 
 function TeamPage() {
   const qc = useQueryClient();
-  const { userId: currentUserId } = usePermissions();
+  const { userId: currentUserId, isOwner: iAmOwner } = usePermissions();
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
   const [adding, setAdding] = useState<{ userId: string; role: AppRole } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const createFn = useServerFn(adminCreateUser);
@@ -444,18 +445,31 @@ function TeamPage() {
                       onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
                       {isBanned ? <><Unlock className="w-3.5 h-3.5 mr-1" /> Freigeben</> : <><Lock className="w-3.5 h-3.5 mr-1" /> Sperren</>}
                     </Button>
-                    <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10" disabled={isSelf}
-                      onClick={() => { if (confirm(`"${u.full_name || u.email}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) { deleteUser.mutate(u.user_id); setSelectedId(null); } }}>
+                    <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
+                      disabled={isSelf || (!iAmOwner && (u.roles.includes("admin") || u.roles.includes("owner")))}
+                      onClick={() => setDeleteTarget(u)}>
                       <Trash2 className="w-3.5 h-3.5 mr-1" /> Löschen
                     </Button>
                   </div>
                   {isSelf && <div className="text-xs text-muted-foreground mt-2">Eigenes Konto kann nicht gesperrt oder gelöscht werden.</div>}
+                  {(u.roles.includes("admin") || u.roles.includes("owner")) && !isSelf && (
+                    <div className="mt-3 flex gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs">
+                      <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
+                      <span>Administratoren und Inhaber kann nur der <b>Inhaber</b> löschen.{!iAmOwner && " Du hast dafür keine Berechtigung."}</span>
+                    </div>
+                  )}
                 </PanelSection>
               </div>
             );
           })()}
         </SheetContent>
       </Sheet>
+
+      <DeleteUserDialog
+        user={deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={(id) => { deleteUser.mutate(id); setDeleteTarget(null); setSelectedId(null); }}
+      />
 
       <CreateUserDialog
         open={createOpen}
@@ -468,6 +482,40 @@ function TeamPage() {
         }}
       />
     </AppShell>
+  );
+}
+
+function DeleteUserDialog({ user, onClose, onConfirm }: { user: any | null; onClose: () => void; onConfirm: (id: string) => void }) {
+  const [typed, setTyped] = useState("");
+  const name = (user?.full_name || user?.email || "").trim();
+  const isPrivileged = !!user && (user.roles.includes("admin") || user.roles.includes("owner"));
+  const ok = typed.trim() === name && name.length > 0;
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => { if (!o) { setTyped(""); onClose(); } }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Benutzer endgültig löschen</DialogTitle></DialogHeader>
+        <div className="space-y-3 text-sm">
+          <p>Das Konto von <b>{name}</b> wird dauerhaft gelöscht und kann nicht wiederhergestellt werden. Für eine vorübergehende Sperre nutze lieber „Sperren“.</p>
+          {isPrivileged && (
+            <div className="flex gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs">
+              <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
+              <span>Diese Person ist Administrator/Inhaber. Nur der Inhaber darf sie löschen.</span>
+            </div>
+          )}
+          <label className="grid gap-1">
+            <span className="text-xs text-muted-foreground">Zur Bestätigung den Namen eingeben: <b className="text-foreground">{name}</b></span>
+            <input autoFocus value={typed} onChange={(e) => setTyped(e.target.value)}
+              className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
+          </label>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { setTyped(""); onClose(); }}>Abbrechen</Button>
+          <Button variant="destructive" disabled={!ok} onClick={() => { setTyped(""); onConfirm(user.user_id); }}>
+            <Trash2 className="w-3.5 h-3.5 mr-1" /> Endgültig löschen
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
