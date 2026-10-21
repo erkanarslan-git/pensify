@@ -904,3 +904,18 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+function StatCard({ label, value, highlight, tone }: {
+  label: string;
+  value: number;
+  highlight?: boolean;
+  tone?: "warning" | "muted";
+}) {
+  const toneClass = tone === "warning" ? "text-warning" : tone === "muted" ? "text-muted-foreground" : "text-primary";
+  return (
+    <div className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{label}</div>
+      <div className={`text-3xl font-semibold mt-1 tabular-nums ${highlight ? "" : toneClass}`}>{value}</div>
+    </div>
+  );
+}
