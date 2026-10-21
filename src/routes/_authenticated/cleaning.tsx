@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useMemo, useState } from "react";
-import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles, Undo2, RotateCcw } from "lucide-react";
+import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles, Undo2, RotateCcw, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
