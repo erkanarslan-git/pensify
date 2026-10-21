@@ -109,19 +109,19 @@
 
 .dark {
   --background: oklch(0.17 0.035 260);
-  --foreground: oklch(0.96 0.015 335);
+  --foreground: oklch(0.96 0.015 255);
   --card: oklch(0.21 0.04 260);
-  --card-foreground: oklch(0.96 0.015 335);
+  --card-foreground: oklch(0.96 0.015 255);
   --popover: oklch(0.21 0.04 260);
-  --popover-foreground: oklch(0.96 0.015 335);
+  --popover-foreground: oklch(0.96 0.015 255);
   --primary: oklch(0.7 0.15 50);
   --primary-foreground: oklch(0.17 0.03 260);
   --secondary: oklch(0.26 0.045 260);
-  --secondary-foreground: oklch(0.96 0.015 335);
+  --secondary-foreground: oklch(0.96 0.015 255);
   --muted: oklch(0.23 0.04 260);
   --muted-foreground: oklch(0.72 0.03 255);
   --accent: oklch(0.28 0.05 260);
-  --accent-foreground: oklch(0.96 0.015 335);
+  --accent-foreground: oklch(0.96 0.015 255);
   --destructive: oklch(0.65 0.18 18);
   --destructive-foreground: oklch(0.99 0 0);
   --success: oklch(0.74 0.12 160);
@@ -132,20 +132,20 @@
   --info-foreground: oklch(0.15 0.03 250);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.74 0.15 305);
-  --chart-1: oklch(0.74 0.15 305);
-  --chart-2: oklch(0.8 0.11 340);
+  --ring: oklch(0.7 0.15 50);
+  --chart-1: oklch(0.7 0.15 50);
+  --chart-2: oklch(0.7 0.1 255);
   --chart-3: oklch(0.74 0.12 160);
   --chart-4: oklch(0.82 0.12 55);
   --chart-5: oklch(0.72 0.13 250);
-  --sidebar: oklch(0.19 0.03 305);
-  --sidebar-foreground: oklch(0.92 0.015 335);
-  --sidebar-primary: oklch(0.74 0.15 305);
-  --sidebar-primary-foreground: oklch(0.17 0.03 305);
-  --sidebar-accent: oklch(0.26 0.04 320);
-  --sidebar-accent-foreground: oklch(0.96 0.015 335);
+  --sidebar: oklch(0.15 0.04 260);
+  --sidebar-foreground: oklch(0.92 0.015 255);
+  --sidebar-primary: oklch(0.7 0.15 50);
+  --sidebar-primary-foreground: oklch(0.17 0.03 260);
+  --sidebar-accent: oklch(0.25 0.05 260);
+  --sidebar-accent-foreground: oklch(0.96 0.015 255);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.74 0.15 305);
+  --sidebar-ring: oklch(0.7 0.15 50);
 }
 
 @layer base {
