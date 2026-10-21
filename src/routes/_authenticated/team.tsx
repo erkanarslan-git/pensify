@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX } from "lucide-react";
+import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX, Search, Building2, ChevronRight, Mail, Clock, History } from "lucide-react";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { ALL_ROLES, ROLE_LABEL, PERMISSIONS, type AppRole } from "@/lib/permissions";
 import { adminCreateUser, adminDeleteUser, adminSetUserBanned, adminResetUserPassword } from "@/lib/admin-users.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/team")({
@@ -149,22 +150,60 @@ function TeamPage() {
     noRole: (users.data ?? []).filter((u: any) => (u.roles ?? []).length === 0).length,
   };
 
+  const [tab, setTab] = useState<"team" | "roles">("team");
+  const [search, setSearch] = useState("");
+  const [locFilter, setLocFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const propsQ = useQuery({
+    queryKey: ["team-properties"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("properties").select("id,name").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const memberPropsQ = useQuery({
+    queryKey: ["member-props-all", (users.data ?? []).map((u: any) => u.user_id).join(",")],
+    enabled: !!users.data,
+    queryFn: async () => {
+      const out: Record<string, string[]> = {};
+      await Promise.all((users.data ?? []).map(async (u: any) => {
+        const { data } = await (supabase as any).rpc("admin_get_member_properties", { _user_id: u.user_id });
+        out[u.user_id] = (data ?? []).map((r: any) => r.property_id);
+      }));
+      return out;
+    },
+  });
+  const propName = (id: string) => propsQ.data?.find((p: any) => p.id === id)?.name ?? "—";
+  const hasAllAccess = (roles: AppRole[]) => roles.some((r) => r === "owner" || r === "admin");
+
+  const filtered = (users.data ?? []).filter((u: any) => {
+    const q = search.trim().toLowerCase();
+    if (q && !`${u.full_name ?? ""} ${u.email ?? ""}`.toLowerCase().includes(q)) return false;
+    if (roleFilter !== "all" && !(u.roles ?? []).includes(roleFilter)) return false;
+    if (locFilter !== "all" && !hasAllAccess(u.roles ?? []) && !(memberPropsQ.data?.[u.user_id] ?? []).includes(locFilter)) return false;
+    return true;
+  });
+  const selected = (users.data ?? []).find((u: any) => u.user_id === selectedId) ?? null;
+
   return (
-    <AppShell title="Team & Rollen" subtitle="Zugriffsanfragen, Rollen und Berechtigungen verwalten">
+    <AppShell title="Team & Rollen" subtitle="Zuständigkeiten klar verteilen">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <StatCard highlight icon={<Users className="w-4 h-4" />} label="Benutzer" value={stats.users} />
         <StatCard icon={<Inbox className="w-4 h-4" />} label="Offene Anfragen" value={stats.requests} />
         <StatCard icon={<Lock className="w-4 h-4" />} label="Gesperrt" value={stats.banned} />
         <StatCard icon={<UserX className="w-4 h-4" />} label="Ohne Rolle" value={stats.noRole} />
       </div>
-      {/* Access requests */}
+
       {pendingRequests.length > 0 && (
         <Section title={`Offene Zugriffsanfragen (${pendingRequests.length})`}>
           <div className="space-y-2">
             {pendingRequests.map((r: any) => {
               const user = (users.data ?? []).find((u: any) => u.user_id === r.user_id);
               return (
-                <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
+                <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3">
                   <Inbox className="w-4 h-4 text-warning" />
                   <div className="flex-1 min-w-[200px]">
                     <div className="text-sm font-medium">{user?.full_name || "—"} <span className="text-muted-foreground font-normal">· {user?.email}</span></div>
@@ -190,146 +229,233 @@ function TeamPage() {
         </Section>
       )}
 
-      {/* Users table */}
-      <div className="flex items-center justify-between mt-4 mb-2">
-        <div className="text-sm font-semibold">Benutzer ({users.data?.length ?? 0})</div>
-        <Button size="sm" onClick={() => setCreateOpen(true)}>
-          <UserPlus className="w-3.5 h-3.5 mr-1" /> Neuer Benutzer
-        </Button>
-      </div>
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-            <tr>
-              <th className="text-left p-3">Benutzer</th>
-              <th className="text-left p-3">E-Mail</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Rollen</th>
-              <th className="text-right p-3 w-[380px]">Aktion</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.data?.map((u: any) => {
-              const missing = ALL_ROLES.filter((r) => !u.roles.includes(r));
-              const isBanned = !!u.banned_until && new Date(u.banned_until) > new Date();
-              return (
-                <tr key={u.user_id} className={`border-t border-border hover:bg-accent/40 transition-colors ${isBanned ? "opacity-60" : ""}`}>
-                  <td className="p-3 font-medium">{u.full_name || "—"}</td>
-                  <td className="p-3 text-muted-foreground">{u.email}</td>
-                  <td className="p-3">
-                    {isBanned
-                      ? <Badge tone="destructive">Gesperrt</Badge>
-                      : <Badge tone="success">Aktiv</Badge>}
-                  </td>
-                  <td className="p-3">
-                    <div className="flex flex-wrap gap-1">
-                      {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
-                      {(u.roles as AppRole[]).map((r) => (
-                        <span key={r} className="inline-flex items-center gap-1">
-                          <Badge tone={ROLE_TONE[r]}>
-                            <Shield className="w-3 h-3 mr-1 inline" />
-                            {ROLE_LABEL[r]}
-                          </Badge>
-                          <button className="text-muted-foreground hover:text-destructive" onClick={() => removeRole.mutate({ userId: u.user_id, role: r })} title="Rolle entfernen">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-3 text-right">
-                    <div className="flex justify-end gap-1 flex-wrap">
-                      <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
-                      {u.roles.some((r: AppRole) => r === "reception" || r === "manager" || r === "cleaner") && (
-                        <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} />
-                      )}
-                      {missing.length > 0 && (
-                        adding?.userId === u.user_id ? (
-                          <div className="flex gap-1 justify-end">
-                            <Select value={adding!.role} onValueChange={(v) => setAdding({ userId: adding!.userId, role: v as AppRole })}>
-                              <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {missing.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                            <Button size="sm" onClick={() => adding && addRole.mutate(adding)}>OK</Button>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-3 border-b border-border">
+          <div className="flex gap-5">
+            {([["team", "Team"], ["roles", "Rollen & Rechte"]] as const).map(([k, l]) => (
+              <button key={k} onClick={() => setTab(k)}
+                className={`pb-3 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === k ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                {l}
+              </button>
+            ))}
+          </div>
+          {tab === "team" && (
+            <Button size="sm" className="mb-2" onClick={() => setCreateOpen(true)}>
+              <UserPlus className="w-3.5 h-3.5 mr-1" /> Mitarbeitende hinzufügen
+            </Button>
+          )}
+        </div>
+
+        {tab === "team" ? (
+          <>
+            <div className="grid gap-2 sm:grid-cols-3 p-4">
+              <Select value={locFilter} onValueChange={setLocFilter}>
+                <SelectTrigger className="rounded-xl"><Building2 className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Standorte</SelectItem>
+                  {propsQ.data?.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="rounded-xl"><Shield className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle Rollen</SelectItem>
+                  {ALL_ROLES.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name suchen…"
+                  className="w-full h-10 pl-9 pr-3 rounded-xl border border-input bg-card text-sm" />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/40 text-xs text-muted-foreground">
+                  <tr>
+                    <th className="text-left px-4 py-2.5 font-medium">Mitarbeitende</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Rolle</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Standorte</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Status</th>
+                    <th className="w-10" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((u: any) => {
+                    const isBanned = isBannedUser(u);
+                    const locs = memberPropsQ.data?.[u.user_id] ?? [];
+                    const isSel = selectedId === u.user_id;
+                    return (
+                      <tr key={u.user_id} onClick={() => setSelectedId(u.user_id)}
+                        className={`border-t border-border cursor-pointer transition-colors ${isSel ? "bg-primary/5" : "hover:bg-accent/40"}`}>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Initials name={u.full_name || u.email} />
+                            <div className="min-w-0">
+                              <div className="font-medium truncate">{u.full_name || "—"}</div>
+                              <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+                            </div>
                           </div>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => setAdding({ userId: u.user_id, role: missing[0] })}>
-                            <Plus className="w-3 h-3 mr-1" /> Rolle
-                          </Button>
-                        )
-                      )}
-                      <Button size="sm" variant="outline" title={u.user_id === currentUserId ? "Eigenes Konto — nicht möglich" : (isBanned ? "Freigeben" : "Sperren")}
-                        disabled={u.user_id === currentUserId || banUser.isPending}
-                        onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
-                        {isBanned ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                      </Button>
-                      <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
-                      <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
-                        disabled={u.user_id === currentUserId}
-                        title={u.user_id === currentUserId ? "Eigenes Konto — nicht möglich" : "Löschen"}
-                        onClick={() => { if (confirm(`"${u.full_name || u.email}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) deleteUser.mutate(u.user_id); }}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </td>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(u.roles ?? []).length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
+                            {(u.roles as AppRole[]).map((r) => <Badge key={r} tone={ROLE_TONE[r]}>{ROLE_LABEL[r]}</Badge>)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {hasAllAccess(u.roles ?? []) ? (
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-xs">Alle Standorte</span>
+                          ) : locs.length === 0 ? (
+                            <span className="text-xs text-muted-foreground">Nicht zugewiesen</span>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <span className="rounded-md bg-muted px-2 py-0.5 text-xs truncate max-w-[160px]">{propName(locs[0])}</span>
+                              {locs.length > 1 && <span className="rounded-md bg-primary/10 text-primary px-1.5 py-0.5 text-xs">+{locs.length - 1}</span>}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {isBanned ? <Badge tone="destructive">Gesperrt</Badge> : <Badge tone="success">Aktiv</Badge>}
+                        </td>
+                        <td className="px-2 text-muted-foreground"><ChevronRight className="w-4 h-4" /></td>
+                      </tr>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">Keine Mitarbeitenden gefunden.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="px-4 py-3 text-xs text-muted-foreground border-t border-border">{filtered.length} von {users.data?.length ?? 0} Mitarbeitenden · Zeile anklicken für Details</div>
+          </>
+        ) : (
+          <div className="overflow-x-auto">
+            <div className="px-4 py-2 text-xs text-muted-foreground">Klicke auf eine Zelle, um die Berechtigung umzuschalten.</div>
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="text-left p-3">Berechtigung</th>
+                  {ALL_ROLES.map((r) => <th key={r} className="p-3 text-center">{ROLE_LABEL[r]}</th>)}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {groups.map((g) => (
+                  <FragmentRow key={`g-${g}`}>
+                    <tr className="bg-muted/20">
+                      <td colSpan={ALL_ROLES.length + 1} className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase">{g}</td>
+                    </tr>
+                    {PERMISSIONS.filter((p) => p.group === g).map((p) => (
+                      <tr key={p.key} className="border-t border-border">
+                        <td className="p-3">{p.label}</td>
+                        {ALL_ROLES.map((r) => {
+                          const on = rolePerm(r, p.key);
+                          const isOwner = r === "owner";
+                          return (
+                            <td key={r} className="p-2 text-center">
+                              <button disabled={isOwner}
+                                onClick={() => setRolePerm.mutate({ role: r, permission: p.key, allowed: !on })}
+                                className={`w-7 h-7 rounded-md border transition-colors ${on ? "bg-success/15 border-success/40 text-success" : "bg-muted/40 border-border text-muted-foreground/50"} ${isOwner ? "opacity-60 cursor-not-allowed" : "hover:opacity-80"}`}
+                                title={isOwner ? "Inhaber hat immer alle Rechte" : on ? "Erlaubt" : "Verweigert"}>
+                                {on ? "✓" : "—"}
+                              </button>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </FragmentRow>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Role permissions matrix — editable */}
-      <div className="mt-6 rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <div>
-            <div className="text-sm font-semibold">Berechtigungen pro Rolle</div>
-            <div className="text-xs text-muted-foreground">Klicke auf eine Zelle, um die Berechtigung umzuschalten.</div>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="text-left p-3">Berechtigung</th>
-                {ALL_ROLES.map((r) => <th key={r} className="p-3 text-center">{ROLE_LABEL[r]}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((g) => (
-                <FragmentRow key={`g-${g}`}>
-                  <tr className="bg-muted/20">
-                    <td colSpan={ALL_ROLES.length + 1} className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase">{g}</td>
-                  </tr>
-                  {PERMISSIONS.filter((p) => p.group === g).map((p) => (
-                    <tr key={p.key} className="border-t border-border">
-                      <td className="p-3">{p.label}</td>
-                      {ALL_ROLES.map((r) => {
-                        const on = rolePerm(r, p.key);
-                        const isOwner = r === "owner";
-                        return (
-                          <td key={r} className="p-2 text-center">
-                            <button
-                              disabled={isOwner}
-                              onClick={() => setRolePerm.mutate({ role: r, permission: p.key, allowed: !on })}
-                              className={`w-7 h-7 rounded-md border transition-colors ${on ? "bg-success/15 border-success/40 text-success" : "bg-muted/40 border-border text-muted-foreground/50"} ${isOwner ? "opacity-60 cursor-not-allowed" : "hover:opacity-80"}`}
-                              title={isOwner ? "Inhaber hat immer alle Rechte" : on ? "Erlaubt" : "Verweigert"}
-                            >
-                              {on ? "✓" : "—"}
-                            </button>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </FragmentRow>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <Sheet open={!!selected} onOpenChange={(o) => !o && setSelectedId(null)}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          {selected && (() => {
+            const u = selected;
+            const isBanned = isBannedUser(u);
+            const isSelf = u.user_id === currentUserId;
+            const missing = ALL_ROLES.filter((r) => !u.roles.includes(r));
+            const locs = memberPropsQ.data?.[u.user_id] ?? [];
+            return (
+              <div className="space-y-6">
+                <SheetHeader>
+                  <div className="flex items-center gap-4">
+                    <Initials name={u.full_name || u.email} big />
+                    <div className="min-w-0">
+                      <SheetTitle className="truncate">{u.full_name || "—"}</SheetTitle>
+                      <div className="mt-1">{isBanned ? <Badge tone="destructive">Gesperrt</Badge> : <Badge tone="success">Aktiv</Badge>}</div>
+                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 truncate"><Mail className="w-3 h-3" /> {u.email}</div>
+                    </div>
+                  </div>
+                </SheetHeader>
+
+                <PanelSection title="Rollen">
+                  <div className="flex flex-wrap gap-1.5">
+                    {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
+                    {(u.roles as AppRole[]).map((r) => (
+                      <span key={r} className="inline-flex items-center gap-1 rounded-full border border-border pl-2 pr-1 py-0.5 text-xs">
+                        <Shield className="w-3 h-3" /> {ROLE_LABEL[r]}
+                        <button className="rounded-full p-0.5 text-muted-foreground hover:text-destructive" onClick={() => removeRole.mutate({ userId: u.user_id, role: r })} title="Rolle entfernen"><X className="w-3 h-3" /></button>
+                      </span>
+                    ))}
+                  </div>
+                  {missing.length > 0 && (
+                    <div className="flex gap-2 mt-2">
+                      <Select value={adding?.userId === u.user_id ? adding.role : missing[0]} onValueChange={(v) => setAdding({ userId: u.user_id, role: v as AppRole })}>
+                        <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>{missing.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}</SelectContent>
+                      </Select>
+                      <Button size="sm" variant="outline" onClick={() => addRole.mutate({ userId: u.user_id, role: adding?.userId === u.user_id ? adding.role : missing[0] })}>
+                        <Plus className="w-3 h-3 mr-1" /> Hinzufügen
+                      </Button>
+                    </div>
+                  )}
+                </PanelSection>
+
+                <PanelSection title="Zugewiesene Standorte" action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
+                  {hasAllAccess(u.roles) ? (
+                    <div className="text-sm text-muted-foreground">Alle Standorte (Inhaber/Admin)</div>
+                  ) : locs.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">Noch kein Standort zugewiesen.</div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {locs.map((id) => (
+                        <div key={id} className="flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm">
+                          <Building2 className="w-4 h-4 text-primary" /> {propName(id)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </PanelSection>
+
+                <UserWorkHours userId={u.user_id} />
+                <UserActivity userId={u.user_id} />
+
+                <PanelSection title="Zugang & Sicherheit">
+                  <div className="flex flex-wrap gap-2">
+                    <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
+                    <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
+                    <Button size="sm" variant="outline" disabled={isSelf || banUser.isPending}
+                      onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
+                      {isBanned ? <><Unlock className="w-3.5 h-3.5 mr-1" /> Freigeben</> : <><Lock className="w-3.5 h-3.5 mr-1" /> Sperren</>}
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10" disabled={isSelf}
+                      onClick={() => { if (confirm(`"${u.full_name || u.email}" wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) { deleteUser.mutate(u.user_id); setSelectedId(null); } }}>
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Löschen
+                    </Button>
+                  </div>
+                  {isSelf && <div className="text-xs text-muted-foreground mt-2">Eigenes Konto kann nicht gesperrt oder gelöscht werden.</div>}
+                </PanelSection>
+              </div>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
 
       <CreateUserDialog
         open={createOpen}
@@ -345,13 +471,94 @@ function TeamPage() {
   );
 }
 
+function Initials({ name, big }: { name: string; big?: boolean }) {
+  const ini = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
+  return <div className={`shrink-0 rounded-full bg-primary/10 text-primary font-semibold grid place-items-center ${big ? "w-16 h-16 text-xl" : "w-9 h-9 text-xs"}`}>{ini || "?"}</div>;
+}
+
+function PanelSection({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="border-t border-border pt-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-sm font-semibold">{title}</div>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function UserWorkHours({ userId }: { userId: string }) {
+  const q = useQuery({
+    queryKey: ["team-user-hours", userId],
+    queryFn: async () => {
+      const { data: cl } = await supabase.from("cleaners").select("id").eq("user_id", userId).maybeSingle();
+      if (!cl) return null;
+      const since = new Date(Date.now() - 14 * 86400000).toISOString();
+      const { data, error } = await supabase.from("time_entries")
+        .select("id,clock_in_at,clock_out_at,break_minutes,status,properties(name)")
+        .eq("cleaner_id", cl.id).gte("clock_in_at", since).order("clock_in_at", { ascending: false }).limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const mins = (e: any) => e.clock_out_at ? Math.max(0, (new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000 - (e.break_minutes ?? 0)) : 0;
+  const total = (q.data ?? []).reduce((s: number, e: any) => s + mins(e), 0);
+  const fmt = (d: string) => new Date(d).toLocaleString("de-DE", { timeZone: "Europe/Berlin", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return (
+    <PanelSection title="Arbeitszeiten (14 Tage)" action={q.data ? <span className="text-xs font-semibold text-primary">{(total / 60).toFixed(1)} Std.</span> : undefined}>
+      {q.isLoading ? <div className="text-sm text-muted-foreground">Lädt…</div>
+        : q.data === null ? <div className="text-sm text-muted-foreground">Keine Zeiterfassung für dieses Konto.</div>
+        : q.data!.length === 0 ? <div className="text-sm text-muted-foreground">Keine Einträge in den letzten 14 Tagen.</div>
+        : (
+          <div className="space-y-1">
+            {q.data!.map((e: any) => (
+              <div key={e.id} className="flex items-center justify-between gap-2 text-sm rounded-lg px-2 py-1.5 hover:bg-accent/40">
+                <div className="flex items-center gap-2 min-w-0"><Clock className="w-3.5 h-3.5 text-primary shrink-0" /><span className="truncate">{fmt(e.clock_in_at)} · {e.properties?.name ?? "—"}</span></div>
+                <span className="tabular-nums text-xs text-muted-foreground shrink-0">{e.clock_out_at ? `${(mins(e) / 60).toFixed(1)} Std.` : "läuft"}</span>
+              </div>
+            ))}
+          </div>
+        )}
+    </PanelSection>
+  );
+}
+
+function UserActivity({ userId }: { userId: string }) {
+  const q = useQuery({
+    queryKey: ["team-user-activity", userId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).from("audit_logs")
+        .select("id,entity,action,created_at").eq("actor_id", userId).order("created_at", { ascending: false }).limit(8);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  return (
+    <PanelSection title="Letzte Aktivitäten">
+      {q.isLoading ? <div className="text-sm text-muted-foreground">Lädt…</div>
+        : (q.data ?? []).length === 0 ? <div className="text-sm text-muted-foreground">Keine Aktivitäten protokolliert.</div>
+        : (
+          <div className="space-y-1">
+            {q.data.map((l: any) => (
+              <div key={l.id} className="flex items-center justify-between gap-2 text-sm px-2 py-1.5">
+                <div className="flex items-center gap-2 min-w-0"><History className="w-3.5 h-3.5 text-primary shrink-0" /><span className="truncate">{l.entity} · {l.action}</span></div>
+                <span className="text-xs text-muted-foreground shrink-0">{new Date(l.created_at).toLocaleString("de-DE", { timeZone: "Europe/Berlin", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+            ))}
+          </div>
+        )}
+    </PanelSection>
+  );
+}
+
 function ResetPasswordButton({ onSubmit }: { onSubmit: (pw: string) => void }) {
   const [open, setOpen] = useState(false);
   const [pw, setPw] = useState("");
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" title="Passwort zurücksetzen"><KeyRound className="w-3.5 h-3.5" /></Button>
+        <Button size="sm" variant="outline" title="Passwort zurücksetzen"><KeyRound className="w-3.5 h-3.5 mr-1" /> Passwort</Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader><DialogTitle>Neues Passwort setzen</DialogTitle></DialogHeader>
@@ -454,7 +661,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost">Rechte</Button>
+        <Button size="sm" variant="outline"><Shield className="w-3.5 h-3.5 mr-1" /> Rechte</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -511,14 +718,14 @@ function PropertyAccessDialog({ userId, userName }: { userId: string; userName: 
       const { error } = await (supabase as any).rpc("admin_set_member_properties", { _user_id: userId, _property_ids: Array.from(sel ?? []) });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["member-props", userId] }); toast.success("Zuweisung gespeichert"); setOpen(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["member-props", userId] }); qc.invalidateQueries({ queryKey: ["member-props-all"] }); toast.success("Zuweisung gespeichert"); setOpen(false); },
     onError: (e: any) => toast.error(e.message),
   });
   const toggle = (id: string) => setSel((s) => { const n = new Set(s ?? []); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" title="Zugewiesene Häuser">Häuser</Button>
+        <Button size="sm" variant="ghost" title="Standorte zuweisen">Bearbeiten</Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader><DialogTitle>Häuser für {userName}</DialogTitle></DialogHeader>
