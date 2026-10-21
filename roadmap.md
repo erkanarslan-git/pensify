@@ -20,4 +20,4 @@
 - [x] Zimmerübersicht: kompakte Liste, globale Suche/Filter, sichere Schlüsselcode-Anzeige, responsive Dialoge
 - [ ] Dispatch/Team Komplett-Test, restliche i18n-Durchsicht außerhalb Zimmer/Reinigung
 
-- [ ] Tesisler: kartlardaki gereksiz boşlukları kaldır, onaylı mavi tasarıma uyarla; kullanım akışları sonrasında birlikte incelenecek
+- [x] Tesisler: kartların gereksiz iç boşlukları kaldırıldı, mavi tasarım uygulandı; 10 kart, oda detay bağlantısı ve mobil taşma kontrol edildi. Kullanım akışları sonrasında birlikte incelenecek.
