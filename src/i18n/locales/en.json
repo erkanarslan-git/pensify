@@ -182,7 +182,43 @@
         "security": "Security",
         "logs": "Activity log",
         "import": "Data import"
-      }
+      },
+      "generalTitle": "General",
+      "generalText": "The main language of the application is English. More options are in the other tabs.",
+      "languageTitle": "Interface language",
+      "currentLanguage": "Active language",
+      "notificationsTitle": "Notifications",
+      "emailNotif": "Email notifications",
+      "browserNotif": "Browser notifications",
+      "whatsappNotif": "WhatsApp notifications",
+      "emailTitle": "Email sending",
+      "emailFrom": "Sender (From)",
+      "emailReply": "Reply to",
+      "emailHint": "These addresses are used for booking confirmations and notifications.",
+      "companyTitle": "Company",
+      "companyName": "Company name",
+      "companyTax": "VAT ID",
+      "companyAddress": "Address",
+      "appearanceTitle": "Appearance",
+      "appearanceText": "You can switch light/dark mode in the header at the top right.",
+      "channelsTitle": "Channel colors",
+      "channelsText": "These colors are used in the calendar as the left edge marker and in the legend.",
+      "resetColors": "Reset to default",
+      "profileTitle": "My profile",
+      "profileEmail": "Email",
+      "profileName": "Full name",
+      "profileAvatar": "Avatar URL",
+      "profileLanguage": "Language",
+      "profileSaved": "Profile saved",
+      "profileLoading": "Loading…",
+      "securityTitle": "Security",
+      "newPassword": "New password",
+      "newPasswordRepeat": "New password (repeat)",
+      "passwordTooShort": "At least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "passwordChanged": "Password changed",
+      "changePassword": "Change password",
+      "save": "Save"
     }
   },
   "pensions": {
@@ -597,5 +633,12 @@
     "deleted": "Staff member deleted.",
     "deleteTitle": "Delete staff member?",
     "deleteDescription": "{{name}} will be permanently deleted. Past time entries will also be removed."
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Administrator",
+    "manager": "Manager",
+    "reception": "Reception",
+    "cleaner": "Cleaner"
   }
 }

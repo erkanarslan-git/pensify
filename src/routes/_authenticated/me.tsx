@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/me")({
-  head: () => ({ meta: [{ title: "Meine Schicht — Pensify" }, { name: "description", content: "Eigene Arbeitszeiten und Schichtstatus in Pensify." }, { property: "og:title", content: "Meine Schicht — Pensify" }, { property: "og:description", content: "Eigene Arbeitszeiten und Schichtstatus in Pensify." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Vardiyam — Pensify" }, { name: "description", content: "Pensify'da kendi çalışma saatleriniz ve vardiya durumunuz." }, { property: "og:title", content: "Vardiyam — Pensify" }, { property: "og:description", content: "Pensify'da kendi çalışma saatleriniz ve vardiya durumunuz." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: MePage,
 });
 
@@ -136,7 +136,7 @@ function MePage() {
   const start = useMutation({
     mutationFn: async () => {
       const c = ctx.data?.cleaner;
-      if (!c) throw new Error("Dein Konto ist mit keinem Reinigungskraft-Profil verknüpft. Bitte wende dich an deinen Administrator.");
+      if (!c) throw new Error("Hesabınız bir temizlik personeli profiline bağlı değil. Lütfen yöneticinize başvurun.");
       if (!selectedProperty) throw new Error("Lokasyon seç");
       if (hasCoords) {
         if (geo.pending) throw new Error("Konum alınıyor, lütfen bekle…");
@@ -214,15 +214,15 @@ function MePage() {
       </header>
 
       <main className="max-w-md mx-auto p-4 space-y-4">
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <div className="text-xs uppercase text-muted-foreground">Merhaba</div>
+        <div className="rounded-2xl brand-tile p-5 shadow-soft">
+          <div className="text-xs uppercase opacity-80">Merhaba</div>
           <div className="text-xl font-semibold">{cleaner?.full_name || user.email}</div>
-          {cleaner?.phone && <div className="text-xs text-muted-foreground mt-0.5">{cleaner.phone}</div>}
+          {cleaner?.phone && <div className="text-xs opacity-80 mt-0.5">{cleaner.phone}</div>}
         </div>
 
         {!cleaner && (
           <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm">
-            Dein Konto ist noch mit keinem Reinigungskraft-Profil verknüpft. Bitte wende dich an deinen Administrator.
+            Hesabınız henüz bir temizlik personeli profiline bağlı değil. Lütfen yöneticinize başvurun.
           </div>
         )}
 

@@ -12,7 +12,7 @@ import ReactMarkdown from "react-markdown";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/ai")({
-  head: () => ({ meta: [{ title: "KI Assistent — Pensify" }, { name: "description", content: "Betriebliche Fragen mit dem Pensify Assistenten klären." }, { property: "og:title", content: "KI Assistent — Pensify" }, { property: "og:description", content: "Betriebliche Fragen mit dem Pensify Assistenten klären." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "AI Asistan — Pensify" }, { name: "description", content: "Pensify asistanıyla işletme sorularınızı yanıtlayın." }, { property: "og:title", content: "AI Asistan — Pensify" }, { property: "og:description", content: "Pensify asistanıyla işletme sorularınızı yanıtlayın." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AiPage,
 });
 
@@ -85,8 +85,8 @@ function AiPage() {
           <div ref={scrollRef} className="h-[52vh] overflow-y-auto -m-5 p-5 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center py-10">
-                <div className="w-12 h-12 mx-auto rounded-2xl bg-primary/10 grid place-items-center mb-3">
-                  <Sparkles className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 mx-auto rounded-2xl brand-tile shadow-sm grid place-items-center mb-3">
+                  <Sparkles className="w-6 h-6" />
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   Doluluk, boş odalar, ciro veya öneri sorabilirsiniz.

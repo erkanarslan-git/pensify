@@ -182,7 +182,43 @@
         "security": "Sicherheit",
         "logs": "Änderungsprotokoll",
         "import": "Datenimport"
-      }
+      },
+      "generalTitle": "Allgemein",
+      "generalText": "Hauptsprache der Anwendung ist Deutsch. Weitere Optionen findest du in den anderen Reitern.",
+      "languageTitle": "Sprache der Oberfläche",
+      "currentLanguage": "Aktive Sprache",
+      "notificationsTitle": "Benachrichtigungen",
+      "emailNotif": "E-Mail Benachrichtigungen",
+      "browserNotif": "Browser-Benachrichtigungen",
+      "whatsappNotif": "WhatsApp-Benachrichtigungen",
+      "emailTitle": "E-Mail Versand",
+      "emailFrom": "Absender (Von)",
+      "emailReply": "Antwort an",
+      "emailHint": "Diese Adressen werden für Buchungs-Bestätigungen und Benachrichtigungen verwendet.",
+      "companyTitle": "Unternehmen",
+      "companyName": "Firmenname",
+      "companyTax": "USt-IdNr.",
+      "companyAddress": "Anschrift",
+      "appearanceTitle": "Darstellung",
+      "appearanceText": "Hell/Dunkel-Modus kannst du oben rechts in der Kopfzeile umschalten.",
+      "channelsTitle": "Kanal-Farben",
+      "channelsText": "Diese Farben werden im Kalender als linke Randmarkierung und in der Legende verwendet.",
+      "resetColors": "Auf Standard zurücksetzen",
+      "profileTitle": "Mein Profil",
+      "profileEmail": "E-Mail",
+      "profileName": "Voller Name",
+      "profileAvatar": "Avatar-URL",
+      "profileLanguage": "Sprache",
+      "profileSaved": "Profil gespeichert",
+      "profileLoading": "Lade…",
+      "securityTitle": "Sicherheit",
+      "newPassword": "Neues Passwort",
+      "newPasswordRepeat": "Neues Passwort (wiederholen)",
+      "passwordTooShort": "Mindestens 8 Zeichen",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "passwordChanged": "Passwort geändert",
+      "changePassword": "Passwort ändern",
+      "save": "Speichern"
     }
   },
   "pensions": {
@@ -597,5 +633,12 @@
     "deleted": "Mitarbeiter gelöscht.",
     "deleteTitle": "Mitarbeiter löschen?",
     "deleteDescription": "{{name}} wird endgültig gelöscht. Auch vergangene Zeiteinträge werden entfernt."
+  },
+  "roles": {
+    "owner": "Inhaber",
+    "admin": "Administrator",
+    "manager": "Manager",
+    "reception": "Rezeption",
+    "cleaner": "Reinigungskraft"
   }
 }
