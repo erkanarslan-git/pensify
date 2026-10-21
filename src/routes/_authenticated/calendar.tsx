@@ -540,9 +540,9 @@ function CalendarPage() {
                     <div
                       key={`${p.id}-header`}
                       style={{ gridColumn: "1 / -1" }}
-                      className="flex items-center justify-between gap-3 px-3 py-2 mt-2 first:mt-0 rounded-md bg-accent/50 border border-border text-sm"
+                      className="flex items-center justify-between gap-3 px-3 py-2 mt-2 first:mt-0 rounded-lg bg-primary/10 border border-primary/20 text-sm"
                     >
-                      <span className="font-semibold truncate">{p.name}</span>
+                      <span className="font-semibold truncate text-primary">{p.name}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {groupRooms.length} Zimmer · heute belegt: {occupiedToday}
                       </span>
