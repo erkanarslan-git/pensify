@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { Fragment as FragmentRow } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge, Section } from "@/components/app-shell";
@@ -203,7 +204,7 @@ function TeamPage() {
                   <Inbox className="w-4 h-4 text-warning" />
                   <div className="flex-1 min-w-[200px]">
                     <div className="text-sm font-medium">{user?.full_name || "—"} <span className="text-muted-foreground font-normal">· {user?.email}</span></div>
-                    <div className="text-xs text-muted-foreground">Wunschrolle: {ROLE_LABEL[(r.requested_role ?? "manager") as AppRole]} · {new Date(r.created_at).toLocaleString("de-DE")}</div>
+                    <div className="text-xs text-muted-foreground">Wunschrolle: {ROLE_LABEL[(r.requested_role ?? "manager") as AppRole]} · {new Date(r.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</div>
                     {r.message && <div className="text-xs mt-1 italic">"{r.message}"</div>}
                   </div>
                   <Select defaultValue={r.requested_role ?? "manager"} onValueChange={(v) => (r._role = v)}>

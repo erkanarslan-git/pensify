@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useMemo, useState } from "react";
@@ -213,7 +214,7 @@ function CleaningPage() {
                       <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm hover:bg-accent/40 transition-colors">
                         <div className="w-20 font-semibold">#{room?.number ?? "—"}</div>
                         <div className="w-28 text-muted-foreground tabular-nums">
-                          {due.toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                          {due.toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </div>
                         <div className="w-28"><Badge tone={meta.tone}>{t(`status.${task.status}`)}</Badge></div>
                         <div className="flex-1 min-w-[160px]">

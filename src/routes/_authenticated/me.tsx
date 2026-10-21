@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -323,7 +324,7 @@ function MePage() {
                   <li key={r.id} className="flex justify-between gap-2 border-b border-border last:border-0 pb-2 last:pb-0">
                     <div className="min-w-0">
                       <div className="truncate">{r.properties?.name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">{inAt.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">{inAt.toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</div>
                     </div>
                     <div className="font-mono text-sm">{h}sa {m.toString().padStart(2, "0")}dk</div>
                   </li>
@@ -354,7 +355,7 @@ function Elapsed({ entry }: { entry: { clock_in_at: string; break_minutes: numbe
     <div className="text-center mt-3">
       <div className="text-5xl font-mono font-semibold tabular-nums">{h}sa {m.toString().padStart(2, "0")}dk</div>
       <div className="text-xs text-muted-foreground mt-1">
-        Başlangıç {new Date(entry.clock_in_at).toLocaleTimeString()}
+        Başlangıç {new Date(entry.clock_in_at).toLocaleTimeString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
         {breakTotal > 0 && <> · Mola {breakTotal}dk</>}
         {entry.break_started_at && <> · <span className="text-warning">Molada</span></>}
       </div>

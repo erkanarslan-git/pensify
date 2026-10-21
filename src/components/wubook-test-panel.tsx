@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useEffect, useState } from "react";
 
 const TIMEOUT_MS = 30_000;
@@ -61,7 +62,7 @@ export function validate(f: Record<FormKey, string>): string | null {
   return null;
 }
 
-const fmt = (s?: unknown) => (typeof s === "string" ? new Date(s).toLocaleString("de-DE") : "—");
+const fmt = (s?: unknown) => (typeof s === "string" ? new Date(s).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : "—");
 
 function Step({ ok, label }: { ok: boolean | null; label: string }) {
   const Icon = ok === null ? Circle : ok ? CheckCircle2 : XCircle;

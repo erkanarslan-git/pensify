@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -93,7 +94,7 @@ export function WuBookStatus() {
         </div>
         <div>
           <dt className="text-muted-foreground">Zuletzt getestet</dt>
-          <dd>{lastResult ? new Date(lastResult.testedAt).toLocaleString("de-DE") : "—"}</dd>
+          <dd>{lastResult ? new Date(lastResult.testedAt).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : "—"}</dd>
         </div>
         {lastResult?.connected && (
           <>

@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { ArrowUpRight, Plus } from "lucide-react";
@@ -166,7 +167,7 @@ function Dashboard() {
               <div key={task.id} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{task.property?.name} · Zimmer {task.room?.number}</div>
-                  <div className="text-xs text-muted-foreground">Fällig {task.due_at ? new Date(task.due_at).toLocaleString() : "—"}</div>
+                  <div className="text-xs text-muted-foreground">Fällig {task.due_at ? new Date(task.due_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
                 </div>
                 <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{task.status}</Badge>
               </div>

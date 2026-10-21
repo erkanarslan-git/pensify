@@ -1,3 +1,4 @@
+import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { RotateCcw, Trash2 } from "lucide-react";
@@ -55,7 +56,7 @@ export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
             </div>
           </div>
           <div className="text-xs text-muted-foreground min-w-[200px]">
-            Gelöscht von <span className="font-medium text-foreground">{r.deleter}</span> am {new Date(r.deleted_at).toLocaleString("de-DE")}
+            Gelöscht von <span className="font-medium text-foreground">{r.deleter}</span> am {new Date(r.deleted_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
             {r.delete_reason && <div>Grund: {r.delete_reason}</div>}
           </div>
           <button onClick={() => act("restore_reservation", r.id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-input text-xs hover:bg-accent">
