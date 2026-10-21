@@ -502,7 +502,10 @@
     "assigned": "Cleaner assigned.",
     "unassigned": "Assignment removed.",
     "statusChanged": "Task: {{status}}",
-    "actionFailed": "Action failed. Please try again."
+    "actionFailed": "Action failed. Please try again.",
+    "shiftStarted": "Shift started automatically.",
+    "shiftNoLocation": "Shift not started: location unavailable.",
+    "shiftStartFailed": "Shift could not be started (location out of range or too inaccurate)."
   },
   "cleaners": {
     "staff": "Staff",

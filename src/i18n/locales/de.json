@@ -502,7 +502,10 @@
     "assigned": "Reinigungskraft zugewiesen.",
     "unassigned": "Zuweisung entfernt.",
     "statusChanged": "Aufgabe: {{status}}",
-    "actionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen."
+    "actionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
+    "shiftStarted": "Schicht automatisch gestartet.",
+    "shiftNoLocation": "Schicht nicht gestartet: Standort nicht verfügbar.",
+    "shiftStartFailed": "Schicht konnte nicht gestartet werden (Standort außerhalb oder zu ungenau)."
   },
   "cleaners": {
     "staff": "Personal",

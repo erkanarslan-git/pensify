@@ -502,7 +502,10 @@
     "assigned": "Temizlik görevlisi atandı.",
     "unassigned": "Görevli kaldırıldı.",
     "statusChanged": "Görev: {{status}}",
-    "actionFailed": "İşlem başarısız. Lütfen tekrar deneyin."
+    "actionFailed": "İşlem başarısız. Lütfen tekrar deneyin.",
+    "shiftStarted": "Mesai otomatik başlatıldı.",
+    "shiftNoLocation": "Mesai başlatılamadı: konum alınamadı.",
+    "shiftStartFailed": "Mesai başlatılamadı (konum uzak veya yetersiz)."
   },
   "cleaners": {
     "staff": "Personel",
