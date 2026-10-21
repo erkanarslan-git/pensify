@@ -127,7 +127,8 @@
       "changedBy": "{{name}} · {{date}}",
       "unknownUser": "Unknown user",
       "maintenanceBadge": "Maintenance",
-      "noMaintenance": "No warnings"
+      "noMaintenance": "No warnings",
+      "viewLogs": "Activity log"
     },
     "analytics": {
       "title": "Analytics"
@@ -135,6 +136,53 @@
     "properties": {
       "title": "Locations",
       "subtitle": "{{count}} locations across {{cities}} cities"
+    },
+    "logs": {
+      "title": "Activity log",
+      "retention": "Retention: 14 days",
+      "filterEmail": "User (email)…",
+      "filterEntityId": "Record ID…",
+      "entity": "Entity",
+      "action": "Action",
+      "allEntities": "All entities",
+      "allActions": "All actions",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "resetFilters": "Reset filters",
+      "time": "Time",
+      "user": "User",
+      "record": "Record",
+      "changes": "Changes",
+      "noLogs": "No logs found.",
+      "entries": "{{count}} entries · Page {{page}} of {{pages}}",
+      "back": "Back",
+      "next": "Next",
+      "detail": "Log detail",
+      "before": "Before",
+      "after": "After",
+      "system": "System",
+      "showDetails": "Show details",
+      "changedFields": "Changed fields ({{count}})",
+      "recordId": "Record ID",
+      "logId": "Log ID"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Language, notifications, email and more",
+      "tabs": {
+        "general": "General",
+        "profile": "Profile",
+        "language": "Language",
+        "notifications": "Notifications",
+        "email": "Email",
+        "company": "Company",
+        "appearance": "Appearance",
+        "channels": "Channel colors",
+        "security": "Security",
+        "logs": "Activity log",
+        "import": "Data import"
+      }
     }
   },
   "pensions": {

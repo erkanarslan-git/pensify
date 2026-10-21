@@ -127,7 +127,8 @@
       "changedBy": "{{name}} · {{date}}",
       "unknownUser": "Unbekannter Nutzer",
       "maintenanceBadge": "Wartung",
-      "noMaintenance": "Keine Warnungen"
+      "noMaintenance": "Keine Warnungen",
+      "viewLogs": "Änderungsprotokoll"
     },
     "analytics": {
       "title": "Analysen"
@@ -135,6 +136,53 @@
     "properties": {
       "title": "Pensionen",
       "subtitle": "{{count}} Pensionen in {{cities}} Städten"
+    },
+    "logs": {
+      "title": "Änderungsprotokoll",
+      "retention": "Aufbewahrung: 14 Tage",
+      "filterEmail": "Benutzer (E-Mail)…",
+      "filterEntityId": "Datensatz-ID…",
+      "entity": "Entität",
+      "action": "Aktion",
+      "allEntities": "Alle Entitäten",
+      "allActions": "Alle Aktionen",
+      "create": "Erstellen",
+      "update": "Ändern",
+      "delete": "Löschen",
+      "resetFilters": "Filter zurücksetzen",
+      "time": "Zeit",
+      "user": "Benutzer",
+      "record": "Datensatz",
+      "changes": "Änderungen",
+      "noLogs": "Keine Logs gefunden.",
+      "entries": "{{count}} Einträge · Seite {{page}} von {{pages}}",
+      "back": "Zurück",
+      "next": "Weiter",
+      "detail": "Log-Detail",
+      "before": "Vorher",
+      "after": "Nachher",
+      "system": "System",
+      "showDetails": "Details anzeigen",
+      "changedFields": "Geänderte Felder ({{count}})",
+      "recordId": "Datensatz-ID",
+      "logId": "Log-ID"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "subtitle": "Sprache, Benachrichtigungen, E-Mail und mehr",
+      "tabs": {
+        "general": "Allgemein",
+        "profile": "Profil",
+        "language": "Sprache",
+        "notifications": "Benachrichtigungen",
+        "email": "E-Mail",
+        "company": "Unternehmen",
+        "appearance": "Darstellung",
+        "channels": "Kanal-Farben",
+        "security": "Sicherheit",
+        "logs": "Änderungsprotokoll",
+        "import": "Datenimport"
+      }
     }
   },
   "pensions": {
