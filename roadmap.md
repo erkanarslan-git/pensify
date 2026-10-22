@@ -2,7 +2,8 @@
 
 ## Kapsam belgesi (22.10.2026) — 8 aşama
 - [x] Temizlik şefi ataması: bölüm/aktif çalışan/firma/lokasyon kontrolü, RPC ve doğrudan yazma koruması; 4 test geçti. Yönetici ekranı kontrol edildi; şef hesabı ve SQL izolasyon testleri ayrıcalıklı test erişimi bekliyor.
-- [ ] Bakım şefi ataması: bakım listesi, çalışan seçimi, kimin/ne zaman atadığı ve bölüm/lokasyon koruması.
+- [x] Bakım ataması: ayrı Bakım ekranı, yetkili aktif bölüm çalışanları, atayan kişi/zaman, doğrudan yazma koruması; 17 test geçti, boş ekran ve mobil kontrol edildi.
+- [ ] Bakım şefi gerçek atama testi: henüz bakım çalışanı/şefi ve açık bakım işi yok; SQL firma/bölüm testleri ayrıcalıklı erişim bekliyor.
 - [ ] Bölüm raporu erişimi: sonraki adım.
 - [x] 1. Mesai akışı: çalışan yalnız kendi açık mesaisini görür; şef gerekçeli düzeltir, geçmiş kaydı tutulur; çift tıklama/çakışan mesai engelli; unutulan çıkış sıfır süreyle kontrole düşer; temizlik bitirmek mesaiyi kapatmaz. Farklı rol ile canlı erişim testi sandbox rol kısıtı nedeniyle yapılamadı.
 - [x] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri

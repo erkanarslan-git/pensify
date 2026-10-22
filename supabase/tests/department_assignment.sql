@@ -23,4 +23,14 @@ UPDATE public.member_departments SET lead_can_assign=false WHERE member_id='da10
 DO $$ BEGIN
  IF public.has_department_assignment('da000000-0000-0000-0000-000000000001','cleaning','da200000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'disabled power allowed'; END IF;
 END $$;
+UPDATE public.member_departments SET department='maintenance',lead_can_assign=true;
+DO $$ BEGIN
+ IF NOT public.has_department_assignment('da000000-0000-0000-0000-000000000001','maintenance','da200000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'maintenance worker denied'; END IF;
+ IF public.has_department_assignment('da000000-0000-0000-0000-000000000001','cleaning','da200000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'maintenance lead granted cleaning power'; END IF;
+ IF public.has_department_assignment('da000000-0000-0000-0000-000000000001','maintenance','da200000-0000-0000-0000-000000000003') THEN RAISE EXCEPTION 'inactive maintenance worker allowed'; END IF;
+END $$;
+UPDATE public.member_departments SET lead_can_assign=false WHERE member_id='da100000-0000-0000-0000-000000000001';
+DO $$ BEGIN
+ IF public.has_department_assignment('da000000-0000-0000-0000-000000000001','maintenance','da200000-0000-0000-0000-000000000002') THEN RAISE EXCEPTION 'disabled maintenance power allowed'; END IF;
+END $$;
 ROLLBACK;
