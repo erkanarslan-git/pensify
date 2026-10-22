@@ -23,6 +23,7 @@ import {
   RefreshCw,
   Lock,
   ListTodo,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
@@ -62,6 +63,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
       { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
+      { to: "/payments", labelKey: "nav.payments", icon: Wallet },
       { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
     ],
   },

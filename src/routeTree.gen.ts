@@ -23,6 +23,7 @@ import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
@@ -116,6 +117,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRequestAccessRoute =
   AuthenticatedRequestAccessRouteImport.update({
     id: '/request-access',
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/geo-test'
     | '/me'
     | '/notifications'
+    | '/payments'
     | '/request-access'
     | '/reservations'
     | '/rooms'
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/geo-test'
     | '/me'
     | '/notifications'
+    | '/payments'
     | '/request-access'
     | '/reservations'
     | '/rooms'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/_authenticated/geo-test'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
+    | '/_authenticated/payments'
     | '/_authenticated/request-access'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
@@ -569,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments': {
+      id: '/_authenticated/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/request-access': {
@@ -747,6 +766,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
@@ -772,6 +792,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,

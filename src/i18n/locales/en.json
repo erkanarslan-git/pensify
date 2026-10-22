@@ -27,7 +27,8 @@
       "places": "Places",
       "cleaning": "Cleaning",
       "admin": "Admin"
-    }
+    },
+    "payments": "Payments"
   },
   "common": {
     "today": "Today",
