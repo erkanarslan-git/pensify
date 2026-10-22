@@ -2061,6 +2061,59 @@ export type Database = {
           },
         ]
       }
+      todos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          done: boolean
+          done_at: string | null
+          done_by: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          priority: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          done?: boolean
+          done_at?: string | null
+          done_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          priority?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          done?: boolean
+          done_at?: string | null
+          done_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          priority?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todos_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_permissions: {
         Row: {
           allowed: boolean
