@@ -15,7 +15,7 @@ import { ChevronLeft, ChevronRight, FileText, Eye, Info } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings/logs")({
   head: () => ({ meta: [{ title: "Audit Logs — Pensify" }, { name: "description", content: "Änderungen und Aktivitäten in Pensify nachverfolgen." }, { property: "og:title", content: "Audit Logs — Pensify" }, { property: "og:description", content: "Änderungen und Aktivitäten in Pensify nachverfolgen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({ entityId: typeof s.entityId === "string" ? s.entityId : undefined }),
+  validateSearch: (s: Record<string, unknown>): { entityId?: string } => ({ entityId: typeof s.entityId === "string" ? s.entityId : undefined }),
   component: AuditLogsContent,
 });
 
