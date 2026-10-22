@@ -5,6 +5,7 @@ import de from "./locales/de.json";
 import en from "./locales/en.json";
 import tr from "./locales/tr.json";
 import { attendanceTranslations } from "./attendance";
+import { clockTranslations } from "./clock";
 import { teamSafetyTranslations } from "./team-safety";
 import { bookingAvailabilityTranslations } from "./booking-availability";
 
@@ -17,9 +18,9 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources: {
-        de: { translation: { ...de, attendance: attendanceTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de } },
-        en: { translation: { ...en, attendance: attendanceTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en } },
-        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr } },
+        de: { translation: { ...de, attendance: attendanceTranslations.de, clock: clockTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de } },
+        en: { translation: { ...en, attendance: attendanceTranslations.en, clock: clockTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en } },
+        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, clock: clockTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr } },
       },
       fallbackLng: "de",
       supportedLngs: SUPPORTED_LANGS as unknown as string[],
