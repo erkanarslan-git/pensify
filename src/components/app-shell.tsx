@@ -1,4 +1,4 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { ListTodo, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -52,6 +52,7 @@ const navGroups: NavGroup[] = [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
       { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
       { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
+      { to: "/todos", labelKey: "nav.todos", icon: ListTodo },
       { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
     ],
   },
