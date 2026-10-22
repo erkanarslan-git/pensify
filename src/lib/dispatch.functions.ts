@@ -194,29 +194,7 @@ async function applyAction(
     }
 
     if (action === "complete") {
-      // close any open shift
-      const { data: openShift } = await supabase
-        .from("time_entries")
-        .select("id, break_minutes, break_started_at")
-        .eq("cleaner_id", cleanerId)
-        .is("clock_out_at", null)
-        .maybeSingle();
-      if (openShift) {
-        const now = new Date();
-        let breakAdd = 0;
-        if (openShift.break_started_at) {
-          breakAdd = Math.max(0, Math.round((now.getTime() - new Date(openShift.break_started_at).getTime()) / 60000));
-        }
-        await supabase
-          .from("time_entries")
-          .update({
-            clock_out_at: now.toISOString(),
-            break_started_at: null,
-            break_minutes: (openShift.break_minutes ?? 0) + breakAdd,
-            status: "completed",
-          })
-          .eq("id", openShift.id);
-      }
+      // Room task completion never closes the location shift (separate concepts).
       await transition(supabase, task.id, "completed");
       return { applied: true, taskStatus: "completed", roomStatus: "cleaned" };
     }

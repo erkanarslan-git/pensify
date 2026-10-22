@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import i18n from "@/i18n";
 import { EmployeeAttendance } from "@/components/employee-attendance";
+import { TimeEntryCorrectionDialog, type CorrectableEntry } from "@/components/time-entry-correction";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/time-tracking")({
@@ -29,6 +30,8 @@ type Entry = {
   break_minutes: number;
   break_started_at: string | null;
   status: string;
+  needs_review?: boolean;
+  review_reason?: string | null;
   paid_at: string | null;
   paid_amount: number | null;
   clock_in_lat: number | null;
@@ -100,7 +103,7 @@ function TimeTrackingPage() {
       let q = supabase
         .from("time_entries")
         .select(
-          "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, break_started_at, status, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name), properties(name)",
+          "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, break_started_at, status, needs_review, review_reason, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name), properties(name)",
         )
         .gte("clock_in_at", `${from}T00:00:00`)
         .lte("clock_in_at", `${to}T23:59:59`)
@@ -125,7 +128,7 @@ function TimeTrackingPage() {
     const byCleaner = new Map<string, { name: string; minutes: number; rate: number; entries: number; amount: number }>();
     let totalMin = 0;
     for (const e of entries) {
-      if (!e.clock_out_at) continue;
+      if (!e.clock_out_at || e.needs_review) continue;
       const min = Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0));
       totalMin += min;
       const rate = e.cleaners?.hourly_rate ?? 0;
@@ -185,34 +188,7 @@ function TimeTrackingPage() {
     },
   });
 
-  const endShift = useMutation({
-    mutationFn: async (entry: Entry) => {
-      const now = new Date();
-      let breakAdd = 0;
-      if (entry.break_started_at) {
-        breakAdd = Math.max(0, Math.round((now.getTime() - new Date(entry.break_started_at).getTime()) / 60000));
-      }
-      const { error } = await supabase
-        .from("time_entries")
-        .update({
-          clock_out_at: now.toISOString(),
-          break_started_at: null,
-          break_minutes: (entry.break_minutes ?? 0) + breakAdd,
-          status: "completed",
-        })
-        .eq("id", entry.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success(t("timeTracking.ended"));
-      qc.invalidateQueries({ queryKey: ["time-entries"] });
-    },
-    onError: (e: unknown) => {
-      const err = e as { message?: string; code?: string; details?: string };
-      console.error("[admin endShift]", err);
-      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
-    },
-  });
+  const [correcting, setCorrecting] = useState<{ entry: CorrectableEntry; endNow: boolean } | null>(null);
 
   function exportCsv() {
     const rows = [["Cleaner", "Property", "Start", "End", "Minutes", "Break (min)", "Status", "Paid", "Amount"]];
@@ -395,7 +371,12 @@ function TimeTrackingPage() {
                         <td className="px-5 py-2 text-xs whitespace-nowrap">
                           {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : <Badge tone="warning">{t("timeTracking.active")}</Badge>}
                         </td>
-                        <td className="px-5 py-2">{e.clock_out_at ? `${Math.floor(min / 60)}h ${min % 60}m` : "—"}</td>
+                        <td className="px-5 py-2">
+                          {e.clock_out_at ? `${Math.floor(min / 60)}h ${min % 60}m` : "—"}
+                          {e.needs_review && (
+                            <div className="mt-1"><Badge tone="danger">{t("clock.needsReview")}{e.review_reason === "missing_clock_out" ? ` · ${t("clock.missingClockOut")}` : e.review_reason === "too_long" ? ` · ${t("clock.tooLong")}` : ""}</Badge></div>
+                          )}
+                        </td>
                         <td className="px-5 py-2">
                           {e.clock_in_lat != null && e.clock_in_lng != null ? (
                             <a className="text-primary hover:underline inline-flex items-center gap-1" href={`https://maps.google.com/?q=${e.clock_in_lat},${e.clock_in_lng}`} target="_blank" rel="noreferrer">
@@ -407,13 +388,16 @@ function TimeTrackingPage() {
                           {e.paid_at ? (
                             <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> €{e.paid_amount?.toFixed(2)}</Badge>
                           ) : e.clock_out_at ? (
-                            <Button size="sm" variant="outline" onClick={() => markPaid.mutate(e)}>{t("timeTracking.markPaid")}</Button>
+                            <div className="flex gap-1 flex-wrap">
+                              {!e.needs_review && <Button size="sm" variant="outline" onClick={() => markPaid.mutate(e)}>{t("timeTracking.markPaid")}</Button>}
+                              <Button size="sm" variant="ghost" onClick={() => setCorrecting({ entry: e, endNow: false })}>{t("clock.correct")}</Button>
+                            </div>
                           ) : (
                             <div className="flex gap-1">
                               <Button size="sm" variant="outline" onClick={() => toggleBreak.mutate(e)} disabled={toggleBreak.isPending}>
                                 {e.break_started_at ? <><Play className="w-3 h-3 mr-1" />{t("timeTracking.resume")}</> : <><Pause className="w-3 h-3 mr-1" />{t("timeTracking.break")}</>}
                               </Button>
-                              <Button size="sm" variant="destructive" onClick={() => endShift.mutate(e)} disabled={endShift.isPending}>
+                              <Button size="sm" variant="destructive" onClick={() => setCorrecting({ entry: e, endNow: true })}>
                                 <Square className="w-3 h-3 mr-1" />{t("timeTracking.end")}
                               </Button>
                             </div>
@@ -430,6 +414,7 @@ function TimeTrackingPage() {
           </TabsContent>
           <TabsContent value="plan" className="mt-4"><EmployeeAttendance /></TabsContent>
         </Tabs>
+        <TimeEntryCorrectionDialog entry={correcting?.entry ?? null} endNow={correcting?.endNow} onClose={() => setCorrecting(null)} />
       </div>
     </AppShell>
   );
