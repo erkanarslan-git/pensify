@@ -25,7 +25,8 @@
 - Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
 - Dispatch shows all daily tasks in expandable employee rows; sending/assignment logic unchanged. Why: no hidden tasks or outbound actions.
 - Business time formatting and dispatch day boundaries use the shared business-time helpers; persist UTC instants and respect daylight-saving transitions. Why: display and scheduling must agree independently of browser and legacy settings.
-- Time entries: employees read only their open shift and write only via clock_start/clock_stop/clock_toggle_break (server time, idempotent, one open session); supervisors (manage_time + property access) read and correct via correct_time_entry with a mandatory reason; every change is logged to time_entry_corrections. Forgotten clock-outs close at zero duration with needs_review, never with an invented end time; room tasks never open/close shifts on completion. Why: accountable, tamper-proof hours.
+- Time entries: clock ops server-side, idempotent, one open session; employees see only their open shift; supervisors correct with mandatory reason, logged in time_entry_corrections; forgotten clock-outs close at zero with needs_review; cleaning never closes shifts. Why: accountable, tamper-proof hours.
 - Subdirectories may have their own AGENTS.md; read it before editing there.
 - Payments: payment_schedules (installments) + payments (partial allowed); org/property derived from the reservation by trigger, access via can_manage_payments; installments with payments cannot be deleted. Why: tenant-safe, auditable collections.
-- Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI Assistant and Channel Sync live in Tools. Why: stage-7 menu scope.
+- Owner report: org-scoped items; team topics; issue reporter/resolver distinct. Why: consistent counts.
+- Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI + Channel Sync in Tools. Why: stage-7 menu scope.
