@@ -1,4 +1,4 @@
-import { ListTodo, Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -22,6 +22,7 @@ import {
   PanelLeftOpen,
   RefreshCw,
   Lock,
+  ListTodo,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
