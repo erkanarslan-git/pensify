@@ -42,7 +42,6 @@ export function MemberDepartments({ userId }: { userId: string }) {
     const next = { is_worker: cur?.is_worker ?? false, is_lead: cur?.is_lead ?? false, ...patch };
     const db = supabase as any;
     let error;
-    if (dept === "hr") next.is_worker = !!(patch.is_worker ?? patch.is_lead ?? cur?.is_worker);
     if (!next.is_worker && !next.is_lead) {
       if (cur) ({ error } = await db.from("member_departments").delete().eq("id", cur.id));
     } else if (cur) {

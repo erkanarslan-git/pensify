@@ -11,6 +11,7 @@ import { paymentsTranslations } from "./payments";
 import { bankTranslations } from "./bank";
 import { teamSafetyTranslations } from "./team-safety";
 import { bookingAvailabilityTranslations } from "./booking-availability";
+import { departmentTranslations } from "./departments";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -21,9 +22,9 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources: {
-        de: { translation: { ...de, attendance: attendanceTranslations.de, clock: clockTranslations.de, todos: todosTranslations.de, payments: paymentsTranslations.de, bank: bankTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de } },
-        en: { translation: { ...en, attendance: attendanceTranslations.en, clock: clockTranslations.en, todos: todosTranslations.en, payments: paymentsTranslations.en, bank: bankTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en } },
-        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, clock: clockTranslations.tr, todos: todosTranslations.tr, payments: paymentsTranslations.tr, bank: bankTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr } },
+        de: { translation: { ...de, attendance: attendanceTranslations.de, clock: clockTranslations.de, todos: todosTranslations.de, payments: paymentsTranslations.de, bank: bankTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de, departments: departmentTranslations.de } },
+        en: { translation: { ...en, attendance: attendanceTranslations.en, clock: clockTranslations.en, todos: todosTranslations.en, payments: paymentsTranslations.en, bank: bankTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en, departments: departmentTranslations.en } },
+        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, clock: clockTranslations.tr, todos: todosTranslations.tr, payments: paymentsTranslations.tr, bank: bankTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr, departments: departmentTranslations.tr } },
       },
       fallbackLng: "de",
       supportedLngs: SUPPORTED_LANGS as unknown as string[],
