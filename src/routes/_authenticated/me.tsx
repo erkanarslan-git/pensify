@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Play, Pause, Square, LogOut, Loader2, QrCode, Building2, MapPin, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { clockErrorKey } from "@/i18n/clock";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -77,7 +78,7 @@ function MePage() {
         .eq("user_id", u.user.id)
         .maybeSingle();
       if (!cleaner)
-        return { user: u.user, cleaner: null, open: null, properties: [] as PropertyLite[], recent: [] };
+        return { user: u.user, cleaner: null, open: null, properties: [] as PropertyLite[] };
       const { data: open } = await supabase
         .from("time_entries")
         .select("id, property_id, clock_in_at, break_minutes, break_started_at, status, properties(name)")
@@ -85,19 +86,11 @@ function MePage() {
         .is("clock_out_at", null)
         .maybeSingle();
       const { data: properties } = await supabase.rpc("list_my_clock_properties");
-      const { data: recent } = await supabase
-        .from("time_entries")
-        .select("id, clock_in_at, clock_out_at, break_minutes, properties(name)")
-        .eq("cleaner_id", cleaner.id)
-        .not("clock_out_at", "is", null)
-        .order("clock_in_at", { ascending: false })
-        .limit(5);
       return {
         user: u.user,
         cleaner,
         open,
         properties: (properties ?? []) as PropertyLite[],
-        recent: recent ?? [],
       };
     },
   });
@@ -158,10 +151,10 @@ function MePage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Vardiya başladı");
+      toast.success(t("timeTracking.started"));
       qc.invalidateQueries({ queryKey: ["me-shift"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
 
   const toggleBreak = useMutation({
@@ -172,7 +165,7 @@ function MePage() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["me-shift"] }),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
 
   const stop = useMutation({
@@ -187,10 +180,10 @@ function MePage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Vardiya bitti");
+      toast.success(t("timeTracking.ended"));
       qc.invalidateQueries({ queryKey: ["me-shift"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
 
   if (ctx.isLoading) {
@@ -202,7 +195,7 @@ function MePage() {
   }
   if (!ctx.data) return null;
 
-  const { cleaner, open, properties, recent, user } = ctx.data;
+  const { cleaner, open, properties, user } = ctx.data;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -310,29 +303,6 @@ function MePage() {
           </div>
         ) : null}
 
-        {recent.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <div className="text-xs uppercase text-muted-foreground mb-3">Son vardiyalar</div>
-            <ul className="space-y-2 text-sm">
-              {recent.map((r: any) => {
-                const inAt = new Date(r.clock_in_at);
-                const outAt = new Date(r.clock_out_at);
-                const min = Math.max(0, Math.round((outAt.getTime() - inAt.getTime()) / 60000) - (r.break_minutes ?? 0));
-                const h = Math.floor(min / 60);
-                const m = min % 60;
-                return (
-                  <li key={r.id} className="flex justify-between gap-2 border-b border-border last:border-0 pb-2 last:pb-0">
-                    <div className="min-w-0">
-                      <div className="truncate">{r.properties?.name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">{inAt.toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</div>
-                    </div>
-                    <div className="font-mono text-sm">{h}sa {m.toString().padStart(2, "0")}dk</div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
       </main>
     </div>
   );
