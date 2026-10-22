@@ -37,4 +37,9 @@ if (!i18n.isInitialized) {
     });
 }
 
+// Keep translations fresh after hot reloads (init runs only once per page).
+for (const [lng, data] of Object.entries({ de, en, tr })) {
+  i18n.addResourceBundle(lng, "translation", data, true, true);
+}
+
 export default i18n;
