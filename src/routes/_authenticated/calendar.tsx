@@ -487,6 +487,47 @@ function CalendarPage() {
 
 
 
+      <div className="md:hidden space-y-3 mb-4">
+        {days.map((d) => {
+          const dIso = iso(d);
+          const roomIds = new Set(filteredRooms.map((r) => r.id));
+          const items = filteredReservations.filter((r) => roomIds.has(r.roomId) && r.checkIn <= dIso && r.checkOut > dIso);
+          const arr = items.filter((r) => r.checkIn === dIso).length;
+          const dep = filteredReservations.filter((r) => roomIds.has(r.roomId) && r.checkOut === dIso).length;
+          return (
+            <div key={dIso} className={`rounded-xl border border-border bg-card p-3 ${dIso === today ? "ring-2 ring-primary/40" : ""}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-semibold text-sm">{d.toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "2-digit" })}</div>
+                <div className="text-xs text-muted-foreground">↓{arr} · ↑{dep} · {items.length}</div>
+              </div>
+              {items.length === 0 ? (
+                <div className="text-xs text-muted-foreground">—</div>
+              ) : (
+                <div className="space-y-1.5">
+                  {items.map((r) => {
+                    const room = rooms.find((rm) => rm.id === r.roomId);
+                    return (
+                      <button key={r.id} onClick={() => r.realId && setEditId(r.realId)} className="w-full flex items-center gap-2 text-left text-sm rounded-md border border-border px-2 py-1.5 hover:bg-accent">
+                        <span className="w-1 self-stretch rounded-full" style={{ background: sourceColor(r.source) }} />
+                        <span className="font-medium tabular-nums w-10">#{room?.number ?? "?"}</span>
+                        <span className="flex-1 truncate">{r.guestName}</span>
+                        {r.checkIn === dIso && <span className="text-[10px] text-primary">↓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {canCreate && (
+                <button onClick={() => setNewRes({ date: dIso, propertyId: propertyId !== "all" ? propertyId : undefined })} className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
+                  <Plus className="w-3 h-3" /> {t("common.newReservation")}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden md:block">
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${t("calendar.roomsCount", { count: filteredRooms.length })}`}>
         <TooltipProvider delayDuration={150}>
         <div
@@ -703,6 +744,7 @@ function CalendarPage() {
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
         </div>
       </Section>
+      </div>
 
       {pendingMove && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg shadow-xl px-4 py-3 flex flex-wrap items-center gap-3 max-w-[95vw]">

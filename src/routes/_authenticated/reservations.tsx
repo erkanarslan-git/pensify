@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useDeferredValue, useEffect } from "react";
 import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -61,6 +61,10 @@ function ReservationsPage() {
   const [period, setPeriod] = useState<Period>("upcoming");
   const [newOpen, setNewOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("all");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 25;
+  const dq = useDeferredValue(q);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -96,22 +100,30 @@ function ReservationsPage() {
       rows.filter((r) => {
         if (src !== "all" && normalizeChannel(r.channel) !== src) return false;
         if (prop !== "all" && r.property?.id !== prop) return false;
-        if (q && !`${r.guest_name ?? ""} ${r.company_name ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
+        if (status !== "all" && r.status !== status) return false;
+        if (dq && !`${r.guest_name ?? ""} ${r.company_name ?? ""} ${r.room?.number ?? ""}`.toLowerCase().includes(dq.trim().toLowerCase())) return false;
         if (period === "upcoming" && r.check_out < today) return false;
         if (period === "today" && !(r.check_in <= today && r.check_out >= today)) return false;
         if (period === "past" && r.check_out >= today) return false;
         return true;
       }),
-    [rows, q, src, prop, period, today],
+    [rows, dq, src, prop, period, today, status],
   );
 
+  useEffect(() => setPage(0), [dq, src, prop, period, status]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const ordered = useMemo(() => {
+    const byProp = [...filtered].sort((a, b) => (a.property?.name ?? "").localeCompare(b.property?.name ?? "") || (period === "past" ? b.check_in.localeCompare(a.check_in) : a.check_in.localeCompare(b.check_in)));
+    return byProp;
+  }, [filtered, period]);
+  const pageItems = ordered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
   const groups = useMemo(() => {
     const list = properties
-      .map((p) => ({ ...p, items: filtered.filter((r) => r.property?.id === p.id) }))
+      .map((p) => ({ ...p, items: pageItems.filter((r) => r.property?.id === p.id) }))
       .filter((g) => g.items.length > 0);
-    if (period === "past") list.forEach((g) => g.items.reverse());
     return list;
-  }, [properties, filtered, period]);
+  }, [properties, pageItems]);
 
   const isLocked = (r: Row) => r.check_out <= today && !isAdmin;
 
@@ -177,6 +189,12 @@ function ReservationsPage() {
           <option value="all">{t("calendar.allPensions")}</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm">
+          <option value="all">{t("common.all")}</option>
+          {Object.keys(statusTone).map((s) => (
+            <option key={s} value={s}>{t(`resStatus.${s}`, { defaultValue: s })}</option>
           ))}
         </select>
         <select value={src} onChange={(e) => setSrc(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm">
@@ -277,6 +295,13 @@ function ReservationsPage() {
               </details>
             );
           })}
+          {pageCount > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2 text-sm">
+              <button disabled={safePage === 0} onClick={() => setPage(safePage - 1)} className="px-3 py-1.5 rounded-md border border-input bg-card disabled:opacity-40">‹</button>
+              <span className="tabular-nums text-muted-foreground">{safePage + 1} / {pageCount}</span>
+              <button disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)} className="px-3 py-1.5 rounded-md border border-input bg-card disabled:opacity-40">›</button>
+            </div>
+          )}
         </div>
       )}
 
