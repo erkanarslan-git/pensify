@@ -49,45 +49,50 @@ type NavGroup = { labelKey: string; items: NavItem[] };
 
 const navGroups: NavGroup[] = [
   {
-    labelKey: "nav.groups.overview",
+    labelKey: "nav.groups.daily",
     items: [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
-      { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
-      { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
       { to: "/todos", labelKey: "nav.todos", icon: ListTodo },
-      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+      { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
     ],
   },
   {
-    labelKey: "nav.groups.bookings",
+    labelKey: "nav.groups.stay",
     items: [
       { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
       { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
-      { to: "/payments", labelKey: "nav.payments", icon: Wallet },
-      { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
     ],
   },
   {
-    labelKey: "nav.groups.places",
-    items: [
-      { to: "/properties", labelKey: "nav.properties", icon: Building2 },
-      { to: "/rooms", labelKey: "nav.rooms", icon: BedDouble },
-    ],
-  },
-  {
-    labelKey: "nav.groups.cleaning",
+    labelKey: "nav.groups.operations",
     items: [
       { to: "/cleaning", labelKey: "nav.cleaning", icon: Sparkles },
       { to: "/cleaners", labelKey: "nav.cleaners", icon: Users },
     ],
   },
   {
+    labelKey: "nav.groups.finance",
+    items: [
+      { to: "/payments", labelKey: "nav.payments", icon: Wallet },
+      { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+      { to: "/work-report", labelKey: "nav.workReport", icon: BarChart3 },
+    ],
+  },
+  {
     labelKey: "nav.groups.admin",
     items: [
-      { to: "/work-report", labelKey: "nav.workReport", icon: BarChart3 },
-      { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
+      { to: "/properties", labelKey: "nav.properties", icon: Building2 },
+      { to: "/rooms", labelKey: "nav.rooms", icon: BedDouble },
       { to: "/team", labelKey: "nav.team", icon: Shield },
+      { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
       { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },
+    ],
+  },
+  {
+    labelKey: "nav.groups.tools",
+    items: [
+      { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
+      { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
     ],
   },
 ];
