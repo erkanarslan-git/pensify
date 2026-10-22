@@ -1,0 +1,54 @@
+-- Privileged integration test; synthetic users, no persistent changes.
+BEGIN;
+INSERT INTO public.organizations(id,name,slug) VALUES
+ ('de000000-0000-0000-0000-000000000001','Report A','report-test-a'),
+ ('de000000-0000-0000-0000-000000000002','Report B','report-test-b');
+ALTER TABLE public.organization_members DISABLE TRIGGER membership_cleaner_profile;
+INSERT INTO public.organization_members(id,organization_id,user_id,role,active) VALUES
+ ('de100000-0000-0000-0000-000000000001','de000000-0000-0000-0000-000000000001','de200000-0000-0000-0000-000000000001','cleaner',true),
+ ('de100000-0000-0000-0000-000000000002','de000000-0000-0000-0000-000000000002','de200000-0000-0000-0000-000000000002','owner',true);
+ALTER TABLE public.organization_members ENABLE TRIGGER membership_cleaner_profile;
+ALTER TABLE public.member_departments DISABLE TRIGGER audit_trg;
+INSERT INTO public.member_departments(organization_id,member_id,department,is_worker,is_lead,lead_can_report) VALUES
+ ('de000000-0000-0000-0000-000000000001','de100000-0000-0000-0000-000000000001','cleaning',false,true,true);
+SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000001',true);
+DO $$ DECLARE r jsonb; BEGIN
+ IF public.my_report_teams() IS DISTINCT FROM ARRAY['cleaning']::text[] THEN RAISE EXCEPTION 'lead scope mismatch'; END IF;
+ r:=public.department_work_report(current_date,current_date);
+ IF r->'allowedTeams' <> '["cleaning"]'::jsonb THEN RAISE EXCEPTION 'other department granted'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(r->'items') i WHERE i->>'kind'<>'cleaning') THEN RAISE EXCEPTION 'other department leaked'; END IF;
+ BEGIN
+  PERFORM public.department_work_report(current_date,current_date,'de900000-0000-0000-0000-000000000002');
+  RAISE EXCEPTION 'foreign property allowed';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+END $$;
+UPDATE public.member_departments SET lead_can_report=false WHERE member_id='de100000-0000-0000-0000-000000000001';
+DO $$ BEGIN
+ IF cardinality(public.my_report_teams())<>0 THEN RAISE EXCEPTION 'disabled report power allowed'; END IF;
+ BEGIN
+  PERFORM public.department_work_report(current_date,current_date);
+  RAISE EXCEPTION 'disabled report returned data';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+END $$;
+UPDATE public.member_departments SET lead_can_report=true,is_lead=false WHERE member_id='de100000-0000-0000-0000-000000000001';
+DO $$ BEGIN
+ IF cardinality(public.my_report_teams())<>0 THEN RAISE EXCEPTION 'worker-only report allowed'; END IF;
+END $$;
+UPDATE public.member_departments SET is_lead=true WHERE member_id='de100000-0000-0000-0000-000000000001';
+UPDATE public.organization_members SET active=false WHERE id='de100000-0000-0000-0000-000000000001';
+DO $$ BEGIN
+ IF coalesce(cardinality(public.my_report_teams()),0)<>0 THEN RAISE EXCEPTION 'inactive lead allowed'; END IF;
+END $$;
+UPDATE public.organization_members SET active=true WHERE id='de100000-0000-0000-0000-000000000001';
+SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000002',true);
+DO $$ BEGIN
+ IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'owner scope mismatch'; END IF;
+END $$;
+SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000003',true);
+DO $$ BEGIN
+ BEGIN
+  PERFORM public.department_work_report(current_date,current_date);
+  RAISE EXCEPTION 'unaffiliated user returned data';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+END $$;
+ROLLBACK;
