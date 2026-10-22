@@ -8,7 +8,8 @@
 - [x] 5. Aylık ödeme planı ve tahsilat (planlar, kısmi ödeme, banka ayarları + hareketler sayfası; gerçek Sparkasse bağlantısı için lisanslı sağlayıcı sözleşmesi bekliyor)
 - [x] 6. "Bugün oluşturulan rezervasyonlar" sayacı panele eklendi; tıklanınca rezervasyon listesi "Bugün oluşturulan" filtresiyle açılıyor. Tarayıcıda doğrulandı.
 - [x] Yönetim → Yapılan İşler: yalnız sahip; dönem/lokasyon filtreli toplu özet, lokasyon tablosu, günlük grafik, tıklanabilir detay listesi, personel görünümü, CSV. 7 test + tarayıcı kontrolü.
-- [ ] 7. Menü gruplama
+- [x] 7. Menü gruplama: Günlük İşler / Konaklama / Operasyon / Finans / Yönetim / Araçlar; AI Asistan ve Kanal Senkron ikincil "Araçlar" grubunda; DE/EN/TR grup adları.
+
 - [x] Yapılan İşler: Tümü/Temizlik/Büro/Bakım sekmeleri; konuya göre özet, grafik, kişiler, detay ve CSV; bakımda bildiren/çözen ayrı. 12 test ve oturumlu tarayıcı kontrolü geçti.
 - [x] Yapılan İşler: tüm görünümlerde dönem/lokasyona göre sabit renkli toplamlar; Genel toplamlar/İş kayıtları/Kim yaptı ayrımı; atanmamış işler açık etiketli, kişi kimlikleri ortak kullanıcıya bağlı.
 - [ ] 8. Anonim TV ekranı
@@ -48,5 +49,5 @@
 - [x] Genel Bakış "Müsait" temizlik bekleyen odaları saymıyor
 - [x] Kanal Senkron yalnız sahibe açık
 - [x] Zaman Takibi + Analitik mavi özet kartları
-- [ ] Ayarlar, Bildirimler, AI Asistan, Profil mavi tasarım
-- [ ] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
+- [x] Ayarlar, Bildirimler, AI Asistan, Profil mavi tasarım
+- [x] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)

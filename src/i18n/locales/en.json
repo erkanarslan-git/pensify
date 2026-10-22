@@ -23,11 +23,12 @@
     "todos": "To-dos",
     "aiAssistant": "AI Assistant",
     "groups": {
-      "overview": "Overview",
-      "bookings": "Bookings",
-      "places": "Places",
-      "cleaning": "Cleaning",
-      "admin": "Admin"
+      "daily": "Daily Work",
+      "stay": "Stays",
+      "operations": "Operations",
+      "finance": "Finance",
+      "admin": "Admin",
+      "tools": "Tools"
     },
     "payments": "Payments"
   },
