@@ -8,6 +8,7 @@ import { attendanceTranslations } from "./attendance";
 import { clockTranslations } from "./clock";
 import { todosTranslations } from "./todos";
 import { paymentsTranslations } from "./payments";
+import { bankTranslations } from "./bank";
 import { teamSafetyTranslations } from "./team-safety";
 import { bookingAvailabilityTranslations } from "./booking-availability";
 
@@ -20,9 +21,9 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources: {
-        de: { translation: { ...de, attendance: attendanceTranslations.de, clock: clockTranslations.de, todos: todosTranslations.de, payments: paymentsTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de } },
-        en: { translation: { ...en, attendance: attendanceTranslations.en, clock: clockTranslations.en, todos: todosTranslations.en, payments: paymentsTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en } },
-        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, clock: clockTranslations.tr, todos: todosTranslations.tr, payments: paymentsTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr } },
+        de: { translation: { ...de, attendance: attendanceTranslations.de, clock: clockTranslations.de, todos: todosTranslations.de, payments: paymentsTranslations.de, bank: bankTranslations.de, teamSafety: teamSafetyTranslations.de, bookingAvailability: bookingAvailabilityTranslations.de } },
+        en: { translation: { ...en, attendance: attendanceTranslations.en, clock: clockTranslations.en, todos: todosTranslations.en, payments: paymentsTranslations.en, bank: bankTranslations.en, teamSafety: teamSafetyTranslations.en, bookingAvailability: bookingAvailabilityTranslations.en } },
+        tr: { translation: { ...tr, attendance: attendanceTranslations.tr, clock: clockTranslations.tr, todos: todosTranslations.tr, payments: paymentsTranslations.tr, bank: bankTranslations.tr, teamSafety: teamSafetyTranslations.tr, bookingAvailability: bookingAvailabilityTranslations.tr } },
       },
       fallbackLng: "de",
       supportedLngs: SUPPORTED_LANGS as unknown as string[],

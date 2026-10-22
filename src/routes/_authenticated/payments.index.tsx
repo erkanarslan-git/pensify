@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Wallet, X } from "lucide-react";
+import { Landmark, Plus, Settings, Trash2, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,13 +10,13 @@ import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
 import { buildSchedule, installmentState, type Installment, type InstallmentState } from "@/lib/payments";
 
-export const Route = createFileRoute("/_authenticated/payments")({
+export const Route = createFileRoute("/_authenticated/payments/")({
   head: () => ({ meta: [{ title: "Tahsilat — Pensify" }, { name: "description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:title", content: "Tahsilat — Pensify" }, { property: "og:description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PaymentsPage,
 });
 
-interface Res { id: string; guest_name: string; room_id: string; check_in: string; check_out: string; revenue: number }
-interface Sched { id: string; reservation_id: string; due_date: string; amount: number }
+interface Res { id: string; guest_name: string; room_id: string; check_in: string; check_out: string; revenue: number; payer_ibans: string[] }
+interface Sched { id: string; reservation_id: string; due_date: string; amount: number; payment_reference: string }
 interface Pay { id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null }
 type Filter = "unpaid" | "overdue" | "all";
 
@@ -39,9 +39,9 @@ function PaymentsPage() {
     queryKey: ["payments-page"],
     queryFn: async () => {
       const [s, p, r, rm, pr] = await Promise.all([
-        supabase.from("payment_schedules").select("id,reservation_id,due_date,amount").order("due_date").limit(5000),
-        supabase.from("payments").select("id,schedule_id,reservation_id,amount,paid_on,method,note,recorded_by").order("paid_on", { ascending: false }).limit(5000),
-        supabase.from("reservations").select("id,guest_name,room_id,check_in,check_out,revenue,status").is("deleted_at", null).not("status", "in", "(cancelled,no_show)").limit(5000),
+        supabase.from("payment_schedules").select("id,reservation_id,due_date,amount,payment_reference").order("due_date").limit(5000),
+        supabase.from("payments").select("id,schedule_id,reservation_id,amount,paid_on,method,note,recorded_by,source").is("reversed_at", null).order("paid_on", { ascending: false }).limit(5000),
+        supabase.from("reservations").select("id,guest_name,room_id,check_in,check_out,revenue,status,payer_ibans").is("deleted_at", null).not("status", "in", "(cancelled,no_show)").limit(5000),
         supabase.from("rooms").select("id,number"),
         supabase.from("profiles").select("id,full_name"),
       ]);
@@ -96,7 +96,9 @@ function PaymentsPage() {
             </button>
           ))}
         </div>
-        <button onClick={() => setPlanning(true)} className="ml-auto inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
+        <Link to="/payments/transactions" className="ml-auto inline-flex items-center gap-2 px-3 py-2.5 rounded-xl border border-input bg-card text-sm"><Landmark className="w-4 h-4" />{t("bank.transactions")}</Link>
+        <Link to="/payments/bank" title={t("bank.settings")} aria-label={t("bank.settings")} className="inline-flex items-center px-3 py-2.5 rounded-xl border border-input bg-card"><Settings className="w-4 h-4" /></Link>
+        <button onClick={() => setPlanning(true)} className=" inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
           <Plus className="w-4 h-4" />{t("payments.newPlan")}
         </button>
       </div>
@@ -107,7 +109,7 @@ function PaymentsPage() {
           <div key={r.id} className="grid grid-cols-[minmax(0,1fr)_auto] sm:flex sm:items-center gap-3 px-4 py-3 text-sm">
             <div className="min-w-0 sm:flex-1">
               <div className="font-semibold truncate">{r.res.guest_name} <span className="text-muted-foreground font-normal">· #{data?.rooms.get(r.res.room_id) ?? "—"}</span></div>
-              <div className="text-xs text-muted-foreground">{t("payments.due")}: {formatDateDE(r.due_date)} · {t("payments.paid")}: {eur(r.paid)}</div>
+              <div className="text-xs text-muted-foreground">{t("payments.due")}: {formatDateDE(r.due_date)} · {t("payments.paid")}: {eur(r.paid)} · <span className="font-mono">{r.payment_reference}</span></div>
             </div>
             <div className="text-right sm:w-28">
               <div className="font-semibold tabular-nums">{eur(r.remaining || r.amount)}</div>
@@ -224,6 +226,7 @@ function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone 
   const [monthly, setMonthly] = useState("");
   const [rows, setRows] = useState<Installment[]>([]);
   const [busy, setBusy] = useState(false);
+  const [ibans, setIbans] = useState("");
   const res = reservations.find((r) => r.id === resId);
 
   const regenerate = (id = resId, day = dueDay, m = mode, mon = monthly) => {
@@ -241,6 +244,8 @@ function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone 
       const { error } = await supabase.from("payment_schedules").delete().in("id", removable);
       if (error) { setBusy(false); return toast.error(t("payments.saveErr")); }
     }
+    const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
+    await supabase.from("reservations").update({ payer_ibans: ibanList } as never).eq("id", res.id);
     const { error } = await supabase.from("payment_schedules").insert(rows.map((r) => ({ reservation_id: res.id, due_date: r.due_date, amount: r.amount })) as never);
     setBusy(false);
     if (error) return toast.error(t("payments.saveErr"));
@@ -251,7 +256,7 @@ function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone 
   return (
     <Modal title={t("payments.newPlan")} onClose={onClose}>
       <label className="text-xs text-muted-foreground">{t("payments.reservation")}</label>
-      <select value={resId} onChange={(e) => { setResId(e.target.value); regenerate(e.target.value); }} className={inputCls}>
+      <select value={resId} onChange={(e) => { setResId(e.target.value); setIbans((reservations.find((r) => r.id === e.target.value)?.payer_ibans ?? []).join(", ")); regenerate(e.target.value); }} className={inputCls}>
         <option value="">{t("payments.pickReservation")}</option>
         {reservations.map((r) => (
           <option key={r.id} value={r.id}>{r.guest_name} · #{rooms.get(r.room_id) ?? "—"} · {formatDateDE(r.check_in)}–{formatDateDE(r.check_out)} · {eur(r.revenue)}</option>
@@ -259,6 +264,9 @@ function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone 
       </select>
       <div className="text-xs text-muted-foreground mt-1">{t("payments.onlyLong")}</div>
 
+      <label className="text-xs text-muted-foreground mt-3 block">{t("bank.payerIbans")}</label>
+      <input value={ibans} onChange={(e) => setIbans(e.target.value)} placeholder="DE89 3704 0044 0532 0130 00" className={inputCls} />
+      <div className="text-xs text-muted-foreground mt-1">{t("bank.payerIbansHint")}</div>
       <label className="text-xs text-muted-foreground mt-3 block">{t("payments.dueDay")}</label>
       <select value={dueDay} onChange={(e) => { const d = Number(e.target.value); setDueDay(d); regenerate(resId, d); }} className={inputCls}>
         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{d}.</option>)}

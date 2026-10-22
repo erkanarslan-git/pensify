@@ -137,6 +137,247 @@ export type Database = {
           },
         ]
       }
+      bank_accounts: {
+        Row: {
+          active: boolean
+          connection_id: string
+          created_at: string
+          currency: string
+          iban: string | null
+          id: string
+          organization_id: string
+          owner_name: string | null
+          provider_account_id: string
+        }
+        Insert: {
+          active?: boolean
+          connection_id: string
+          created_at?: string
+          currency?: string
+          iban?: string | null
+          id?: string
+          organization_id: string
+          owner_name?: string | null
+          provider_account_id: string
+        }
+        Update: {
+          active?: boolean
+          connection_id?: string
+          created_at?: string
+          currency?: string
+          iban?: string | null
+          id?: string
+          organization_id?: string
+          owner_name?: string | null
+          provider_account_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "bank_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_connections: {
+        Row: {
+          bank_name: string | null
+          consent_expires_at: string | null
+          created_at: string
+          created_by: string | null
+          disconnected_at: string | null
+          disconnected_by: string | null
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          last_success_at: string | null
+          next_check_at: string | null
+          organization_id: string
+          provider: string
+          secret_ref: string | null
+          status: string
+          sync_cursor: string | null
+          sync_lock_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          bank_name?: string | null
+          consent_expires_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          disconnected_at?: string | null
+          disconnected_by?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          next_check_at?: string | null
+          organization_id: string
+          provider: string
+          secret_ref?: string | null
+          status?: string
+          sync_cursor?: string | null
+          sync_lock_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bank_name?: string | null
+          consent_expires_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          disconnected_at?: string | null
+          disconnected_by?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          next_check_at?: string | null
+          organization_id?: string
+          provider?: string
+          secret_ref?: string | null
+          status?: string
+          sync_cursor?: string | null
+          sync_lock_until?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_settings: {
+        Row: {
+          auto_match_enabled: boolean
+          check_times: string[]
+          organization_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_match_enabled?: boolean
+          check_times?: string[]
+          organization_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_match_enabled?: boolean
+          check_times?: string[]
+          organization_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          booking_date: string | null
+          booking_status: string
+          counterparty_iban: string | null
+          counterparty_name: string | null
+          currency: string
+          exclude_reason: string | null
+          first_seen_at: string
+          id: string
+          is_sample: boolean
+          match_state: string
+          matched_at: string | null
+          matched_automatically: boolean
+          matched_by: string | null
+          organization_id: string
+          provider_transaction_id: string
+          remittance: string | null
+          review_reason: string | null
+          updated_at: string
+          value_date: string | null
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          booking_date?: string | null
+          booking_status: string
+          counterparty_iban?: string | null
+          counterparty_name?: string | null
+          currency: string
+          exclude_reason?: string | null
+          first_seen_at?: string
+          id?: string
+          is_sample?: boolean
+          match_state?: string
+          matched_at?: string | null
+          matched_automatically?: boolean
+          matched_by?: string | null
+          organization_id: string
+          provider_transaction_id: string
+          remittance?: string | null
+          review_reason?: string | null
+          updated_at?: string
+          value_date?: string | null
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          booking_date?: string | null
+          booking_status?: string
+          counterparty_iban?: string | null
+          counterparty_name?: string | null
+          currency?: string
+          exclude_reason?: string | null
+          first_seen_at?: string
+          id?: string
+          is_sample?: boolean
+          match_state?: string
+          matched_at?: string | null
+          matched_automatically?: boolean
+          matched_by?: string | null
+          organization_id?: string
+          provider_transaction_id?: string
+          remittance?: string | null
+          review_reason?: string | null
+          updated_at?: string
+          value_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_ref: string
@@ -1271,10 +1512,13 @@ export type Database = {
           amount: number
           created_at: string
           created_by: string | null
+          currency: string
           due_date: string
           id: string
+          kind: string
           note: string | null
           organization_id: string
+          payment_reference: string
           property_id: string
           reservation_id: string
           updated_at: string
@@ -1283,10 +1527,13 @@ export type Database = {
           amount: number
           created_at?: string
           created_by?: string | null
+          currency?: string
           due_date: string
           id?: string
+          kind?: string
           note?: string | null
           organization_id: string
+          payment_reference?: string
           property_id: string
           reservation_id: string
           updated_at?: string
@@ -1295,10 +1542,13 @@ export type Database = {
           amount?: number
           created_at?: string
           created_by?: string | null
+          currency?: string
           due_date?: string
           id?: string
+          kind?: string
           note?: string | null
           organization_id?: string
+          payment_reference?: string
           property_id?: string
           reservation_id?: string
           updated_at?: string
@@ -1330,6 +1580,7 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          bank_transaction_id: string | null
           created_at: string
           id: string
           method: string
@@ -1339,10 +1590,15 @@ export type Database = {
           property_id: string
           recorded_by: string | null
           reservation_id: string
+          reverse_reason: string | null
+          reversed_at: string | null
+          reversed_by: string | null
           schedule_id: string | null
+          source: string
         }
         Insert: {
           amount: number
+          bank_transaction_id?: string | null
           created_at?: string
           id?: string
           method?: string
@@ -1352,10 +1608,15 @@ export type Database = {
           property_id: string
           recorded_by?: string | null
           reservation_id: string
+          reverse_reason?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
           schedule_id?: string | null
+          source?: string
         }
         Update: {
           amount?: number
+          bank_transaction_id?: string | null
           created_at?: string
           id?: string
           method?: string
@@ -1365,9 +1626,20 @@ export type Database = {
           property_id?: string
           recorded_by?: string | null
           reservation_id?: string
+          reverse_reason?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
           schedule_id?: string | null
+          source?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_bank_tx_fkey"
+            columns: ["bank_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "bank_transactions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payments_organization_id_fkey"
             columns: ["organization_id"]
@@ -1604,6 +1876,7 @@ export type Database = {
           list_price: number | null
           notes: string | null
           organization_id: string
+          payer_ibans: string[]
           price_overridden_at: string | null
           price_overridden_by: string | null
           property_id: string
@@ -1639,6 +1912,7 @@ export type Database = {
           list_price?: number | null
           notes?: string | null
           organization_id?: string
+          payer_ibans?: string[]
           price_overridden_at?: string | null
           price_overridden_by?: string | null
           property_id: string
@@ -1674,6 +1948,7 @@ export type Database = {
           list_price?: number | null
           notes?: string | null
           organization_id?: string
+          payer_ibans?: string[]
           price_overridden_at?: string | null
           price_overridden_by?: string | null
           property_id?: string
@@ -2465,6 +2740,16 @@ export type Database = {
       }
     }
     Functions: {
+      _apply_bank_match: {
+        Args: {
+          _actor: string
+          _allocations: Json
+          _auto: boolean
+          _link_payment_ids: string[]
+          _tx_id: string
+        }
+        Returns: number
+      }
       _require_room_manager: { Args: { _property_id: string }; Returns: string }
       active_organization_id: { Args: never; Returns: string }
       admin_get_member_properties: {
@@ -2554,6 +2839,14 @@ export type Database = {
         Args: { _r: Database["public"]["Enums"]["app_role"] }
         Returns: Database["public"]["Enums"]["org_role"]
       }
+      apply_bank_match: {
+        Args: {
+          _allocations: Json
+          _link_payment_ids?: string[]
+          _tx_id: string
+        }
+        Returns: number
+      }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_manage_payments: {
@@ -2609,6 +2902,10 @@ export type Database = {
         Returns: number
       }
       default_organization_id: { Args: never; Returns: string }
+      exclude_bank_transaction: {
+        Args: { _reason: string; _tx_id: string }
+        Returns: undefined
+      }
       has_organization_permission: {
         Args: { _org: string; _permission: string }
         Returns: boolean
@@ -2770,6 +3067,10 @@ export type Database = {
           _to: Database["public"]["Enums"]["cleaning_status"]
         }
         Returns: Database["public"]["Enums"]["cleaning_status"]
+      }
+      unmatch_bank_transaction: {
+        Args: { _reason: string; _tx_id: string }
+        Returns: undefined
       }
       verify_cron_secret: {
         Args: { _name: string; _value: string }

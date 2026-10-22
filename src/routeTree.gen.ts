@@ -23,7 +23,6 @@ import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
@@ -33,6 +32,9 @@ import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authent
 import { Route as AuthenticatedTodosRouteImport } from './routes/_authenticated/todos'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
+import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments.index'
+import { Route as AuthenticatedPaymentsBankRouteImport } from './routes/_authenticated/payments.bank'
+import { Route as AuthenticatedPaymentsTransactionsRouteImport } from './routes/_authenticated/payments.transactions'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
 import { Route as AuthenticatedSettingsImportRouteImport } from './routes/_authenticated/settings.import'
 import { Route as AuthenticatedSettingsLogsRouteImport } from './routes/_authenticated/settings.logs'
@@ -117,11 +119,6 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
-  id: '/payments',
-  path: '/payments',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedRequestAccessRoute =
   AuthenticatedRequestAccessRouteImport.update({
     id: '/request-access',
@@ -170,6 +167,24 @@ const AuthenticatedClockTokenRoute = AuthenticatedClockTokenRouteImport.update({
   path: '/clock/$token',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPaymentsIndexRoute =
+  AuthenticatedPaymentsIndexRouteImport.update({
+    id: '/payments/',
+    path: '/payments/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPaymentsBankRoute =
+  AuthenticatedPaymentsBankRouteImport.update({
+    id: '/payments/bank',
+    path: '/payments/bank',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPaymentsTransactionsRoute =
+  AuthenticatedPaymentsTransactionsRouteImport.update({
+    id: '/payments/transactions',
+    path: '/payments/transactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPropertiesIndexRoute =
   AuthenticatedPropertiesIndexRouteImport.update({
     id: '/properties/',
@@ -255,7 +270,6 @@ export interface FileRoutesByFullPath {
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/payments': typeof AuthenticatedPaymentsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -265,8 +279,11 @@ export interface FileRoutesByFullPath {
   '/todos': typeof AuthenticatedTodosRoute
   '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/payments/bank': typeof AuthenticatedPaymentsBankRoute
+  '/payments/transactions': typeof AuthenticatedPaymentsTransactionsRoute
   '/settings/import': typeof AuthenticatedSettingsImportRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
+  '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
   '/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
@@ -291,7 +308,6 @@ export interface FileRoutesByTo {
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/payments': typeof AuthenticatedPaymentsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -302,8 +318,11 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/payments/bank': typeof AuthenticatedPaymentsBankRoute
+  '/payments/transactions': typeof AuthenticatedPaymentsTransactionsRoute
   '/settings/import': typeof AuthenticatedSettingsImportRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
+  '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
   '/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
@@ -330,7 +349,6 @@ export interface FileRoutesById {
   '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
@@ -341,8 +359,11 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
+  '/_authenticated/payments/bank': typeof AuthenticatedPaymentsBankRoute
+  '/_authenticated/payments/transactions': typeof AuthenticatedPaymentsTransactionsRoute
   '/_authenticated/settings/import': typeof AuthenticatedSettingsImportRoute
   '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
+  '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
   '/_authenticated/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
@@ -370,7 +391,6 @@ export interface FileRouteTypes {
     | '/geo-test'
     | '/me'
     | '/notifications'
-    | '/payments'
     | '/request-access'
     | '/reservations'
     | '/rooms'
@@ -380,8 +400,11 @@ export interface FileRouteTypes {
     | '/todos'
     | '/api/chat'
     | '/clock/$token'
+    | '/payments/bank'
+    | '/payments/transactions'
     | '/settings/import'
     | '/settings/logs'
+    | '/payments/'
     | '/properties/'
     | '/properties/$id/qr'
     | '/properties/$id/rooms'
@@ -406,7 +429,6 @@ export interface FileRouteTypes {
     | '/geo-test'
     | '/me'
     | '/notifications'
-    | '/payments'
     | '/request-access'
     | '/reservations'
     | '/rooms'
@@ -417,8 +439,11 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/'
     | '/clock/$token'
+    | '/payments/bank'
+    | '/payments/transactions'
     | '/settings/import'
     | '/settings/logs'
+    | '/payments'
     | '/properties'
     | '/properties/$id/qr'
     | '/properties/$id/rooms'
@@ -444,7 +469,6 @@ export interface FileRouteTypes {
     | '/_authenticated/geo-test'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
-    | '/_authenticated/payments'
     | '/_authenticated/request-access'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
@@ -455,8 +479,11 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
+    | '/_authenticated/payments/bank'
+    | '/_authenticated/payments/transactions'
     | '/_authenticated/settings/import'
     | '/_authenticated/settings/logs'
+    | '/_authenticated/payments/'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
     | '/_authenticated/properties/$id/rooms'
@@ -583,13 +610,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/payments': {
-      id: '/_authenticated/payments'
-      path: '/payments'
-      fullPath: '/payments'
-      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/request-access': {
       id: '/_authenticated/request-access'
       path: '/request-access'
@@ -651,6 +671,27 @@ declare module '@tanstack/react-router' {
       path: '/clock/$token'
       fullPath: '/clock/$token'
       preLoaderRoute: typeof AuthenticatedClockTokenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments/': {
+      id: '/_authenticated/payments/'
+      path: '/payments'
+      fullPath: '/payments/'
+      preLoaderRoute: typeof AuthenticatedPaymentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments/bank': {
+      id: '/_authenticated/payments/bank'
+      path: '/payments/bank'
+      fullPath: '/payments/bank'
+      preLoaderRoute: typeof AuthenticatedPaymentsBankRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments/transactions': {
+      id: '/_authenticated/payments/transactions'
+      path: '/payments/transactions'
+      fullPath: '/payments/transactions'
+      preLoaderRoute: typeof AuthenticatedPaymentsTransactionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/properties/': {
@@ -766,7 +807,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
@@ -776,6 +816,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTodosRoute: typeof AuthenticatedTodosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
+  AuthenticatedPaymentsBankRoute: typeof AuthenticatedPaymentsBankRoute
+  AuthenticatedPaymentsTransactionsRoute: typeof AuthenticatedPaymentsTransactionsRoute
+  AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
   AuthenticatedPropertiesIndexRoute: typeof AuthenticatedPropertiesIndexRoute
   AuthenticatedPropertiesIdQrRoute: typeof AuthenticatedPropertiesIdQrRoute
   AuthenticatedPropertiesIdRoomsRoute: typeof AuthenticatedPropertiesIdRoomsRoute
@@ -792,7 +835,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
@@ -802,6 +844,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTodosRoute: AuthenticatedTodosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
+  AuthenticatedPaymentsBankRoute: AuthenticatedPaymentsBankRoute,
+  AuthenticatedPaymentsTransactionsRoute:
+    AuthenticatedPaymentsTransactionsRoute,
+  AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,
   AuthenticatedPropertiesIndexRoute: AuthenticatedPropertiesIndexRoute,
   AuthenticatedPropertiesIdQrRoute: AuthenticatedPropertiesIdQrRoute,
   AuthenticatedPropertiesIdRoomsRoute: AuthenticatedPropertiesIdRoomsRoute,
