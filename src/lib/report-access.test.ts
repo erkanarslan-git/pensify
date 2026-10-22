@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { reportTeams, effectiveReportTeam, scopedReportItems } from "./report-access";
 import type { WorkItem } from "./work-report";
+import { canAccessRoute } from "./permissions";
 
 describe("department report access", () => {
+  it("report access does not grant admin or other unrelated pages", () => {
+    expect(canAccessRoute("/work-report", ["cleaner"], ["cleaning"])).toBe(true);
+    expect(canAccessRoute("/work-report", ["cleaner"], [])).toBe(false);
+    expect(canAccessRoute("/settings/logs", ["cleaner"], ["cleaning"])).toBe(false);
+    expect(canAccessRoute("/team", ["cleaner"], ["cleaning"])).toBe(false);
+  });
   it("denies missing and unrecognized grants", () => {
     expect(reportTeams(null)).toEqual([]);
     expect(reportTeams(["hr", "admin"])).toEqual([]);
