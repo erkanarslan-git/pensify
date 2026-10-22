@@ -1,7 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kapsam belgesi (22.10.2026) — 8 aşama
-- [ ] Ödeme planını yeniden oluşturma: ödeme geçmişi olan ayları koru, tekrar borç yazılmasını engelle ve test et.
+- [x] Ödeme planını yeniden oluşturma: ödeme geçmişi olan aylar korunur, kalan toplam yeniden bölünür; 22 ödeme/banka testi geçti, oturumlu pencere kontrol edildi.
+- [ ] Ödeme planını gerçek kayıtla yeniden oluşturma kontrolü: mevcut hesapta taksit ve uygun uzun konaklama kaydı yok.
 - [x] Temizlik şefi ataması: bölüm/aktif çalışan/firma/lokasyon kontrolü, RPC ve doğrudan yazma koruması; 4 test geçti. Yönetici ekranı kontrol edildi; şef hesabı ve SQL izolasyon testleri ayrıcalıklı test erişimi bekliyor.
 - [x] Bakım ataması: ayrı Bakım ekranı, yetkili aktif bölüm çalışanları, atayan kişi/zaman, doğrudan yazma koruması; 17 test geçti, boş ekran ve mobil kontrol edildi.
 - [ ] Bakım şefi gerçek atama testi: henüz bakım çalışanı/şefi ve açık bakım işi yok; SQL firma/bölüm testleri ayrıcalıklı erişim bekliyor.
