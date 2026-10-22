@@ -795,6 +795,13 @@
       "missing": "Eksik malzeme",
       "dirty": "Aşırı kirli",
       "other": "Diğer"
-    }
+    },
+    "maintenanceWarning": "Bildirim gönderildiğinde Oda {{room}} otomatik olarak bakıma alınacak ve satışa kapanacak.",
+    "sendAndMaintain": "Bildir ve bakıma al",
+    "confirmTitle": "Oda {{room}} sorunu çözüldü mü?",
+    "confirmText": "Onaylarsanız sorun kapatılır. Odayı tekrar satışa açmak için Odalar sayfasından durumunu değiştirin.",
+    "resolutionNote": "Ne yapıldı? (isteğe bağlı)",
+    "resolutionPlaceholder": "Örn. tesisatçı contayı değiştirdi",
+    "confirmResolve": "Evet, çözüldü"
   }
 }

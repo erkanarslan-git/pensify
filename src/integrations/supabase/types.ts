@@ -1632,6 +1632,7 @@ export type Database = {
           organization_id: string
           property_id: string
           reported_by: string | null
+          resolution_note: string | null
           resolved_at: string | null
           resolved_by: string | null
           room_id: string
@@ -1647,6 +1648,7 @@ export type Database = {
           organization_id: string
           property_id: string
           reported_by?: string | null
+          resolution_note?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           room_id: string
@@ -1662,6 +1664,7 @@ export type Database = {
           organization_id?: string
           property_id?: string
           reported_by?: string | null
+          resolution_note?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           room_id?: string

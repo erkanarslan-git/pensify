@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Wrench, X } from "lucide-react";
+import { AlertTriangle, Check, Wrench, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 
@@ -32,7 +32,7 @@ export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/40 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold">{t("issues.reportTitle", { room: roomLabel })}</h2>
@@ -50,11 +50,15 @@ export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }
         <label className="text-xs text-muted-foreground">{t("issues.description")}</label>
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
           placeholder={t("issues.placeholder")}
-          className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-sm" />
-        <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-3 py-2 text-sm rounded-lg border border-input">{t("common.cancel")}</button>
-          <button disabled={saving} onClick={save} className="px-3 py-2 text-sm rounded-lg bg-destructive text-destructive-foreground disabled:opacity-50">
-            {t("issues.send")}
+          className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-base" />
+        <div className="mt-3 flex gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-warning" />
+          <span>{t("issues.maintenanceWarning", { room: roomLabel })}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          <button onClick={onClose} className="px-3 py-3 text-base rounded-xl border border-input">{t("common.cancel")}</button>
+          <button disabled={saving} onClick={save} className="px-3 py-3 text-base font-medium rounded-xl bg-destructive text-destructive-foreground disabled:opacity-50">
+            {t("issues.sendAndMaintain")}
           </button>
         </div>
       </div>
@@ -81,10 +85,19 @@ export function OpenIssuesList({ canResolve, roomLabel }: { canResolve: boolean;
     },
   });
 
-  const resolve = async (id: string) => {
-    const { error } = await supabase.from("room_issues").update({ status: "resolved" }).eq("id", id);
+  const [confirming, setConfirming] = useState<{ id: string; room: string } | null>(null);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const resolve = async () => {
+    if (!confirming) return;
+    setBusy(true);
+    const { error } = await supabase.from("room_issues")
+      .update({ status: "resolved", resolution_note: note.trim() || null }).eq("id", confirming.id);
+    setBusy(false);
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     toast.success(t("issues.resolved"));
+    setConfirming(null); setNote("");
     qc.invalidateQueries({ queryKey: ["room-issues"] });
   };
 
@@ -103,13 +116,29 @@ export function OpenIssuesList({ canResolve, roomLabel }: { canResolve: boolean;
               {new Date(i.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
             </span>
             {canResolve && (
-              <button onClick={() => resolve(i.id)} className="text-xs px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1">
-                <Check className="w-3 h-3" />{t("issues.markResolved")}
+              <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="text-sm px-3 py-2 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1">
+                <Check className="w-4 h-4" />{t("issues.markResolved")}
               </button>
             )}
           </div>
         ))}
       </div>
+      {confirming && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/40 p-4" onClick={() => setConfirming(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-semibold mb-2">{t("issues.confirmTitle", { room: confirming.room })}</h2>
+            <p className="text-sm text-muted-foreground mb-3">{t("issues.confirmText")}</p>
+            <label className="text-xs text-muted-foreground">{t("issues.resolutionNote")}</label>
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3}
+              placeholder={t("issues.resolutionPlaceholder")}
+              className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-base" />
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <button onClick={() => setConfirming(null)} className="px-3 py-3 rounded-xl border border-input">{t("common.cancel")}</button>
+              <button disabled={busy} onClick={resolve} className="px-3 py-3 rounded-xl bg-primary text-primary-foreground font-medium disabled:opacity-50">{t("issues.confirmResolve")}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
