@@ -5,7 +5,7 @@
 - [x] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri
 - [x] 3. Genel görevler modülü
 - [x] 4. Temizlik: Bekliyor→Kabul→Başladı→Bitti (+Sorun) akışı; açıklamalı sorun bildirimi, açık sorun listesi ve "Çözüldü" (kim/ne zaman kayıtlı)
-- [ ] 5. Aylık ödeme planı ve tahsilat
+- [x] 5. Aylık ödeme planı ve tahsilat (planlar, kısmi ödeme, banka ayarları + hareketler sayfası; gerçek Sparkasse bağlantısı için lisanslı sağlayıcı sözleşmesi bekliyor)
 - [ ] 6. "Bugün oluşturulan rezervasyonlar" sayacı ve tıklanabilir KPI'lar
 - [ ] 7. Menü gruplama
 - [ ] 8. Anonim TV ekranı
