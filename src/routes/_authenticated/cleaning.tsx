@@ -221,8 +221,8 @@ function CleaningPage() {
                     const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
                     return (
-                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm hover:bg-accent/40 transition-colors">
-                        <div className="w-20 font-semibold">#{room?.number ?? "—"}</div>
+                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 sm:py-2.5 text-sm hover:bg-accent/40 transition-colors">
+                        <div className="w-20 font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
                         <div className="w-28 text-muted-foreground tabular-nums">
                           {due.toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </div>
@@ -245,55 +245,29 @@ function CleaningPage() {
                           {task.notes && <div className="text-xs text-muted-foreground italic mt-0.5">"{task.notes}"</div>}
                         </div>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
-                        <div className="flex gap-1.5">
+                        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:gap-1.5">
                           {task.status === "pending" && (
-                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-3 h-3" />}>{t("cleaning.accept")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.accept")}</ActionBtn>
                           )}
                           {(task.status === "accepted" || task.status === "problem") && (
-                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-3 h-3" />}>{t("cleaning.start")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.start")}</ActionBtn>
                           )}
                           {task.status === "in_progress" && (
-                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-3 h-3" />}>{t("cleaning.finish")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.finish")}</ActionBtn>
                           )}
-                          
-                          {/* Reversal Buttons */}
-                          {task.status === "accepted" && (
-                            <button onClick={() => update(task.id, "pending")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
-                              <Undo2 className="w-3 h-3" />
-                            </button>
+                          {task.status !== "pending" && (
+                            <SecBtn onClick={() => update(task.id, task.status === "accepted" ? "pending" : task.status === "completed" ? "in_progress" : "accepted")}
+                              icon={<Undo2 className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.undo")} />
                           )}
-                          {task.status === "in_progress" && (
-                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
-                              <Undo2 className="w-3 h-3" />
-                            </button>
-                          )}
-                          {task.status === "completed" && (
-                            <button onClick={() => update(task.id, "in_progress")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
-                              <Undo2 className="w-3 h-3" />
-                            </button>
-                          )}
-                          {task.status === "problem" && (
-                            <button onClick={() => update(task.id, "accepted")} title={t("common.undo")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
-                              <Undo2 className="w-3 h-3" />
-                            </button>
-                          )}
-
                           {isOpen(task.status) && (
-                            <button onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5">
-                              <AlertTriangle className="w-3 h-3" />
-                            </button>
+                            <SecBtn tone="destructive" onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })}
+                              icon={<AlertTriangle className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("cleaning.reportProblem")} />
                           )}
-
                           {canAssign && (
-                            <button onClick={() => update(task.id, "pending")} title={t("common.reset")} className="text-xs px-2 py-1.5 rounded-lg border border-warning/30 text-warning hover:bg-warning/5">
-                              <RotateCcw className="w-3 h-3" />
-                            </button>
+                            <SecBtn tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.reset")} />
                           )}
-
-                          {name && (
-                            <button onClick={() => toast.info(`WhatsApp → ${name}`)} title={t("cleaning.notify")} className="text-xs px-2 py-1.5 rounded-lg border border-input bg-card hover:bg-accent">
-                              <MessageCircle className="w-3 h-3" />
-                            </button>
+                          {name && canAssign && (
+                            <SecBtn onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("cleaning.notify")} />
                           )}
                         </div>
                       </div>
