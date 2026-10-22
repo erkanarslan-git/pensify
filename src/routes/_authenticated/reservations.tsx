@@ -8,16 +8,21 @@ import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sourceColor, sourceLabel, normalizeChannel, ACTIVE_CHANNELS } from "@/lib/guest-color";
+import { businessDayBounds, businessDate } from "@/lib/business-time";
 import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 import { ReservationTrash } from "@/components/reservation-trash";
 import { formatDateDE } from "@/lib/date-de";
 
-type Search = { property?: string };
+type Search = { property?: string; created?: string };
 
 export const Route = createFileRoute("/_authenticated/reservations")({
-  validateSearch: (s: Record<string, unknown>): Search =>
-    typeof s.property === "string" && s.property ? { property: s.property } : {},
+  validateSearch: (s: Record<string, unknown>): Search => {
+    const out: Search = {};
+    if (typeof s.property === "string" && s.property) out.property = s.property;
+    if (typeof s.created === "string" && s.created) out.created = s.created;
+    return out;
+  },
   head: () => ({ meta: [{ title: "Rezervasyonlar — Pensify" }, { name: "description", content: "Pensify'da rezervasyonları ve girişleri yönetin." }, { property: "og:title", content: "Rezervasyonlar — Pensify" }, { property: "og:description", content: "Pensify'da rezervasyonları ve girişleri yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ReservationsPage,
 });
@@ -31,6 +36,7 @@ interface Row {
   check_out: string;
   guests_count: number;
   revenue: number;
+  created_at: string;
   customer_type?: string | null;
   company_name?: string | null;
   room: { number: string; property_id: string } | null;
@@ -58,7 +64,8 @@ function ReservationsPage() {
   const [q, setQ] = useState("");
   const [src, setSrc] = useState<string>("all");
   const [prop, setProp] = useState<string>(search.property ?? "all");
-  const [period, setPeriod] = useState<Period>("upcoming");
+  const [period, setPeriod] = useState<Period>(search.created === "today" ? "all" : "upcoming");
+  const [createdTodayOnly, setCreatedTodayOnly] = useState(search.created === "today");
   const [newOpen, setNewOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("all");
@@ -73,7 +80,7 @@ function ReservationsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reservations")
-        .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,customer_type,company_name,room:rooms(number,property_id),property:properties(id,name)")
+        .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,created_at,customer_type,company_name,room:rooms(number,property_id),property:properties(id,name)")
         .is("deleted_at", null)
         .order("check_in", { ascending: true })
         .limit(1000);
@@ -105,12 +112,16 @@ function ReservationsPage() {
         if (period === "upcoming" && r.check_out < today) return false;
         if (period === "today" && !(r.check_in <= today && r.check_out >= today)) return false;
         if (period === "past" && r.check_out >= today) return false;
+        if (createdTodayOnly) {
+          const bounds = businessDayBounds(businessDate());
+          if (!(r.created_at >= bounds.start && r.created_at < bounds.end)) return false;
+        }
         return true;
       }),
-    [rows, dq, src, prop, period, today, status],
+    [rows, dq, src, prop, period, today, status, createdTodayOnly],
   );
 
-  useEffect(() => setPage(0), [dq, src, prop, period, status]);
+  useEffect(() => setPage(0), [dq, src, prop, period, status, createdTodayOnly]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
   const ordered = useMemo(() => {
@@ -203,6 +214,12 @@ function ReservationsPage() {
             <option key={s} value={s}>{sourceLabel(s, (k) => t(k))}</option>
           ))}
         </select>
+        <button
+          onClick={() => setCreatedTodayOnly((v) => !v)}
+          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${createdTodayOnly ? "bg-primary text-primary-foreground" : "border border-input bg-card text-muted-foreground hover:text-foreground"}`}
+        >
+          {t("resv.createdTodayToggle")}
+        </button>
       </div>
 
       {period === "trash" && isAdmin ? (
