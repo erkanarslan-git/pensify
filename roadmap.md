@@ -10,6 +10,7 @@
 - [x] Yönetim → Yapılan İşler: yalnız sahip; dönem/lokasyon filtreli toplu özet, lokasyon tablosu, günlük grafik, tıklanabilir detay listesi, personel görünümü, CSV. 7 test + tarayıcı kontrolü.
 - [ ] 7. Menü gruplama
 - [x] Yapılan İşler: Tümü/Temizlik/Büro/Bakım sekmeleri; konuya göre özet, grafik, kişiler, detay ve CSV; bakımda bildiren/çözen ayrı. 12 test ve oturumlu tarayıcı kontrolü geçti.
+- [x] Yapılan İşler: tüm görünümlerde dönem/lokasyona göre sabit renkli toplamlar; Genel toplamlar/İş kayıtları/Kim yaptı ayrımı; atanmamış işler açık etiketli, kişi kimlikleri ortak kullanıcıya bağlı.
 - [ ] 8. Anonim TV ekranı
 
 - [x] Temizlik tamamlandığında Genel Bakış hemen yenileniyor; 6 test geçti. Giriş yapılmış ekranda geri alınan tamamlanmış görev yeniden bitirildi: müsait 75→76, sarı 6→5; toplam 84 korundu.
