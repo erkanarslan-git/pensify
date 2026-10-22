@@ -28,4 +28,4 @@
 - Time entries: employees read only their open shift and write only via clock_start/clock_stop/clock_toggle_break (server time, idempotent, one open session); supervisors (manage_time + property access) read and correct via correct_time_entry with a mandatory reason; every change is logged to time_entry_corrections. Forgotten clock-outs close at zero duration with needs_review, never with an invented end time; room tasks never open/close shifts on completion. Why: accountable, tamper-proof hours.
 - Subdirectories may have their own AGENTS.md; read it before editing there.
 - Payments: payment_schedules (installments) + payments (partial allowed); org/property derived from the reservation by trigger, access via can_manage_payments; installments with payments cannot be deleted. Why: tenant-safe, auditable collections.
-- Owner report: org-scoped normalized items drive summary/detail/staff/export; team filters use topics; maintenance reporter/resolver stay distinct. Why: consistent counts, no mixed scores.
+- Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI Assistant and Channel Sync live in Tools. Why: stage-7 menu scope.
