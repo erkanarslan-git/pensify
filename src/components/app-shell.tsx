@@ -22,6 +22,7 @@ import {
   PanelLeftOpen,
   RefreshCw,
   Lock,
+  ListTodo,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
@@ -52,6 +53,7 @@ const navGroups: NavGroup[] = [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
       { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
       { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
+      { to: "/todos", labelKey: "nav.todos", icon: ListTodo },
       { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
     ],
   },
