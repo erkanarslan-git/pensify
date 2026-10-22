@@ -18,7 +18,8 @@
     "team": "Ekip & roller",
     "settings": "Ayarlar",
     "channelSync": "Kanal Senkronizasyonu",
-    "actionCenter": "Eylem Merkezi", "todos": "Yapılacaklar",
+    "actionCenter": "Eylem Merkezi",
+    "todos": "Yapılacaklar",
     "aiAssistant": "AI Asistan",
     "groups": {
       "overview": "Genel Bakış",
@@ -775,5 +776,25 @@
     "close": "Kapat",
     "calculated": "Hesaplanan: €{{price}}",
     "discountReason": "Fiyat değişikliği nedeni *"
+  },
+  "issues": {
+    "reportTitle": "Oda {{room}} için sorun bildir",
+    "category": "Sorun türü",
+    "description": "Açıklama",
+    "placeholder": "Örn. lavabo akıtıyor",
+    "descriptionRequired": "Lütfen kısa bir açıklama yazın",
+    "send": "Bildir",
+    "reported": "Sorun kaydedildi",
+    "resolved": "Sorun çözüldü olarak işaretlendi",
+    "markResolved": "Çözüldü",
+    "openTitle": "Açık sorunlar ({{count}})",
+    "categories": {
+      "damage": "Hasar",
+      "plumbing": "Su / tesisat",
+      "electric": "Elektrik",
+      "missing": "Eksik malzeme",
+      "dirty": "Aşırı kirli",
+      "other": "Diğer"
+    }
   }
 }

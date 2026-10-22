@@ -18,7 +18,8 @@
     "team": "Team & Rollen",
     "settings": "Einstellungen",
     "channelSync": "Kanal-Sync",
-    "actionCenter": "Aktionscenter", "todos": "Aufgaben",
+    "actionCenter": "Aktionscenter",
+    "todos": "Aufgaben",
     "aiAssistant": "KI-Assistent",
     "groups": {
       "overview": "Übersicht",
@@ -775,5 +776,25 @@
     "close": "Schließen",
     "calculated": "Berechnet: €{{price}}",
     "discountReason": "Begründung für Preisänderung *"
+  },
+  "issues": {
+    "reportTitle": "Problem für Zimmer {{room}} melden",
+    "category": "Art",
+    "description": "Beschreibung",
+    "placeholder": "z. B. Waschbecken tropft",
+    "descriptionRequired": "Bitte kurz beschreiben",
+    "send": "Melden",
+    "reported": "Problem gespeichert",
+    "resolved": "Als erledigt markiert",
+    "markResolved": "Erledigt",
+    "openTitle": "Offene Probleme ({{count}})",
+    "categories": {
+      "damage": "Schaden",
+      "plumbing": "Wasser / Sanitär",
+      "electric": "Elektrik",
+      "missing": "Fehlendes Material",
+      "dirty": "Stark verschmutzt",
+      "other": "Sonstiges"
+    }
   }
 }
