@@ -795,6 +795,13 @@
       "missing": "Fehlendes Material",
       "dirty": "Stark verschmutzt",
       "other": "Sonstiges"
-    }
+    },
+    "maintenanceWarning": "Nach dem Senden wird Zimmer {{room}} automatisch in Wartung gesetzt und für den Verkauf gesperrt.",
+    "sendAndMaintain": "Melden & in Wartung setzen",
+    "confirmTitle": "Ist das Problem in Zimmer {{room}} behoben?",
+    "confirmText": "Nach Bestätigung wird das Problem geschlossen. Zum Freigeben des Zimmers den Status auf der Zimmerseite ändern.",
+    "resolutionNote": "Was wurde gemacht? (optional)",
+    "resolutionPlaceholder": "z. B. Dichtung vom Installateur getauscht",
+    "confirmResolve": "Ja, behoben"
   }
 }

@@ -285,8 +285,17 @@ function CleaningPage() {
 
 function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="text-xs px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1">
+    <button onClick={onClick} className="col-span-2 text-base font-medium py-3.5 sm:col-span-1 sm:text-xs sm:font-normal px-2.5 sm:py-1.5 rounded-xl sm:rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 sm:gap-1">
       {icon} {children}
+    </button>
+  );
+}
+
+function SecBtn({ onClick, icon, label, tone }: { onClick: () => void; icon: React.ReactNode; label: string; tone?: "destructive" | "warning" }) {
+  const c = tone === "destructive" ? "border-destructive/40 text-destructive hover:bg-destructive/5" : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/5" : "border-input bg-card hover:bg-accent";
+  return (
+    <button onClick={onClick} title={label} className={`inline-flex items-center justify-center gap-2 py-3 px-3 text-sm sm:py-1.5 sm:px-2 sm:text-xs rounded-xl sm:rounded-lg border ${c}`}>
+      {icon}<span className="sm:hidden">{label}</span>
     </button>
   );
 }

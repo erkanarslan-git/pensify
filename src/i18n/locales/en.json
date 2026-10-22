@@ -795,6 +795,13 @@
       "missing": "Missing supplies",
       "dirty": "Very dirty",
       "other": "Other"
-    }
+    },
+    "maintenanceWarning": "Once sent, room {{room}} will be set to maintenance and blocked from sale.",
+    "sendAndMaintain": "Report & set maintenance",
+    "confirmTitle": "Is the issue in room {{room}} resolved?",
+    "confirmText": "Confirming closes the issue. To reopen the room for sale, change its status on the Rooms page.",
+    "resolutionNote": "What was done? (optional)",
+    "resolutionPlaceholder": "e.g. plumber replaced the seal",
+    "confirmResolve": "Yes, resolved"
   }
 }
