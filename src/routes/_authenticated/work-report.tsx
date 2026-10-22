@@ -117,9 +117,9 @@ function WorkReportPage() {
       {filters}
       <div aria-label={c.totals} className="flex flex-wrap gap-2 mb-5">
         {([
-          { topic: "res_new", team: "office", icon: CalendarCheck, tone: "bg-primary text-primary-foreground hover:bg-primary/90" },
-          { topic: "clean_done", team: "cleaning", icon: Sparkles, tone: "bg-info/20 text-info-foreground border border-info/40 hover:bg-info/30" },
-          { topic: "issue_done", team: "maintenance", icon: Wrench, tone: "bg-accent text-accent-foreground border border-primary/25 hover:bg-accent/80" },
+          { topic: "res_new", team: "office", icon: CalendarCheck, tone: "tile-success hover:brightness-110" },
+          { topic: "clean_done", team: "cleaning", icon: Sparkles, tone: "tile-warning hover:brightness-110" },
+          { topic: "issue_done", team: "maintenance", icon: Wrench, tone: "tile-destructive hover:brightness-110" },
         ] as const).map(({ topic, team, icon: Icon, tone }) => <Button key={topic} variant="ghost" className={`h-auto min-h-11 px-4 py-2 rounded-lg gap-3 ${tone}`} onClick={() => set({ team, view: "detail", topic, staff: "", staffRole: "", room: "", status: "", source: "", q: "" })}><Icon className="h-4 w-4 shrink-0" /><span>{c.topics[topic]}</span><span className="text-xl font-semibold tabular-nums">{overallCounts[topic]}</span></Button>)}
       </div>
       <div role="tablist" aria-label={c.title} className="flex flex-wrap gap-1 border-b border-border mb-4 pb-2">
