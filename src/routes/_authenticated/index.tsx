@@ -1,4 +1,4 @@
-import { BUSINESS_TIME_ZONE, businessDate } from "@/lib/business-time";
+import { BUSINESS_TIME_ZONE, businessDate, businessDayBounds } from "@/lib/business-time";
 import { summarizeRooms } from "@/lib/room-summary";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
@@ -73,6 +73,23 @@ function Dashboard() {
       const startIso = start.toISOString().slice(0, 10);
       const { data } = await supabase.from("reservations").select("check_in,check_out,channel").is("deleted_at", null).gte("check_out", startIso).not("status", "in", "(cancelled,no_show)");
       return data ?? [];
+    },
+  });
+
+  const { data: createdToday } = useQuery({
+    queryKey: ["dashboard-created-today", today],
+    staleTime: 0,
+    refetchOnMount: "always",
+    queryFn: async () => {
+      const { start, end } = businessDayBounds(today);
+      const { count, error } = await supabase
+        .from("reservations")
+        .select("id", { count: "exact", head: true })
+        .is("deleted_at", null)
+        .gte("created_at", start)
+        .lt("created_at", end);
+      if (error) throw error;
+      return count ?? 0;
     },
   });
 
@@ -157,6 +174,7 @@ function Dashboard() {
         {[
           { label: t("dashboard.totalRooms"), value: totalRooms, to: "/rooms", search: {} },
           { label: t("dashboard.completedToday"), value: completedToday, to: "/cleaning", search: {} },
+          { label: t("dashboard.createdToday"), value: createdToday ?? 0, to: "/reservations", search: { created: "today" } },
         ].map((k) => (
           <Link key={k.label} to={k.to as any} search={k.search as any}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
