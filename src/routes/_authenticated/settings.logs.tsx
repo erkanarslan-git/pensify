@@ -165,13 +165,13 @@ function AuditLogsContent() {
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
                         <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span>{row.entity}</span>
+                        <span>{row.entity === "reservations" ? t("pages.logs.reservation") : row.entity}</span>
                       </div>
                     </td>
                     <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
-                      {row.entity_id ? shortId(row.entity_id) : "—"}
+                      {(row.diff as any)?.new?.guest_name ?? (row.diff as any)?.old?.guest_name ?? (row.entity_id ? shortId(row.entity_id) : "—")}
                     </td>
-                    <td className="px-3 py-2"><ActionBadge action={row.action} /></td>
+                    <td className="px-3 py-2"><ActionBadge action={row.action} entity={row.entity} diff={row.diff} /></td>
                     <td className="px-3 py-2"><DiffSummary diff={row.diff} /></td>
                     <td className="px-3 py-2 text-right">
                       <button
@@ -216,8 +216,18 @@ function shortId(id: string) {
   return id.replace(/-/g, "").slice(-6).toUpperCase();
 }
 
-function ActionBadge({ action }: { action: string }) {
+function reservationEvent(entity?: string, diff?: any): string | null {
+  if (entity !== "reservations" || !diff?.old || !diff?.new) return null;
+  if (!diff.old.deleted_at && diff.new.deleted_at) return "trash";
+  if (diff.old.deleted_at && !diff.new.deleted_at) return "restore";
+  if (diff.old.status !== "cancelled" && diff.new.status === "cancelled") return "cancel";
+  return null;
+}
+
+function ActionBadge({ action, entity, diff }: { action: string; entity?: string; diff?: any }) {
   const { t } = useTranslation();
+  const ev = reservationEvent(entity, diff);
+  if (ev) return <Badge tone={ev === "restore" ? "success" : "warning"}>{t(`pages.logs.${ev}`)}</Badge>;
   const tone: Record<string, "success" | "warning" | "destructive" | "info" | "primary" | "muted"> = {
     INSERT: "success", UPDATE: "info", DELETE: "destructive",
   };
@@ -277,7 +287,7 @@ function LogDetailDialog({ id, onClose }: { id: string | null; onClose: () => vo
               <Field label={t("pages.logs.user")} value={data.actor_email || t("pages.logs.system")} />
               <Field label={t("pages.logs.entity")} value={data.entity} />
               <Field label={t("pages.logs.recordId")} value={data.entity_id || "—"} mono />
-              <Field label={t("pages.logs.action")} value={<ActionBadge action={data.action} />} />
+              <Field label={t("pages.logs.action")} value={<ActionBadge action={data.action} entity={data.entity} diff={data.diff} />} />
               <Field label={t("pages.logs.logId")} value={data.id} mono />
             </div>
             <div>

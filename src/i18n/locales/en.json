@@ -165,7 +165,11 @@
       "showDetails": "Show details",
       "changedFields": "Changed fields ({{count}})",
       "recordId": "Record ID",
-      "logId": "Log ID"
+      "logId": "Log ID",
+      "cancel": "Cancelled",
+      "trash": "Moved to trash",
+      "restore": "Restored",
+      "reservation": "Reservation"
     },
     "settings": {
       "title": "Settings",
