@@ -1326,6 +1326,66 @@ export type Database = {
           },
         ]
       }
+      member_departments: {
+        Row: {
+          created_at: string
+          department: string
+          id: string
+          is_lead: boolean
+          is_worker: boolean
+          lead_can_absence: boolean
+          lead_can_assign: boolean
+          lead_can_fix_time: boolean
+          lead_can_report: boolean
+          member_id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          id?: string
+          is_lead?: boolean
+          is_worker?: boolean
+          lead_can_absence?: boolean
+          lead_can_assign?: boolean
+          lead_can_fix_time?: boolean
+          lead_can_report?: boolean
+          member_id: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          id?: string
+          is_lead?: boolean
+          is_worker?: boolean
+          lead_can_absence?: boolean
+          lead_can_assign?: boolean
+          lead_can_fix_time?: boolean
+          lead_can_report?: boolean
+          member_id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_departments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_departments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_property_access: {
         Row: {
           created_at: string
@@ -2853,6 +2913,7 @@ export type Database = {
         Args: { _org: string; _property: string }
         Returns: boolean
       }
+      cleaner_user: { Args: { _cleaner: string }; Returns: string }
       clock_start: {
         Args: {
           _accuracy: number
@@ -2906,6 +2967,10 @@ export type Database = {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
       }
+      has_department_power: {
+        Args: { _org: string; _power: string; _target_user: string }
+        Returns: boolean
+      }
       has_organization_permission: {
         Args: { _org: string; _permission: string }
         Returns: boolean
@@ -2950,6 +3015,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      member_user: { Args: { _member: string }; Returns: string }
       move_rooms_to_type: {
         Args: { _from_type: string; _to_type: string }
         Returns: number
