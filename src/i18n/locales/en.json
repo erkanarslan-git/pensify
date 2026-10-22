@@ -18,7 +18,8 @@
     "team": "Team & roles",
     "settings": "Settings",
     "channelSync": "Channel Sync",
-    "actionCenter": "Action Center", "todos": "To-dos",
+    "actionCenter": "Action Center",
+    "todos": "To-dos",
     "aiAssistant": "AI Assistant",
     "groups": {
       "overview": "Overview",
@@ -775,5 +776,25 @@
     "close": "Close",
     "calculated": "Calculated: €{{price}}",
     "discountReason": "Reason for price change *"
+  },
+  "issues": {
+    "reportTitle": "Report issue for room {{room}}",
+    "category": "Type",
+    "description": "Description",
+    "placeholder": "e.g. sink is leaking",
+    "descriptionRequired": "Please add a short description",
+    "send": "Report",
+    "reported": "Issue saved",
+    "resolved": "Marked as resolved",
+    "markResolved": "Resolved",
+    "openTitle": "Open issues ({{count}})",
+    "categories": {
+      "damage": "Damage",
+      "plumbing": "Water / plumbing",
+      "electric": "Electrical",
+      "missing": "Missing supplies",
+      "dirty": "Very dirty",
+      "other": "Other"
+    }
   }
 }
