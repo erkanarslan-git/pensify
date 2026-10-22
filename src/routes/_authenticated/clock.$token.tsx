@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { Play, Pause, Square, MapPin, AlertTriangle, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { clockErrorKey } from "@/i18n/clock";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/clock/$token")({
@@ -121,7 +122,7 @@ function ClockPage() {
       toast.success(t("timeTracking.started"));
       qc.invalidateQueries({ queryKey: ["clock-ctx", token] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
 
   const toggleBreak = useMutation({
@@ -131,11 +132,7 @@ function ClockPage() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["clock-ctx", token] }),
-    onError: (e: unknown) => {
-      const err = e as { message?: string; code?: string; details?: string; hint?: string };
-      console.error("[toggleBreak] error", err);
-      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
-    },
+    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
 
   const stop = useMutation({
@@ -152,11 +149,7 @@ function ClockPage() {
       toast.success(t("timeTracking.ended"));
       qc.invalidateQueries({ queryKey: ["clock-ctx", token] });
     },
-    onError: (e: unknown) => {
-      const err = e as { message?: string; code?: string; details?: string; hint?: string };
-      console.error("[stop] error", err);
-      toast.error(`${err.message ?? "error"}${err.code ? ` (${err.code})` : ""}${err.details ? ` — ${err.details}` : ""}`);
-    },
+    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
 
   if (isLoading) {

@@ -1,5 +1,15 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Kapsam belgesi (22.10.2026) — 8 aşama
+- [x] 1. Mesai akışı: çalışan yalnız kendi açık mesaisini görür; şef gerekçeli düzeltir, geçmiş kaydı tutulur; çift tıklama/çakışan mesai engelli; unutulan çıkış sıfır süreyle kontrole düşer; temizlik bitirmek mesaiyi kapatmaz. Farklı rol ile canlı erişim testi sandbox rol kısıtı nedeniyle yapılamadı.
+- [ ] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri
+- [ ] 3. Genel görevler modülü
+- [ ] 4. Temizlik 5 adım + bakım kayıtları + sorun bildirimi
+- [ ] 5. Aylık ödeme planı ve tahsilat
+- [ ] 6. "Bugün oluşturulan rezervasyonlar" sayacı ve tıklanabilir KPI'lar
+- [ ] 7. Menü gruplama
+- [ ] 8. Anonim TV ekranı
+
 - [x] Temizlik tamamlandığında Genel Bakış hemen yenileniyor; 6 test geçti. Giriş yapılmış ekranda geri alınan tamamlanmış görev yeniden bitirildi: müsait 75→76, sarı 6→5; toplam 84 korundu.
 
 - [x] Dört renkli panel kartı toplam 84 odayı kapsıyor: 3 dolu + 78 müsait + 3 temizlik + 0 bakım. Sarı bekleyen/devam eden temizliği birleştiriyor, dolu ana değer oda sayısı; 4 test ve giriş yapılmış ekran kontrolü geçti.
