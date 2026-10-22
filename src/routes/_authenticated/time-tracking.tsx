@@ -374,7 +374,7 @@ function TimeTrackingPage() {
                         <td className="px-5 py-2">
                           {e.clock_out_at ? `${Math.floor(min / 60)}h ${min % 60}m` : "—"}
                           {e.needs_review && (
-                            <div className="mt-1"><Badge tone="danger">{t("clock.needsReview")}{e.review_reason === "missing_clock_out" ? ` · ${t("clock.missingClockOut")}` : e.review_reason === "too_long" ? ` · ${t("clock.tooLong")}` : ""}</Badge></div>
+                            <div className="mt-1"><Badge tone="destructive">{t("clock.needsReview")}{e.review_reason === "missing_clock_out" ? ` · ${t("clock.missingClockOut")}` : e.review_reason === "too_long" ? ` · ${t("clock.tooLong")}` : ""}</Badge></div>
                           )}
                         </td>
                         <td className="px-5 py-2">
