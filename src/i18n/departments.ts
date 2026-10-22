@@ -6,6 +6,7 @@ const tr = {
   powers: "Şef yetkileri",
   assign: "İş atama", time: "Mesai düzeltme", absence: "İzin/hastalık girişi", report: "Rapor görme",
   saved: "Kaydedildi", none: "Bu kişi henüz bir bölümde değil.",
+  maintenanceAssign: "Bakım işi ata", noOpenIssues: "Açık bakım işi yok.", unnamed: "İsim kaydı bulunamadı", assignedBy: "Atayan: {{name}}",
   needMember: "Bu kişinin işletmede bir rolü yok; önce rol verin.",
   explainTitle: "Roller ve bölümler ne yapar?",
   explain: {
@@ -30,6 +31,7 @@ const en: T = {
   powers: "Lead permissions",
   assign: "Assign work", time: "Correct shifts", absence: "Enter leave/sickness", report: "See reports",
   saved: "Saved", none: "Not in any department yet.",
+  maintenanceAssign: "Assign maintenance work", noOpenIssues: "No open maintenance work.", unnamed: "Name not recorded", assignedBy: "Assigned by: {{name}}",
   needMember: "This person has no role in the business yet; assign a role first.",
   explainTitle: "What do roles and departments do?",
   explain: {
@@ -53,6 +55,7 @@ const de: T = {
   powers: "Rechte der Leitung",
   assign: "Arbeit zuweisen", time: "Schichten korrigieren", absence: "Urlaub/Krankheit eintragen", report: "Berichte sehen",
   saved: "Gespeichert", none: "Noch in keiner Abteilung.",
+  maintenanceAssign: "Wartungsarbeit zuweisen", noOpenIssues: "Keine offenen Wartungsarbeiten.", unnamed: "Name nicht erfasst", assignedBy: "Zugewiesen von: {{name}}",
   needMember: "Diese Person hat noch keine Rolle im Betrieb; bitte zuerst eine Rolle vergeben.",
   explainTitle: "Was machen Rollen und Abteilungen?",
   explain: {

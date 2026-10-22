@@ -30,4 +30,4 @@
 - Payments: payment_schedules (installments) + payments (partial allowed); org/property derived from the reservation by trigger, access via can_manage_payments; installments with payments cannot be deleted. Why: tenant-safe, auditable collections.
 - Owner report: org-scoped items; team topics; issue reporter/resolver distinct. Why: consistent counts.
 - Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI + Channel Sync in Tools. Why: stage-7 menu scope.
-- Departments: member_departments + power flags; assignment RPC/guard checks department, active worker, org and property. Why: scoped authority.
+- Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.

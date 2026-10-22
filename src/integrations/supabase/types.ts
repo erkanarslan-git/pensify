@@ -2092,6 +2092,9 @@ export type Database = {
       }
       room_issues: {
         Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_to: string | null
           category: string
           created_at: string
           description: string
@@ -2108,6 +2111,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           category?: string
           created_at?: string
           description: string
@@ -2124,6 +2130,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
           category?: string
           created_at?: string
           description?: string
@@ -2911,6 +2920,10 @@ export type Database = {
         Args: { _cleaner_id?: string; _task_id: string }
         Returns: undefined
       }
+      assign_room_issue: {
+        Args: { _issue_id: string; _user_id?: string }
+        Returns: undefined
+      }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_manage_payments: {
@@ -3031,6 +3044,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      maintenance_board: { Args: never; Returns: Json }
       member_user: { Args: { _member: string }; Returns: string }
       move_rooms_to_type: {
         Args: { _from_type: string; _to_type: string }
