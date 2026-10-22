@@ -1,5 +1,5 @@
 - Tenancy: tenant tables carry organization_id; RLS checks the row's org via has_organization_role / is_org_admin / has_organization_permission / can_access_property. Why: isolation lives in the database.
-- Attendance schedules and absences belong to organization membership, not cleaner profiles; effective-dated schedules preserve historical workdays and absences never create time entries. Why: every employee can have a work plan without being a cleaner, and actual worked hours stay separate.
+- Attendance plans/absences belong to organization membership, not cleaner profiles; effective dates preserve historical workdays; absences never create time entries. Why: all employees need plans; worked hours stay separate.
 - Roles come only from organization_members.role (one row per org+user); user_roles/has_role are deprecated. Why: global roles must not span tenants.
 - default_organization_id() returns an org only for exactly one active membership, else NULL; server code writes organization_id explicitly via src/lib/org-auth.server.ts. Why: fail closed.
 - Property access: owner/admin/ops_manager all; property_manager/reception via member_property_access; cleaners via assigned tasks. Why: least privilege.
@@ -8,7 +8,7 @@
 - Bun 1.3.x + bun.lock only; CI: bun install --frozen-lockfile && bun run build. Why: one lockfile.
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
-- .env is tracked and contains only publishable values (secrets live in the secret store). Why: hosted preview/publish builds need VITE_* at build time or the app fails to load.
+- Track .env with publishable values only; secrets stay in the secret store. Why: hosted builds need VITE_* to load.
 - Room types, rate plans, occupancy prices, bulk rooms and WordPress imports are written only via SECURITY DEFINER RPCs (save_room_type_full, create_rooms_bulk, set_room_type_active, move_rooms_to_type, save_occupancy_prices, import_wp_rooms) that resolve org server-side and check property access + manage_rooms (import: owner/admin). Why: atomic writes and DB-enforced permissions.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
