@@ -4,6 +4,14 @@ import type { WorkItem } from "./work-report";
 import { canAccessRoute } from "./permissions";
 
 describe("department report access", () => {
+  it("defaults to owner and admin only; other roles require an explicit report grant", () => {
+    expect(canAccessRoute("/work-report", ["owner"])).toBe(true);
+    expect(canAccessRoute("/work-report", ["admin"])).toBe(true);
+    expect(canAccessRoute("/work-report", ["manager"])).toBe(false);
+    expect(canAccessRoute("/work-report", ["reception"])).toBe(false);
+    expect(canAccessRoute("/work-report", ["cleaner"])).toBe(false);
+    expect(canAccessRoute("/work-report", ["manager"], ["office"])).toBe(true);
+  });
   it("report access does not grant admin or other unrelated pages", () => {
     expect(canAccessRoute("/work-report", ["cleaner"], ["cleaning"])).toBe(true);
     expect(canAccessRoute("/work-report", ["cleaner"], [])).toBe(false);
