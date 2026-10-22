@@ -1,5 +1,6 @@
 const tr = {
   title: "Yapılan İşler", subtitle: "Seçilen dönemin operasyon özeti",
+  teams: { all: "Tümü", cleaning: "Temizlik", office: "Büro", maintenance: "Bakım" }, reporter: "Bildiren", resolver: "Çözen", reported: "Bildirilen bakım", resolved: "Çözülen bakım",
   today: "Bugün", yesterday: "Dün", week: "Son 7 gün", month: "Bu ay", custom: "Özel", from: "Başlangıç", to: "Bitiş",
   allLocations: "Tüm lokasyonlar", done: "Yapılan işler", open: "Bekleyen iş yükü (şu an)",
   topics: { res_new: "Yeni rezervasyon", res_cancelled: "İptal", clean_done: "Tamamlanan temizlik", clean_review: "Kontrol bekleyen (sorunlu)", clean_open: "Açık temizlik", issue_done: "Tamamlanan bakım", issue_open: "Açık bakım", todo_done: "Tamamlanan görev", todo_open: "Açık görev", todo_overdue: "Geciken görev" },
@@ -13,6 +14,7 @@ const tr = {
 };
 const en: typeof tr = {
   title: "Work report", subtitle: "Operations summary for the selected period",
+  teams: { all: "All", cleaning: "Cleaning", office: "Office", maintenance: "Maintenance" }, reporter: "Reported by", resolver: "Resolved by", reported: "Maintenance reported", resolved: "Maintenance resolved",
   today: "Today", yesterday: "Yesterday", week: "Last 7 days", month: "This month", custom: "Custom", from: "From", to: "To",
   allLocations: "All locations", done: "Work done", open: "Open workload (now)",
   topics: { res_new: "New bookings", res_cancelled: "Cancellations", clean_done: "Cleanings done", clean_review: "Needs review (problem)", clean_open: "Open cleanings", issue_done: "Maintenance done", issue_open: "Open maintenance", todo_done: "To-dos done", todo_open: "Open to-dos", todo_overdue: "Overdue to-dos" },
@@ -26,6 +28,7 @@ const en: typeof tr = {
 };
 const de: typeof tr = {
   title: "Erledigte Arbeiten", subtitle: "Betriebsübersicht für den gewählten Zeitraum",
+  teams: { all: "Alle", cleaning: "Reinigung", office: "Büro", maintenance: "Wartung" }, reporter: "Gemeldet von", resolver: "Behoben von", reported: "Gemeldete Wartung", resolved: "Behobene Wartung",
   today: "Heute", yesterday: "Gestern", week: "Letzte 7 Tage", month: "Dieser Monat", custom: "Zeitraum", from: "Von", to: "Bis",
   allLocations: "Alle Standorte", done: "Erledigt", open: "Offene Arbeit (aktuell)",
   topics: { res_new: "Neue Buchungen", res_cancelled: "Stornierungen", clean_done: "Erledigte Reinigungen", clean_review: "Zu prüfen (Problem)", clean_open: "Offene Reinigungen", issue_done: "Erledigte Wartung", issue_open: "Offene Wartung", todo_done: "Erledigte Aufgaben", todo_open: "Offene Aufgaben", todo_overdue: "Überfällige Aufgaben" },

@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getWorkReport } from "@/lib/work-report.functions";
 import { businessDate, BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
-import { presetRange, countTopics, dailySeries, byLocation, byStaff, filterItems, DONE_TOPICS, OPEN_TOPICS, type Topic, type WorkItem, type Preset } from "@/lib/work-report";
+import { presetRange, countTopics, dailySeries, byLocation, byStaff, filterItems, DONE_TOPICS, OPEN_TOPICS, type Topic, type WorkItem, type Preset, TEAM_TOPICS, teamItems, type WorkTeam } from "@/lib/work-report";
 import { workReportTranslations } from "@/i18n/work-report";
 
 const search = z.object({
@@ -22,6 +22,8 @@ const search = z.object({
   from: fallback(z.string(), "").default(""),
   to: fallback(z.string(), "").default(""),
   property: fallback(z.string(), "").default(""),
+  team: fallback(z.enum(["all", "cleaning", "office", "maintenance"]), "all").default("all"),
+  staffRole: fallback(z.string(), "").default(""),
   view: fallback(z.string(), "summary").default("summary"),
   topic: fallback(z.string(), "").default(""),
   staff: fallback(z.string(), "").default(""),
@@ -66,14 +68,19 @@ function WorkReportPage() {
   const [openItem, setOpenItem] = useState<WorkItem | null>(null);
   const fmt = (iso: string | null) => !iso ? c.none : iso.length <= 10 ? formatDateDE(iso) : new Date(iso).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-  const items = q.data?.items ?? [];
+  const items = useMemo(() => teamItems(q.data?.items ?? [], s.team), [q.data?.items, s.team]);
+  const topics = TEAM_TOPICS[s.team];
+  const groups = GROUPS.filter((g) => [...g.done, ...g.open].some((t) => topics.includes(t)));
+  const locCols = LOC_COLS.filter((t) => topics.includes(t));
+  const staffTopics = topics.filter((t) => t !== "issue_done" && t !== "issue_open");
+  const hasMaintenance = s.team === "all" || s.team === "maintenance";
   const counts = useMemo(() => countTopics(items), [items]);
-  const filtered = useMemo(() => filterItems(items, { topic: s.topic, propertyId: s.property, staff: s.staff, room: s.room, status: s.status, source: s.source, q: s.q }), [items, s]);
+  const filtered = useMemo(() => filterItems(items, { topic: s.topic, propertyId: s.property, staff: s.staff, staffRole: s.staffRole, room: s.room, status: s.status, source: s.source, q: s.q }), [items, s]);
 
   const filters = (
     <div className="flex flex-wrap items-center gap-2 mb-5">
       <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
-        {PRESETS.map((p) => <button key={p} onClick={() => set({ preset: p, ...(p === "custom" ? { from: range.from, to: range.to } : {}) })} className={`px-3 py-1.5 text-xs rounded-md ${preset === p ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{c[p]}</button>)}
+        {PRESETS.map((p) => <Button variant="ghost" size="sm" key={p} onClick={() => set({ preset: p, ...(p === "custom" ? { from: range.from, to: range.to } : {}) })} className={`px-3 py-1.5 text-xs rounded-md ${preset === p ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{c[p]}</Button>)}
       </div>
       {preset === "custom" && <>
         <Input type="date" aria-label={c.from} value={s.from || range.from} onChange={(e) => set({ from: e.target.value })} className="h-9 w-40" />
@@ -91,12 +98,12 @@ function WorkReportPage() {
   if (q.error) return <AppShell title={c.title} subtitle={c.subtitle}>{filters}<p className="text-destructive">{String(q.error.message).includes("Forbidden") ? c.forbidden : c.error}</p></AppShell>;
 
   const Num = ({ topic, value, propertyId }: { topic: Topic; value: number; propertyId?: string }) => (
-    <button onClick={() => set({ view: "detail", topic, ...(propertyId ? { property: propertyId } : {}) })} className={`tabular-nums font-semibold hover:underline underline-offset-4 ${value === 0 ? "text-muted-foreground" : "text-primary"}`}>{value}</button>
+    <Button variant="ghost" size="sm" onClick={() => set({ view: "detail", staffRole: "", topic, ...(propertyId ? { property: propertyId } : {}) })} className={`tabular-nums font-semibold hover:underline underline-offset-4 ${value === 0 ? "text-muted-foreground" : "text-primary"}`}>{value}</Button>
   );
 
   const tabs = (
     <div className="flex gap-2 mb-4">
-      {s.view !== "summary" && <Button variant="outline" size="sm" onClick={() => set({ view: "summary", topic: "", staff: "", room: "", status: "", source: "", q: "" })}><ArrowLeft className="h-4 w-4 mr-1" />{c.back}</Button>}
+      {s.view !== "summary" && <Button variant="outline" size="sm" onClick={() => set({ view: "summary", topic: "", staff: "", staffRole: "", room: "", status: "", source: "", q: "" })}><ArrowLeft className="h-4 w-4 mr-1" />{c.back}</Button>}
       <Button variant={s.view === "summary" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "summary" })}>{c.summary}</Button>
       <Button variant={s.view === "detail" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "detail" })}>{c.detail}</Button>
       <Button variant={s.view === "staff" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "staff" })}>{c.staffView}</Button>
@@ -106,6 +113,9 @@ function WorkReportPage() {
   return (
     <AppShell title={c.title} subtitle={c.subtitle}>
       {filters}
+      <div role="tablist" aria-label={c.title} className="flex flex-wrap gap-1 border-b border-border mb-4 pb-2">
+        {(["all", "cleaning", "office", "maintenance"] as WorkTeam[]).map((team) => <Button key={team} role="tab" aria-selected={s.team === team} variant={s.team === team ? "default" : "ghost"} size="sm" onClick={() => { setOpenItem(null); set({ team, topic: "", staff: "", staffRole: "", room: "", status: "", source: "", q: "" }); }}>{c.teams[team]}</Button>)}
+      </div>
       {tabs}
       {q.data?.truncated && <p className="text-sm text-warning mb-3">{c.truncated}</p>}
 
@@ -114,7 +124,7 @@ function WorkReportPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-xs text-muted-foreground"><tr><th className="text-left px-4 py-2 font-medium"></th><th className="text-left px-4 py-2 font-medium">{c.done}</th><th className="text-left px-4 py-2 font-medium">{c.open}</th></tr></thead>
             <tbody className="divide-y divide-border">
-              {GROUPS.map((g) => <tr key={g.key}>
+              {groups.map((g) => <tr key={g.key}>
                 <td className="px-4 py-3 font-medium whitespace-nowrap">{c.groups[g.key]}</td>
                 <td className="px-4 py-3"><div className="flex flex-wrap gap-x-5 gap-y-1">{g.done.map((t) => <span key={t} className="text-muted-foreground"><Num topic={t} value={counts[t]} /> <span className="ml-1">{c.topics[t]}</span></span>)}</div></td>
                 <td className="px-4 py-3"><div className="flex flex-wrap gap-x-5 gap-y-1">{g.open.length ? g.open.map((t) => <span key={t} className="text-muted-foreground"><Num topic={t} value={counts[t]} /> <span className="ml-1">{c.topics[t]}</span></span>) : <span className="text-muted-foreground">{c.none}</span>}</div></td>
@@ -126,13 +136,13 @@ function WorkReportPage() {
         <Section title={c.locTable}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-xs text-muted-foreground"><tr><th className="text-left px-4 py-2 font-medium">{c.location}</th>{LOC_COLS.map((t) => <th key={t} className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.topics[t]}</th>)}</tr></thead>
+              <thead className="text-xs text-muted-foreground"><tr><th className="text-left px-4 py-2 font-medium">{c.location}</th>{locCols.map((t) => <th key={t} className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.topics[t]}</th>)}</tr></thead>
               <tbody className="divide-y divide-border">
-                {byLocation(items).map((r) => <tr key={r.propertyId}><td className="px-4 py-2.5">{r.name}</td>{LOC_COLS.map((t) => <td key={t} className="text-right px-3 py-2.5"><Num topic={t} value={r.counts[t]} propertyId={r.propertyId} /></td>)}</tr>)}
-                {byLocation(items).length === 0 && <tr><td colSpan={LOC_COLS.length + 1} className="px-4 py-6 text-center text-muted-foreground">{c.empty}</td></tr>}
+                {byLocation(items).map((r) => <tr key={r.propertyId}><td className="px-4 py-2.5">{r.name}</td>{locCols.map((t) => <td key={t} className="text-right px-3 py-2.5"><Num topic={t} value={r.counts[t]} propertyId={r.propertyId} /></td>)}</tr>)}
+                {byLocation(items).length === 0 && <tr><td colSpan={locCols.length + 1} className="px-4 py-6 text-center text-muted-foreground">{c.empty}</td></tr>}
               </tbody>
             </table>
-            <p className="px-4 py-2 text-xs text-muted-foreground">{c.todoNote}</p>
+            {(s.team === "all" || s.team === "office") && <p className="px-4 py-2 text-xs text-muted-foreground">{c.todoNote}</p>}
           </div>
         </Section>
 
@@ -144,24 +154,24 @@ function WorkReportPage() {
                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} width={28} stroke="var(--muted-foreground)" />
                 <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="reservations" name={c.topics.res_new} stackId="a" fill="var(--primary)" />
-                <Bar dataKey="cleaning" name={c.topics.clean_done} stackId="a" fill="var(--success)" />
-                <Bar dataKey="issues" name={c.topics.issue_done} stackId="a" fill="var(--warning)" />
-                <Bar dataKey="todos" name={c.topics.todo_done} stackId="a" fill="var(--info)" />
+                {(s.team === "all" || s.team === "office") && <Bar dataKey="reservations" name={c.topics.res_new} stackId="a" fill="var(--primary)" />}
+                {(s.team === "all" || s.team === "cleaning") && <Bar dataKey="cleaning" name={c.topics.clean_done} stackId="a" fill="var(--success)" />}
+                {(s.team === "all" || s.team === "maintenance") && <Bar dataKey="issues" name={c.topics.issue_done} stackId="a" fill="var(--warning)" />}
+                {(s.team === "all" || s.team === "office") && <Bar dataKey="todos" name={c.topics.todo_done} stackId="a" fill="var(--info)" />}
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Section>
       </div>}
 
-      {s.view === "detail" && <DetailList c={c} items={items} filtered={filtered} s={s} set={set} fmt={fmt} onOpen={setOpenItem} />}
+      {s.view === "detail" && <DetailList c={c} items={items} filtered={filtered} s={s} set={set} fmt={fmt} topics={topics} hasMaintenance={hasMaintenance} onOpen={setOpenItem} />}
 
       {s.view === "staff" && <Section title={c.staffView}>
         <div className="overflow-x-auto"><table className="w-full text-sm">
-          <thead className="text-xs text-muted-foreground"><tr><th className="text-left px-4 py-2 font-medium">{c.staff}</th>{DONE_TOPICS.concat(["clean_open", "issue_open"]).map((t) => <th key={t} className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.topics[t]}</th>)}</tr></thead>
+          <thead className="text-xs text-muted-foreground"><tr><th className="text-left px-4 py-2 font-medium">{c.staff}</th>{staffTopics.map((t) => <th key={t} className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.topics[t]}</th>)}{hasMaintenance && <><th className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.reported}</th><th className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.resolved}</th></>}</tr></thead>
           <tbody className="divide-y divide-border">
-            {byStaff(items).map((r) => <tr key={r.staffId}><td className="px-4 py-2.5">{r.name}</td>{DONE_TOPICS.concat(["clean_open", "issue_open"]).map((t) => <td key={t} className="text-right px-3 py-2.5"><button onClick={() => set({ view: "detail", topic: t, staff: r.staffId })} className={`tabular-nums font-semibold hover:underline ${r.counts[t] ? "text-primary" : "text-muted-foreground"}`}>{r.counts[t]}</button></td>)}</tr>)}
-            {byStaff(items).length === 0 && <tr><td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">{c.empty}</td></tr>}
+            {byStaff(items).map((r) => <tr key={r.staffId}><td className="px-4 py-2.5">{r.name}</td>{staffTopics.map((t) => <td key={t} className="text-right px-3 py-2.5"><Button variant="ghost" size="sm" onClick={() => set({ view: "detail", topic: t, staff: r.staffId, staffRole: "" })} className="tabular-nums text-primary">{r.counts[t]}</Button></td>)}{hasMaintenance && <>{(["reporter", "resolver"] as const).map((role) => <td key={role} className="text-right px-3 py-2.5"><Button variant="ghost" size="sm" className="tabular-nums text-primary" onClick={() => set({ view: "detail", topic: role === "resolver" ? "issue_done" : "", staff: r.staffId, staffRole: role })}>{role === "reporter" ? r.reported : r.resolved}</Button></td>)}</>}</tr>)}
+            {byStaff(items).length === 0 && <tr><td colSpan={1 + staffTopics.length + (hasMaintenance ? 2 : 0)} className="px-4 py-6 text-center text-muted-foreground">{c.empty}</td></tr>}
           </tbody>
         </table></div>
       </Section>}
@@ -173,7 +183,7 @@ function WorkReportPage() {
             <dt className="text-muted-foreground">{c.item}</dt><dd>{openItem.title || c.none}</dd>
             <dt className="text-muted-foreground">{c.location}</dt><dd>{openItem.propertyName ?? c.none}</dd>
             <dt className="text-muted-foreground">{c.room}</dt><dd>{openItem.room ?? c.none}</dd>
-            <dt className="text-muted-foreground">{c.staff}</dt><dd>{openItem.staff ?? c.none}</dd>
+            {openItem.kind === "issue" ? <><dt className="text-muted-foreground">{c.reporter}</dt><dd>{openItem.reporter ?? c.none}</dd><dt className="text-muted-foreground">{c.resolver}</dt><dd>{openItem.resolver ?? c.none}</dd></> : <><dt className="text-muted-foreground">{c.staff}</dt><dd>{openItem.staff ?? c.none}</dd></>}
             <dt className="text-muted-foreground">{c.when}</dt><dd>{fmt(openItem.at)}</dd>
             <dt className="text-muted-foreground">{c.result}</dt><dd><Badge tone={DONE_TOPICS.includes(openItem.topic) ? "success" : "warning"}>{openItem.status}</Badge></dd>
             <dt className="text-muted-foreground">{c.source}</dt><dd>{openItem.source}</dd>
@@ -190,31 +200,32 @@ function WorkReportPage() {
 }
 
 type Copy = (typeof workReportTranslations)["tr"];
-function DetailList({ c, items, filtered, s, set, fmt, onOpen }: { c: Copy; items: WorkItem[]; filtered: WorkItem[]; s: any; set: (p: any) => void; fmt: (i: string | null) => string; onOpen: (i: WorkItem) => void }) {
+function DetailList({ c, items, filtered, s, set, fmt, topics, hasMaintenance, onOpen }: { c: Copy; topics: Topic[]; hasMaintenance: boolean; items: WorkItem[]; filtered: WorkItem[]; s: any; set: (p: any) => void; fmt: (i: string | null) => string; onOpen: (i: WorkItem) => void }) {
   const uniq = (f: (i: WorkItem) => string | null) => [...new Set(items.map(f).filter(Boolean) as string[])].sort();
-  const staffOpts = [...new Map(items.filter((i) => i.staffId).map((i) => [i.staffId!, i.staff ?? "—"])).entries()];
+  const staffOpts = [...new Map(items.flatMap((i) => [[i.staffId, i.staff], [i.reporterId, i.reporter], [i.resolverId, i.resolver]].flatMap(([id, name]) => typeof id === "string" ? [[id, name ?? c.none] as [string, string]] : []))).entries()];
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE));
   const page = Math.min(Math.max(1, s.page), pages);
   const rows = filtered.slice((page - 1) * PAGE, page * PAGE);
   const sel = "h-9 rounded-md border border-input bg-background px-2 text-sm";
   const exportCsv = () => {
-    const head = [c.type, c.when, c.location, c.room, c.item, c.staff, c.status, c.source, c.note];
+    const head = [c.type, c.when, c.location, c.room, c.item, c.staff, c.reporter, c.resolver, c.status, c.source, c.note];
     const esc = (v: string | null) => `"${(v ?? "").replaceAll('"', '""')}"`;
-    const body = filtered.map((i) => [c.topics[i.topic], fmt(i.at), i.propertyName, i.room, i.title, i.staff, i.status, i.source, i.note].map(esc).join(";"));
+    const body = filtered.map((i) => [c.topics[i.topic], fmt(i.at), i.propertyName, i.room, i.title, i.staff, i.reporter ?? null, i.resolver ?? null, i.status, i.source, i.note].map(esc).join(";"));
     const blob = new Blob(["\ufeff" + [head.map(esc).join(";"), ...body].join("\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `pensify-work-report.csv`; a.click(); URL.revokeObjectURL(a.href);
   };
   return <Section title={`${c.detail}${s.topic ? ` · ${c.topics[s.topic as Topic] ?? ""}` : ""} (${filtered.length})`} action={<Button size="sm" variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-1" />{c.export}</Button>}>
     <div className="flex flex-wrap gap-2 px-4 py-3 border-b border-border">
-      <select aria-label={c.type} className={sel} value={s.topic} onChange={(e) => set({ topic: e.target.value })}><option value="">{c.type}: {c.all}</option>{[...DONE_TOPICS, ...OPEN_TOPICS].map((t) => <option key={t} value={t}>{c.topics[t]}</option>)}</select>
-      <select aria-label={c.staff} className={sel} value={s.staff} onChange={(e) => set({ staff: e.target.value })}><option value="">{c.staff}: {c.all}</option>{staffOpts.map(([id, n]) => <option key={id} value={id}>{n}</option>)}</select>
+      <select aria-label={c.type} className={sel} value={s.topic} onChange={(e) => set({ topic: e.target.value })}><option value="">{c.type}: {c.all}</option>{topics.map((t) => <option key={t} value={t}>{c.topics[t]}</option>)}</select>
+      <select aria-label={c.staff} className={sel} value={s.staff} onChange={(e) => set({ staff: e.target.value, staffRole: "" })}><option value="">{c.staff}: {c.all}</option>{staffOpts.map(([id, n]) => <option key={id} value={id}>{n}</option>)}</select>
+      {hasMaintenance && <select aria-label={`${c.staff}: ${c.type}`} className={sel} value={s.staffRole} onChange={(e) => set({ staffRole: e.target.value })}><option value="">{c.staff}: {c.all}</option><option value="reporter">{c.reporter}</option><option value="resolver">{c.resolver}</option></select>}
       <select aria-label={c.room} className={sel} value={s.room} onChange={(e) => set({ room: e.target.value })}><option value="">{c.room}: {c.all}</option>{uniq((i) => i.room).map((r) => <option key={r} value={r}>{r}</option>)}</select>
       <select aria-label={c.status} className={sel} value={s.status} onChange={(e) => set({ status: e.target.value })}><option value="">{c.status}: {c.all}</option>{uniq((i) => i.status).map((r) => <option key={r} value={r}>{r}</option>)}</select>
       <select aria-label={c.source} className={sel} value={s.source} onChange={(e) => set({ source: e.target.value })}><option value="">{c.source}: {c.all}</option>{uniq((i) => i.source).map((r) => <option key={r} value={r}>{r}</option>)}</select>
       <Input placeholder={c.search} value={s.q} onChange={(e) => set({ q: e.target.value })} className="h-9 w-48" />
     </div>
     <div className="overflow-x-auto"><table className="w-full text-sm">
-      <thead className="text-xs text-muted-foreground"><tr>{[c.when, c.type, c.location, c.room, c.item, c.staff, c.status].map((h) => <th key={h} className="text-left px-4 py-2 font-medium whitespace-nowrap">{h}</th>)}</tr></thead>
+      <thead className="text-xs text-muted-foreground"><tr>{[c.when, c.type, c.location, c.room, c.item, ...(s.team === "maintenance" ? [] : [c.staff]), ...(hasMaintenance ? [c.reporter, c.resolver] : []), c.status].map((h) => <th key={h} className="text-left px-4 py-2 font-medium whitespace-nowrap">{h}</th>)}</tr></thead>
       <tbody className="divide-y divide-border">
         {rows.map((i) => <tr key={`${i.topic}-${i.id}`} onClick={() => onOpen(i)} className="cursor-pointer hover:bg-muted/40">
           <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{fmt(i.at)}</td>
@@ -222,10 +233,11 @@ function DetailList({ c, items, filtered, s, set, fmt, onOpen }: { c: Copy; item
           <td className="px-4 py-2.5">{i.propertyName ?? c.none}</td>
           <td className="px-4 py-2.5">{i.room ?? c.none}</td>
           <td className="px-4 py-2.5 max-w-[16rem] truncate">{i.title}</td>
-          <td className="px-4 py-2.5">{i.staff ?? c.none}</td>
+          {s.team !== "maintenance" && <td className="px-4 py-2.5">{i.kind === "issue" ? c.none : i.staff ?? c.none}</td>}
+          {hasMaintenance && <><td className="px-4 py-2.5">{i.reporter ?? c.none}</td><td className="px-4 py-2.5">{i.resolver ?? c.none}</td></>}
           <td className="px-4 py-2.5"><Badge tone={DONE_TOPICS.includes(i.topic) ? "success" : i.topic === "todo_overdue" || i.topic === "clean_review" ? "destructive" : "warning"}>{i.status}</Badge></td>
         </tr>)}
-        {rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">{c.empty}</td></tr>}
+        {rows.length === 0 && <tr><td colSpan={7 + (hasMaintenance ? 2 : 0) - (s.team === "maintenance" ? 1 : 0)} className="px-4 py-8 text-center text-muted-foreground">{c.empty}</td></tr>}
       </tbody>
     </table></div>
     {pages > 1 && <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border text-sm">

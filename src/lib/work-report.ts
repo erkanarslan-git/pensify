@@ -8,6 +8,17 @@ export type Topic =
 export const DONE_TOPICS: Topic[] = ["res_new", "res_cancelled", "clean_done", "issue_done", "todo_done"];
 export const OPEN_TOPICS: Topic[] = ["clean_review", "clean_open", "issue_open", "todo_open", "todo_overdue"];
 
+export type WorkTeam = "all" | "cleaning" | "office" | "maintenance";
+export const TEAM_TOPICS: Record<WorkTeam, Topic[]> = {
+  all: [...DONE_TOPICS, ...OPEN_TOPICS],
+  cleaning: ["clean_done", "clean_review", "clean_open"],
+  office: ["res_new", "res_cancelled", "todo_done", "todo_open", "todo_overdue"],
+  maintenance: ["issue_done", "issue_open"],
+};
+export function teamItems(items: WorkItem[], team: WorkTeam) {
+  return items.filter((i) => TEAM_TOPICS[team].includes(i.topic));
+}
+
 export interface WorkItem {
   id: string;
   topic: Topic;
@@ -19,6 +30,10 @@ export interface WorkItem {
   room: string | null;
   staffId: string | null;
   staff: string | null;
+  reporterId?: string | null;
+  reporter?: string | null;
+  resolverId?: string | null;
+  resolver?: string | null;
   status: string;
   source: string;
   title: string;
@@ -85,26 +100,38 @@ export function byLocation(items: WorkItem[]) {
   return [...m.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function filterItems(items: WorkItem[], f: { topic?: string; propertyId?: string; staff?: string; room?: string; status?: string; source?: string; q?: string }) {
+export function filterItems(items: WorkItem[], f: { topic?: string; propertyId?: string; staff?: string; staffRole?: string; room?: string; status?: string; source?: string; q?: string }) {
   const q = f.q?.trim().toLowerCase();
   return items.filter((i) =>
     (!f.topic || i.topic === f.topic) &&
     (!f.propertyId || i.propertyId === f.propertyId) &&
-    (!f.staff || i.staffId === f.staff) &&
+    (!f.staff || (f.staffRole === "reporter" ? i.reporterId === f.staff : f.staffRole === "resolver" ? i.resolverId === f.staff : [i.staffId, i.reporterId, i.resolverId].includes(f.staff))) &&
     (!f.room || i.room === f.room) &&
     (!f.status || i.status === f.status) &&
     (!f.source || i.source === f.source) &&
-    (!q || [i.title, i.staff, i.room, i.propertyName, i.note].some((v) => v?.toLowerCase().includes(q))));
+    (!q || [i.title, i.staff, i.reporter, i.resolver, i.room, i.propertyName, i.note].some((v) => v?.toLowerCase().includes(q))));
 }
 
 /** Staff view: done-work counts per person (secondary view, not the first screen). */
 export function byStaff(items: WorkItem[]) {
-  const m = new Map<string, { staffId: string; name: string; counts: Record<Topic, number> }>();
+  const m = new Map<string, { staffId: string; name: string; counts: Record<Topic, number>; reported: number; resolved: number }>();
+  const get = (id: string, name: string | null | undefined) => {
+    let row = m.get(id);
+    if (!row) { row = { staffId: id, name: name ?? "—", counts: countTopics([]), reported: 0, resolved: 0 }; m.set(id, row); }
+    return row;
+  };
   for (const i of items) {
+    if (i.kind === "issue") {
+      if (i.reporterId) get(i.reporterId, i.reporter).reported++;
+      if (i.resolverId && i.topic === "issue_done") {
+        const row = get(i.resolverId, i.resolver);
+        row.resolved++;
+        row.counts.issue_done++;
+      }
+      continue;
+    }
     if (!i.staffId) continue;
-    let row = m.get(i.staffId);
-    if (!row) { row = { staffId: i.staffId, name: i.staff ?? "—", counts: countTopics([]) }; m.set(i.staffId, row); }
-    row.counts[i.topic]++;
+    get(i.staffId, i.staff).counts[i.topic]++;
   }
   return [...m.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
