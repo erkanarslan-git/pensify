@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kapsam belgesi (22.10.2026) — 8 aşama
+- [ ] Bölüm şefleri: önce Temizlik'te kendi bölüm çalışanlarına güvenli atama; ardından bakım ataması ve bölüm raporu erişimi.
 - [x] 1. Mesai akışı: çalışan yalnız kendi açık mesaisini görür; şef gerekçeli düzeltir, geçmiş kaydı tutulur; çift tıklama/çakışan mesai engelli; unutulan çıkış sıfır süreyle kontrole düşer; temizlik bitirmek mesaiyi kapatmaz. Farklı rol ile canlı erişim testi sandbox rol kısıtı nedeniyle yapılamadı.
 - [x] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri
 - [x] 3. Genel görevler modülü
