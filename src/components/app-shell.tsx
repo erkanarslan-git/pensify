@@ -84,6 +84,7 @@ const navGroups: NavGroup[] = [
   {
     labelKey: "nav.groups.admin",
     items: [
+      { to: "/work-report", labelKey: "nav.workReport", icon: BarChart3 },
       { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
       { to: "/team", labelKey: "nav.team", icon: Shield },
       { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },

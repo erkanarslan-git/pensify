@@ -15,6 +15,7 @@ import { ChevronLeft, ChevronRight, FileText, Eye, Info } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings/logs")({
   head: () => ({ meta: [{ title: "Audit Logs — Pensify" }, { name: "description", content: "Änderungen und Aktivitäten in Pensify nachverfolgen." }, { property: "og:title", content: "Audit Logs — Pensify" }, { property: "og:description", content: "Änderungen und Aktivitäten in Pensify nachverfolgen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ entityId: typeof s.entityId === "string" ? s.entityId : undefined }),
   component: AuditLogsContent,
 });
 
@@ -32,7 +33,8 @@ function AuditLogsContent() {
   const [entity, setEntity] = useState("");
   const [action, setAction] = useState("");
   const [email, setEmail] = useState("");
-  const [entityId, setEntityId] = useState("");
+  const initial = Route.useSearch();
+  const [entityId, setEntityId] = useState(initial.entityId ?? "");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
