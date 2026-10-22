@@ -21,6 +21,7 @@ import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
 import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
+import { Route as AuthenticatedMaintenanceRouteImport } from './routes/_authenticated/maintenance'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
@@ -109,6 +110,12 @@ const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
   path: '/geo-test',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMaintenanceRoute =
+  AuthenticatedMaintenanceRouteImport.update({
+    id: '/maintenance',
+    path: '/maintenance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   id: '/me',
   path: '/me',
@@ -274,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
+  '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
@@ -313,6 +321,7 @@ export interface FileRoutesByTo {
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
+  '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
@@ -355,6 +364,7 @@ export interface FileRoutesById {
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
   '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
   '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
+  '/_authenticated/maintenance': typeof AuthenticatedMaintenanceRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
@@ -398,6 +408,7 @@ export interface FileRouteTypes {
     | '/cleaning'
     | '/dispatch'
     | '/geo-test'
+    | '/maintenance'
     | '/me'
     | '/notifications'
     | '/request-access'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/cleaning'
     | '/dispatch'
     | '/geo-test'
+    | '/maintenance'
     | '/me'
     | '/notifications'
     | '/request-access'
@@ -478,6 +490,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cleaning'
     | '/_authenticated/dispatch'
     | '/_authenticated/geo-test'
+    | '/_authenticated/maintenance'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
     | '/_authenticated/request-access'
@@ -606,6 +619,13 @@ declare module '@tanstack/react-router' {
       path: '/geo-test'
       fullPath: '/geo-test'
       preLoaderRoute: typeof AuthenticatedGeoTestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/maintenance': {
+      id: '/_authenticated/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof AuthenticatedMaintenanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/me': {
@@ -824,6 +844,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
   AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
   AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
+  AuthenticatedMaintenanceRoute: typeof AuthenticatedMaintenanceRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
@@ -853,6 +874,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
   AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
   AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
+  AuthenticatedMaintenanceRoute: AuthenticatedMaintenanceRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
