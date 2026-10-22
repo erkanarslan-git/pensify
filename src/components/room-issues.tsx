@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, Wrench, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
+import { Button } from "@/components/ui/button";
+import { maintenanceWorkerAllowed, type MaintenanceBoard } from "@/lib/maintenance-assignment";
 
 export const ISSUE_CATEGORIES = ["damage", "plumbing", "electric", "missing", "dirty", "other"] as const;
 
@@ -66,24 +68,31 @@ export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }
   );
 }
 
-export function OpenIssuesList({ canResolve, roomLabel }: { canResolve: boolean; roomLabel: (id: string) => string }) {
+export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { canResolve: boolean; roomLabel: (id: string) => string; showEmpty?: boolean }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { data = [] } = useQuery({
+  const { data: board, error, isLoading } = useQuery({
     queryKey: ["room-issues"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("room_issues")
-        .select("id,room_id,category,description,status,created_at,reported_by")
-        .eq("status", "open").order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("maintenance_board");
       if (error) throw error;
-      const ids = [...new Set((data ?? []).map((d) => d.reported_by).filter(Boolean))] as string[];
-      const { data: profs } = ids.length
-        ? await supabase.from("profiles").select("id,full_name").in("id", ids)
-        : { data: [] as { id: string; full_name: string | null }[] };
-      const names = new Map((profs ?? []).map((p) => [p.id, p.full_name || ""]));
-      return (data ?? []).map((d) => ({ ...d, reporter: d.reported_by ? names.get(d.reported_by) ?? "" : "" }));
+      return data as unknown as MaintenanceBoard;
     },
   });
+  const data = board?.issues ?? [];
+  const workers = board?.workers ?? [];
+  const [assigning, setAssigning] = useState<string | null>(null);
+  const assign = async (id: string, userId: string) => {
+    if (!maintenanceWorkerAllowed(workers, userId)) return;
+    setAssigning(id);
+    try {
+      const { error } = await supabase.rpc("assign_room_issue", { _issue_id: id, ...(userId ? { _user_id: userId } : {}) });
+      if (error) throw error;
+      await qc.invalidateQueries({ queryKey: ["room-issues"] });
+      toast.success(t("departments.saved"));
+    } catch { toast.error(t("cleaning.actionFailed")); }
+    finally { setAssigning(null); }
+  };
 
   const [confirming, setConfirming] = useState<{ id: string; room: string } | null>(null);
   const [note, setNote] = useState("");
@@ -101,20 +110,31 @@ export function OpenIssuesList({ canResolve, roomLabel }: { canResolve: boolean;
     qc.invalidateQueries({ queryKey: ["room-issues"] });
   };
 
-  if (data.length === 0) return null;
+  if (error) return <div role="alert" className="text-sm text-destructive">{t("cleaning.loadError")} <Button variant="outline" onClick={() => qc.invalidateQueries({ queryKey: ["room-issues"] })}>{t("rooms.retry")}</Button></div>;
+  if (isLoading) return showEmpty ? <div className="text-muted-foreground">{t("common.loading")}</div> : null;
+  if (data.length === 0) return showEmpty ? <div className="text-sm text-muted-foreground">{t("departments.noOpenIssues")}</div> : null;
   return (
     <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 mb-4">
       <div className="flex items-center gap-2 font-semibold text-sm mb-2"><Wrench className="w-4 h-4 text-destructive" />{t("issues.openTitle", { count: data.length })}</div>
       <div className="divide-y divide-border/60">
         {data.map((i) => (
           <div key={i.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
-            <span className="font-semibold w-16">#{roomLabel(i.room_id)}</span>
+            <div className="min-w-24"><span className="font-semibold">#{roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id)}</span><div className="text-xs text-muted-foreground">{i.property_name}</div></div>
             <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">{t(`issues.categories.${i.category}`)}</span>
             <span className="flex-1 min-w-[160px]">{i.description}</span>
             <span className="text-xs text-muted-foreground">
               {i.reporter && `${i.reporter} · `}
               {new Date(i.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
             </span>
+            <div className="w-full sm:w-auto space-y-1">
+              {i.can_assign ? <select aria-label={t("departments.maintenanceAssign")} value={i.assigned_to ?? ""} disabled={assigning === i.id}
+                onChange={(e) => void assign(i.id, e.target.value)} className="w-full sm:w-48 min-h-11 rounded-md border border-input bg-card px-2 text-sm">
+                <option value="">{t("cleaning.notAssigned")}</option>
+                {i.assigned_to && !workers.some((w) => w.user_id === i.assigned_to) && <option value={i.assigned_to} disabled>{i.assignee || t("departments.unnamed")}</option>}
+                {workers.map((w) => <option key={w.user_id} value={w.user_id}>{w.full_name || t("departments.unnamed")}</option>)}
+              </select> : <span className="text-sm">{i.assignee || t("cleaning.notAssigned")}</span>}
+              {i.assigned_at && <div className="text-xs text-muted-foreground">{t("departments.assignedBy", { name: i.assigner || t("departments.unnamed") })} · {new Date(i.assigned_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div>}
+            </div>
             {canResolve && (
               <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="text-sm px-3 py-2 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1">
                 <Check className="w-4 h-4" />{t("issues.markResolved")}
