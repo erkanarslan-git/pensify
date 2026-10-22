@@ -1623,6 +1623,90 @@ export type Database = {
           },
         ]
       }
+      room_issues: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          organization_id: string
+          property_id: string
+          reported_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          room_id: string
+          status: string
+          task_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          organization_id: string
+          property_id: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          room_id: string
+          status?: string
+          task_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          organization_id?: string
+          property_id?: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          room_id?: string
+          status?: string
+          task_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_issues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_issues_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_issues_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_issues_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_issues_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "cleaning_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       room_types: {
         Row: {
           active: boolean
