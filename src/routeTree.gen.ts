@@ -30,6 +30,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as AuthenticatedTodosRouteImport } from './routes/_authenticated/todos'
+import { Route as AuthenticatedWorkReportRouteImport } from './routes/_authenticated/work-report'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
 import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments.index'
@@ -157,6 +158,11 @@ const AuthenticatedTodosRoute = AuthenticatedTodosRouteImport.update({
   path: '/todos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWorkReportRoute = AuthenticatedWorkReportRouteImport.update({
+  id: '/work-report',
+  path: '/work-report',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -277,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/todos': typeof AuthenticatedTodosRoute
+  '/work-report': typeof AuthenticatedWorkReportRoute
   '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/payments/bank': typeof AuthenticatedPaymentsBankRoute
@@ -315,6 +322,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/todos': typeof AuthenticatedTodosRoute
+  '/work-report': typeof AuthenticatedWorkReportRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
@@ -356,6 +364,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/_authenticated/todos': typeof AuthenticatedTodosRoute
+  '/_authenticated/work-report': typeof AuthenticatedWorkReportRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
@@ -398,6 +407,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/time-tracking'
     | '/todos'
+    | '/work-report'
     | '/api/chat'
     | '/clock/$token'
     | '/payments/bank'
@@ -436,6 +446,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/time-tracking'
     | '/todos'
+    | '/work-report'
     | '/api/chat'
     | '/'
     | '/clock/$token'
@@ -476,6 +487,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
     | '/_authenticated/todos'
+    | '/_authenticated/work-report'
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
@@ -659,6 +671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTodosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/work-report': {
+      id: '/_authenticated/work-report'
+      path: '/work-report'
+      fullPath: '/work-report'
+      preLoaderRoute: typeof AuthenticatedWorkReportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -814,6 +833,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
   AuthenticatedTodosRoute: typeof AuthenticatedTodosRoute
+  AuthenticatedWorkReportRoute: typeof AuthenticatedWorkReportRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
   AuthenticatedPaymentsBankRoute: typeof AuthenticatedPaymentsBankRoute
@@ -842,6 +862,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
   AuthenticatedTodosRoute: AuthenticatedTodosRoute,
+  AuthenticatedWorkReportRoute: AuthenticatedWorkReportRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
   AuthenticatedPaymentsBankRoute: AuthenticatedPaymentsBankRoute,

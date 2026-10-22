@@ -21,10 +21,11 @@
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
 
-- Property summary cards use natural-height CSS columns, not equal-height rows, so room-type counts do not leave empty card interiors. Why: keep location summaries compact without truncating names.
+- Property summary cards use natural-height CSS columns. Why: compact cards without truncated names.
 - Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
-- Dispatch presents all daily tasks in expandable employee rows with localized labels; keep dispatch sending and assignment logic unchanged. Why: compact lists must not hide tasks or trigger outbound actions.
+- Dispatch shows all daily tasks in expandable employee rows; sending/assignment logic unchanged. Why: no hidden tasks or outbound actions.
 - Business time formatting and dispatch day boundaries use the shared business-time helpers; persist UTC instants and respect daylight-saving transitions. Why: display and scheduling must agree independently of browser and legacy settings.
 - Time entries: employees read only their open shift and write only via clock_start/clock_stop/clock_toggle_break (server time, idempotent, one open session); supervisors (manage_time + property access) read and correct via correct_time_entry with a mandatory reason; every change is logged to time_entry_corrections. Forgotten clock-outs close at zero duration with needs_review, never with an invented end time; room tasks never open/close shifts on completion. Why: accountable, tamper-proof hours.
 - Subdirectories may have their own AGENTS.md; read it before editing there.
 - Payments: payment_schedules (installments) + payments (partial allowed); org/property derived from the reservation by trigger, access via can_manage_payments; installments with payments cannot be deleted. Why: tenant-safe, auditable collections.
+- Owner work report: one org-scoped server fn returns normalized items; topics counted separately, done vs open never merged. Why: one source for summary/detail/export.

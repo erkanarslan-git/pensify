@@ -7,6 +7,7 @@
 - [x] 4. Temizlik: Bekliyor→Kabul→Başladı→Bitti (+Sorun) akışı; açıklamalı sorun bildirimi, açık sorun listesi ve "Çözüldü" (kim/ne zaman kayıtlı)
 - [x] 5. Aylık ödeme planı ve tahsilat (planlar, kısmi ödeme, banka ayarları + hareketler sayfası; gerçek Sparkasse bağlantısı için lisanslı sağlayıcı sözleşmesi bekliyor)
 - [x] 6. "Bugün oluşturulan rezervasyonlar" sayacı panele eklendi; tıklanınca rezervasyon listesi "Bugün oluşturulan" filtresiyle açılıyor. Tarayıcıda doğrulandı.
+- [x] Yönetim → Yapılan İşler: yalnız sahip; dönem/lokasyon filtreli toplu özet, lokasyon tablosu, günlük grafik, tıklanabilir detay listesi, personel görünümü, CSV. 7 test + tarayıcı kontrolü.
 - [ ] 7. Menü gruplama
 - [ ] 8. Anonim TV ekranı
 
