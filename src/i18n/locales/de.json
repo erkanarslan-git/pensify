@@ -23,11 +23,12 @@
     "todos": "Aufgaben",
     "aiAssistant": "KI-Assistent",
     "groups": {
-      "overview": "Übersicht",
-      "bookings": "Buchungen",
-      "places": "Unterkünfte",
-      "cleaning": "Reinigung",
-      "admin": "Verwaltung"
+      "daily": "Tagesgeschäft",
+      "stay": "Belegung",
+      "operations": "Betrieb",
+      "finance": "Finanzen",
+      "admin": "Verwaltung",
+      "tools": "Werkzeuge"
     },
     "payments": "Zahlungen"
   },

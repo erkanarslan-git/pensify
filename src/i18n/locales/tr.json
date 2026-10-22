@@ -23,11 +23,12 @@
     "todos": "Yapılacaklar",
     "aiAssistant": "AI Asistan",
     "groups": {
-      "overview": "Genel Bakış",
-      "bookings": "Rezervasyon",
-      "places": "Mekânlar",
-      "cleaning": "Temizlik",
-      "admin": "Yönetim"
+      "daily": "Günlük İşler",
+      "stay": "Konaklama",
+      "operations": "Operasyon",
+      "finance": "Finans",
+      "admin": "Yönetim",
+      "tools": "Araçlar"
     },
     "payments": "Tahsilat"
   },
