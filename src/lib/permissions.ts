@@ -27,6 +27,8 @@ export const PERMISSIONS: Permission[] = [
   { key: "assign_cleaning", label: "Reinigung zuweisen", group: "Reinigung", defaultRoles: ["owner", "admin", "manager"] },
   { key: "do_cleaning", label: "Eigene Reinigungsaufträge bearbeiten", group: "Reinigung", defaultRoles: ["owner", "admin", "manager", "cleaner"] },
   { key: "view_finance", label: "Umsatz & Abrechnung ansehen", group: "Finanzen", defaultRoles: ["owner", "admin", "manager"] },
+  { key: "match_payments", label: "Bankzahlungen zuordnen", group: "Finanzen", defaultRoles: ["owner", "admin"] },
+  { key: "manage_bank", label: "Bankverbindung verwalten", group: "Finanzen", defaultRoles: ["owner"] },
   { key: "pay_cleaners", label: "Lohn freigeben / als bezahlt markieren", group: "Finanzen", defaultRoles: ["owner", "admin"] },
   { key: "manage_team", label: "Team & Rollen verwalten", group: "Administration", defaultRoles: ["owner", "admin"] },
   { key: "manage_integrations", label: "Kanal-Integrationen", group: "Administration", defaultRoles: ["owner", "admin"] },
