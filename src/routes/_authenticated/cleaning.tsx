@@ -9,6 +9,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { refreshCleaningQueries } from "@/lib/cleaning-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
+import { OpenIssuesList, ReportIssueDialog } from "@/components/room-issues";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
   head: () => ({ meta: [{ title: "Reinigung — Pensify" }, { name: "description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:title", content: "Reinigung — Pensify" }, { property: "og:description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -45,6 +46,7 @@ function CleaningPage() {
   const canAssign = perm.can("assign_cleaning");
   const [view, setView] = useState<View>("open");
   const [prop, setProp] = useState("all");
+  const [reporting, setReporting] = useState<{ taskId: string; roomId: string } | null>(null);
 
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["cleaning-page"],
@@ -176,6 +178,12 @@ function CleaningPage() {
         </select>
       </div>
 
+      <OpenIssuesList canResolve={canAssign || perm.can("manage_rooms")} roomLabel={(id) => rooms.get(id)?.number ?? "—"} />
+      {reporting && (
+        <ReportIssueDialog roomId={reporting.roomId} taskId={reporting.taskId} roomLabel={rooms.get(reporting.roomId)?.number ?? ""}
+          onClose={() => setReporting(null)}
+          onDone={() => { void refreshCleaningQueries(queryClient); void queryClient.invalidateQueries({ queryKey: ["room-issues"] }); }} />
+      )}
       {error ? (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
           {t("cleaning.loadError")}{" "}
@@ -271,7 +279,7 @@ function CleaningPage() {
                           )}
 
                           {isOpen(task.status) && (
-                            <button onClick={() => update(task.id, "problem")} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5">
+                            <button onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })} title={t("cleaning.reportProblem")} className="text-xs px-2 py-1.5 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/5">
                               <AlertTriangle className="w-3 h-3" />
                             </button>
                           )}

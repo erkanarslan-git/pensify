@@ -74,9 +74,9 @@ export function OpenIssuesList({ canResolve, roomLabel }: { canResolve: boolean;
       if (error) throw error;
       const ids = [...new Set((data ?? []).map((d) => d.reported_by).filter(Boolean))] as string[];
       const { data: profs } = ids.length
-        ? await supabase.from("profiles").select("id,full_name,email").in("id", ids)
-        : { data: [] as { id: string; full_name: string | null; email: string | null }[] };
-      const names = new Map((profs ?? []).map((p) => [p.id, p.full_name || p.email || ""]));
+        ? await supabase.from("profiles").select("id,full_name").in("id", ids)
+        : { data: [] as { id: string; full_name: string | null }[] };
+      const names = new Map((profs ?? []).map((p) => [p.id, p.full_name || ""]));
       return (data ?? []).map((d) => ({ ...d, reporter: d.reported_by ? names.get(d.reported_by) ?? "" : "" }));
     },
   });
