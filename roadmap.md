@@ -1,13 +1,13 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kapsam belgesi (22.10.2026) — 8 aşama
-- [ ] Yapılan İşler Yönetim'e taşınacak; varsayılan sahip/admin, diğerlerine açık rapor yetkisi.
+- [x] Yapılan İşler Yönetim'e taşındı; varsayılan sahip/admin, şef/İK için rapor yetkisi kapalı başlar ve ayrıca açılır. 18 test geçti; sahip ekranı ve uygulanan yetki kuralı doğrulandı. Diğer hesaplarla canlı/SQL güvenlik kontrolü mevcut ayrıcalık engelini bekliyor.
 - [x] Ödeme planını yeniden oluşturma: ödeme geçmişi olan aylar korunur, kalan toplam yeniden bölünür; 22 ödeme/banka testi geçti, oturumlu pencere kontrol edildi.
 - [ ] Ödeme planını gerçek kayıtla yeniden oluşturma kontrolü: mevcut hesapta taksit ve uygun uzun konaklama kaydı yok.
 - [x] Temizlik şefi ataması: bölüm/aktif çalışan/firma/lokasyon kontrolü, RPC ve doğrudan yazma koruması; 4 test geçti. Yönetici ekranı kontrol edildi; şef hesabı ve SQL izolasyon testleri ayrıcalıklı test erişimi bekliyor.
 - [x] Bakım ataması: ayrı Bakım ekranı, yetkili aktif bölüm çalışanları, atayan kişi/zaman, doğrudan yazma koruması; 17 test geçti, boş ekran ve mobil kontrol edildi.
 - [ ] Bakım şefi gerçek atama testi: henüz bakım çalışanı/şefi ve açık bakım işi yok; SQL firma/bölüm testleri ayrıcalıklı erişim bekliyor.
-- [x] Bölüm raporu erişimi: şefin açık rapor yetkisiyle yalnız kendi bölümü ve erişebildiği lokasyonlar; sahip tümü, İK tüm bölüm raporları; menü ve sunucu kontrolü, toplam/detay/CSV aynı kapsamda; oturumlu sahip ekranı kontrol edildi.
+- [x] Bölüm raporu erişimi: şefin açık rapor yetkisiyle kendi bölümü ve erişebildiği lokasyonlar; sahip/admin tümü, İK ayrıca verilen rapor yetkisiyle tümü; toplam/detay/CSV aynı kapsamda.
 - [ ] Bölüm raporu şef hesabıyla uçtan uca test ve SQL güvenlik testleri: atanmış şef hesabı yok; department_report.sql ve tenant_isolation.sql çalıştırılması sandbox tablo sahipliği izninde durdu, deneme kayıtları geri alındı.
 - [x] 1. Mesai akışı: çalışan yalnız kendi açık mesaisini görür; şef gerekçeli düzeltir, geçmiş kaydı tutulur; çift tıklama/çakışan mesai engelli; unutulan çıkış sıfır süreyle kontrole düşer; temizlik bitirmek mesaiyi kapatmaz. Farklı rol ile canlı erişim testi sandbox rol kısıtı nedeniyle yapılamadı.
 - [x] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri
