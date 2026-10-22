@@ -2988,6 +2988,10 @@ export type Database = {
         Returns: number
       }
       default_organization_id: { Args: never; Returns: string }
+      department_work_report: {
+        Args: { _from: string; _property?: string; _to: string }
+        Returns: Json
+      }
       exclude_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
@@ -3058,6 +3062,7 @@ export type Database = {
         Args: { _org?: string }
         Returns: Database["public"]["Enums"]["org_role"]
       }
+      my_report_teams: { Args: never; Returns: string[] }
       org_to_app_role: {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
         Returns: Database["public"]["Enums"]["app_role"]
