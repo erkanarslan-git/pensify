@@ -38,7 +38,7 @@ export function MemberDepartments({ userId }: { userId: string }) {
   async function save(dept: Dept, patch: Partial<Row>) {
     const memberId = q.data?.memberId;
     if (!memberId) return;
-    const cur = q.data!.rows.find((r) => r.department === dept);
+    const cur = q.data?.rows.find((r) => r.department === dept);
     const next = { is_worker: cur?.is_worker ?? false, is_lead: cur?.is_lead ?? false, ...patch };
     const db = supabase as any;
     let error;
@@ -51,7 +51,11 @@ export function MemberDepartments({ userId }: { userId: string }) {
     }
     if (error) { toast.error(error.message); return; }
     toast.success(t("departments.saved"));
-    qc.invalidateQueries({ queryKey: key });
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: key }),
+      qc.invalidateQueries({ queryKey: ["report-access"] }),
+      qc.invalidateQueries({ queryKey: ["work-report"] }),
+    ]);
   }
 
   if (q.isLoading) return null;
@@ -66,7 +70,7 @@ export function MemberDepartments({ userId }: { userId: string }) {
       ) : (
         <div className="space-y-2">
           {DEPARTMENTS.map((d) => {
-            const r = q.data!.rows.find((x) => x.department === d);
+            const r = q.data?.rows.find((x) => x.department === d);
             return (
               <div key={d} className="rounded-xl border border-border px-3 py-2">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

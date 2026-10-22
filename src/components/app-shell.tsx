@@ -137,8 +137,17 @@ export function AppShell({ title, subtitle, actions, children }: {
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
   const perms = usePermissions();
+  const reportAccess = useQuery({
+    queryKey: ["report-access", perms.userId],
+    enabled: !!perms.userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("my_report_teams");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const visibleGroups = navGroups
-    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles)) }))
+    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [])) }))
     .filter((g) => g.items.length > 0);
   const primaryRole: AppRole | null = perms.roles.includes("owner")
     ? "owner"

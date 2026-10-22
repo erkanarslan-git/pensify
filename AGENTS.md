@@ -1,5 +1,5 @@
 - Tenancy: tenant tables carry organization_id; RLS checks the row's org via has_organization_role / is_org_admin / has_organization_permission / can_access_property. Why: isolation lives in the database.
-- Attendance schedules and absences belong to organization membership, not cleaner profiles; effective-dated schedules preserve historical workdays and absences never create time entries. Why: every employee can have a work plan without being a cleaner, and actual worked hours stay separate.
+- Attendance plans/absences belong to organization membership, not cleaner profiles; effective dates preserve historical workdays; absences never create time entries. Why: all employees need plans; worked hours stay separate.
 - Roles come only from organization_members.role (one row per org+user); user_roles/has_role are deprecated. Why: global roles must not span tenants.
 - default_organization_id() returns an org only for exactly one active membership, else NULL; server code writes organization_id explicitly via src/lib/org-auth.server.ts. Why: fail closed.
 - Property access: owner/admin/ops_manager all; property_manager/reception via member_property_access; cleaners via assigned tasks. Why: least privilege.
@@ -8,7 +8,7 @@
 - Bun 1.3.x + bun.lock only; CI: bun install --frozen-lockfile && bun run build. Why: one lockfile.
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
-- .env is tracked and contains only publishable values (secrets live in the secret store). Why: hosted preview/publish builds need VITE_* at build time or the app fails to load.
+- Track .env with publishable values only; secrets stay in the secret store. Why: hosted builds need VITE_* to load.
 - Room types, rate plans, occupancy prices, bulk rooms and WordPress imports are written only via SECURITY DEFINER RPCs (save_room_type_full, create_rooms_bulk, set_room_type_active, move_rooms_to_type, save_occupancy_prices, import_wp_rooms) that resolve org server-side and check property access + manage_rooms (import: owner/admin). Why: atomic writes and DB-enforced permissions.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
@@ -26,8 +26,8 @@
 - Dispatch shows all daily tasks in expandable employee rows; sending/assignment logic unchanged. Why: no hidden tasks or outbound actions.
 - Business time formatting and dispatch day boundaries use the shared business-time helpers; persist UTC instants and respect daylight-saving transitions. Why: display and scheduling must agree independently of browser and legacy settings.
 - Time entries: clock ops server-side, idempotent, one open session; employees see only their open shift; supervisors correct with mandatory reason, logged in time_entry_corrections; forgotten clock-outs close at zero with needs_review; cleaning never closes shifts. Why: accountable, tamper-proof hours.
-- Subdirectories may have their own AGENTS.md; read it before editing there.
+- Read subdirectory AGENTS.md before edits there.
 - Payments: payment_schedules (installments) + payments (partial allowed); org/property derived from the reservation by trigger, access via can_manage_payments; installments with payments cannot be deleted. Why: tenant-safe, auditable collections.
-- Owner report: org-scoped items; team topics; issue reporter/resolver distinct. Why: consistent counts.
+- Work reports use caller-scoped department_work_report RPC: owner all, HR all reports, enabled leads only granted departments and accessible properties; source-table policies stay unchanged; reporter/resolver distinct. Why: scoped read access without exposing unrelated operations.
 - Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI + Channel Sync in Tools. Why: stage-7 menu scope.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.

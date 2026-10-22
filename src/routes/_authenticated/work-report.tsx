@@ -15,6 +15,8 @@ import { getWorkReport } from "@/lib/work-report.functions";
 import { businessDate, BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
 import { presetRange, countTopics, dailySeries, byLocation, byStaff, filterItems, DONE_TOPICS, OPEN_TOPICS, type Topic, type WorkItem, type Preset, TEAM_TOPICS, teamItems, type WorkTeam } from "@/lib/work-report";
+import { effectiveReportTeam } from "@/lib/report-access";
+import { usePermissions } from "@/hooks/use-permissions";
 import { workReportTranslations } from "@/i18n/work-report";
 
 const search = z.object({
@@ -55,7 +57,9 @@ function WorkReportPage() {
   const lang = i18n.language.startsWith("tr") ? "tr" : i18n.language.startsWith("en") ? "en" : "de";
   const c = workReportTranslations[lang];
   const locale = lang === "tr" ? "tr-TR" : lang === "en" ? "en-GB" : "de-DE";
-  const s = Route.useSearch();
+  const requestedSearch = Route.useSearch();
+  const permissions = usePermissions();
+  const s = { ...requestedSearch, team: requestedSearch.team };
   const navigate = useNavigate({ from: "/work-report" });
   const set = (patch: Partial<typeof s>) => navigate({ search: (prev) => ({ ...prev, page: 1, ...patch }) });
   const preset = (PRESETS.includes(s.preset as Preset) ? s.preset : "today") as Preset;
@@ -68,6 +72,8 @@ function WorkReportPage() {
   const [openItem, setOpenItem] = useState<WorkItem | null>(null);
   const fmt = (iso: string | null) => !iso ? c.none : iso.length <= 10 ? formatDateDE(iso) : new Date(iso).toLocaleString(locale, { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
+  const allowedTeams = q.data?.allowedTeams ?? [];
+  s.team = effectiveReportTeam(requestedSearch.team, allowedTeams) ?? "all";
   const items = useMemo(() => teamItems(q.data?.items ?? [], s.team), [q.data?.items, s.team]);
   const topics = TEAM_TOPICS[s.team];
   const groups = GROUPS.filter((g) => [...g.done, ...g.open].some((t) => topics.includes(t)));
@@ -120,10 +126,10 @@ function WorkReportPage() {
           { topic: "res_new", team: "office", icon: CalendarCheck, tone: "tile-success hover:brightness-110" },
           { topic: "clean_done", team: "cleaning", icon: Sparkles, tone: "tile-warning hover:brightness-110" },
           { topic: "issue_done", team: "maintenance", icon: Wrench, tone: "tile-destructive hover:brightness-110" },
-        ] as const).map(({ topic, team, icon: Icon, tone }) => <Button key={topic} variant="ghost" className={`h-auto min-h-11 px-4 py-2 rounded-lg gap-3 ${tone}`} onClick={() => set({ team, view: "detail", topic, staff: "", staffRole: "", room: "", status: "", source: "", q: "" })}><Icon className="h-4 w-4 shrink-0" /><span>{c.topics[topic]}</span><span className="text-xl font-semibold tabular-nums">{overallCounts[topic]}</span></Button>)}
+        ] as const).filter(({ team }) => allowedTeams.includes(team)).map(({ topic, team, icon: Icon, tone }) => <Button key={topic} variant="ghost" className={`h-auto min-h-11 px-4 py-2 rounded-lg gap-3 ${tone}`} onClick={() => set({ team, view: "detail", topic, staff: "", staffRole: "", room: "", status: "", source: "", q: "" })}><Icon className="h-4 w-4 shrink-0" /><span>{c.topics[topic]}</span><span className="text-xl font-semibold tabular-nums">{overallCounts[topic]}</span></Button>)}
       </div>
       <div role="tablist" aria-label={c.title} className="flex flex-wrap gap-1 border-b border-border mb-4 pb-2">
-        {(["all", "cleaning", "office", "maintenance"] as WorkTeam[]).map((team) => <Button key={team} role="tab" aria-selected={s.team === team} variant={s.team === team ? "default" : "ghost"} size="sm" onClick={() => { setOpenItem(null); set({ team, topic: "", staff: "", staffRole: "", room: "", status: "", source: "", q: "" }); }}>{c.teams[team]}</Button>)}
+        {allowedTeams.map((team) => <Button key={team} role="tab" aria-selected={s.team === team} variant={s.team === team ? "default" : "ghost"} size="sm" onClick={() => { setOpenItem(null); set({ team, topic: "", staff: "", staffRole: "", room: "", status: "", source: "", q: "" }); }}>{c.teams[team]}</Button>)}
       </div>
       {tabs}
       {q.data?.truncated && <p className="text-sm text-warning mb-3">{c.truncated}</p>}
@@ -200,8 +206,8 @@ function WorkReportPage() {
             <dt className="text-muted-foreground">{c.note}</dt><dd className="whitespace-pre-wrap break-words">{openItem.note || c.none}</dd>
           </dl>}
           {openItem && <div className="flex flex-wrap gap-2 pt-2">
-            <Button asChild size="sm"><Link to={openItem.kind === "reservation" ? "/reservations" : openItem.kind === "todo" ? "/todos" : "/cleaning"}><ExternalLink className="h-4 w-4 mr-1" />{c.open_record}</Link></Button>
-            <Button asChild size="sm" variant="outline"><Link to="/settings/logs" search={{ entityId: openItem.id }}><History className="h-4 w-4 mr-1" />{c.history}</Link></Button>
+            {(permissions.isStaff || openItem.kind === "issue" || openItem.kind === "cleaning") && <Button asChild size="sm"><Link to={openItem.kind === "reservation" ? "/reservations" : openItem.kind === "todo" ? "/todos" : openItem.kind === "issue" ? "/maintenance" : "/cleaning"}><ExternalLink className="h-4 w-4 mr-1" />{c.open_record}</Link></Button>}
+            {permissions.isAdmin && <Button asChild size="sm" variant="outline"><Link to="/settings/logs" search={{ entityId: openItem.id }}><History className="h-4 w-4 mr-1" />{c.history}</Link></Button>}
           </div>}
         </DialogContent>
       </Dialog>
