@@ -165,7 +165,11 @@
       "showDetails": "Details anzeigen",
       "changedFields": "Geänderte Felder ({{count}})",
       "recordId": "Datensatz-ID",
-      "logId": "Log-ID"
+      "logId": "Log-ID",
+      "cancel": "Storniert",
+      "trash": "In Papierkorb",
+      "restore": "Wiederhergestellt",
+      "reservation": "Reservierung"
     },
     "settings": {
       "title": "Einstellungen",

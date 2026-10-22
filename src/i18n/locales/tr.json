@@ -165,7 +165,11 @@
       "showDetails": "Detayları göster",
       "changedFields": "Değişen alanlar ({{count}})",
       "recordId": "Kayıt ID",
-      "logId": "Log ID"
+      "logId": "Log ID",
+      "cancel": "İptal",
+      "trash": "Çöpe taşındı",
+      "restore": "Geri alındı",
+      "reservation": "Rezervasyon"
     },
     "settings": {
       "title": "Ayarlar",
