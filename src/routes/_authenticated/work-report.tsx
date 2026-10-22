@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Download, ExternalLink, History } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, History, CalendarCheck, Sparkles, Wrench, Users } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,9 @@ function WorkReportPage() {
   const staffTopics = topics.filter((t) => t !== "issue_done" && t !== "issue_open");
   const hasMaintenance = s.team === "all" || s.team === "maintenance";
   const counts = useMemo(() => countTopics(items), [items]);
+  const overallCounts = useMemo(() => countTopics(q.data?.items ?? []), [q.data?.items]);
+  const unassignedCounts = countTopics(items.filter((i) => i.kind !== "issue" && !i.staffId));
+  const hasUnassigned = staffTopics.some((t) => unassignedCounts[t] > 0);
   const filtered = useMemo(() => filterItems(items, { topic: s.topic, propertyId: s.property, staff: s.staff, staffRole: s.staffRole, room: s.room, status: s.status, source: s.source, q: s.q }), [items, s]);
 
   const filters = (
@@ -102,17 +105,23 @@ function WorkReportPage() {
   );
 
   const tabs = (
-    <div className="flex gap-2 mb-4">
-      {s.view !== "summary" && <Button variant="outline" size="sm" onClick={() => set({ view: "summary", topic: "", staff: "", staffRole: "", room: "", status: "", source: "", q: "" })}><ArrowLeft className="h-4 w-4 mr-1" />{c.back}</Button>}
+    <div className="flex flex-wrap gap-2 mb-4">
       <Button variant={s.view === "summary" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "summary" })}>{c.summary}</Button>
       <Button variant={s.view === "detail" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "detail" })}>{c.detail}</Button>
-      <Button variant={s.view === "staff" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "staff" })}>{c.staffView}</Button>
+      <Button variant={s.view === "staff" ? "default" : "ghost"} size="sm" onClick={() => set({ view: "staff" })}><Users className="h-4 w-4 mr-1" />{c.staffView}</Button>
     </div>
   );
 
   return (
     <AppShell title={c.title} subtitle={c.subtitle}>
       {filters}
+      <div aria-label={c.totals} className="flex flex-wrap gap-2 mb-5">
+        {([
+          { topic: "res_new", team: "office", icon: CalendarCheck, tone: "bg-primary text-primary-foreground hover:bg-primary/90" },
+          { topic: "clean_done", team: "cleaning", icon: Sparkles, tone: "bg-info/20 text-info-foreground border border-info/40 hover:bg-info/30" },
+          { topic: "issue_done", team: "maintenance", icon: Wrench, tone: "bg-accent text-accent-foreground border border-primary/25 hover:bg-accent/80" },
+        ] as const).map(({ topic, team, icon: Icon, tone }) => <Button key={topic} variant="ghost" className={`h-auto min-h-11 px-4 py-2 rounded-lg gap-3 ${tone}`} onClick={() => set({ team, view: "detail", topic, staff: "", staffRole: "", room: "", status: "", source: "", q: "" })}><Icon className="h-4 w-4 shrink-0" /><span>{c.topics[topic]}</span><span className="text-xl font-semibold tabular-nums">{overallCounts[topic]}</span></Button>)}
+      </div>
       <div role="tablist" aria-label={c.title} className="flex flex-wrap gap-1 border-b border-border mb-4 pb-2">
         {(["all", "cleaning", "office", "maintenance"] as WorkTeam[]).map((team) => <Button key={team} role="tab" aria-selected={s.team === team} variant={s.team === team ? "default" : "ghost"} size="sm" onClick={() => { setOpenItem(null); set({ team, topic: "", staff: "", staffRole: "", room: "", status: "", source: "", q: "" }); }}>{c.teams[team]}</Button>)}
       </div>
@@ -170,8 +179,9 @@ function WorkReportPage() {
         <div className="overflow-x-auto"><table className="w-full text-sm">
           <thead className="text-xs text-muted-foreground"><tr><th className="text-left px-4 py-2 font-medium">{c.staff}</th>{staffTopics.map((t) => <th key={t} className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.topics[t]}</th>)}{hasMaintenance && <><th className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.reported}</th><th className="text-right px-3 py-2 font-medium whitespace-nowrap">{c.resolved}</th></>}</tr></thead>
           <tbody className="divide-y divide-border">
-            {byStaff(items).map((r) => <tr key={r.staffId}><td className="px-4 py-2.5">{r.name}</td>{staffTopics.map((t) => <td key={t} className="text-right px-3 py-2.5"><Button variant="ghost" size="sm" onClick={() => set({ view: "detail", topic: t, staff: r.staffId, staffRole: "" })} className="tabular-nums text-primary">{r.counts[t]}</Button></td>)}{hasMaintenance && <>{(["reporter", "resolver"] as const).map((role) => <td key={role} className="text-right px-3 py-2.5"><Button variant="ghost" size="sm" className="tabular-nums text-primary" onClick={() => set({ view: "detail", topic: role === "resolver" ? "issue_done" : "", staff: r.staffId, staffRole: role })}>{role === "reporter" ? r.reported : r.resolved}</Button></td>)}</>}</tr>)}
-            {byStaff(items).length === 0 && <tr><td colSpan={1 + staffTopics.length + (hasMaintenance ? 2 : 0)} className="px-4 py-6 text-center text-muted-foreground">{c.empty}</td></tr>}
+            {byStaff(items).map((r) => <tr key={r.staffId}><td className="px-4 py-2.5 font-semibold min-w-44">{r.name === "—" ? c.nameUnavailable : r.name}</td>{staffTopics.map((t) => <td key={t} className="text-right px-3 py-2.5"><Button variant="ghost" size="sm" onClick={() => set({ view: "detail", topic: t, staff: r.staffId, staffRole: "" })} className="tabular-nums text-primary">{r.counts[t]}</Button></td>)}{hasMaintenance && <>{(["reporter", "resolver"] as const).map((role) => <td key={role} className="text-right px-3 py-2.5"><Button variant="ghost" size="sm" className="tabular-nums text-primary" onClick={() => set({ view: "detail", topic: role === "resolver" ? "issue_done" : "", staff: r.staffId, staffRole: role })}>{role === "reporter" ? r.reported : r.resolved}</Button></td>)}</>}</tr>)}
+            {hasUnassigned && <tr className="bg-muted/30"><td className="px-4 py-3 text-muted-foreground">{c.unassigned}</td>{staffTopics.map((t) => <td key={t} className="text-right px-5 py-3 tabular-nums text-muted-foreground">{unassignedCounts[t]}</td>)}{hasMaintenance && <><td></td><td></td></>}</tr>}
+            {byStaff(items).length === 0 && !hasUnassigned && <tr><td colSpan={1 + staffTopics.length + (hasMaintenance ? 2 : 0)} className="px-4 py-6 text-center text-muted-foreground">{c.empty}</td></tr>}
           </tbody>
         </table></div>
       </Section>}
@@ -183,7 +193,7 @@ function WorkReportPage() {
             <dt className="text-muted-foreground">{c.item}</dt><dd>{openItem.title || c.none}</dd>
             <dt className="text-muted-foreground">{c.location}</dt><dd>{openItem.propertyName ?? c.none}</dd>
             <dt className="text-muted-foreground">{c.room}</dt><dd>{openItem.room ?? c.none}</dd>
-            {openItem.kind === "issue" ? <><dt className="text-muted-foreground">{c.reporter}</dt><dd>{openItem.reporter ?? c.none}</dd><dt className="text-muted-foreground">{c.resolver}</dt><dd>{openItem.resolver ?? c.none}</dd></> : <><dt className="text-muted-foreground">{c.staff}</dt><dd>{openItem.staff ?? c.none}</dd></>}
+            {openItem.kind === "issue" ? <><dt className="text-muted-foreground">{c.reporter}</dt><dd>{openItem.reporter ?? c.none}</dd><dt className="text-muted-foreground">{c.resolver}</dt><dd>{openItem.resolver ?? c.none}</dd></> : <><dt className="text-muted-foreground">{c.staff}</dt><dd>{openItem.staff || (openItem.staffId ? c.nameUnavailable : c.unassigned)}</dd></>}
             <dt className="text-muted-foreground">{c.when}</dt><dd>{fmt(openItem.at)}</dd>
             <dt className="text-muted-foreground">{c.result}</dt><dd><Badge tone={DONE_TOPICS.includes(openItem.topic) ? "success" : "warning"}>{openItem.status}</Badge></dd>
             <dt className="text-muted-foreground">{c.source}</dt><dd>{openItem.source}</dd>
@@ -233,7 +243,7 @@ function DetailList({ c, items, filtered, s, set, fmt, topics, hasMaintenance, o
           <td className="px-4 py-2.5">{i.propertyName ?? c.none}</td>
           <td className="px-4 py-2.5">{i.room ?? c.none}</td>
           <td className="px-4 py-2.5 max-w-[16rem] truncate">{i.title}</td>
-          {s.team !== "maintenance" && <td className="px-4 py-2.5">{i.kind === "issue" ? c.none : i.staff ?? c.none}</td>}
+          {s.team !== "maintenance" && <td className="px-4 py-2.5 font-medium">{i.kind === "issue" ? c.none : i.staff || (i.staffId ? c.nameUnavailable : c.unassigned)}</td>}
           {hasMaintenance && <><td className="px-4 py-2.5">{i.reporter ?? c.none}</td><td className="px-4 py-2.5">{i.resolver ?? c.none}</td></>}
           <td className="px-4 py-2.5"><Badge tone={DONE_TOPICS.includes(i.topic) ? "success" : i.topic === "todo_overdue" || i.topic === "clean_review" ? "destructive" : "warning"}>{i.status}</Badge></td>
         </tr>)}

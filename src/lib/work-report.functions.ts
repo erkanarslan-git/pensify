@@ -33,9 +33,9 @@ export const getWorkReport = createServerFn({ method: "POST" })
         .eq("organization_id", orgId).is("deleted_at", null).gte("created_at", start).lt("created_at", end)).limit(LIMIT),
       prop(sb.from("reservations").select("id,guest_name,status,channel,updated_at,created_by,property_id,notes,rooms:room_id(number)")
         .eq("organization_id", orgId).is("deleted_at", null).eq("status", "cancelled").gte("updated_at", start).lt("updated_at", end)).limit(LIMIT),
-      prop(sb.from("cleaning_tasks").select("id,status,completed_at,due_at,notes,property_id,photos_count,rooms:room_id(number),cleaners:cleaner_id(id,full_name)")
+      prop(sb.from("cleaning_tasks").select("id,status,cleaner_id,completed_at,due_at,notes,property_id,photos_count,rooms:room_id(number),cleaners:cleaner_id(id,user_id,full_name)")
         .eq("organization_id", orgId).eq("status", "completed").gte("completed_at", start).lt("completed_at", end)).limit(LIMIT),
-      prop(sb.from("cleaning_tasks").select("id,status,completed_at,due_at,notes,property_id,photos_count,rooms:room_id(number),cleaners:cleaner_id(id,full_name)")
+      prop(sb.from("cleaning_tasks").select("id,status,cleaner_id,completed_at,due_at,notes,property_id,photos_count,rooms:room_id(number),cleaners:cleaner_id(id,user_id,full_name)")
         .eq("organization_id", orgId).in("status", ["pending", "accepted", "in_progress", "problem"]).lt("due_at", end)).limit(LIMIT),
       prop(sb.from("room_issues").select("id,category,description,status,resolved_at,resolved_by,reported_by,resolution_note,property_id,rooms:room_id(number)")
         .eq("organization_id", orgId).eq("status", "resolved").gte("resolved_at", start).lt("resolved_at", end)).limit(LIMIT),
@@ -50,6 +50,7 @@ export const getWorkReport = createServerFn({ method: "POST" })
 
     const propName = new Map<string, string>((props.data ?? []).map((p: any) => [p.id, p.name]));
     const userIds = new Set<string>();
+    for (const r of [...cleanDone.data, ...cleanOpen.data]) r.cleaners?.user_id && userIds.add(r.cleaners.user_id);
     for (const r of [...resNew.data, ...resCanc.data]) r.created_by && userIds.add(r.created_by);
     for (const r of [...issDone.data, ...issOpen.data]) { r.resolved_by && userIds.add(r.resolved_by); r.reported_by && userIds.add(r.reported_by); }
     for (const r of [...todoDone.data, ...todoOpen.data]) { r.done_by && userIds.add(r.done_by); r.created_by && userIds.add(r.created_by); }
@@ -64,14 +65,15 @@ export const getWorkReport = createServerFn({ method: "POST" })
       for (const p of pr ?? []) p.full_name && names.set(p.id, p.full_name);
     }
     const nm = (id: string | null) => (id ? names.get(id) ?? null : null);
+    const cleanerIdentity = (r: any) => ({ staffId: r.cleaners?.user_id ?? r.cleaner_id ?? null, staff: nm(r.cleaners?.user_id) || r.cleaners?.full_name?.trim() || null });
     const day = (iso: string | null) => (iso ? businessDate(new Date(iso)) : null);
     const base = (p: string | null) => ({ propertyId: p, propertyName: p ? propName.get(p) ?? null : null });
 
     const items: WorkItem[] = [];
     for (const r of resNew.data) items.push({ id: r.id, topic: "res_new", kind: "reservation", at: r.created_at, day: day(r.created_at), ...base(r.property_id), room: r.rooms?.number ?? null, staffId: r.created_by, staff: nm(r.created_by), status: r.status, source: r.channel, title: r.guest_name, note: r.notes });
     for (const r of resCanc.data) items.push({ id: r.id, topic: "res_cancelled", kind: "reservation", at: r.updated_at, day: day(r.updated_at), ...base(r.property_id), room: r.rooms?.number ?? null, staffId: r.created_by, staff: nm(r.created_by), status: r.status, source: r.channel, title: r.guest_name, note: r.notes });
-    for (const r of cleanDone.data) items.push({ id: r.id, topic: "clean_done", kind: "cleaning", at: r.completed_at, day: day(r.completed_at), ...base(r.property_id), room: r.rooms?.number ?? null, staffId: r.cleaners?.id ?? null, staff: r.cleaners?.full_name ?? null, status: r.status, source: "app", title: r.rooms?.number ?? "", note: r.notes });
-    for (const r of cleanOpen.data) items.push({ id: r.id, topic: r.status === "problem" ? "clean_review" : "clean_open", kind: "cleaning", at: r.due_at, day: null, ...base(r.property_id), room: r.rooms?.number ?? null, staffId: r.cleaners?.id ?? null, staff: r.cleaners?.full_name ?? null, status: r.status, source: "app", title: r.rooms?.number ?? "", note: r.notes });
+    for (const r of cleanDone.data) items.push({ id: r.id, topic: "clean_done", kind: "cleaning", at: r.completed_at, day: day(r.completed_at), ...base(r.property_id), room: r.rooms?.number ?? null, ...cleanerIdentity(r), status: r.status, source: "app", title: r.rooms?.number ?? "", note: r.notes });
+    for (const r of cleanOpen.data) items.push({ id: r.id, topic: r.status === "problem" ? "clean_review" : "clean_open", kind: "cleaning", at: r.due_at, day: null, ...base(r.property_id), room: r.rooms?.number ?? null, ...cleanerIdentity(r), status: r.status, source: "app", title: r.rooms?.number ?? "", note: r.notes });
     for (const r of issDone.data) items.push({ id: r.id, topic: "issue_done", kind: "issue", at: r.resolved_at, day: day(r.resolved_at), ...base(r.property_id), room: r.rooms?.number ?? null, staffId: r.resolved_by, staff: nm(r.resolved_by), reporterId: r.reported_by, reporter: nm(r.reported_by), resolverId: r.resolved_by, resolver: nm(r.resolved_by), status: r.status, source: r.category, title: r.description, note: r.resolution_note });
     for (const r of issOpen.data) items.push({ id: r.id, topic: "issue_open", kind: "issue", at: r.created_at, day: null, ...base(r.property_id), room: r.rooms?.number ?? null, staffId: null, staff: null, reporterId: r.reported_by, reporter: nm(r.reported_by), resolverId: null, resolver: null, status: r.status, source: r.category, title: r.description, note: null });
     for (const r of todoDone.data) items.push({ id: r.id, topic: "todo_done", kind: "todo", at: r.done_at, day: day(r.done_at), propertyId: null, propertyName: null, room: null, staffId: r.done_by, staff: nm(r.done_by), status: "done", source: r.priority, title: r.title, note: r.notes });
