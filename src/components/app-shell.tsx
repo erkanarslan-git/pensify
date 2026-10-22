@@ -1,4 +1,4 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Wallet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -62,6 +62,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
       { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
+      { to: "/payments", labelKey: "nav.payments", icon: Wallet },
       { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
     ],
   },

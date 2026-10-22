@@ -1,0 +1,40 @@
+const tr = {
+  title: "Tahsilat", subtitle: "Uzun süreli konaklamaların aylık ödemeleri",
+  newPlan: "Ödeme planı oluştur", dueThisMonth: "Bu ay vadesi gelen", unpaidThisMonth: "Bu ay ödemeyenler", overdueTotal: "Geciken tutar", collectedThisMonth: "Bu ay tahsil edilen",
+  fUnpaid: "Ödemeyenler", fOverdue: "Geciken", fAll: "Tümü", empty: "Burada kayıt yok",
+  guest: "Misafir", room: "Oda", due: "Vade", amount: "Tutar", paid: "Ödenen", remaining: "Kalan",
+  state: { paid: "Ödendi", partial: "Kısmi", overdue: "Gecikti", open: "Bekliyor" },
+  takePayment: "Ödeme al", payTitle: "{{guest}} – ödeme kaydı", payDate: "Ödeme tarihi", method: "Ödeme şekli",
+  methods: { cash: "Nakit", transfer: "Havale", card: "Kart", other: "Diğer" }, note: "Not (isteğe bağlı)", save: "Kaydet", saved: "Ödeme kaydedildi",
+  reservation: "Rezervasyon", pickReservation: "Rezervasyon seçin", onlyLong: "Yalnızca 28 gece ve üzeri konaklamalar listelenir",
+  dueDay: "Her ayın kaçında ödesin?", mode: "Tutar", auto: "Otomatik (toplamı aylara böl)", manual: "Elle aylık tutar", monthly: "Aylık tutar (€)",
+  preview: "Taksitler", addRow: "Taksit ekle", total: "Toplam", planSaved: "Ödeme planı kaydedildi", planReplaceNote: "Ödenmemiş eski taksitler bu planla değiştirilir; ödeme alınmış taksitler korunur.",
+  recordedBy: "Kaydeden", history: "Ödemeler", saveErr: "Kaydedilemedi", invalid: "Tutar ve tarih geçerli olmalı",
+};
+const de: typeof tr = {
+  title: "Zahlungen", subtitle: "Monatliche Zahlungen für Langzeitaufenthalte",
+  newPlan: "Zahlungsplan erstellen", dueThisMonth: "Diesen Monat fällig", unpaidThisMonth: "Diesen Monat unbezahlt", overdueTotal: "Überfälliger Betrag", collectedThisMonth: "Diesen Monat eingenommen",
+  fUnpaid: "Unbezahlt", fOverdue: "Überfällig", fAll: "Alle", empty: "Keine Einträge",
+  guest: "Gast", room: "Zimmer", due: "Fällig", amount: "Betrag", paid: "Bezahlt", remaining: "Offen",
+  state: { paid: "Bezahlt", partial: "Teilweise", overdue: "Überfällig", open: "Offen" },
+  takePayment: "Zahlung erfassen", payTitle: "{{guest}} – Zahlung", payDate: "Zahlungsdatum", method: "Zahlungsart",
+  methods: { cash: "Bar", transfer: "Überweisung", card: "Karte", other: "Sonstige" }, note: "Notiz (optional)", save: "Speichern", saved: "Zahlung gespeichert",
+  reservation: "Reservierung", pickReservation: "Reservierung wählen", onlyLong: "Nur Aufenthalte ab 28 Nächten",
+  dueDay: "Zahltag im Monat", mode: "Betrag", auto: "Automatisch (Gesamtbetrag aufteilen)", manual: "Monatsbetrag manuell", monthly: "Monatsbetrag (€)",
+  preview: "Raten", addRow: "Rate hinzufügen", total: "Summe", planSaved: "Zahlungsplan gespeichert", planReplaceNote: "Unbezahlte alte Raten werden ersetzt; Raten mit Zahlungen bleiben erhalten.",
+  recordedBy: "Erfasst von", history: "Zahlungen", saveErr: "Speichern fehlgeschlagen", invalid: "Betrag und Datum müssen gültig sein",
+};
+const en: typeof tr = {
+  title: "Payments", subtitle: "Monthly payments for long stays",
+  newPlan: "Create payment plan", dueThisMonth: "Due this month", unpaidThisMonth: "Unpaid this month", overdueTotal: "Overdue amount", collectedThisMonth: "Collected this month",
+  fUnpaid: "Unpaid", fOverdue: "Overdue", fAll: "All", empty: "Nothing here",
+  guest: "Guest", room: "Room", due: "Due", amount: "Amount", paid: "Paid", remaining: "Remaining",
+  state: { paid: "Paid", partial: "Partial", overdue: "Overdue", open: "Open" },
+  takePayment: "Take payment", payTitle: "{{guest}} – payment", payDate: "Payment date", method: "Method",
+  methods: { cash: "Cash", transfer: "Transfer", card: "Card", other: "Other" }, note: "Note (optional)", save: "Save", saved: "Payment saved",
+  reservation: "Reservation", pickReservation: "Choose reservation", onlyLong: "Only stays of 28+ nights are listed",
+  dueDay: "Payment day of month", mode: "Amount", auto: "Automatic (split total)", manual: "Manual monthly amount", monthly: "Monthly amount (€)",
+  preview: "Installments", addRow: "Add installment", total: "Total", planSaved: "Payment plan saved", planReplaceNote: "Unpaid old installments are replaced; installments with payments are kept.",
+  recordedBy: "Recorded by", history: "Payments", saveErr: "Could not save", invalid: "Amount and date must be valid",
+};
+export const paymentsTranslations = { tr, en, de };
