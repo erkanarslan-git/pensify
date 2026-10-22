@@ -1,0 +1,40 @@
+const tr = {
+  title: "Yapılan İşler", subtitle: "Seçilen dönemin operasyon özeti",
+  today: "Bugün", yesterday: "Dün", week: "Son 7 gün", month: "Bu ay", custom: "Özel", from: "Başlangıç", to: "Bitiş",
+  allLocations: "Tüm lokasyonlar", done: "Yapılan işler", open: "Bekleyen iş yükü (şu an)",
+  topics: { res_new: "Yeni rezervasyon", res_cancelled: "İptal", clean_done: "Tamamlanan temizlik", clean_review: "Kontrol bekleyen (sorunlu)", clean_open: "Açık temizlik", issue_done: "Tamamlanan bakım", issue_open: "Açık bakım", todo_done: "Tamamlanan görev", todo_open: "Açık görev", todo_overdue: "Geciken görev" },
+  groups: { reservations: "Rezervasyonlar", cleaning: "Temizlik", issues: "Bakım", todos: "Genel görevler" },
+  location: "Lokasyon", locTable: "Lokasyon özeti", chart: "Günlük tamamlanan işler", todoNote: "Genel görevler lokasyona bağlı değildir.",
+  back: "Özete dön", summary: "Özet", staffView: "Personel görünümü", detail: "Detay listesi",
+  staff: "Personel", room: "Oda", type: "İş türü", status: "Durum", source: "Kaynak", search: "Ara…", all: "Tümü",
+  when: "Zaman", item: "Kayıt", note: "Not", empty: "Kayıt yok", export: "CSV indir", open_record: "Kayda git", history: "İşlem geçmişi",
+  prev: "Önceki", next: "Sonraki", page: "Sayfa", loading: "Yükleniyor…", error: "Rapor yüklenemedi", forbidden: "Bu sayfa yalnız firma sahibine açıktır.",
+  truncated: "Çok fazla kayıt var; dönemi daraltın.", result: "Sonuç", photos: "Fotoğraf", none: "—",
+};
+const en: typeof tr = {
+  title: "Work report", subtitle: "Operations summary for the selected period",
+  today: "Today", yesterday: "Yesterday", week: "Last 7 days", month: "This month", custom: "Custom", from: "From", to: "To",
+  allLocations: "All locations", done: "Work done", open: "Open workload (now)",
+  topics: { res_new: "New bookings", res_cancelled: "Cancellations", clean_done: "Cleanings done", clean_review: "Needs review (problem)", clean_open: "Open cleanings", issue_done: "Maintenance done", issue_open: "Open maintenance", todo_done: "To-dos done", todo_open: "Open to-dos", todo_overdue: "Overdue to-dos" },
+  groups: { reservations: "Bookings", cleaning: "Cleaning", issues: "Maintenance", todos: "General to-dos" },
+  location: "Location", locTable: "By location", chart: "Daily completed work", todoNote: "General to-dos are not tied to a location.",
+  back: "Back to summary", summary: "Summary", staffView: "Staff view", detail: "Detail list",
+  staff: "Staff", room: "Room", type: "Type", status: "Status", source: "Source", search: "Search…", all: "All",
+  when: "Time", item: "Record", note: "Note", empty: "No records", export: "Download CSV", open_record: "Open record", history: "Audit history",
+  prev: "Previous", next: "Next", page: "Page", loading: "Loading…", error: "Could not load report", forbidden: "This page is only available to the company owner.",
+  truncated: "Too many records; narrow the period.", result: "Result", photos: "Photos", none: "—",
+};
+const de: typeof tr = {
+  title: "Erledigte Arbeiten", subtitle: "Betriebsübersicht für den gewählten Zeitraum",
+  today: "Heute", yesterday: "Gestern", week: "Letzte 7 Tage", month: "Dieser Monat", custom: "Zeitraum", from: "Von", to: "Bis",
+  allLocations: "Alle Standorte", done: "Erledigt", open: "Offene Arbeit (aktuell)",
+  topics: { res_new: "Neue Buchungen", res_cancelled: "Stornierungen", clean_done: "Erledigte Reinigungen", clean_review: "Zu prüfen (Problem)", clean_open: "Offene Reinigungen", issue_done: "Erledigte Wartung", issue_open: "Offene Wartung", todo_done: "Erledigte Aufgaben", todo_open: "Offene Aufgaben", todo_overdue: "Überfällige Aufgaben" },
+  groups: { reservations: "Buchungen", cleaning: "Reinigung", issues: "Wartung", todos: "Allgemeine Aufgaben" },
+  location: "Standort", locTable: "Nach Standort", chart: "Täglich erledigte Arbeiten", todoNote: "Allgemeine Aufgaben sind keinem Standort zugeordnet.",
+  back: "Zurück zur Übersicht", summary: "Übersicht", staffView: "Personalansicht", detail: "Detailliste",
+  staff: "Personal", room: "Zimmer", type: "Art", status: "Status", source: "Quelle", search: "Suchen…", all: "Alle",
+  when: "Zeit", item: "Eintrag", note: "Notiz", empty: "Keine Einträge", export: "CSV herunterladen", open_record: "Zum Eintrag", history: "Änderungsprotokoll",
+  prev: "Zurück", next: "Weiter", page: "Seite", loading: "Wird geladen…", error: "Bericht konnte nicht geladen werden", forbidden: "Diese Seite ist nur für den Inhaber verfügbar.",
+  truncated: "Zu viele Einträge; Zeitraum eingrenzen.", result: "Ergebnis", photos: "Fotos", none: "—",
+};
+export const workReportTranslations = { tr, en, de };
