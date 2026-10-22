@@ -5,7 +5,8 @@ import { useMemo, useState } from "react";
 import { Camera, Check, Play, AlertTriangle, MessageCircle, ChevronDown, Sparkles, Undo2, RotateCcw, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { refreshCleaningQueries } from "@/lib/cleaning-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 
@@ -39,6 +40,7 @@ interface Cleaner { id: string; full_name: string; active: boolean; user_id: str
 
 function CleaningPage() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const perm = usePermissions();
   const canAssign = perm.can("assign_cleaning");
   const [view, setView] = useState<View>("open");
@@ -103,11 +105,11 @@ function CleaningPage() {
   const update = async (id: string, status: CleaningStatus) => {
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
+    await refreshCleaningQueries(queryClient);
     toast.success(t("cleaning.statusChanged", { status: t(`status.${status}`) }));
     if (status === "in_progress" && myCleanerId && tasks.find((x) => x.id === id)?.cleaner_id === myCleanerId) {
       void autoClockIn(id);
     }
-    refetch();
   };
 
   const reassign = async (taskId: string, cleanerId: string) => {

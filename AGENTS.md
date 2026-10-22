@@ -17,6 +17,7 @@
 - Organization membership creates/updates the linked cleaner profile through a database trigger; the staff roster is role-driven and user creation lives in Team. Why: one identity, automatic role changes, no manual linking.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
 - Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
+- After a successful cleaning transition, await refreshCleaningQueries for tasks, dashboard (including inactive cache), and action center. Why: completed rooms must leave cleaning counts immediately using committed database status.
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
 
