@@ -281,6 +281,13 @@
       "when": 1792614309517,
       "tag": "0039_exclude_trashed_stays_from_room_status",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792675446103,
+      "tag": "0040_attendance_hardening",
+      "breakpoints": true
     }
   ]
 }

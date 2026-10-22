@@ -1905,6 +1905,7 @@ export type Database = {
           id: string
           manual_override_at: string | null
           manual_override_by: string | null
+          needs_review: boolean
           notes: string | null
           organization_id: string
           paid_amount: number | null
@@ -1913,6 +1914,7 @@ export type Database = {
           payment_period_end: string | null
           payment_period_start: string | null
           property_id: string
+          review_reason: string | null
           source: string
           status: Database["public"]["Enums"]["time_entry_status"]
           updated_at: string
@@ -1932,6 +1934,7 @@ export type Database = {
           id?: string
           manual_override_at?: string | null
           manual_override_by?: string | null
+          needs_review?: boolean
           notes?: string | null
           organization_id?: string
           paid_amount?: number | null
@@ -1940,6 +1943,7 @@ export type Database = {
           payment_period_end?: string | null
           payment_period_start?: string | null
           property_id: string
+          review_reason?: string | null
           source?: string
           status?: Database["public"]["Enums"]["time_entry_status"]
           updated_at?: string
@@ -1959,6 +1963,7 @@ export type Database = {
           id?: string
           manual_override_at?: string | null
           manual_override_by?: string | null
+          needs_review?: boolean
           notes?: string | null
           organization_id?: string
           paid_amount?: number | null
@@ -1967,6 +1972,7 @@ export type Database = {
           payment_period_end?: string | null
           payment_period_start?: string | null
           property_id?: string
+          review_reason?: string | null
           source?: string
           status?: Database["public"]["Enums"]["time_entry_status"]
           updated_at?: string
@@ -1991,6 +1997,66 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entry_corrections: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_break_minutes: number | null
+          new_clock_in_at: string | null
+          new_clock_out_at: string | null
+          old_break_minutes: number | null
+          old_clock_in_at: string | null
+          old_clock_out_at: string | null
+          organization_id: string
+          reason: string | null
+          time_entry_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_break_minutes?: number | null
+          new_clock_in_at?: string | null
+          new_clock_out_at?: string | null
+          old_break_minutes?: number | null
+          old_clock_in_at?: string | null
+          old_clock_out_at?: string | null
+          organization_id: string
+          reason?: string | null
+          time_entry_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_break_minutes?: number | null
+          new_clock_in_at?: string | null
+          new_clock_out_at?: string | null
+          old_break_minutes?: number | null
+          old_clock_in_at?: string | null
+          old_clock_out_at?: string | null
+          organization_id?: string
+          reason?: string | null
+          time_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entry_corrections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entry_corrections_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
             referencedColumns: ["id"]
           },
         ]
@@ -2243,6 +2309,16 @@ export type Database = {
         Returns: undefined
       }
       clock_toggle_break: { Args: { _entry_id: string }; Returns: string }
+      correct_time_entry: {
+        Args: {
+          _break_minutes: number
+          _clock_in_at: string
+          _clock_out_at: string
+          _entry_id: string
+          _reason: string
+        }
+        Returns: undefined
+      }
       create_booking_with_reservations: {
         Args: { _booking: Json; _lines: Json }
         Returns: string
