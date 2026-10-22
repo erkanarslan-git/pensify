@@ -365,6 +365,13 @@
       "when": 1792711476892,
       "tag": "0051_work_report_admin_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1792713519892,
+      "tag": "0052_time_entry_break_intervals",
+      "breakpoints": true
     }
   ]
 }
