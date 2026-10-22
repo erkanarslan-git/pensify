@@ -1,5 +1,8 @@
 -- Privileged integration test; synthetic users, no persistent changes.
 BEGIN;
+DO $$ BEGIN
+ IF (SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='member_departments' AND column_name='lead_can_report') IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'report permission must default off'; END IF;
+END $$;
 INSERT INTO public.organizations(id,name,slug) VALUES
  ('de000000-0000-0000-0000-000000000001','Report A','report-test-a'),
  ('de000000-0000-0000-0000-000000000002','Report B','report-test-b');
@@ -43,6 +46,20 @@ UPDATE public.organization_members SET active=true WHERE id='de100000-0000-0000-
 SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
  IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'owner scope mismatch'; END IF;
+END $$;
+UPDATE public.organization_members SET role='admin' WHERE id='de100000-0000-0000-0000-000000000002';
+DO $$ BEGIN
+ IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'admin scope mismatch'; END IF;
+END $$;
+UPDATE public.organization_members SET role='reception' WHERE id='de100000-0000-0000-0000-000000000002';
+INSERT INTO public.member_departments(organization_id,member_id,department,is_worker,is_lead) VALUES
+ ('de000000-0000-0000-0000-000000000002','de100000-0000-0000-0000-000000000002','hr',true,false);
+DO $$ BEGIN
+ IF coalesce(cardinality(public.my_report_teams()),0)<>0 THEN RAISE EXCEPTION 'HR must require explicit report access'; END IF;
+END $$;
+UPDATE public.member_departments SET lead_can_report=true WHERE member_id='de100000-0000-0000-0000-000000000002' AND department='hr';
+DO $$ BEGIN
+ IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'explicit HR report grant ignored'; END IF;
 END $$;
 SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000003',true);
 DO $$ BEGIN
