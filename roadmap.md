@@ -1,6 +1,6 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
-- [ ] Temizlik tamamlandığında Genel Bakış önbelleğini hemen yenile; oda yeşile geçsin, sarıdan çıksın; test ve giriş yapılmış akış kontrolü.
+- [x] Temizlik tamamlandığında Genel Bakış hemen yenileniyor; 6 test geçti. Giriş yapılmış ekranda geri alınan tamamlanmış görev yeniden bitirildi: müsait 75→76, sarı 6→5; toplam 84 korundu.
 
 - [x] Dört renkli panel kartı toplam 84 odayı kapsıyor: 3 dolu + 78 müsait + 3 temizlik + 0 bakım. Sarı bekleyen/devam eden temizliği birleştiriyor, dolu ana değer oda sayısı; 4 test ve giriş yapılmış ekran kontrolü geçti.
 
