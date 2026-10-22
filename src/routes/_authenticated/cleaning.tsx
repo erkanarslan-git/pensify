@@ -118,7 +118,7 @@ function CleaningPage() {
   };
 
   const reassign = async (taskId: string, cleanerId: string) => {
-    const { error } = await supabase.rpc("assign_cleaning_task", { _task_id: taskId, _cleaner_id: cleanerId || null });
+    const { error } = await supabase.rpc("assign_cleaning_task", { _task_id: taskId, ...(cleanerId ? { _cleaner_id: cleanerId } : {}) });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     toast.success(cleanerId ? t("cleaning.assigned") : t("cleaning.unassigned"));
     await refreshCleaningQueries(queryClient);
