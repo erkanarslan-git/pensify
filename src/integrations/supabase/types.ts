@@ -2908,7 +2908,7 @@ export type Database = {
         Returns: number
       }
       assign_cleaning_task: {
-        Args: { _cleaner_id: string; _task_id: string }
+        Args: { _cleaner_id?: string; _task_id: string }
         Returns: undefined
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
