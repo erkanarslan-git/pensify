@@ -93,11 +93,11 @@ export function MemberDepartments({ userId }: { userId: string }) {
                     </>
                   )}
                 </div>
-                {r?.is_lead && (
+                {r && (r.is_lead || d === "hr") && (
                   <div className="mt-2 border-t border-border pt-2">
                     <div className="mb-1 text-[11px] uppercase text-muted-foreground">{t("departments.powers")}</div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
-                      {POWERS.map(([k, col]) => (
+                      {POWERS.filter(([k]) => d !== "hr" || k === "report").map(([k, col]) => (
                         <label key={k} className="flex items-center gap-1.5 text-xs">
                           <Checkbox checked={r[col]} onCheckedChange={(v) => save(d, { [col]: !!v } as Partial<Row>)} />
                           {t(`departments.${k}`)}
