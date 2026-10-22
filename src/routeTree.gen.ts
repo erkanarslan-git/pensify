@@ -29,6 +29,7 @@ import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
+import { Route as AuthenticatedTodosRouteImport } from './routes/_authenticated/todos'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
@@ -148,6 +149,11 @@ const AuthenticatedTimeTrackingRoute =
     path: '/time-tracking',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTodosRoute = AuthenticatedTodosRouteImport.update({
+  id: '/todos',
+  path: '/todos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
+  '/todos': typeof AuthenticatedTodosRoute
   '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
   '/settings/import': typeof AuthenticatedSettingsImportRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
+  '/todos': typeof AuthenticatedTodosRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
@@ -320,6 +328,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
+  '/_authenticated/todos': typeof AuthenticatedTodosRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clock/$token': typeof AuthenticatedClockTokenRoute
@@ -358,6 +367,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/time-tracking'
+    | '/todos'
     | '/api/chat'
     | '/clock/$token'
     | '/settings/import'
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/team'
     | '/time-tracking'
+    | '/todos'
     | '/api/chat'
     | '/'
     | '/clock/$token'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
+    | '/_authenticated/todos'
     | '/api/chat'
     | '/_authenticated/'
     | '/_authenticated/clock/$token'
@@ -601,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTimeTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/todos': {
+      id: '/_authenticated/todos'
+      path: '/todos'
+      fullPath: '/todos'
+      preLoaderRoute: typeof AuthenticatedTodosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -734,6 +753,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
+  AuthenticatedTodosRoute: typeof AuthenticatedTodosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
   AuthenticatedPropertiesIndexRoute: typeof AuthenticatedPropertiesIndexRoute
@@ -758,6 +778,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
+  AuthenticatedTodosRoute: AuthenticatedTodosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
   AuthenticatedPropertiesIndexRoute: AuthenticatedPropertiesIndexRoute,
