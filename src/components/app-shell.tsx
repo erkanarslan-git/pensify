@@ -23,6 +23,7 @@ import {
   RefreshCw,
   Lock,
   ListTodo,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
