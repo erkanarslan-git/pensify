@@ -2,8 +2,8 @@
 
 ## Kapsam belgesi (22.10.2026) — 8 aşama
 - [x] 1. Mesai akışı: çalışan yalnız kendi açık mesaisini görür; şef gerekçeli düzeltir, geçmiş kaydı tutulur; çift tıklama/çakışan mesai engelli; unutulan çıkış sıfır süreyle kontrole düşer; temizlik bitirmek mesaiyi kapatmaz. Farklı rol ile canlı erişim testi sandbox rol kısıtı nedeniyle yapılamadı.
-- [ ] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri
-- [ ] 3. Genel görevler modülü
+- [x] 2. Rezervasyon listesi sunucu sayfalama + takvim aralığı/görünümleri
+- [x] 3. Genel görevler modülü
 - [ ] 4. Temizlik 5 adım + bakım kayıtları + sorun bildirimi
 - [ ] 5. Aylık ödeme planı ve tahsilat
 - [ ] 6. "Bugün oluşturulan rezervasyonlar" sayacı ve tıklanabilir KPI'lar
