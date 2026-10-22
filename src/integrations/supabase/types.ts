@@ -2907,6 +2907,10 @@ export type Database = {
         }
         Returns: number
       }
+      assign_cleaning_task: {
+        Args: { _cleaner_id?: string; _task_id: string }
+        Returns: undefined
+      }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_manage_payments: {
@@ -2914,6 +2918,14 @@ export type Database = {
         Returns: boolean
       }
       cleaner_user: { Args: { _cleaner: string }; Returns: string }
+      cleaning_assignment_options: {
+        Args: never
+        Returns: {
+          cleaner_id: string
+          full_name: string
+          property_id: string
+        }[]
+      }
       clock_start: {
         Args: {
           _accuracy: number
@@ -2966,6 +2978,10 @@ export type Database = {
       exclude_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
+      }
+      has_department_assignment: {
+        Args: { _department: string; _org: string; _target?: string }
+        Returns: boolean
       }
       has_department_power: {
         Args: { _org: string; _power: string; _target_user: string }

@@ -10,6 +10,7 @@ import { refreshCleaningQueries } from "@/lib/cleaning-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 import { OpenIssuesList, ReportIssueDialog } from "@/components/room-issues";
+import { canChangeCleaningAssignment, taskAssignmentOptions } from "@/lib/assignment";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
   head: () => ({ meta: [{ title: "Reinigung — Pensify" }, { name: "description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:title", content: "Reinigung — Pensify" }, { property: "og:description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -51,7 +52,7 @@ function CleaningPage() {
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["cleaning-page"],
     queryFn: async () => {
-      const [userRes, ts, rm, pr, cl] = await Promise.all([
+      const [userRes, ts, rm, pr, cl, options] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cleaning_tasks")
           .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes")
@@ -59,8 +60,9 @@ function CleaningPage() {
         supabase.from("rooms").select("id,number,floor"),
         supabase.from("properties").select("id,name").order("name"),
         supabase.from("cleaners").select("id,full_name,active,user_id").order("full_name"),
+        supabase.rpc("cleaning_assignment_options"),
       ]);
-      const err = ts.error ?? rm.error ?? pr.error ?? cl.error;
+      const err = ts.error ?? rm.error ?? pr.error ?? cl.error ?? options.error;
       if (err) throw err;
       const uid = userRes.data.user?.id ?? null;
       return {
@@ -68,6 +70,7 @@ function CleaningPage() {
         rooms: (rm.data ?? []) as Room[],
         properties: (pr.data ?? []) as Property[],
         cleaners: (cl.data ?? []) as Cleaner[],
+        assignmentOptions: options.data ?? [],
         myCleanerId: (cl.data ?? []).find((c) => c.user_id === uid)?.id ?? null,
       };
     },
@@ -115,10 +118,10 @@ function CleaningPage() {
   };
 
   const reassign = async (taskId: string, cleanerId: string) => {
-    const { error } = await supabase.from("cleaning_tasks").update({ cleaner_id: cleanerId || null }).eq("id", taskId);
+    const { error } = await supabase.rpc("assign_cleaning_task", { _task_id: taskId, ...(cleanerId ? { _cleaner_id: cleanerId } : {}) });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     toast.success(cleanerId ? t("cleaning.assigned") : t("cleaning.unassigned"));
-    refetch();
+    await refreshCleaningQueries(queryClient);
   };
 
   const isOpen = (s: CleaningStatus) => s === "pending" || s === "accepted" || s === "in_progress";
@@ -220,6 +223,7 @@ function CleaningPage() {
                     const due = new Date(task.due_at);
                     const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
+                    const options = taskAssignmentOptions(data?.assignmentOptions ?? [], task.property_id);
                     return (
                       <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 sm:py-2.5 text-sm hover:bg-accent/40 transition-colors">
                         <div className="w-20 font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
@@ -228,15 +232,17 @@ function CleaningPage() {
                         </div>
                         <div className="w-28"><Badge tone={meta.tone}>{t(`status.${task.status}`)}</Badge></div>
                         <div className="flex-1 min-w-[160px]">
-                          {canAssign ? (
+                          {options.length > 0 && canChangeCleaningAssignment(task.status) ? (
                             <select
                               value={task.cleaner_id ?? ""}
+                              aria-label={t("departments.assign")}
                               onChange={(e) => reassign(task.id, e.target.value)}
                               className={`text-xs px-2 py-1 rounded-md border bg-card ${unassigned ? "border-warning text-warning" : "border-input"}`}
                             >
                               <option value="">— {t("cleaning.notAssigned")} —</option>
-                              {cleaners.filter((c) => c.active || c.id === task.cleaner_id).map((c) => (
-                                <option key={c.id} value={c.id}>{c.full_name}</option>
+                              {task.cleaner_id && !options.some((o) => o.cleaner_id === task.cleaner_id) && <option value={task.cleaner_id} disabled>{name ?? t("cleaning.notAssigned")}</option>}
+                              {options.map((c) => (
+                                <option key={c.cleaner_id} value={c.cleaner_id}>{c.full_name}</option>
                               ))}
                             </select>
                           ) : (

@@ -330,6 +330,20 @@
       "when": 1792699811380,
       "tag": "0046_departments_and_leads",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1792709221975,
+      "tag": "0047_department_cleaning_assignment",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1792709320140,
+      "tag": "0048_cleaning_assignment_optional_worker",
+      "breakpoints": true
     }
   ]
 }
