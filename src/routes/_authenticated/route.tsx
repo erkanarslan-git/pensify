@@ -24,7 +24,10 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({ to: "/" });
     }
     // Strict per-route role check
-    if (!canAccessRoute(path, roleList)) {
+    const { data: reportTeams, error: reportError } = path === "/work-report"
+       ? await supabase.rpc("my_report_teams")
+       : { data: [], error: null };
+     if (!canAccessRoute(path, roleList, reportError ? [] : reportTeams ?? [])) {
       // Cleaner-only users land on /me; everyone else home
       const isCleaner = roleList.includes("cleaner");
       const isStaff = roleList.some((r) => ["owner", "admin", "manager", "reception"].includes(r));

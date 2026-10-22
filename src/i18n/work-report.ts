@@ -10,7 +10,7 @@ const tr = {
   totals: "Seçilen dönemin toplamları", unassigned: "Kişi atanmamış", nameUnavailable: "İsim kaydı bulunamadı",
   staff: "Personel", room: "Oda", type: "İş türü", status: "Durum", source: "Kaynak", search: "Ara…", all: "Tümü",
   when: "Zaman", item: "Kayıt", note: "Not", empty: "Kayıt yok", export: "CSV indir", open_record: "Kayda git", history: "İşlem geçmişi",
-  prev: "Önceki", next: "Sonraki", page: "Sayfa", loading: "Yükleniyor…", error: "Rapor yüklenemedi", forbidden: "Bu sayfa yalnız firma sahibine açıktır.",
+  prev: "Önceki", next: "Sonraki", page: "Sayfa", loading: "Yükleniyor…", error: "Rapor yüklenemedi", forbidden: "Bu raporu görme yetkiniz yok.",
   truncated: "Çok fazla kayıt var; dönemi daraltın.", result: "Sonuç", photos: "Fotoğraf", none: "—",
 };
 const en: typeof tr = {
@@ -25,7 +25,7 @@ const en: typeof tr = {
   totals: "Selected period totals", unassigned: "No person assigned", nameUnavailable: "Name not recorded",
   staff: "Staff", room: "Room", type: "Type", status: "Status", source: "Source", search: "Search…", all: "All",
   when: "Time", item: "Record", note: "Note", empty: "No records", export: "Download CSV", open_record: "Open record", history: "Audit history",
-  prev: "Previous", next: "Next", page: "Page", loading: "Loading…", error: "Could not load report", forbidden: "This page is only available to the company owner.",
+  prev: "Previous", next: "Next", page: "Page", loading: "Loading…", error: "Could not load report", forbidden: "You do not have permission to view this report.",
   truncated: "Too many records; narrow the period.", result: "Result", photos: "Photos", none: "—",
 };
 const de: typeof tr = {
@@ -40,7 +40,7 @@ const de: typeof tr = {
   totals: "Summen im gewählten Zeitraum", unassigned: "Keine Person zugewiesen", nameUnavailable: "Name nicht erfasst",
   staff: "Personal", room: "Zimmer", type: "Art", status: "Status", source: "Quelle", search: "Suchen…", all: "Alle",
   when: "Zeit", item: "Eintrag", note: "Notiz", empty: "Keine Einträge", export: "CSV herunterladen", open_record: "Zum Eintrag", history: "Änderungsprotokoll",
-  prev: "Zurück", next: "Weiter", page: "Seite", loading: "Wird geladen…", error: "Bericht konnte nicht geladen werden", forbidden: "Diese Seite ist nur für den Inhaber verfügbar.",
+  prev: "Zurück", next: "Weiter", page: "Seite", loading: "Wird geladen…", error: "Bericht konnte nicht geladen werden", forbidden: "Sie haben keine Berechtigung für diesen Bericht.",
   truncated: "Zu viele Einträge; Zeitraum eingrenzen.", result: "Ergebnis", photos: "Fotos", none: "—",
 };
 export const workReportTranslations = { tr, en, de };
