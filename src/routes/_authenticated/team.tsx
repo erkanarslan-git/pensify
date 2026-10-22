@@ -22,6 +22,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { EmployeeAttendance } from "@/components/employee-attendance";
 import { useTranslation } from "react-i18next";
 import { deletionNameMatches } from "@/lib/team-safety";
+import { MemberDepartments, RoleGuide } from "@/components/member-departments";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({ meta: [{ title: "Team — Pensify" }, { name: "description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:title", content: "Team — Pensify" }, { property: "og:description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -370,6 +371,8 @@ function TeamPage() {
         )}
       </div>
 
+      <div className="mt-6"><RoleGuide /></div>
+
       <Sheet open={!!selected} onOpenChange={(o) => !o && setSelectedId(null)}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto">
           {selected && (() => {
@@ -415,6 +418,8 @@ function TeamPage() {
                   <p className="mt-2 text-xs text-muted-foreground">{t("teamSafety.coreRoles")}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{t("teamSafety.chief")}</p>
                 </PanelSection>
+
+                <MemberDepartments userId={u.user_id} />
 
                 <PanelSection title="Zugewiesene Standorte" action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
                   {hasAllAccess(u.roles) ? (

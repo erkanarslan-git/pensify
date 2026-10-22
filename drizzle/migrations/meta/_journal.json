@@ -323,6 +323,13 @@
       "when": 1792681262653,
       "tag": "0045_bank_matching_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1792699811380,
+      "tag": "0046_departments_and_leads",
+      "breakpoints": true
     }
   ]
 }
