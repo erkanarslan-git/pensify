@@ -8,7 +8,7 @@ import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
-import { buildSchedule, installmentState, type Installment, type InstallmentState } from "@/lib/payments";
+import { buildReplacementSchedule, validReplacementSchedule, installmentState, type Installment, type InstallmentState } from "@/lib/payments";
 
 export const Route = createFileRoute("/_authenticated/payments/")({
   head: () => ({ meta: [{ title: "Tahsilat — Pensify" }, { name: "description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:title", content: "Tahsilat — Pensify" }, { property: "og:description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/payments/")({
 });
 
 interface Res { id: string; guest_name: string; room_id: string; check_in: string; check_out: string; revenue: number; payer_ibans: string[] }
-interface Sched { id: string; reservation_id: string; due_date: string; amount: number; payment_reference: string }
+interface Sched { id: string; reservation_id: string; due_date: string; amount: number; payment_reference: string; hasPayments: boolean }
 interface Pay { id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null }
 type Filter = "unpaid" | "overdue" | "all";
 
@@ -39,7 +39,7 @@ function PaymentsPage() {
     queryKey: ["payments-page"],
     queryFn: async () => {
       const [s, p, r, rm, pr] = await Promise.all([
-        supabase.from("payment_schedules").select("id,reservation_id,due_date,amount,payment_reference").order("due_date").limit(5000),
+        supabase.from("payment_schedules").select("id,reservation_id,due_date,amount,payment_reference,payments(id)").order("due_date").limit(5000),
         supabase.from("payments").select("id,schedule_id,reservation_id,amount,paid_on,method,note,recorded_by,source").is("reversed_at", null).order("paid_on", { ascending: false }).limit(5000),
         supabase.from("reservations").select("id,guest_name,room_id,check_in,check_out,revenue,status,payer_ibans").is("deleted_at", null).not("status", "in", "(cancelled,no_show)").limit(5000),
         supabase.from("rooms").select("id,number"),
@@ -48,7 +48,7 @@ function PaymentsPage() {
       const err = s.error ?? p.error ?? r.error;
       if (err) throw err;
       return {
-        schedules: (s.data ?? []).map((x) => ({ ...x, amount: Number(x.amount) })) as Sched[],
+        schedules: (s.data ?? []).map((x) => ({ ...x, amount: Number(x.amount), hasPayments: x.payments.length > 0 })) as Sched[],
         payments: (p.data ?? []).map((x) => ({ ...x, amount: Number(x.amount) })) as Pay[],
         reservations: (r.data ?? []).map((x) => ({ ...x, revenue: Number(x.revenue) })) as Res[],
         rooms: new Map((rm.data ?? []).map((x) => [x.id, x.number])),
@@ -132,7 +132,7 @@ function PaymentsPage() {
       )}
       {planning && (
         <PlanDialog reservations={(data?.reservations ?? []).filter((r) => nights(r.check_in, r.check_out) >= 28 && r.check_out > today)}
-          rooms={data?.rooms ?? new Map()} schedules={data?.schedules ?? []} payments={data?.payments ?? []}
+          rooms={data?.rooms ?? new Map()} schedules={data?.schedules ?? []}
           onClose={() => setPlanning(false)} onDone={refresh} />
       )}
     </AppShell>
@@ -216,8 +216,8 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
   );
 }
 
-function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone }: {
-  reservations: Res[]; rooms: Map<string, string>; schedules: Sched[]; payments: Pay[]; onClose: () => void; onDone: () => void;
+function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
+  reservations: Res[]; rooms: Map<string, string>; schedules: Sched[]; onClose: () => void; onDone: () => void;
 }) {
   const { t } = useTranslation();
   const [resId, setResId] = useState("");
@@ -228,31 +228,39 @@ function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone 
   const [busy, setBusy] = useState(false);
   const [ibans, setIbans] = useState("");
   const res = reservations.find((r) => r.id === resId);
+  const retained = schedules.filter((s) => s.reservation_id === resId && s.hasPayments);
 
   const regenerate = (id = resId, day = dueDay, m = mode, mon = monthly) => {
     const r = reservations.find((x) => x.id === id);
     if (!r) return setRows([]);
-    setRows(buildSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined }));
+    setRows(buildReplacementSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined }, schedules.filter((s) => s.reservation_id === id && s.hasPayments)));
   };
 
   const save = async () => {
-    if (!res || rows.length === 0 || rows.some((r) => !(r.amount > 0) || !r.due_date)) return toast.error(t("payments.invalid"));
+    if (busy || !res) return;
+    if (!validReplacementSchedule(rows, retained)) return toast.error(t("payments.invalid"));
     setBusy(true);
-    const withPay = new Set(payments.filter((p) => p.schedule_id).map((p) => p.schedule_id));
-    const removable = schedules.filter((s) => s.reservation_id === res.id && !withPay.has(s.id)).map((s) => s.id);
+    const current = await supabase.from("payment_schedules").select("id,due_date,amount,payments(id)").eq("reservation_id", res.id);
+    if (current.error) { setBusy(false); return toast.error(t("payments.saveErr")); }
+    const protectedRows = current.data.filter((s) => s.payments.length > 0);
+    if (!validReplacementSchedule(rows, protectedRows.map((s) => ({ due_date: s.due_date, amount: Number(s.amount) }))) ||
+      protectedRows.length !== retained.length || protectedRows.some((s) => !retained.some((r) => r.id === s.id && r.due_date === s.due_date && r.amount === Number(s.amount)))) {
+      setBusy(false); onDone(); return toast.error(t("payments.invalid"));
+    }
+    const removable = current.data.filter((s) => s.payments.length === 0).map((s) => s.id);
     if (removable.length) {
       const { error } = await supabase.from("payment_schedules").delete().in("id", removable);
       if (error) { setBusy(false); return toast.error(t("payments.saveErr")); }
     }
     const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
     await supabase.from("reservations").update({ payer_ibans: ibanList } as never).eq("id", res.id);
-    const { error } = await supabase.from("payment_schedules").insert(rows.map((r) => ({ reservation_id: res.id, due_date: r.due_date, amount: r.amount })) as never);
+    const { error } = rows.length ? await supabase.from("payment_schedules").insert(rows.map((r) => ({ reservation_id: res.id, due_date: r.due_date, amount: r.amount })) as never) : { error: null };
     setBusy(false);
     if (error) return toast.error(t("payments.saveErr"));
     toast.success(t("payments.planSaved")); onDone(); onClose();
   };
 
-  const total = rows.reduce((a, r) => a + (r.amount || 0), 0);
+  const total = [...retained, ...rows].reduce((a, r) => a + (r.amount || 0), 0);
   return (
     <Modal title={t("payments.newPlan")} onClose={onClose}>
       <label className="text-xs text-muted-foreground">{t("payments.reservation")}</label>
@@ -288,6 +296,11 @@ function PlanDialog({ reservations, rooms, schedules, payments, onClose, onDone 
       {res && (
         <div className="mt-4">
           <div className="text-xs font-medium mb-1">{t("payments.preview")}</div>
+          {retained.map((r) => (
+            <div key={r.id} className="flex justify-between gap-2 mb-2 text-sm text-muted-foreground">
+              <span>{formatDateDE(r.due_date)} · {t("payments.history")}</span><span>{eur(r.amount)}</span>
+            </div>
+          ))}
           {rows.map((r, i) => (
             <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2">
               <input type="date" value={r.due_date} onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, due_date: e.target.value } : x))} className="px-2 py-2 rounded-lg border border-input bg-card text-sm" />

@@ -27,7 +27,7 @@
 - Business time formatting and dispatch day boundaries use the shared business-time helpers; persist UTC instants and respect daylight-saving transitions. Why: display and scheduling must agree independently of browser and legacy settings.
 - Time entries: clock ops server-side, idempotent, one open session; employees see only their open shift; supervisors correct with mandatory reason, logged in time_entry_corrections; forgotten clock-outs close at zero with needs_review; cleaning never closes shifts. Why: accountable, tamper-proof hours.
 - Read subdirectory AGENTS.md before edits there.
-- Payments: payment_schedules (installments) + payments (partial allowed); org/property derived from the reservation by trigger, access via can_manage_payments; installments with payments cannot be deleted. Why: tenant-safe, auditable collections.
+- Payments: reservation-derived org/property, can_manage_payments access; rebuilds retain payment-history months and subtract their obligations. Why: auditable collections without duplicate debt.
 - Work reports use caller-scoped department_work_report RPC: owner all, HR all reports, enabled leads only granted departments and accessible properties; source-table policies stay unchanged; reporter/resolver distinct. Why: scoped read access without exposing unrelated operations.
 - Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI + Channel Sync in Tools. Why: stage-7 menu scope.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
