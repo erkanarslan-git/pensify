@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newTvEvents, tvDeltas, tvSnapshotSchema, tvTokenSchema, tvUpdate, tvMetricValues, nextTvPage, TV_DELTA_MS, TV_CELEBRATION_MS, type TvSnapshot } from "./tv";
+import { newTvEvents, tvDeltas, tvSnapshotSchema, tvTokenSchema, tvUpdate, tvMetricValues, nextTvPage, tvLocationLayout, TV_DELTA_MS, TV_CELEBRATION_MS, type TvSnapshot } from "./tv";
 
 const event = { id: "event-1", at: "2026-10-23T00:00:00Z", kind: "reservation_created" as const, source: "booking", location: "Bünde", eligible: true };
 const totals = { total: 84, occupied: 3, ready: 78, cleaning: 3, maintenance: 0, arrivals: 2, departures: 1, created: 1 };
@@ -50,4 +50,21 @@ describe("Approved TV invariants",()=>{
  it("single-page rotation stays put",()=>{expect(nextTvPage(0,1)).toBe(0);});
  it("only approved intervals are valid",()=>{for(const rotationSeconds of [5,10,15,20])expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds}).success).toBe(true);expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds:3}).success).toBe(false);});
  it("missing metrics are an error not zero",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,metrics:undefined}).success).toBe(false);});
+});
+describe("Balanced location rotation", () => {
+ it("splits ten locations five and five even at a three-row capacity", () => {
+  expect(tvLocationLayout(10, 3)).toEqual({ pages: 2, slots: 5 });
+ });
+ it("splits eight locations four and four", () => {
+  expect(tvLocationLayout(8, 3)).toEqual({ pages: 2, slots: 4 });
+ });
+ it("uses one full page when all locations fit", () => {
+  expect(tvLocationLayout(10, 10)).toEqual({ pages: 1, slots: 10 });
+ });
+ it("keeps odd pages within one item and never loses a location", () => {
+  const { pages, slots } = tvLocationLayout(9, 2);
+  expect(pages).toBe(2); expect(slots).toBe(5);
+  const items = Array.from({length:9}, (_,i)=>i);
+  expect([items.slice(0,slots).length,items.slice(slots).length]).toEqual([5,4]);
+ });
 });

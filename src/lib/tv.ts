@@ -41,3 +41,9 @@ export function tvUpdate(previous: TvSnapshot | null, current: TvSnapshot, recon
  return { deltas, events, celebrations: events.filter(e=>e.kind==='reservation_created' && e.eligible && !!e.location) };
 }
 export function nextTvPage(page: number, pages: number) { return pages > 1 ? (page + 1) % pages : 0; }
+
+/** Two balanced pages at most; odd counts reserve the same row tracks. */
+export function tvLocationLayout(total: number, capacity: number) {
+ const pages = total > Math.max(1, capacity) ? 2 : 1;
+ return { pages, slots: Math.max(1, Math.ceil(total / pages)) };
+}
