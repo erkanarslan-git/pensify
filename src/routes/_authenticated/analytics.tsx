@@ -141,7 +141,7 @@ function AnalyticsPage() {
               <Pie data={bySource} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={50} paddingAngle={2}>
                 {bySource.map((s) => (<Cell key={s.name} fill={sourceColor(s.name)} />))}
               </Pie>
-              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => sourceLabel(String(v), key => t(key))} />
+              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => <span className="text-foreground">{sourceLabel(String(v), key => t(key))}</span>} />
               <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} formatter={(v, n) => [v as any, sourceLabel(String(n), key => t(key))]} />
             </PieChart>
           </ResponsiveContainer>

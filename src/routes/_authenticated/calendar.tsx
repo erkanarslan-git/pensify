@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 
@@ -392,7 +393,7 @@ function CalendarPage() {
             onClick={goToday}
             className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
           >
-            <CalendarIcon className="w-3.5 h-3.5" /> Heute
+            <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.today")}
           </button>
           <button onClick={() => shift(-range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
             <ChevronLeft className="w-4 h-4" />
@@ -506,7 +507,7 @@ function CalendarPage() {
           return (
             <div key={dIso} className={`rounded-xl border border-border bg-card p-3 ${dIso === today ? "ring-2 ring-primary/40" : ""}`}>
               <div className="flex items-center justify-between mb-2">
-                <div className="font-semibold text-sm">{d.toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "2-digit" })}</div>
+                <div className="font-semibold text-sm">{d.toLocaleDateString(displayLocale(), { weekday: "short", day: "2-digit", month: "2-digit" })}</div>
                 <div className="text-xs text-muted-foreground">↓{arr} · ↑{dep} · {items.length}</div>
               </div>
               {items.length === 0 ? (
@@ -578,7 +579,7 @@ function CalendarPage() {
                 return (
                   <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
                     <div className="text-[10px] uppercase text-muted-foreground">
-                      {d.toLocaleDateString(undefined, { weekday: "short" })}
+                      {d.toLocaleDateString(displayLocale(), { weekday: "short" })}
                     </div>
                     <div className={`text-sm font-semibold ${isToday ? "text-primary" : ""}`}>{d.getDate()}</div>
                   </div>

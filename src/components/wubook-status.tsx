@@ -116,7 +116,7 @@ export function WuBookStatus() {
 
       <p className="text-xs text-muted-foreground flex items-start gap-1.5">
         <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-        Shadow-Modus: Es werden keine Updates an Booking.com, Airbnb oder Expedia gesendet. Pensify liest nur von WuBook.
+        {legacyText("Shadow-Modus: Es werden keine Updates an Booking.com, Airbnb oder Expedia gesendet. Pensify liest nur von WuBook.")}
       </p>
     </div>
   );
