@@ -454,7 +454,7 @@
     "newRoom": "New room",
     "code": "Code",
     "baseOccupancy": "Base occupancy",
-    "description": "Description",
+    "description": "Description (optional)",
     "deleteHasRooms": "{{n}} rooms use this type. A type with rooms cannot be deleted – choose an option:",
     "deleteNoRooms": "Types with price, booking or channel history are not deleted; deactivate them instead.",
     "deactivate": "Deactivate room type",
@@ -799,6 +799,7 @@
       "electric": "Electrical",
       "missing": "Missing supplies",
       "dirty": "Very dirty",
+      "lock": "Door / lock",
       "other": "Other"
     },
     "maintenanceWarning": "Once sent, room {{room}} will be set to maintenance and blocked from sale.",

@@ -58,6 +58,8 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
   const [avail, setAvail] = useState<Record<string, Avail>>({});
   const [error, setError] = useState<string | null>(null);
   const [partial, setPartial] = useState(false);
+  const [inspectionRequired, setInspectionRequired] = useState(false);
+  const [savingInspection, setSavingInspection] = useState(false);
   const [loading, setLoading] = useState(true);
   const [typeDlg, setTypeDlg] = useState<TypeFull | "new" | null>(null);
   const [bulkFor, setBulkFor] = useState<TypeFull | null>(null);
@@ -68,7 +70,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
   const load = useCallback(async () => {
     setLoading(true);
     const [pr, rt, rp, rm, cl, live, av] = await Promise.all([
-      supabase.from("properties").select("id,name,city_id,organization_id").eq("id", propertyId).maybeSingle(),
+      supabase.from("properties").select("id,name,city_id,organization_id,cleaning_inspection_required").eq("id", propertyId).maybeSingle(),
       supabase.from("room_types").select("id,name,code,capacity,base_occupancy,description,active,property_id").eq("property_id", propertyId).order("capacity").order("name"),
       supabase.from("rate_plans").select("id,room_type_id,name,base_price,guest_prices,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
       supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,key_code,default_cleaner_id,room_type_id").eq("property_id", propertyId).order("number"),
@@ -88,6 +90,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     setPartial(soft.length > 0);
     setError(null);
     setProperty(pr.data as Property);
+    setInspectionRequired(pr.data.cleaning_inspection_required);
     setTypes((rt.data ?? []).map((x) => {
       const p = (rp.data ?? []).find((y) => y.room_type_id === x.id);
       return { ...x, planId: p?.id ?? null, price: p ? Number(p.base_price) : null,
@@ -188,6 +191,15 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
       <nav className="text-xs text-muted-foreground mb-4">
         <Link to="/properties" className="hover:underline">{t("propertyRooms.breadcrumb")}</Link> / {property.name}
       </nav>
+      {canManage && <label className="mb-4 flex items-center gap-3 text-sm">
+        <Switch checked={inspectionRequired} disabled={savingInspection} onCheckedChange={async (required) => {
+          setSavingInspection(true);
+          const { error } = await supabase.rpc("set_cleaning_inspection_preference", { _property: propertyId, _required: required });
+          setSavingInspection(false);
+          if (error) { toast.error(friendlyError(t, error)); return; }
+          setInspectionRequired(required); toast.success(t("cleaningInspection.saved"));
+        }} />{t("cleaningInspection.required")}
+      </label>}
       {!perms.loading && !canManage && (
         <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground mb-4">{t("propertyRooms.noPermission")}</div>
       )}
