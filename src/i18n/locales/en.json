@@ -785,7 +785,7 @@
   "issues": {
     "reportTitle": "Report issue for room {{room}}",
     "category": "Type",
-    "description": "Description",
+    "description": "Description (optional)",
     "placeholder": "e.g. sink is leaking",
     "descriptionRequired": "Please add a short description",
     "send": "Report",

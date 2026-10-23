@@ -785,7 +785,7 @@
   "issues": {
     "reportTitle": "Problem für Zimmer {{room}} melden",
     "category": "Art",
-    "description": "Beschreibung",
+    "description": "Beschreibung (optional)",
     "placeholder": "z. B. Waschbecken tropft",
     "descriptionRequired": "Bitte kurz beschreiben",
     "send": "Melden",

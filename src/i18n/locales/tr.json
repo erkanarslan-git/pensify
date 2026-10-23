@@ -785,7 +785,7 @@
   "issues": {
     "reportTitle": "Oda {{room}} için sorun bildir",
     "category": "Sorun türü",
-    "description": "Açıklama",
+    "description": "Açıklama (isteğe bağlı)",
     "placeholder": "Örn. lavabo akıtıyor",
     "descriptionRequired": "Lütfen kısa bir açıklama yazın",
     "send": "Bildir",
