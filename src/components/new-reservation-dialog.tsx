@@ -24,6 +24,8 @@ import { sourceLabel, type ActiveChannel } from "@/lib/guest-color";
 import { useEnabledChannels } from "@/lib/channels";
 import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
+import { CustomerPicker } from '@/components/customer-picker';
+import type { CustomerParty } from '@/lib/customer-history';
 
 type Channel = ActiveChannel;
 
@@ -84,6 +86,8 @@ export function NewReservationDialog({
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<RoomLine[]>([]);
   const [saving, setSaving] = useState(false);
+  const [payerParty, setPayerParty] = useState<CustomerParty | null>(null);
+  const [occupants, setOccupants] = useState<Record<string, CustomerParty[]>>({});
 
   useEffect(() => {
     if (!open) return;
@@ -212,9 +216,12 @@ export function NewReservationDialog({
     }
 
     setSaving(true);
+    const payer = payerParty;
     // One database transaction: booking + all rooms succeed together or not at all.
-    const { error } = await supabase.rpc("create_booking_with_reservations", {
+    const { error } = await supabase.rpc("create_customer_booking", {
       _booking: {
+        payer_id: payer?.id ?? null,
+        new_customer: payer ? null : { kind: customerType, name: customerType === 'company' ? companyName.trim() : guestName.trim(), email: guestEmail.trim(), phone: guestPhone.trim(), vat: companyVat.trim(), address: companyAddress.trim(), contact: companyContact.trim() },
         customer_type: customerType,
         company_name: companyName.trim(),
         company_vat_id: companyVat.trim(),
@@ -234,6 +241,8 @@ export function NewReservationDialog({
         check_out: l.checkOut,
         revenue: l.revenue,
         discount_reason: l.discountReason.trim(),
+        occupants: (occupants[l.uid] ?? (customerType === 'person' && payer ? [payer] : [])).map(p => p.id),
+        payer_is_occupant: customerType === 'person' && !payer && occupants[l.uid] === undefined,
       })),
     });
     setSaving(false);
@@ -251,6 +260,7 @@ export function NewReservationDialog({
     setGuestPhone("");
     setNotes("");
     setCustomerType("person"); setCompanyName(""); setCompanyContact(""); setCompanyVat(""); setCompanyAddress("");
+    setPayerParty(null); setOccupants({});
   };
 
   return (
@@ -275,7 +285,7 @@ export function NewReservationDialog({
                     type="button"
                     role="radio"
                     aria-checked={customerType === k}
-                    onClick={() => setCustomerType(k)}
+                    onClick={() => { setCustomerType(k); setPayerParty(null); }}
                     className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-sm font-medium ${customerType === k ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card hover:bg-accent"}`}
                   >
                     {k === "person" ? <User className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
@@ -284,7 +294,8 @@ export function NewReservationDialog({
                 ))}
               </div>
             </div>
-            {customerType === "company" && (
+            <div className="col-span-full"><CustomerPicker kind={customerType} value={payerParty?.id ?? ''} label={t('records.payer')} onChange={p => { setPayerParty(p); setGuestEmail(p.email ?? ''); setGuestPhone(p.phone ?? ''); if(p.kind === 'company') { setCompanyName(p.name); setCompanyVat(p.vat ?? ''); setCompanyAddress(p.address ?? ''); setCompanyContact(p.contact ?? ''); } else { setGuestName(p.name); } }} /></div>
+            {customerType === "company" && !payerParty && (
               <>
                 <div className="col-span-full space-y-2">
                   <Label htmlFor="companyName" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.companyName")}</Label>
@@ -304,7 +315,7 @@ export function NewReservationDialog({
                 </div>
               </>
             )}
-            <div className="col-span-full space-y-2">
+            {!payerParty && <div className="col-span-full space-y-2">
               <Label htmlFor="guestName" className="text-xs text-muted-foreground uppercase tracking-wider">
                 {customerType === "company" ? t("newRes.guestNameOptional") : t("newRes.guestName")}
               </Label>
@@ -316,8 +327,8 @@ export function NewReservationDialog({
                 placeholder={customerType === "company" ? t("newRes.guestNameCompanyPlaceholder") : t("newRes.guestNamePlaceholder")}
                 className="bg-card"
               />
-            </div>
-            <div className="space-y-2">
+            </div>}
+            {!payerParty && <div className="space-y-2">
               <Label htmlFor="guestEmail" className="text-xs text-muted-foreground uppercase tracking-wider">
                 {t("common.email")}
               </Label>
@@ -329,8 +340,8 @@ export function NewReservationDialog({
                 maxLength={255}
                 className="bg-card"
               />
-            </div>
-            <div className="space-y-2">
+            </div>}
+            {!payerParty && <div className="space-y-2">
               <Label htmlFor="guestPhone" className="text-xs text-muted-foreground uppercase tracking-wider">
                 {t("newRes.phone")}
               </Label>
@@ -342,7 +353,7 @@ export function NewReservationDialog({
                 maxLength={32}
                 className="bg-card"
               />
-            </div>
+            </div>}
             <div className="space-y-2">
               <Label htmlFor="channel" className="text-xs text-muted-foreground uppercase tracking-wider">
                 {t("newRes.channel")}
@@ -472,6 +483,7 @@ export function NewReservationDialog({
                       </div>
                     </div>
 
+                    <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm">{t('records.occupants')} · {t('records.unknownNames')}: {(occupants[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).length}/{l.guestsCount}</summary><div className="mt-3 space-y-2">{(occupants[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).map(p=><div key={p.id} className="flex items-center justify-between gap-2"><span className="text-sm">{p.name}</span><Button variant="ghost" size="sm" aria-label={t('common.delete')} onClick={()=>setOccupants(current=>({...current,[l.uid]:(current[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).filter(x=>x.id!==p.id)}))}>×</Button></div>)}<CustomerPicker kind="person" value="" label={t('records.addPerson')} onChange={p=>setOccupants(current=>{const people=current[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : []); return people.some(x=>x.id===p.id)||people.length>=l.guestsCount?current:{...current,[l.uid]:[...people,p]};})}/></div></details>
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-4 border-t border-border">
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">

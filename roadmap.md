@@ -1,10 +1,11 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Müşteri geçmişi ve sade mesai (23.10.2026)
-- [ ] Misafirler ve Firmalar: kalıcı kişi/firma kartları, açık rezervasyon/ödeyen/konaklayan ilişkileri, belirsiz eski kayıtların onaylı eşleştirilmesi; filtreli geçmiş ve yetkili mali görünüm/çıktı.
-- [ ] Zaman Takibi: boş başlangıç, aranabilir kişi seçimi, tek dönem, kayıt bulunan günlük liste ve küçük özet; sade fazla mesai ve kapalı detay/düzenleme işlemleri; ana ekrandan ücret/ödeme/eşik kontrollerini kaldırma.
-- [ ] İki alanın kural, yetki, üç dil, açık/koyu ve telefon kontrolleri; doğrulanmayanları ayrı raporlama.
-- [ ] Bu iki alanın ardından diğer ekranlarda gereksiz/karmaşık kontrollerin sadeleştirme incelemesi.
+- [x] Misafirler ve Firmalar: kalıcı kişi/firma kartları, açık rezervasyon/ödeyen/konaklayan ilişkileri, belirsiz eski kayıtların onaylı eşleştirilmesi; filtreli geçmiş ve yetkili mali görünüm/çıktı. Test müşteri kartı oluşturuldu, rezervasyon kaydedildi ve geçmişten tekrar açıldı; test rezervasyonu çöp kutusuna taşındı, açıkça adlandırılmış müşteri kartı/audit geçmişi kaldı.
+- [x] Zaman Takibi: boş başlangıç, aranabilir kişi seçimi, tek dönem, kayıt bulunan günlük liste ve küçük özet; sade fazla mesai ve kapalı detay/düzenleme işlemleri; ana ekrandan ücret/ödeme/eşik kontrolleri kaldırıldı. Test Bakım 1 hastalık kaydı liste/özetinde doğrulandı ve gerekçeli iptal edildi; fazla mesai açılışı doğrulandı.
+- [x] İki alanın 223 kural testi ve 24 üç dil/açık-koyu/bilgisayar-telefon açılışı/taşma kontrolü geçti; son derleme hatasız. Müşteri kayıt+rezervasyon ve hastalık kayıt+iptal sahip oturumuyla uçtan uca doğrulandı.
+- [ ] Müşteri şirket/konaklayan ayrımı, yeni kart atomik geri alma ve tenant SQL: supabase/tests/customer_history.sql ve tenant_isolation.sql mevcut SQL hesabının fonksiyon/tablo-sahipliği yetkisinde durdu; güvenlik gevşetilmedi. Şef/İK ücret/onay ve ayrı firma hesaplarıyla bu yeni ekranlara özgü canlı doğrulama henüz yapılmadı.
+- [ ] Kullanıcının belirttiği sonraki aşama: diğer ekranlarda gereksiz/karmaşık kontrollerin sadeleştirme incelemesi; ilk iki alanın ardından ayrı turda ele alınacak, bu tur genel ekranlar değiştirilmedi.
 
 ## Kalan işleri tamamlama (23.10.2026)
 - [x] Son paylaşım öncesi inceleme: 52 bilgisayar/telefon sayfa açılışı + 6 koyu telefon ekranı ve 212 test geçti; arama/CSV/form/sekme/telefon menüsü/kamerasız QR kontrol edildi. Salt-okunur hata simülasyonunda panel sahte sıfırları, görevlerde sahte boşluk ve rol hatasında erişim istemeye yönlendirme doğrulandı. AI gizlilik/müsaitlik ve tahsilat tekrar kurtarma riskleri kaynak incelemesinde bulundu, canlı yazma yapılmadı. Misafir contact eksikliği iddiası canlı fonksiyonla çürütüldü. Rapor: Files/Pensify-son-inceleme-2026-10-23.md; düzeltme/yayın yapılmadı, TV ve işletme kayıtları korundu.

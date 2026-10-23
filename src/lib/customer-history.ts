@@ -6,5 +6,5 @@ export type CustomerHistory={org:string;total:number;rows:CustomerCard[]};
 export type CustomerFilters={kind:CustomerKind;search:string;property?:string;from?:string;to?:string;active:boolean;page:number;size:10|20|30|40|50;party?:string;status?:string;person?:string};
 export function customerFinance(stays:CustomerStay[],today:string){
  const unique=[...new Map(stays.map(s=>[s.id,s])).values()];
- return unique.reduce((sum,s)=>{if(!s.finance)return sum;const f=s.finance;sum.revenue+=Number(f.revenue);sum.paid+=Number(f.paid);sum.advance+=Number(f.advance);sum.deposit+=Number(f.deposit);for(const p of f.schedules){if(p.kind==='rent'){sum.remaining+=Math.max(0,Number(p.amount)-Number(p.paid));if(p.due_date<=today)sum.due+=Math.max(0,Number(p.amount)-Number(p.paid));}}return sum;},{revenue:0,paid:0,advance:0,deposit:0,due:0,remaining:0});
+ return unique.reduce((sum,s)=>{if(!s.finance)return sum;const f=s.finance;sum.revenue+=Number(f.revenue);sum.paid+=Number(f.paid);sum.advance+=Number(f.advance);sum.deposit+=Number(f.deposit);sum.remaining+=Math.max(0,Number(f.revenue)-Number(f.paid));for(const p of f.schedules){if(p.kind==='rent'&&p.due_date<=today)sum.due+=Math.max(0,Number(p.amount)-Number(p.paid));}return sum;},{revenue:0,paid:0,advance:0,deposit:0,due:0,remaining:0});
 }

@@ -253,6 +253,14 @@
   body:has(.attendance-print-report) [role="dialog"] { position: static; transform: none; overflow: visible; max-height: none; max-width: none; border: none; box-shadow: none; }
   .attendance-print-report { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .attendance-print-report tr { break-inside: avoid; }
+  body:has(.customer-list-print) * { visibility: hidden; }
+  body:has(.customer-list-print):not(:has(.customer-history-print)) .customer-list-print,
+  body:has(.customer-list-print):not(:has(.customer-history-print)) .customer-list-print * { visibility: visible; }
+  body:has(.customer-history-print) .customer-history-print,
+  body:has(.customer-history-print) .customer-history-print * { visibility: visible; }
+  .customer-list-print, .customer-history-print { position: absolute; inset: 0; width: 100%; }
+  .customer-history-print { transform: none; overflow: visible; max-height: none; max-width: none; border: none; box-shadow: none; }
+  .customer-list-print tr { break-inside: avoid; }
 }
 
 /* Approved TV-only palette: does not inherit the application's dark preference. */
