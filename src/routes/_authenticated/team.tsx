@@ -67,7 +67,9 @@ function TeamPage() {
   const rolePermsQ = useQuery({
     queryKey: ["role-perms"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("role_permissions").select("*");
+      const { data: orgId, error: orgError } = await supabase.rpc("active_organization_id");
+      if (orgError || !orgId) throw new Error("organization_required");
+      const { data, error } = await supabase.from("role_permissions").select("*").eq("organization_id", orgId);
       if (error) throw error;
       return data ?? [];
     },
@@ -76,7 +78,9 @@ function TeamPage() {
   const userPermsQ = useQuery({
     queryKey: ["user-perms"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("user_permissions").select("*");
+      const { data: orgId, error: orgError } = await supabase.rpc("active_organization_id");
+      if (orgError || !orgId) throw new Error("organization_required");
+      const { data, error } = await supabase.from("user_permissions").select("*").eq("organization_id", orgId);
       if (error) throw error;
       return data ?? [];
     },
