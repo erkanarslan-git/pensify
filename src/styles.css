@@ -221,6 +221,22 @@
   background-size: 200% 200%;
   color: var(--brand-cream);
 }
+
+/* Login stays light even when the workspace uses the dark theme. */
+.login-surface {
+  --background: oklch(0.985 0.004 250);
+  --foreground: var(--brand-navy-deep);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--brand-navy-deep);
+  --muted-foreground: oklch(0.46 0.04 258);
+  --primary: var(--brand-orange);
+  --primary-foreground: oklch(1 0 0);
+  --accent: oklch(0.95 0.015 250);
+  --accent-foreground: var(--brand-navy-deep);
+  --border: oklch(0.89 0.025 250);
+  --ring: var(--brand-orange);
+  --destructive: oklch(0.5 0.19 25);
+}
 @utility brand-card {
   background:
     radial-gradient(120% 80% at 100% 0%, oklch(0.6 0.19 260 / 0.06), transparent 60%),

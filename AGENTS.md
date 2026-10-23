@@ -41,3 +41,4 @@
 
 - Legacy UI copy uses shared three-language catalogs and active-locale display formatting; theme-specific calendar guest contrast lives in CSS tokens. Why: language/theme switching must not leave stale labels or unreadable booking bars.
 - Reservation trash: 168h from deleted_at, hourly pg_cron purge via shared purge step; finance/task-linked stays are kept, restore rechecks overlap under room lock. Why: no orphan or lost finance history.
+- Login keeps submission pending through awaited navigation and shows errors inline; its light surface is scoped with semantic CSS tokens. Why: no silent waiting or theme-dependent unreadable fields.
