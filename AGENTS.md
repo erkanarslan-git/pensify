@@ -1,4 +1,4 @@
-- Tenancy: tenant tables carry organization_id; RLS checks the row's org via has_organization_role / is_org_admin / has_organization_permission / can_access_property. Why: isolation lives in the database.
+- Tenancy: organization_id plus org/property RLS enforce isolation. Why: tenants never share authority.
 - Attendance uses employee_attendance_board: admin all, HR all in org, time-enabled leads own workers/property sessions; CSV shares rows; absence and schedule powers stay separate. Why: no client filtering as authority.
 - Roles come only from organization_members.role (one row per org+user); user_roles/has_role are deprecated. Why: global roles must not span tenants.
 - default_organization_id() returns an org only for exactly one active membership, else NULL; server code writes organization_id explicitly via src/lib/org-auth.server.ts. Why: fail closed.
@@ -31,5 +31,6 @@
 - Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
-- TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, two balanced fixed-row pages. Why: privacy, no replay.
+- TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages; management lists active links only. Why: privacy, no replay/clutter.
+- Reservations: org/property-scoped server filters, exact counts and stable ID ordering shared by pages/export. Why: no truncation or scope drift.
 - Typography: shared CSS type scale and title/label line heights; load used font weights, no vertical text offsets. Why: aligned text across screens, preserved TV density.
