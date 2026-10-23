@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,24 +19,24 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { workReportTranslations } from "@/i18n/work-report";
 
 const search = z.object({
-  preset: fallback(z.string(), "today").default("today"),
-  from: fallback(z.string(), "").default(""),
-  to: fallback(z.string(), "").default(""),
-  property: fallback(z.string(), "").default(""),
-  team: fallback(z.enum(["all", "cleaning", "office", "maintenance"]), "all").default("all"),
-  staffRole: fallback(z.string(), "").default(""),
-  view: fallback(z.string(), "summary").default("summary"),
-  topic: fallback(z.string(), "").default(""),
-  staff: fallback(z.string(), "").default(""),
-  room: fallback(z.string(), "").default(""),
-  status: fallback(z.string(), "").default(""),
-  source: fallback(z.string(), "").default(""),
-  q: fallback(z.string(), "").default(""),
-  page: fallback(z.number().int(), 1).default(1),
+  preset: z.string().catch("today").default("today"),
+  from: z.string().catch("").default(""),
+  to: z.string().catch("").default(""),
+  property: z.string().catch("").default(""),
+  team: z.enum(["all", "cleaning", "office", "maintenance"]).catch("all").default("all"),
+  staffRole: z.string().catch("").default(""),
+  view: z.string().catch("summary").default("summary"),
+  topic: z.string().catch("").default(""),
+  staff: z.string().catch("").default(""),
+  room: z.string().catch("").default(""),
+  status: z.string().catch("").default(""),
+  source: z.string().catch("").default(""),
+  q: z.string().catch("").default(""),
+  page: z.number().int().catch(1).default(1),
 });
 
 export const Route = createFileRoute("/_authenticated/work-report")({
-  validateSearch: zodValidator(search),
+  validateSearch: search,
   head: () => ({ meta: [{ title: "Yapılan İşler — Pensify" }, { name: "description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:title", content: "Yapılan İşler — Pensify" }, { property: "og:description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: WorkReportPage,
 });

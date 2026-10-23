@@ -1,5 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Hostinger paket uyarıları (23.10.2026)
+- [ ] Görseldeki Zod/esbuild uyarıları: Zod 4.6.6, doğrudan Standard Schema doğrulama ve esbuild geliştirme sunucusu düzeltmesi; kurulum, mevcut testler ve önizleme doğrulaması. GHSA-gv7w-rqvm-qjhr 17.06.2026 tarihinde geri çekilmiş; başka paket bulguları bu tur kapsam dışı. Hostinger sürüm yüklemesi kullanıcı tarafından yapılacak.
+
 ## Giriş geri bildirimi ve yerleşim (23.10.2026)
 - [x] Bekleme sayfa geçişi tamamlanana kadar sürer; bağlantı/şifre hataları formda gösterilir; şifre göster/gizle, dengeli büyük ekran ve beyaz giriş kartı. 1920/2560 ve 390px ekran, gecikmeli/yanlış şifre/bağlantı hata denemesi ve gerçek Büro test hesabıyla / sayfasına giriş doğrulandı; derleme geçti. Yetki ve veri kuralları değiştirilmedi.
 
