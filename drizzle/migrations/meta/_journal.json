@@ -393,6 +393,13 @@
       "when": 1792716144231,
       "tag": "0055_employee_break_eligibility",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1792716442649,
+      "tag": "0056_scoped_attendance_board",
+      "breakpoints": true
     }
   ]
 }

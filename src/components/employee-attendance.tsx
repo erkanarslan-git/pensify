@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { DailyAttendanceLedger } from "@/components/daily-attendance-ledger";
 import { type DailyTimeEntry } from "@/lib/daily-time";
+import type { AttendanceBoard } from "@/lib/attendance-board";
+import { attendanceExportDays, csvText } from "@/lib/attendance-export";
 
 const weekdayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const kinds = ["sick", "leave", "excused", "unexcused"];
@@ -29,7 +31,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { can } = usePermissions();
-  const canManage = can("manage_team");
+  const canManageTeam = can("manage_team");
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedMember, setSelectedMember] = useState("");
   const [workdays, setWorkdays] = useState<number[]>([]);
@@ -46,27 +48,16 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
     queryKey: ["employee-attendance", month, userId ?? null],
     enabled: !!month,
     queryFn: async () => {
-      const orgRes = await supabase.rpc("active_organization_id");
-      if (orgRes.error) throw orgRes.error;
-      if (!orgRes.data) throw new Error("organization_required");
-      const org = orgRes.data;
-      const results = await Promise.all([
-        supabase.from("organization_members").select("id,user_id,organization_id,active").eq("organization_id", org),
-        supabase.from("profiles").select("id,full_name"),
-        supabase.from("employee_work_schedules").select("*").eq("organization_id", org).lte("effective_from", to),
-        supabase.from("employee_absences").select("*").eq("organization_id", org).lte("start_date", to).gte("end_date", from).order("created_at", { ascending: false }),
-        supabase.from("cleaners").select("id,user_id,full_name").eq("organization_id", org),
-        supabase.from("time_entries").select("id,cleaner_id,clock_in_at,clock_out_at,break_minutes,break_started_at,needs_review,properties(name)").eq("organization_id", org).gte("clock_in_at", new Date(Date.parse(`${from}T00:00:00Z`) - 86400000).toISOString()).lt("clock_in_at", new Date(Date.parse(`${to}T00:00:00Z`) + 2 * 86400000).toISOString()),
-        supabase.from("organizations").select("timezone").eq("id", org).single(),
-      ]);
-      for (const result of results) if (result.error) throw result.error;
-      const [members, profiles, schedules, absences, cleaners, entries, organization] = results;
-      return { members: members.data ?? [], profiles: profiles.data ?? [], schedules: schedules.data ?? [], absences: absences.data ?? [], cleaners: cleaners.data ?? [], entries: entries.data ?? [], timezone: organization.data?.timezone ?? "Europe/Berlin", org };
+      const { data, error } = await supabase.rpc("employee_attendance_board", { _from: from, _to: to, ...(userId ? { _user_id: userId } : {}) });
+      if (error) throw error;
+      return data as unknown as AttendanceBoard;
     },
   });
   const data = q.data;
   const members = data?.members.filter(m => !userId || m.user_id === userId) ?? [];
   const member = members.find(m => m.id === selectedMember) ?? members[0];
+  const canManage = !!member?.can_absence;
+  const canSchedule = canManageTeam && !!data?.can_schedule;
   useEffect(() => {
     const schedule = data?.schedules.filter(s => s.member_id === member?.id && s.effective_from <= effective).sort((a,b) => b.effective_from.localeCompare(a.effective_from))[0];
     setWorkdays(schedule?.weekdays ?? []);
@@ -85,6 +76,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
     mutationFn: async (action: "schedule" | "absence" | "cancel") => {
       if (!member || !data || !canManage) throw new Error("permission_required");
       if (action === "schedule") {
+        if (!canSchedule) throw new Error("permission_required");
         const result = await supabase.from("employee_work_schedules").upsert({ organization_id: data.org, member_id: member.id, effective_from: effective, weekdays: workdays }, { onConflict: "member_id,effective_from" });
         if (result.error) throw result.error;
       } else if (action === "absence") {
@@ -102,9 +94,12 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   function exportCsv() {
     const rows = [[t("attendance.employee"), t("attendance.actualHours"), ...kinds.map(k => t(`attendance.${k}`))]];
     report.forEach(r => rows.push([name(r.member.user_id), (r.minutes / 60).toFixed(2), ...kinds.map(k => String(r.counts[k]))]));
-    rows.push([], [t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.worked")]);
-    report.forEach(r => r.days.forEach(d => rows.push([name(r.member.user_id), format(parseISO(d.date), "dd.MM.yyyy"), t(`attendance.${d.status}`), d.worked ? t("common.yes") : t("common.no")])));
-    const csv = "\uFEFF" + rows.map(row => row.map(cell => `"${(/^[=+@\-]/.test(cell) ? "'" : "") + cell.replace(/"/g, '""')}"`).join(";")).join("\n");
+    rows.push([], [t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.sessions"), t("attendance.breakMinutes"), t("attendance.netMinutes"), t("clock.needsReview")]);
+    report.forEach(r => {
+      const ids = new Set(data?.cleaners.filter(c => c.user_id === r.member.user_id).map(c => c.id));
+      rows.push(...attendanceExportDays(name(r.member.user_id), r.days, data?.entries.filter(e => ids.has(e.cleaner_id)) ?? [], key => key === "review" ? t("clock.needsReview") : key === "active" ? t("timeTracking.active") : t(`attendance.${key}`), Date.now()));
+    });
+    const csv = csvText(rows);
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a"); a.href = url; a.download = `attendance-${month}.csv`; a.click(); URL.revokeObjectURL(url);
   }
@@ -116,10 +111,10 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
     {q.isPending ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : <>
       {!members.length && <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}
       {!userId && <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-accent text-left"><tr><th className="p-2">{t("attendance.employee")}</th><th className="p-2">{t("attendance.actualHours")}</th>{kinds.map(k => <th className="p-2" key={k}>{t(`attendance.${k}`)}</th>)}</tr></thead><tbody>{report.map(r => <tr key={r.member.id} className="border-b border-border"><td className="p-2"><Button variant="link" className="h-auto p-0" onClick={() => { setSelectedMember(r.member.id); setWorkdays([]); }}>{name(r.member.user_id)}</Button></td><td className="p-2 tabular-nums">{(r.minutes / 60).toFixed(2)}</td>{kinds.map(k => <td className="p-2 tabular-nums" key={k}>{r.counts[k]}</td>)}</tr>)}</tbody></table></div>}
-      {member && <Tabs defaultValue={daily ? "month" : canManage ? (activeSchedule ? "absence" : "workdays") : "month"}>
+      {member && <Tabs key={member.id} defaultValue={daily ? "month" : canManage ? (activeSchedule || !canSchedule ? "absence" : "workdays") : "month"}>
         <TabsList className="grid w-full grid-cols-3">
           {canManage && <TabsTrigger value="absence">{t("attendance.tabAbsence")}</TabsTrigger>}
-          {canManage && <TabsTrigger value="workdays">{t("attendance.workdays")}</TabsTrigger>}
+          {canSchedule && <TabsTrigger value="workdays">{t("attendance.workdays")}</TabsTrigger>}
           <TabsTrigger value="month">{t("attendance.tabMonth")}</TabsTrigger>
         </TabsList>
 
@@ -134,7 +129,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
           <div className="space-y-2 border-t border-border pt-3"><h4 className="text-sm font-semibold">{t("attendance.history")}</h4>{!(data?.absences.some(a => a.member_id === member.id)) && <p className="text-xs text-muted-foreground">{t("attendance.noRecords")}</p>}{data?.absences.filter(a => a.member_id === member.id).map(a => <div className="border-b border-border py-2 text-sm" key={a.id}><div className="flex flex-wrap justify-between gap-2"><span>{format(parseISO(a.start_date), "dd.MM.yyyy")}{a.end_date !== a.start_date && ` — ${format(parseISO(a.end_date), "dd.MM.yyyy")}`} · {t(`attendance.${a.kind}`)}{a.cancelled && ` · ${t("attendance.cancelled")}`}</span>{!a.cancelled && <Button size="sm" variant="ghost" onClick={() => {setCancelling(a.id); setCorrection("");}}>{t("attendance.cancel")}</Button>}</div>{a.note && <p className="break-words text-xs text-muted-foreground">{a.note}</p>}{cancelling === a.id && <div className="mt-2 flex gap-2"><Input aria-label={t("attendance.correction")} placeholder={t("attendance.correction")} value={correction} onChange={e => setCorrection(e.target.value)} /><Button disabled={!correction.trim() || mutation.isPending} variant="outline" onClick={() => mutation.mutate("cancel")}>{t("common.save")}</Button></div>}</div>)}</div>
         </TabsContent>}
 
-        {canManage && <TabsContent value="workdays" className="space-y-4 pt-2">
+        {canSchedule && <TabsContent value="workdays" className="space-y-4 pt-2">
           <p className="text-sm text-muted-foreground">{t("attendance.workdaysHint")}</p>
           <div className="grid grid-cols-7 gap-1.5">{weekdayKeys.map((key,i) => { const on = workdays.includes(i+1); return <Button key={key} type="button" variant={on ? "default" : "outline"} className="px-0" onClick={() => setWorkdays(days => on ? days.filter(d => d!==i+1) : [...days,i+1])}>{t(`attendance.${key}`)}</Button>; })}</div>
           <details className="text-sm"><summary className="cursor-pointer text-muted-foreground">{t("attendance.changeLater")}</summary><Label className="mt-2 grid gap-1">{t("attendance.effective")}<Input type="date" value={effective} onChange={e => setEffective(e.target.value)} /></Label></details>
@@ -147,7 +142,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
           <div className="attendance-print-report space-y-3">
             <h4 className="font-semibold">{name(member.user_id)} · {month}</h4>
             <div className="text-sm">{t("attendance.actualHours")}: <b>{((current?.minutes ?? 0) / 60).toFixed(2)}</b> · {t("attendance.separate")}: <b>{current?.days.filter(d => kinds.includes(d.status)).length ?? 0}</b></div>
-            <DailyAttendanceLedger days={current?.days ?? []} entries={(data?.entries.filter(e => data.cleaners.some(c => c.id === e.cleaner_id && c.user_id === member.user_id)) ?? []) as DailyTimeEntry[]} />
+            <DailyAttendanceLedger days={current?.days ?? []} breaks={data?.breaks ?? []} entries={(data?.entries.filter(e => data.cleaners.some(c => c.id === e.cleaner_id && c.user_id === member.user_id)) ?? []) as DailyTimeEntry[]} />
           </div>
         </TabsContent>
       </Tabs>}

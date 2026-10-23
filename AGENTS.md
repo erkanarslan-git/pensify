@@ -1,5 +1,5 @@
 - Tenancy: tenant tables carry organization_id; RLS checks the row's org via has_organization_role / is_org_admin / has_organization_permission / can_access_property. Why: isolation lives in the database.
-- Attendance plans/absences belong to organization membership, not cleaner profiles; effective dates preserve historical workdays; absences never create time entries. Why: all employees need plans; worked hours stay separate.
+- Attendance uses employee_attendance_board: admin all, HR all in org, time-enabled leads own workers/property sessions; CSV shares rows; absence and schedule powers stay separate. Why: no client filtering as authority.
 - Roles come only from organization_members.role (one row per org+user); user_roles/has_role are deprecated. Why: global roles must not span tenants.
 - default_organization_id() returns an org only for exactly one active membership, else NULL; server code writes organization_id explicitly via src/lib/org-auth.server.ts. Why: fail closed.
 - Property access: owner/admin/ops_manager all; property_manager/reception via member_property_access; cleaners via assigned tasks. Why: least privilege.

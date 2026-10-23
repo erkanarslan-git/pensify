@@ -72,5 +72,6 @@
 - [x] Aşama 1: Sade çalışan ekranı (QR + Mesaim), ayrı mola aralıkları, tekrar basmaya dayanıklı mola/devam, girişten sonra QR'a dönüş
 - [x] Aşama 2: Mesai Takibi ilk görünümünde aylık günlük liste; gün durumu/oturum/mola/net, açılır lokasyon ve mola aralıkları. İnceleme kayıtları net toplamdan çıkarıldı; bakım/büro mola RPC'leri mesai uygunluğuna bağlandı. 30 test geçti; gerçek hesapta aylık liste ve telefon kamera durumu doğrulandı.
 - [ ] Gün detayı gerçek oturum/mola ve fiziksel QR testi: mevcut dönemde mesai kaydı yok; test ortamında fiziksel kamera yok. Şef/İK kapsamı Aşama 3'te devam edecek.
-- [ ] Aşama 3: Şef/İK kapsamlı erişim (sunucu tarafı) + export
+- [x] Aşama 3: Sunucuda kapsamlı mesai listesi; sahip/admin tümü, İK firma geneli, mesai yetkili şef kendi çalışanları ve erişilen lokasyon oturumları. CSV aynı verilerden günlük oturum/mola/net süre içerir; DE/EN/TR. 21 test, sahip hesabında 31 günlük liste ve CSV indirme geçti.
+- [ ] Aşama 3 güvenlik doğrulaması: Gerçek şef/İK hesabıyla kapsam testi bekliyor; attendance_scope.sql ve tenant_isolation.sql tablo sahipliği izninde durdu, işlemler geri alındı.
 - [ ] Aşama 4: Bitirirken konum kontrolü, unutulan çıkış zamanlayıcısı ve uyarı eşikleri
