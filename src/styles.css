@@ -224,3 +224,7 @@
   .attendance-print-report { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .attendance-print-report tr { break-inside: avoid; }
 }
+
+@keyframes tv-arrival { from { background-color: var(--accent); } to { background-color: var(--card); } }
+.tv-event-new { animation: tv-arrival 2s ease-out; }
+@media (prefers-reduced-motion: reduce) { .tv-event-new { animation: none; } }

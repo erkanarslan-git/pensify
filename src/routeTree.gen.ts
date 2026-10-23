@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TvRouteImport } from './routes/tv'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
@@ -20,6 +21,7 @@ import { Route as AuthenticatedChannelSyncRouteImport } from './routes/_authenti
 import { Route as AuthenticatedCleanersRouteImport } from './routes/_authenticated/cleaners'
 import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticated/cleaning'
 import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
+import { Route as AuthenticatedDisplaysRouteImport } from './routes/_authenticated/displays'
 import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
 import { Route as AuthenticatedMaintenanceRouteImport } from './routes/_authenticated/maintenance'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
@@ -64,6 +66,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TvRoute = TvRouteImport.update({
+  id: '/tv',
+  path: '/tv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -103,6 +110,11 @@ const AuthenticatedCleaningRoute = AuthenticatedCleaningRouteImport.update({
 const AuthenticatedDispatchRoute = AuthenticatedDispatchRouteImport.update({
   id: '/dispatch',
   path: '/dispatch',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDisplaysRoute = AuthenticatedDisplaysRouteImport.update({
+  id: '/displays',
+  path: '/displays',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
@@ -273,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/tv': typeof TvRoute
   '/ai': typeof AuthenticatedAiRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -280,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
+  '/displays': typeof AuthenticatedDisplaysRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
@@ -313,6 +327,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/tv': typeof TvRoute
   '/ai': typeof AuthenticatedAiRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -320,6 +335,7 @@ export interface FileRoutesByTo {
   '/cleaners': typeof AuthenticatedCleanersRoute
   '/cleaning': typeof AuthenticatedCleaningRoute
   '/dispatch': typeof AuthenticatedDispatchRoute
+  '/displays': typeof AuthenticatedDisplaysRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
@@ -356,6 +372,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/tv': typeof TvRoute
   '/_authenticated/ai': typeof AuthenticatedAiRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
@@ -363,6 +380,7 @@ export interface FileRoutesById {
   '/_authenticated/cleaners': typeof AuthenticatedCleanersRoute
   '/_authenticated/cleaning': typeof AuthenticatedCleaningRoute
   '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
+  '/_authenticated/displays': typeof AuthenticatedDisplaysRoute
   '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
   '/_authenticated/maintenance': typeof AuthenticatedMaintenanceRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -400,6 +418,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/tv'
     | '/ai'
     | '/analytics'
     | '/calendar'
@@ -407,6 +426,7 @@ export interface FileRouteTypes {
     | '/cleaners'
     | '/cleaning'
     | '/dispatch'
+    | '/displays'
     | '/geo-test'
     | '/maintenance'
     | '/me'
@@ -440,6 +460,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/reset-password'
+    | '/tv'
     | '/ai'
     | '/analytics'
     | '/calendar'
@@ -447,6 +468,7 @@ export interface FileRouteTypes {
     | '/cleaners'
     | '/cleaning'
     | '/dispatch'
+    | '/displays'
     | '/geo-test'
     | '/maintenance'
     | '/me'
@@ -482,6 +504,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/tv'
     | '/_authenticated/ai'
     | '/_authenticated/analytics'
     | '/_authenticated/calendar'
@@ -489,6 +512,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cleaners'
     | '/_authenticated/cleaning'
     | '/_authenticated/dispatch'
+    | '/_authenticated/displays'
     | '/_authenticated/geo-test'
     | '/_authenticated/maintenance'
     | '/_authenticated/me'
@@ -525,6 +549,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TvRoute: typeof TvRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiPublicHooksChannelOutboxRoute: typeof ApiPublicHooksChannelOutboxRoute
   ApiPublicHooksDispatchMorningRoute: typeof ApiPublicHooksDispatchMorningRoute
@@ -556,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tv': {
+      id: '/tv'
+      path: '/tv'
+      fullPath: '/tv'
+      preLoaderRoute: typeof TvRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -612,6 +644,13 @@ declare module '@tanstack/react-router' {
       path: '/dispatch'
       fullPath: '/dispatch'
       preLoaderRoute: typeof AuthenticatedDispatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/displays': {
+      id: '/_authenticated/displays'
+      path: '/displays'
+      fullPath: '/displays'
+      preLoaderRoute: typeof AuthenticatedDisplaysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/geo-test': {
@@ -843,6 +882,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCleanersRoute: typeof AuthenticatedCleanersRoute
   AuthenticatedCleaningRoute: typeof AuthenticatedCleaningRoute
   AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
+  AuthenticatedDisplaysRoute: typeof AuthenticatedDisplaysRoute
   AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
   AuthenticatedMaintenanceRoute: typeof AuthenticatedMaintenanceRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -873,6 +913,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCleanersRoute: AuthenticatedCleanersRoute,
   AuthenticatedCleaningRoute: AuthenticatedCleaningRoute,
   AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
+  AuthenticatedDisplaysRoute: AuthenticatedDisplaysRoute,
   AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
   AuthenticatedMaintenanceRoute: AuthenticatedMaintenanceRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
@@ -903,6 +944,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TvRoute: TvRoute,
   ApiChatRoute: ApiChatRoute,
   ApiPublicHooksChannelOutboxRoute: ApiPublicHooksChannelOutboxRoute,
   ApiPublicHooksDispatchMorningRoute: ApiPublicHooksDispatchMorningRoute,

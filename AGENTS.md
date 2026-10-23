@@ -22,8 +22,7 @@
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
 
 - Property summary cards use natural-height CSS columns. Why: compact cards without truncated names.
-- Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
-- Dispatch shows all daily tasks in expandable employee rows; sending/assignment logic unchanged. Why: no hidden tasks or outbound actions.
+- Channel sync separates overview, pilot, diagnostics and history; keep authorization/outbound safeguards. Dispatch expands all daily tasks without changing assignment/sending. Why: clear daily status.
 - Business time uses shared Berlin helpers; UTC stored, daily shifts grouped by start date. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; 16h stale exits zero/review via org-scoped SQL cron; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
 - Read subdirectory AGENTS.md before edits there.
@@ -32,3 +31,4 @@
 - Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
+- TV uses hashed revocable org tokens in URL fragments and a strict anonymous tv_snapshot DTO; never user permissions or personal fields. Why: safe public display.

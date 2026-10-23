@@ -414,6 +414,20 @@
       "when": 1792716872600,
       "tag": "0058_shift_checkout_location_context",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792717296595,
+      "tag": "0059_anonymous_tv_display",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792717591145,
+      "tag": "0060_tv_explicit_least_privilege",
+      "breakpoints": true
     }
   ]
 }

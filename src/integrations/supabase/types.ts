@@ -2806,6 +2806,67 @@ export type Database = {
           },
         ]
       }
+      tv_displays: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          organization_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          organization_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tv_displays_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tv_source_settings: {
+        Row: {
+          colors: Json
+          organization_id: string
+        }
+        Insert: {
+          colors?: Json
+          organization_id: string
+        }
+        Update: {
+          colors?: Json
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tv_source_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_permissions: {
         Row: {
           allowed: boolean
@@ -3126,6 +3187,7 @@ export type Database = {
         }
         Returns: number
       }
+      create_tv_display: { Args: { _name: string }; Returns: Json }
       default_organization_id: { Args: never; Returns: string }
       department_work_report: {
         Args: { _from: string; _property?: string; _to: string }
@@ -3248,6 +3310,7 @@ export type Database = {
       }
       restore_reservation: { Args: { _id: string }; Returns: undefined }
       review_stale_shifts: { Args: never; Returns: number }
+      revoke_tv_display: { Args: { _id: string }; Returns: undefined }
       room_capacity: { Args: { _room_id: string }; Returns: number }
       room_type_availability: {
         Args: { _date: string; _property: string }
@@ -3294,6 +3357,7 @@ export type Database = {
         }
         Returns: string
       }
+      save_tv_source_colors: { Args: { _colors: Json }; Returns: undefined }
       set_employee_overtime_rate: {
         Args: { _cleaner_id: string; _rate: number }
         Returns: undefined
@@ -3324,6 +3388,7 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["cleaning_status"]
       }
+      tv_snapshot: { Args: { _token: string }; Returns: Json }
       unmatch_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
