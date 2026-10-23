@@ -1,7 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Giriş geri bildirimi ve yerleşim (23.10.2026)
-- [ ] Bekleme ve bağlantı/şifre hata bildirimi; şifreyi göster/gizle; dengeli büyük ekran ve beyaz giriş kartı; tarayıcı doğrulaması.
+- [x] Bekleme sayfa geçişi tamamlanana kadar sürer; bağlantı/şifre hataları formda gösterilir; şifre göster/gizle, dengeli büyük ekran ve beyaz giriş kartı. 1920/2560 ve 390px ekran, gecikmeli/yanlış şifre/bağlantı hata denemesi ve gerçek Büro test hesabıyla / sayfasına giriş doğrulandı; derleme geçti. Yetki ve veri kuralları değiştirilmedi.
 
 ## Müşteri geçmişi ve sade mesai (23.10.2026)
 - [x] Misafirler ve Firmalar: kalıcı kişi/firma kartları, açık rezervasyon/ödeyen/konaklayan ilişkileri, belirsiz eski kayıtların onaylı eşleştirilmesi; filtreli geçmiş ve yetkili mali görünüm/çıktı. Test müşteri kartı oluşturuldu, rezervasyon kaydedildi ve geçmişten tekrar açıldı; test rezervasyonu çöp kutusuna taşındı, açıkça adlandırılmış müşteri kartı/audit geçmişi kaldı.
