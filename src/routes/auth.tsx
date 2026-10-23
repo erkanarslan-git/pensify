@@ -78,7 +78,7 @@ function AuthPage() {
         <div className="grid place-items-center px-5 py-16">
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-[color:var(--brand-cream)]/15 bg-[color:var(--brand-cream)] p-8 text-[color:var(--brand-navy-deep)] shadow-2xl">
-            <img src={logo.url} alt="Pension Highway – Stay here!" className="mx-auto h-auto w-64" />
+            <img src={logo} alt="Pension Highway – Stay here!" className="mx-auto h-auto w-64" />
             <div className="mt-6 text-center">
               <h1 className="text-xl font-semibold">{c.title}</h1>
               <p className="mt-1 text-sm opacity-70">{c.sub}</p>

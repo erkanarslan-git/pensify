@@ -56,7 +56,7 @@ export function LockScreen({ name, email, onUnlock, onSignOut }: {
         <div className="mt-1 text-sm capitalize opacity-70">{date}</div>
 
         <div className="mt-10 w-full max-w-sm rounded-2xl bg-[color:var(--brand-cream)] p-7 text-[color:var(--brand-navy-deep)] shadow-2xl">
-          <img src={logo.url} alt="Pension Highway" className="mx-auto w-44" />
+          <img src={logo} alt="Pension Highway" className="mx-auto w-44" />
           <h1 className="mt-5 text-xl font-semibold">{c.welcome}, {name}</h1>
           <p className="mt-0.5 truncate text-xs opacity-60">{email}</p>
           <form onSubmit={submit} className="mt-5 space-y-3 text-left">
