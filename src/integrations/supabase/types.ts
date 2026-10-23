@@ -1576,6 +1576,74 @@ export type Database = {
           },
         ]
       }
+      operational_access_secrets: {
+        Row: {
+          id: string
+          kind: string
+          organization_id: string
+          property_id: string
+          room_id: string | null
+          secret_value: string
+          updated_at: string
+          updated_by: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          id?: string
+          kind: string
+          organization_id: string
+          property_id: string
+          room_id?: string | null
+          secret_value: string
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          id?: string
+          kind?: string
+          organization_id?: string
+          property_id?: string
+          room_id?: string | null
+          secret_value?: string
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_access_secrets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operational_access_secrets_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operational_access_secrets_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "operational_access_secrets_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           active: boolean
@@ -3063,6 +3131,10 @@ export type Database = {
         Returns: number
       }
       _require_room_manager: { Args: { _property_id: string }; Returns: string }
+      access_secret_authorized: {
+        Args: { _edit: boolean; _property: string; _room: string }
+        Returns: string
+      }
       active_organization_id: { Args: never; Returns: string }
       admin_get_member_properties: {
         Args: { _user_id: string }
@@ -3289,6 +3361,10 @@ export type Database = {
       import_wp_rooms: { Args: { _batch: Json }; Returns: Json }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_organization_member: { Args: { _org: string }; Returns: boolean }
+      list_access_secret_metadata: {
+        Args: { _property: string; _room?: string }
+        Returns: Json
+      }
       list_my_clock_properties: {
         Args: never
         Returns: {
@@ -3385,6 +3461,10 @@ export type Database = {
         }[]
       }
       restore_reservation: { Args: { _id: string }; Returns: undefined }
+      reveal_access_secret: {
+        Args: { _kind: string; _property: string; _room: string }
+        Returns: string
+      }
       reverse_manual_payment: {
         Args: { _id: string; _reason: string }
         Returns: undefined
@@ -3404,6 +3484,17 @@ export type Database = {
           room_type_id: string
           total: number
         }[]
+      }
+      save_access_secret: {
+        Args: {
+          _from?: string
+          _kind: string
+          _property: string
+          _room: string
+          _until?: string
+          _value: string
+        }
+        Returns: undefined
       }
       save_attendance_review_controls: {
         Args: { _review: number; _warning: number }

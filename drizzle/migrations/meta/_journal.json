@@ -484,6 +484,13 @@
       "when": 1792723663162,
       "tag": "0068_guard_cleaning_inspection_writes",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1792723839153,
+      "tag": "0069_scoped_operational_access_secrets",
+      "breakpoints": true
     }
   ]
 }
