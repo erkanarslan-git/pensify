@@ -624,6 +624,13 @@
       "when": 1792744426689,
       "tag": "0088_atomic_customer_creation_and_explicit_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1792744629217,
+      "tag": "0089_customer_relationship_trigger_record_guard",
+      "breakpoints": true
     }
   ]
 }
