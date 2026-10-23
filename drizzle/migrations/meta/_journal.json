@@ -533,6 +533,13 @@
       "when": 1792724565288,
       "tag": "0075_scoped_guest_directory_and_finance_totals",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1792724720360,
+      "tag": "0076_harden_new_workflow_input_validation",
+      "breakpoints": true
     }
   ]
 }
