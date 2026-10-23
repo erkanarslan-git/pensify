@@ -31,4 +31,4 @@
 - Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
-- TV uses hashed revocable org tokens in URL fragments and a strict anonymous tv_snapshot DTO; never user permissions or personal fields. Why: safe public display.
+- TV: hashed revocable org tokens in fragments, strict anonymous DTO; height-aware pagination, 2×4 KPIs, honest room-state labels. Why: private, readable, accurate display.
