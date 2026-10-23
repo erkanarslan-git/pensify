@@ -216,17 +216,12 @@ export function NewReservationDialog({
     }
 
     setSaving(true);
-    let payer = payerParty;
-    if (!payer) {
-      const { data, error } = await supabase.rpc('save_customer', { _data: { kind: customerType, name: customerType === 'company' ? companyName.trim() : guestName.trim(), email: guestEmail.trim(), phone: guestPhone.trim(), vat: companyVat.trim(), address: companyAddress.trim(), contact: companyContact.trim() } });
-      if (error || !data) { setSaving(false); toast.error(t('newRes.errSave')); return; }
-      payer = { id: data, kind: customerType, name: customerType === 'company' ? companyName.trim() : guestName.trim(), email: guestEmail.trim(), phone: guestPhone.trim(), vat: companyVat.trim(), address: companyAddress.trim(), contact: companyContact.trim() };
-      setPayerParty(payer);
-    }
+    const payer = payerParty;
     // One database transaction: booking + all rooms succeed together or not at all.
     const { error } = await supabase.rpc("create_customer_booking", {
       _booking: {
-        payer_id: payer.id,
+        payer_id: payer?.id ?? null,
+        new_customer: payer ? null : { kind: customerType, name: customerType === 'company' ? companyName.trim() : guestName.trim(), email: guestEmail.trim(), phone: guestPhone.trim(), vat: companyVat.trim(), address: companyAddress.trim(), contact: companyContact.trim() },
         customer_type: customerType,
         company_name: companyName.trim(),
         company_vat_id: companyVat.trim(),
@@ -247,6 +242,7 @@ export function NewReservationDialog({
         revenue: l.revenue,
         discount_reason: l.discountReason.trim(),
         occupants: (occupants[l.uid] ?? (customerType === 'person' && payer ? [payer] : [])).map(p => p.id),
+        payer_is_occupant: customerType === 'person' && !payer && occupants[l.uid] === undefined,
       })),
     });
     setSaving(false);
