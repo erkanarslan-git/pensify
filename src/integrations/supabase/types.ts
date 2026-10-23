@@ -4054,6 +4054,7 @@ export type Database = {
       tv_snapshot: { Args: { _token: string }; Returns: Json }
       tv_snapshot_v2: { Args: { _token: string }; Returns: Json }
       tv_snapshot_v3: { Args: { _token: string }; Returns: Json }
+      tv_snapshot_v3_base: { Args: { _token: string }; Returns: Json }
       unmatch_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
