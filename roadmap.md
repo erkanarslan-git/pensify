@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] 23.10 06:50: tüm eski metinler DE/EN/TR ve açık/koyu görünüm açısından taranacak; bulunan dil/kontrast eksikleri düzeltilecek, oturumlu ekranlar doğrulanacak, TV tasarımı korunacak ve kısa sonuç listesi verilecek.
 - [x] 23.10 06:45 madde bazlı inceleme/rapor: 11 başlık güncel kodla kontrol edildi; 34 dosyada 212 test, 14 sahip ekranı/5 telefon taşma kontrolü geçti. Misafir kayıt ağ hatası kilidi düzeltildi ve ağa çıkmadan engellenen iki yeniden deneme doğrulandı. Saatlik job kurulumu ve 4 başarı, dar secret/TV grant kontrolleri doğrulandı. Tam canlı kabul açık; ayrıntılı kalanlar docs/remaining-scope-review.md son tablosunda. TV ve işletme kayıtları korundu.
 - [ ] 23.10 02:37 talebi: 11 aşamayı soru sormadan sırayla uygula, her aşamada ilgili test/tarayıcı kontrolü; çalışan özellikler/TV korunur, dış bağlantılar kendiliğinden açılmaz. Gerçek engeller tamamlandı sayılmaz.
 - [x] Öncelik TV listesi: iptal edilmiş geçici bağlantılar veritabanı sorgusunda dışlanıyor; iptal sonrası anında/diğer oturumda 30sn yenilenir. İptal geçmişi ve TV görünümü korundu. 1 kural testi, gerçek sahip hesabında geçici başlığın yokluğu ve aktif filtre isteği doğrulandı.
