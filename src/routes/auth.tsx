@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
 import { LoginFlow } from "@/components/login-flow";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/pension-highway-logo.png.asset.json";
+import logo from "@/assets/pension-highway-logo.png";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,

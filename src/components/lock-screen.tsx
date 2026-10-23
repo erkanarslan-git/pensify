@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import logo from "@/assets/pension-highway-logo.png.asset.json";
+import logo from "@/assets/pension-highway-logo.png";
 
 const COPY = {
   de: { welcome: "Willkommen zurück", pw: "Passwort", btn: "Entsperren", err: "Passwort ist falsch.", locked: "Bildschirm gesperrt", other: "Anderes Konto" },
