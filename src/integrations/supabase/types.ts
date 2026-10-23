@@ -782,6 +782,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           phone: string | null
+          time_tracking_enabled: boolean
           updated_at: string
           user_id: string | null
         }
@@ -795,6 +796,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           phone?: string | null
+          time_tracking_enabled?: boolean
           updated_at?: string
           user_id?: string | null
         }
@@ -808,6 +810,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           phone?: string | null
+          time_tracking_enabled?: boolean
           updated_at?: string
           user_id?: string | null
         }
@@ -3195,6 +3198,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["org_role"]
       }
       my_report_teams: { Args: never; Returns: string[] }
+      my_shift_context: { Args: { _property_id?: string }; Returns: Json }
       my_time_management_access: { Args: never; Returns: boolean }
       org_to_app_role: {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
@@ -3298,6 +3302,10 @@ export type Database = {
       }
       soft_delete_reservation: {
         Args: { _id: string; _reason?: string }
+        Returns: undefined
+      }
+      sync_member_time_profile: {
+        Args: { _member: string }
         Returns: undefined
       }
       transition_cleaning_task: {
