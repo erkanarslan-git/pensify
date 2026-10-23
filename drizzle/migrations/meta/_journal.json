@@ -589,6 +589,13 @@
       "when": 1792741434683,
       "tag": "0083_maintenance_worker_own_issues",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1792741743714,
+      "tag": "0084_properties_scoped_read",
+      "breakpoints": true
     }
   ]
 }
