@@ -51,7 +51,7 @@ export const ROUTE_ACL: RouteAcl[] = [
   { path: "/todos", roles: ["owner", "admin", "manager", "reception"] },
   { path: "/ai", roles: ["owner", "admin", "manager"] },
   { path: "/properties", roles: ["owner", "admin"] },
-  { path: "/work-report", roles: ["owner", "admin"] },
+  { path: "/work-report", roles: ["owner"] },
   { path: "/time-tracking", roles: ["owner", "admin"] },
   { path: "/team", roles: ["owner", "admin"] },
   { path: "/channel-sync", roles: ["owner"] },
@@ -76,7 +76,7 @@ export function routeRolesFor(pathname: string): AppRole[] | null {
 
 export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = [], timeManagementAccess = false): boolean {
   if (pathname === "/time-tracking" && timeManagementAccess) return true;
-  if (pathname === "/work-report" && allowedReportTeams.length > 0) return true;
+  if (pathname === "/work-report") return roles.includes("owner");
   const required = routeRolesFor(pathname);
   if (!required) return false; // unknown route → deny by default
   return required.some((r) => roles.includes(r));

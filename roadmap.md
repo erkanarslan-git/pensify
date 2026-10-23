@@ -1,6 +1,16 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] Yeni kalan kapsam 1: yalnız sahip Yapılan İşler + işlem bazlı finans yetkileri, sunucu/menü/dışa aktarma ve testler.
+- [ ] Yeni kalan kapsam 2: rezervasyon gerçek sunucu arama/filtre/sayfalama 10/20/30/40/50, toplam/export ve takvim kapsamı.
+- [ ] Yeni kalan kapsam 3: boş gerçek çıkışlı inceleme modeli, ayarlı eşikler/saatlik job görünürlüğü; Berlin günlerine çalışma/mola dağıtımı.
+- [ ] Yeni kalan kapsam 4: temizlik sorun/kontrol ayrımı, lokasyon tercihi ve gerekçeli geçmiş; açıklamasız kategori bildirimi.
+- [ ] Yeni kalan kapsam 5: mevcut yapılacaklarda atama/ilişkiler/not/geçmiş/ek/tekrar ve gerçek hatırlatma durumu.
+- [ ] Yeni kalan kapsam 6: ortak mevcut kişi/firma kaynaklı misafirler ekranı, sunucu liste ve finans izinli detay.
+- [ ] Yeni kalan kapsam 7: ödeme dağıtımı/avans/depozito/ters kayıt/idempotent eşzamanlılık ve sunucu toplamları; mali geçmişi koruyan silme.
+- [ ] Yeni kalan kapsam 8: Ayarlar Entegrasyonlar ortak giriş, gerçek bağlantı durumu; Sparkasse/WuBook kapalı korumaları.
+- [ ] Yeni kalan kapsam 9: lokasyon/oda/bina/anahtar bilgileri ayrı izinli sunucu reveal/audit; toplu sır sızıntısı yok.
+- [ ] Yeni kalan kapsam 10–11: TV tasarımını koruyarak ayrı test ortamı gerçek olay/KPI testleri, DE/EN/TR ve uçtan uca güvenlik kontrolleri.
 - [x] TV tam ekran yazıları küçültüldü, başlık/sayı/alt yazı sabit aralıklı ortalı grup yapıldı; lokasyonlara tek/çift satır tonu eklendi. Gerçek fullscreen 1920/2560/3840 kontrolünde sekiz kartta çakışma/taşma yok; dönüş/ses/telefon ve 32 TV testi geçti.
 - [x] Ortak yazı ailesi/ölçüleri, 700 ağırlığı ve kart/form/pencere hizaları düzeltildi; 9 oturumlu ekran, telefon ve rezervasyon penceresi kontrol edildi. 32 TV testi, beş ekran boyutu, ses/%55/dönüş/çevrimdışı/iptal geçti. Gerçek yeni olay kutlaması üretim kaydı değiştirilmeden denenmedi.
 - [x] TV son istek: günlük/alt sayılar doğrulandı, import otomatik sayılmıyor; lokasyonlu gerçek öncelikler, görünür ses yüzdesi; en fazla iki dengeli alanı dolduran lokasyon sayfası ve farklı gradientler. 32 test, gerçek girişsiz bağlantıyla 5+5 dönüş, ses/ayar/çevrimdışı/iptal ve beş ekran boyutu geçti. Gerçek yeni olay ve sıfırdan farklı günlük kayıt sınırları aşağıda korunur.
