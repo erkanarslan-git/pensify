@@ -38,7 +38,7 @@ function TvPage() {
     setToken(parsed.success ? parsed.data : null);
     setLoaded(true);
     setOnline(navigator.onLine);
-    const resize = () => setPageSize(window.innerWidth >= 900 ? Math.max(3, Math.min(12, Math.floor((window.innerHeight - 370) / 34))) : 10);
+    const resize = () => setPageSize(window.innerWidth >= 900 ? Math.max(3, Math.min(12, Math.floor((window.innerHeight - 470) / 48))) : 10);
     resize();
     window.addEventListener("resize", resize);
     const lost = () => { setOnline(false); reconnecting.current = true; };
