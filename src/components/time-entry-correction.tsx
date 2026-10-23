@@ -57,10 +57,11 @@ export function TimeEntryCorrectionDialog({
     queryKey: ["time-entry-corrections", entry?.id],
     enabled: !!entry,
     queryFn: async () => {
+      if (!entry) return [];
       const { data, error } = await supabase
         .from("time_entry_corrections")
         .select("id, old_clock_in_at, old_clock_out_at, new_clock_in_at, new_clock_out_at, reason, changed_by, changed_at")
-        .eq("time_entry_id", entry!.id)
+        .eq("time_entry_id", entry.id)
         .order("changed_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -82,6 +83,8 @@ export function TimeEntryCorrectionDialog({
     onSuccess: () => {
       toast.success(t("clock.saved"));
       qc.invalidateQueries({ queryKey: ["time-entries"] });
+      qc.invalidateQueries({ queryKey: ["employee-attendance"] });
+      qc.invalidateQueries({ queryKey: ["personnel-overtime"] });
       onClose();
     },
     onError: (e) => toast.error(t(clockErrorKey(e))),
@@ -109,7 +112,7 @@ export function TimeEntryCorrectionDialog({
               <p className="text-xs text-muted-foreground">{t("clock.noHistory")}</p>
             ) : (
               <ul className="space-y-1 text-xs max-h-32 overflow-auto">
-                {history.data!.map((h) => (
+                {(history.data ?? []).map((h) => (
                   <li key={h.id} className="border-b border-border pb-1">
                     <div>{fmt(h.changed_at)} · {h.reason ?? "—"}</div>
                     <div className="text-muted-foreground">{fmt(h.old_clock_in_at)} – {fmt(h.old_clock_out_at)} → {fmt(h.new_clock_in_at)} – {fmt(h.new_clock_out_at)}</div>

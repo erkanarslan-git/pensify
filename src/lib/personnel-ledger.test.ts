@@ -1,0 +1,12 @@
+import { describe, it, expect } from 'vitest';
+import { personnelLedger } from './personnel-ledger';
+import type { AttendanceBoard } from './attendance-board';
+const base: AttendanceBoard = { org:'a',timezone:'Europe/Berlin',can_schedule:false,members:[{id:'m',user_id:'u',organization_id:'a',active:true,can_absence:false}],profiles:[],cleaners:[{id:'c',user_id:'u',full_name:'Test'}],schedules:[{id:'s',member_id:'m',effective_from:'2026-10-01',weekdays:[1,2,3,4,5]}],absences:[],entries:[],breaks:[] };
+const now = Date.parse('2026-10-23T12:00:00Z');
+describe('personnel-first ledger',()=>{
+ it('shows no empty days by default',()=>expect(personnelLedger(base,'m','2026-10-01','2026-10-31',now,'2026-10-23',false).rows).toHaveLength(0));
+ it('does not infer absence and labels future days without missing attendance',()=>{const r=personnelLedger(base,'m','2026-10-23','2026-10-26',now,'2026-10-23',true).rows;expect(r.map(d=>d.status)).toEqual(['expected','off','off','future']);});
+ it('preserves sickness and work on the same day without adding sick hours',()=>{const b={...base,absences:[{id:'a',member_id:'m',start_date:'2026-10-22',end_date:'2026-10-22',kind:'sick',note:'',cancelled:false,created_at:''}],entries:[{id:'e',cleaner_id:'c',clock_in_at:'2026-10-22T06:00:00Z',clock_out_at:'2026-10-22T07:00:00Z',break_minutes:0,break_started_at:null,needs_review:false,properties:null}]};const r=personnelLedger(b,'m','2026-10-01','2026-10-31',now,'2026-10-23',false);expect(r.rows[0].statuses).toEqual(['worked','sick']);expect(r.summary).toEqual({worked:1,sick:1,leave:0,net:60,review:0});});
+ it('does not include another employee sessions',()=>{const b={...base,entries:[{id:'e',cleaner_id:'other',clock_in_at:'2026-10-22T06:00:00Z',clock_out_at:'2026-10-22T07:00:00Z',break_minutes:0,break_started_at:null,needs_review:false,properties:null}]};expect(personnelLedger(b,'m','2026-10-01','2026-10-31',now,'2026-10-23',false).summary.net).toBe(0);});
+ it('keeps missing exits visible but excludes their duration',()=>{const b={...base,entries:[{id:'e',cleaner_id:'c',clock_in_at:'2026-10-22T06:00:00Z',clock_out_at:null,break_minutes:0,break_started_at:null,needs_review:true,properties:null}]};const r=personnelLedger(b,'m','2026-10-01','2026-10-31',now,'2026-10-23',false);expect(r.rows.length).toBeGreaterThan(0);expect(r.summary.net).toBe(0);expect(r.summary.review).toBe(1);});
+});
