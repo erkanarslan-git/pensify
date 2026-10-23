@@ -3129,10 +3129,15 @@ export type Database = {
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
       can_access_property: { Args: { _property: string }; Returns: boolean }
+      can_finance_action: {
+        Args: { _org: string; _permission: string; _property: string }
+        Returns: boolean
+      }
       can_manage_payments: {
         Args: { _org: string; _property: string }
         Returns: boolean
       }
+      can_read_bank_transactions: { Args: { _org: string }; Returns: boolean }
       can_read_employee_time: {
         Args: { _org: string; _property?: string; _user: string }
         Returns: boolean
@@ -3318,6 +3323,10 @@ export type Database = {
         }[]
       }
       restore_reservation: { Args: { _id: string }; Returns: undefined }
+      reverse_manual_payment: {
+        Args: { _id: string; _reason: string }
+        Returns: undefined
+      }
       review_stale_shifts: { Args: never; Returns: number }
       revoke_tv_display: { Args: { _id: string }; Returns: undefined }
       room_capacity: { Args: { _room_id: string }; Returns: number }
