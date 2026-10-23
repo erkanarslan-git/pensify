@@ -575,6 +575,13 @@
       "when": 1792725296626,
       "tag": "0081_guest_existing_contact_projection",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1792725371213,
+      "tag": "0082_finance_page_room_identity",
+      "breakpoints": true
     }
   ]
 }
