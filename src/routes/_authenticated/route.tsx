@@ -14,7 +14,9 @@ export const Route = createFileRoute("/_authenticated")({
     }
 
     // Roles come from the user's single active organization membership (fail closed).
-    const { data: roles } = await supabase.rpc("my_app_roles");
+    const { data: roles, error: rolesError } = await supabase.rpc("my_app_roles");
+    // A temporary outage must not look like "no access": show the error page with retry.
+    if (rolesError) throw new Error("roles_unavailable");
     const roleList = ((roles ?? []) as AppRole[]);
     const path = location.pathname;
     const hasAnyRole = roleList.length > 0;
