@@ -62,3 +62,14 @@ Eski roadmap tamamlandı işaretleri kanıt kabul edilmedi. Üretim rezervasyon/
 - Bu turdaki yeni kontroller DE/EN/TR doğrulandı; eski takvim hardcoded metinleri ve diğer ekranlar ayrı tarama bekliyor.
 - A/B firma, sahip dışı red, şef kapsamı, dosya/TV ve eşzamanlılık SQL testleri uygun yetkili ortam olmadan geçti sayılmaz.
 - Fiziksel QR/GPS gerçek cihaz/lokasyon gerektirir; üretim güvenliği gevşetilmez.
+
+## Bu tur son durum — 23.10.2026 03:18 UTC
+- 3: Berlin gece/DST çalışma ve mola hesapları; gerçek çıkış NULL/inceleme modeli, ayarlı eşikler ve son job durumu uygulandı (0065–0066). Önceki eksik notları başlangıç incelemesidir.
+- 4: bağımsız lokasyon tercihi/kontrol, gerekçeli yeniden açma ve kategoriyle açıklamasız sorun bildirimi uygulandı (0067–0068); 4 kural testi tekrar geçti.
+- 5: mevcut görevlerde atama/ilişkiler/saat/düzenleme/not/geçmiş/özel ek/tekil tekrar mevcut. Gerçek sahip hesabıyla geçici görev oluşturma, tamamlanmış kayda not, PDF yükleme/silme ve arşiv doğrulandı. Deneme görevi arşivlendi; dosya kaldırıldı. Hatırlatma sağlayıcısı bağlı değil, gönderildi denmiyor.
+- 6: misafir/firma arama ve 10–50 sunucu sayfaları, mali alanların izinli gösterimi, iletişim düzenleme mevcut. Sadece mevcut booking ilişkisi gruplar; aynı isim/email/telefon birleştirmez. Geçici SQL kayıtlarında ayrı kimlik, kaydın değişmesi ve yabancı kullanıcının reddi geri alınarak doğrulandı. Gerçek misafir detayı açıldı; işletme iletişimi test için değiştirilmedi.
+- 7: atomic receipt, çoklu dönem dağılımı, avans/depozito, kalıcı aynı-payload tekrar anahtarı, paid-zero görünümü, doğrudan ilişkisel liste/toplamlar ve sayfalı plan seçimi mevcut. SQL testinde €120 tahsilat/€100 dağılım/€20 avans, aynı isteğin tekrarı, aşırı dağılım reddi, plan koruma, mali rezervasyon silme engeli ve yabancı ödeme reddi geçti; tümü geri alındı. Eşzamanlı iki oturum ve gerçek işletme tahsilatı denenmedi.
+- 8: ortak entegrasyon girişi üç dilde doğrulandı; Sparkasse bağlı değil/WuBook hazırlık durumu gerçek. Dış gönderim açılmadı.
+- 9: kodlar dar metadata/reveal/edit RPC, değer içermeyen audit ve ham tablo SELECT reddiyle korunuyor. Yabancı reveal reddi geçti; kodlar test çıktısına yazılmadı.
+- 10: TV görünümü değişmedi; 32 test tekrar geçti. Gerçek yeni olay kutlaması dış sağlayıcı/uygun olay bekliyor.
+- 11: altı ekran DE/EN/TR, üç telefon ekranı taşma kontrolü, misafir/plan detayları ve görev yazma akışında tarayıcı hatası yok. Takvim ve hata ekranı metinleri çevrildi. 69+57 test koşusu geçti (örtüşen testler ayrı toplam değildir). tenant_isolation.sql tablo sahipliği izninde durdu; başarılı sayılmadı. Fiziksel QR/GPS, A/B firma/şef hesapları, eşzamanlı tahsilat, gerçek olay ve sağlayıcı bağlantısı açık engellerdir.
