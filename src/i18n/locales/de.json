@@ -189,7 +189,8 @@
         "channels": "Kanal-Farben",
         "security": "Sicherheit",
         "logs": "Änderungsprotokoll",
-        "import": "Datenimport"
+        "import": "Datenimport",
+        "trash": "Papierkorb"
       },
       "generalTitle": "Allgemein",
       "generalText": "Hauptsprache der Anwendung ist Deutsch. Weitere Optionen findest du in den anderen Reitern.",

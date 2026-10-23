@@ -189,7 +189,8 @@
         "channels": "Channel colors",
         "security": "Security",
         "logs": "Activity log",
-        "import": "Data import"
+        "import": "Data import",
+        "trash": "Trash"
       },
       "generalTitle": "General",
       "generalText": "The main language of the application is English. More options are in the other tabs.",

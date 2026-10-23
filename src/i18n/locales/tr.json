@@ -189,7 +189,8 @@
         "channels": "Kanal renkleri",
         "security": "Güvenlik",
         "logs": "İşlem Geçmişi",
-        "import": "Veri içe aktarma"
+        "import": "Veri içe aktarma",
+        "trash": "Çöp kutusu"
       },
       "generalTitle": "Genel",
       "generalText": "Uygulamanın ana dili Türkçe'dir. Diğer seçenekleri diğer sekmelerde bulabilirsiniz.",

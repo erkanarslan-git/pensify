@@ -12,7 +12,6 @@ import { sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 import { businessDate } from "@/lib/business-time";
 import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
-import { ReservationTrash } from "@/components/reservation-trash";
 import { formatDateDE } from "@/lib/date-de";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
@@ -34,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/reservations")({
 
 type Row = ReservationListRow;
 
-type Period = "upcoming" | "today" | "past" | "all" | "trash";
+type Period = "upcoming" | "today" | "past" | "all";
 
 const statusTone: Record<string, "success" | "info" | "warning" | "destructive" | "muted"> = {
   confirmed: "success",
@@ -77,13 +76,12 @@ function ReservationsPage() {
   useEffect(() => setPage(0), [src, prop, period, status, createdTodayOnly, from, to, sort, pageSize]);
   const filters: ReservationFilters = {
     search: dq, propertyId: prop, source: src as ReservationFilters["source"],
-    status: status as ReservationFilters["status"], period: period === "trash" ? "all" : period,
+    status: status as ReservationFilters["status"], period,
     createdTodayOnly, from, to, sort,
   };
   const { data, refetch, error, isLoading } = useQuery({
     queryKey: ["reservations-list", filters, page, pageSize, today],
     queryFn: ({ signal }) => fetchList({ data: { ...filters, page, pageSize }, signal }),
-    enabled: period !== "trash",
   });
   const arrivals = data?.stats.arrivals;
   const departures = data?.stats.departures;
@@ -129,7 +127,6 @@ function ReservationsPage() {
     { id: "today", label: t("resv.periodToday") },
     { id: "past", label: t("resv.periodPast") },
     { id: "all", label: t("common.all") },
-    ...(isAdmin ? [{ id: "trash" as Period, label: t("resv.periodTrash") }] : []),
   ];
 
   return (
@@ -207,12 +204,10 @@ function ReservationsPage() {
         <select aria-label={t("reservationList.pageSize")} value={pageSize} onChange={e => setPageSize(Number(e.target.value) as typeof pageSize)} className="rounded-md border border-input bg-card px-3 py-2 text-sm">
           {RESERVATION_PAGE_SIZES.map(size => <option key={size} value={size}>{size}</option>)}
         </select>
-        <Button variant="outline" onClick={download} disabled={exportBusy || period === "trash"}><Download className="mr-2 h-4 w-4" />{t("reservationList.export")}</Button>
+        <Button variant="outline" onClick={download} disabled={exportBusy}><Download className="mr-2 h-4 w-4" />{t("reservationList.export")}</Button>
       </div>
 
-      {period === "trash" && isAdmin ? (
-        <ReservationTrash onChanged={() => refetch()} />
-      ) : error ? (
+      {error ? (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm">
           {t("resv.loadError")}{" "}
           <button onClick={() => refetch()} className="underline font-medium">{t("rooms.retry")}</button>

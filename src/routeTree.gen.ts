@@ -44,6 +44,7 @@ import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsImportRouteImport } from './routes/_authenticated/settings.import'
 import { Route as AuthenticatedSettingsIntegrationsRouteImport } from './routes/_authenticated/settings.integrations'
 import { Route as AuthenticatedSettingsLogsRouteImport } from './routes/_authenticated/settings.logs'
+import { Route as AuthenticatedSettingsTrashRouteImport } from './routes/_authenticated/settings.trash'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 import { Route as AuthenticatedPropertiesIdRoomsRouteImport } from './routes/_authenticated/properties.$id.rooms'
 import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
@@ -241,6 +242,12 @@ const AuthenticatedSettingsLogsRoute =
     path: '/logs',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedSettingsTrashRoute =
+  AuthenticatedSettingsTrashRouteImport.update({
+    id: '/trash',
+    path: '/trash',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedPropertiesIdQrRoute =
   AuthenticatedPropertiesIdQrRouteImport.update({
     id: '/properties/$id/qr',
@@ -327,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/settings/import': typeof AuthenticatedSettingsImportRoute
   '/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
+  '/settings/trash': typeof AuthenticatedSettingsTrashRoute
   '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -372,6 +380,7 @@ export interface FileRoutesByTo {
   '/settings/import': typeof AuthenticatedSettingsImportRoute
   '/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
+  '/settings/trash': typeof AuthenticatedSettingsTrashRoute
   '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
   '/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -419,6 +428,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/import': typeof AuthenticatedSettingsImportRoute
   '/_authenticated/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
+  '/_authenticated/settings/trash': typeof AuthenticatedSettingsTrashRoute
   '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
   '/_authenticated/properties/$id/qr': typeof AuthenticatedPropertiesIdQrRoute
@@ -466,6 +476,7 @@ export interface FileRouteTypes {
     | '/settings/import'
     | '/settings/integrations'
     | '/settings/logs'
+    | '/settings/trash'
     | '/payments/'
     | '/properties/'
     | '/properties/$id/qr'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/settings/import'
     | '/settings/integrations'
     | '/settings/logs'
+    | '/settings/trash'
     | '/payments'
     | '/properties'
     | '/properties/$id/qr'
@@ -557,6 +569,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/import'
     | '/_authenticated/settings/integrations'
     | '/_authenticated/settings/logs'
+    | '/_authenticated/settings/trash'
     | '/_authenticated/payments/'
     | '/_authenticated/properties/'
     | '/_authenticated/properties/$id/qr'
@@ -832,6 +845,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsLogsRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/settings/trash': {
+      id: '/_authenticated/settings/trash'
+      path: '/trash'
+      fullPath: '/settings/trash'
+      preLoaderRoute: typeof AuthenticatedSettingsTrashRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/properties/$id/qr': {
       id: '/_authenticated/properties/$id/qr'
       path: '/properties/$id/qr'
@@ -902,6 +922,7 @@ interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsImportRoute: typeof AuthenticatedSettingsImportRoute
   AuthenticatedSettingsIntegrationsRoute: typeof AuthenticatedSettingsIntegrationsRoute
   AuthenticatedSettingsLogsRoute: typeof AuthenticatedSettingsLogsRoute
+  AuthenticatedSettingsTrashRoute: typeof AuthenticatedSettingsTrashRoute
 }
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
@@ -909,6 +930,7 @@ const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
   AuthenticatedSettingsIntegrationsRoute:
     AuthenticatedSettingsIntegrationsRoute,
   AuthenticatedSettingsLogsRoute: AuthenticatedSettingsLogsRoute,
+  AuthenticatedSettingsTrashRoute: AuthenticatedSettingsTrashRoute,
 }
 
 const AuthenticatedSettingsRouteWithChildren =
