@@ -968,7 +968,7 @@ export const legacyTextTranslations = {
   }
 };
 
-export function legacyText(text: string) {
+export function legacyText(text: string, options: Record<string, string | number> = {}) {
   const key = keys[text];
-  return key ? String(i18n.t(`legacyText.${key}`)) : text;
+  return key ? String(i18n.t(`legacyText.${key}`, options)) : text;
 }

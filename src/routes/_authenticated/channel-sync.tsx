@@ -28,7 +28,7 @@ const HOW: Record<ActiveChannel, string> = {
   expedia: 'Über WuBook',
   check24: 'Über WuBook',
   website: 'Buchungsformular der Website',
-  direct: 'Manuell (Telefon, E-Mail, vor Ort'),
+  direct: 'Manuell (Telefon, E-Mail, vor Ort)',
 };
 
 import { CHANNEL_SETTINGS_KEY as SETTINGS_KEY } from "@/lib/channels";
