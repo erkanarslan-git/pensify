@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
 });
 
-type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import";
+type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import" | "integrations";
 
 const tabs: { key: TabKey; icon: typeof Globe }[] = [
   { key: "general", icon: Globe },
@@ -23,6 +23,7 @@ const tabs: { key: TabKey; icon: typeof Globe }[] = [
   { key: "company", icon: Building2 },
   { key: "appearance", icon: Palette },
   { key: "channels", icon: Paintbrush },
+  { key: "integrations", icon: Globe },
   { key: "security", icon: Shield },
   { key: "logs", icon: ScrollText },
   { key: "import", icon: FileUp },
@@ -37,6 +38,7 @@ function SettingsLayout() {
   useEffect(() => {
     if (pathname === "/settings/logs") setActiveTab("logs");
     else if (pathname === "/settings/import") setActiveTab("import");
+    else if (pathname === "/settings/integrations") setActiveTab("integrations");
     else setActiveTab("general");
   }, [pathname]);
 
@@ -53,7 +55,9 @@ function SettingsLayout() {
               <button
                 key={x.key}
                 onClick={() => {
-                  if (x.key === "logs") {
+                  if (x.key === "integrations") {
+                    navigate({ to: "/settings/integrations" });
+                  } else if (x.key === "logs") {
                     navigate({ to: "/settings/logs" });
                   } else if (x.key === "import") {
                     navigate({ to: "/settings/import" });
@@ -64,7 +68,7 @@ function SettingsLayout() {
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "brand-tile font-medium shadow-sm" : "hover:bg-accent/50 text-muted-foreground"}`}
               >
-                <Icon className="w-4 h-4" /> {t(`pages.settings.tabs.${x.key}`)}
+                <Icon className="w-4 h-4" /> {t(x.key === "integrations" ? "integrations.title" : `pages.settings.tabs.${x.key}`)}
               </button>
             );
           })}
