@@ -1,0 +1,1 @@
+DO $$ DECLARE d text; BEGIN SELECT pg_get_functiondef('public.guest_directory(text,text,integer,integer)'::regprocedure) INTO d; IF position('min(company_address) AS address' IN d)=0 THEN RAISE EXCEPTION 'guest projection missing'; END IF; d:=replace(d,'min(company_address) AS address','min(company_address) AS address,min(company_contact) AS contact'); EXECUTE d; END $$;
