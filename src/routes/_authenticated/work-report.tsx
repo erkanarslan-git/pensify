@@ -225,7 +225,7 @@ function DetailList({ c, items, filtered, s, set, fmt, topics, hasMaintenance, o
   const sel = "h-9 rounded-md border border-input bg-background px-2 text-sm";
   const exportCsv = () => {
     const head = [c.type, c.when, c.location, c.room, c.item, c.staff, c.reporter, c.resolver, c.status, c.source, c.note];
-    const esc = (v: string | null) => `"${(v ?? "").replaceAll('"', '""')}"`;
+    const esc = (v: string | null) => { let x = v ?? ""; if (/^[=+\-@\t\r]/.test(x)) x = "'" + x; return `"${x.replaceAll('"', '""')}"`; };
     const body = filtered.map((i) => [c.topics[i.topic], fmt(i.at), i.propertyName, i.room, i.title, i.staff, i.reporter ?? null, i.resolver ?? null, i.status, i.source, i.note].map(esc).join(";"));
     const blob = new Blob(["\ufeff" + [head.map(esc).join(";"), ...body].join("\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `pensify-work-report.csv`; a.click(); URL.revokeObjectURL(a.href);
