@@ -30,9 +30,13 @@ export async function buildPrivacyMap(supabase: SupabaseClient): Promise<Privacy
   const [propsRes, citiesRes, cleanersRes, resvRes] = await Promise.all([
     supabase.from("properties").select("name"),
     supabase.from("cities").select("name"),
-    supabase.from("cleaners").select("name"),
+    supabase.from("cleaners").select("full_name"),
     supabase.from("reservations").select("guest_name").not("guest_name", "is", null),
   ]);
+  // Fail closed: without the full name list we cannot guarantee masking.
+  for (const r of [propsRes, citiesRes, cleanersRes, resvRes]) {
+    if (r.error) throw new Error("privacy_map_unavailable");
+  }
 
   const entries: Entry[] = [];
   const seen = new Set<string>();
@@ -45,7 +49,7 @@ export async function buildPrivacyMap(supabase: SupabaseClient): Promise<Privacy
 
   (propsRes.data ?? []).forEach((r: any, i) => r?.name && addEntry(String(r.name), "P", i + 1));
   (citiesRes.data ?? []).forEach((r: any, i) => r?.name && addEntry(String(r.name), "C", i + 1));
-  (cleanersRes.data ?? []).forEach((r: any, i) => r?.name && addEntry(String(r.name), "K", i + 1));
+  (cleanersRes.data ?? []).forEach((r: any, i) => r?.full_name && addEntry(String(r.full_name), "K", i + 1));
 
   const guestSet = new Map<string, string>(); // lower → original
   for (const r of (resvRes.data ?? []) as any[]) {
@@ -76,7 +80,8 @@ export async function buildPrivacyMap(supabase: SupabaseClient): Promise<Privacy
       }
     }
   }
-  for (const c of conflicts) aliasToToken.delete(c);
+  // Ambiguous partial names are still masked (never sent in clear), just not reversible.
+  for (const c of conflicts) aliasToToken.set(c, "PSN_X00");
 
   // Anonymization regex: sort aliases longest first so "Erkan Arslan" wins
   // over "Erkan".
@@ -85,7 +90,7 @@ export async function buildPrivacyMap(supabase: SupabaseClient): Promise<Privacy
     ? new RegExp(`\\b(${aliases.map(escapeRegExp).join("|")})\\b`, "gi")
     : null;
 
-  const tokenRegex = /PSN_[GPCK]\d{2,}/g;
+  const tokenRegex = /PSN_[GPCKX]\d{2,}/g;
 
   const anonymizeText = (s: string) => {
     if (!s || !anonRegex) return s;
@@ -118,7 +123,7 @@ export async function buildPrivacyMap(supabase: SupabaseClient): Promise<Privacy
       const key = n.trim();
       if (tokenToReal.has(key)) return tokenToReal.get(key)!;
       const alias = aliasToToken.get(key.toLowerCase());
-      if (alias) return tokenToReal.get(alias) ?? null;
+      if (alias && alias !== "PSN_X00") return tokenToReal.get(alias) ?? null;
       return null;
     },
     tokenGlossary: () => {
