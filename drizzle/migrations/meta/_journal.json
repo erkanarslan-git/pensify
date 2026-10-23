@@ -400,6 +400,13 @@
       "when": 1792716442649,
       "tag": "0056_scoped_attendance_board",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1792716776720,
+      "tag": "0057_clock_exit_location_and_stale_review",
+      "breakpoints": true
     }
   ]
 }
