@@ -21,7 +21,7 @@
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one real account per property; explicit property/room mappings, admin-confirmed new_room, sync_enabled=false. Why: auditable stepwise go-live.
 
-- Guests derive from reservations; only existing booking links group rows; contacts never establish identity. Why: no accidental merging.
+- Guests use reservations/existing booking links, never contact-based identity. Todos extend existing rows via scoped RPCs/private attachments. Why: no accidental merging or parallel tasks.
 - Integrations reuse bank/channel screens with truthful status, no automatic outbound activation. Why: safe shared entry.
 - Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
@@ -33,5 +33,5 @@
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
 - TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages; management lists active links only. Why: privacy, no replay/clutter.
 - Reservations: org/property-scoped server filters, exact counts and stable ID ordering shared by pages/export. Why: no truncation or scope drift.
-- Typography uses shared scale/line heights, actual font weights, no vertical offsets. Why: aligned text and TV density.
+- Typography: shared scale, real weights, no vertical offsets. Why: aligned text.
 - Cleaning inspection is a separate task state with property opt-in; atomic review/reopen/report RPCs retain reasons and maintenance blocks. Why: problems are not inspections.

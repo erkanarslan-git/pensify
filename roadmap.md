@@ -8,14 +8,14 @@
 - [ ] Kapsam 1 canlı delegasyon/ters kayıt ve tenant/department SQL testleri: ayrı yetkili test ortamı ve uygun ödeme kaydı bekliyor; mevcut SQL oturumu organization_members tablo sahibi değil. Gerçek işletme verisi test için değiştirilmedi.
 - [x] Yeni kalan kapsam 2 uygulama: firma/lokasyon yetkili sunucu arama/filtre/sıralama/sayfalama 10/20/30/40/50, tam toplam/CSV, görünür aralıklı 7/14/30 takvim; 300ms debounce ve eski yanıt koruması. 9 kural testi (1234 CSV/DST dahil), gerçek sahip hesabında ad/boş/özel karakter araması, CSV, sıralama, üç dil ve telefon kontrolü geçti; hata yok.
 - [ ] Kapsam 2 büyük veri/çoklu rol canlı doğrulaması: mevcut hesapta tek silinmemiş rezervasyon var; ikinci sayfa/1000+ kayıt ve A/B izolasyonu ayrı test verisi/yetkili ortam bekliyor. Üretim verisi test için değiştirilmedi.
-- [ ] Yeni kalan kapsam 3: boş gerçek çıkışlı inceleme modeli, ayarlı eşikler/saatlik job görünürlüğü; Berlin günlerine çalışma/mola dağıtımı.
-- [ ] Yeni kalan kapsam 4: temizlik sorun/kontrol ayrımı, lokasyon tercihi ve gerekçeli geçmiş; açıklamasız kategori bildirimi.
-- [ ] Yeni kalan kapsam 5: mevcut yapılacaklarda atama/ilişkiler/not/geçmiş/ek/tekrar ve gerçek hatırlatma durumu.
-- [ ] Yeni kalan kapsam 6: ortak mevcut kişi/firma kaynaklı misafirler ekranı, sunucu liste ve finans izinli detay.
-- [ ] Yeni kalan kapsam 7: ödeme dağıtımı/avans/depozito/ters kayıt/idempotent eşzamanlılık ve sunucu toplamları; mali geçmişi koruyan silme.
-- [ ] Yeni kalan kapsam 8: Ayarlar Entegrasyonlar ortak giriş, gerçek bağlantı durumu; Sparkasse/WuBook kapalı korumaları.
-- [ ] Yeni kalan kapsam 9: lokasyon/oda/bina/anahtar bilgileri ayrı izinli sunucu reveal/audit; toplu sır sızıntısı yok.
-- [ ] Yeni kalan kapsam 10–11: TV tasarımını koruyarak ayrı test ortamı gerçek olay/KPI testleri, DE/EN/TR ve uçtan uca güvenlik kontrolleri.
+- [x] Kapsam 3 uygulandı: gerçek çıkış NULL/inceleme, ayarlı eşikler/son job, Berlin gece/DST çalışma-mola dağılımı; ilgili testler geçti. Fiziksel cihaz/şef canlı testi ayrı engel.
+- [x] Kapsam 4 uygulandı: sorun/kontrol ayrımı, lokasyon tercihi, gerekçeli geçmiş ve açıklamasız kategori; 4 kural testi tekrar geçti. Gerçek şef/kontrol kaydı canlı doğrulaması ayrı engel.
+- [x] Kapsam 5 uygulandı: mevcut görevlerde atama/ilişkiler/saat/düzenleme/not/geçmiş/özel dosya/tekil tekrar; SQL ve gerçek sahip görev-yazma/PDF-silme/arşiv geçti. Hatırlatma sağlayıcısı bağlı değil; gönderim yapılmadığı gösterilir.
+- [x] Kapsam 6 uygulandı: mevcut rezervasyon kaynaklı misafir/firma, sunucu arama/sayfa, finans izinli detay ve iletişim düzenleme; kontaklar birleşmez. SQL düzenleme/yabancı red ve üç dil/telefon/gerçek detay kontrolü geçti.
+- [x] Kapsam 7 uygulandı: atomik ödeme/plan, çoklu dağılım, avans/depozito, aynı-payload kalıcı tekrar ID, ilişkisel sayfa/toplam ve sayfalı plan seçimi. SQL tekrar/aşırı ödeme/plan koruma/silme engeli/yabancı red geçti; eşzamanlı oturum ve gerçek tahsilat ayrı engel.
+- [x] Kapsam 8 ortak entegrasyon girişi ve gerçek hazırlık/bağlı-değil durumları üç dilde doğrulandı; Sparkasse/WuBook canlı bağlantısı açık dış bağımlılık, gönderim kapalı.
+- [x] Kapsam 9 dar metadata/reveal/edit ve sır içermeyen audit; ham tablo okuma kapalı, yabancı reveal reddi SQL testi geçti. Sahip ekranında otomatik sır açılmıyor.
+- [ ] Kapsam 10–11 kalan canlı kabul: TV görünümü korundu/32 test; altı ekran üç dil, üç telefon ekranı ve görev yazma kontrolü hatasız. Gerçek TV olayı, fiziksel QR/GPS, A/B-şef hesapları, eşzamanlı tahsilat ve tenant SQL tablo-sahipliği izni bekliyor.
 - [x] TV tam ekran yazıları küçültüldü, başlık/sayı/alt yazı sabit aralıklı ortalı grup yapıldı; lokasyonlara tek/çift satır tonu eklendi. Gerçek fullscreen 1920/2560/3840 kontrolünde sekiz kartta çakışma/taşma yok; dönüş/ses/telefon ve 32 TV testi geçti.
 - [x] Ortak yazı ailesi/ölçüleri, 700 ağırlığı ve kart/form/pencere hizaları düzeltildi; 9 oturumlu ekran, telefon ve rezervasyon penceresi kontrol edildi. 32 TV testi, beş ekran boyutu, ses/%55/dönüş/çevrimdışı/iptal geçti. Gerçek yeni olay kutlaması üretim kaydı değiştirilmeden denenmedi.
 - [x] TV son istek: günlük/alt sayılar doğrulandı, import otomatik sayılmıyor; lokasyonlu gerçek öncelikler, görünür ses yüzdesi; en fazla iki dengeli alanı dolduran lokasyon sayfası ve farklı gradientler. 32 test, gerçek girişsiz bağlantıyla 5+5 dönüş, ses/ayar/çevrimdışı/iptal ve beş ekran boyutu geçti. Gerçek yeni olay ve sıfırdan farklı günlük kayıt sınırları aşağıda korunur.
@@ -34,6 +34,7 @@
 - [x] 111 test geçti; gerçek sahip hesabıyla geçici bağlantı oluşturma–girişsiz açma–iptal kontrolü, 10 lokasyon/84 oda, üç dil, telefon taşma, çevrimdışı uyarı ve yeniden bağlanma doğrulandı. Ham display kayıtları/izinsiz oluşturma/geçersiz token engelli; TV kimliği Mesai Takibi'ne giriş sağlamıyor. Deneme bağlantıları iptal edildi.
 - [ ] Ayrıcalıklı TV/tenant SQL bütünleşme kontrolleri: salt okunur test oturumu ve fonksiyon izni engeli; gerçek veriler değiştirilmedi. Girişsiz gerçek API güvenlik kontrolleri geçti.
 - [ ] Fiziksel QR/GPS ve gerçek şef/fazla mesai/ödeme kayıtlarıyla deneme: fiziksel cihaz ve uygun kayıtlar bekliyor; gerçek işletme verileri test amacıyla değiştirilmeyecek.
+- [ ] Genel görev e-posta/push hatırlatması: teslimat sağlayıcısı bağlı değil; mevcut ekran doğru biçimde gönderim yapılmadığını gösterir.
 - [ ] Sparkasse ve WuBook: dış sağlayıcı erişimi ve Booking.com otel kimliği/canlı geçiş onayı bekliyor; gönderim kapalı tutulacak.
 
 ## Kapsam belgesi (22.10.2026) — 8 aşama
