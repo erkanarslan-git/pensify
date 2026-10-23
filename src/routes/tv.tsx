@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Maximize, Volume2, VolumeX, Wifi, WifiOff, CalendarPlus, BedDouble, DoorOpen, LogIn, LogOut, Brush, Wrench, Coins, ChevronLeft, ChevronRight, Pause, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTvSnapshot } from "@/lib/tv.functions";
-import { tvAccumulate, type TvDailyDeltas, tvUpdate, nextTvPage, tvLocationLayout, TV_DELTA_MS, TV_CELEBRATION_MS, tvTokenSchema, type TvSnapshot } from "@/lib/tv";
+import { tvAccumulate, type TvDailyDeltas, tvUpdate, nextTvPage, tvLocationLayout, TV_CELEBRATION_MS, tvTokenSchema, type TvSnapshot } from "@/lib/tv";
 import { BUSINESS_TIME_ZONE, businessDate, businessTime } from "@/lib/business-time";
 import { normalizeChannel } from "@/lib/guest-color";
 

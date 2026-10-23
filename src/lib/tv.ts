@@ -28,7 +28,7 @@ export function tvDeltas(previous: TvSnapshot["totals"] | null, current: TvSnaps
   return Object.fromEntries(Object.entries(current).map(([key, value]) => [key, previous ? value - previous[key as keyof typeof previous] : 0])) as Record<keyof TvSnapshot["totals"], number>;
 }
 export const TV_DELTA_MS = 8000;
-export const TV_CELEBRATION_MS = 5000;
+export const TV_CELEBRATION_MS = 7000;
 export function tvMetricValues(s: TvSnapshot) {
  return { created: s.metrics.created, cleaned: s.metrics.cleaned, maintenanceDone: s.metrics.maintenanceDone, occupied: s.totals.occupied, arrivals: s.totals.arrivals, departures: s.totals.departures, dueToday: s.dues.dueToday, ready: s.totals.ready };
 }
