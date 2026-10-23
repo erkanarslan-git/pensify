@@ -15,6 +15,9 @@ import i18n from "@/i18n";
 import { EmployeeAttendance } from "@/components/employee-attendance";
 import { TimeEntryCorrectionDialog, type CorrectableEntry } from "@/components/time-entry-correction";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OvertimePanel } from "@/components/overtime-panel";
+import { overtimePay } from "@/lib/overtime";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/time-tracking")({
   head: () => ({ meta: [{ title: `${i18n.t("nav.timeTracking")} — Pensify` }, { name: "description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:title", content: "Arbeitszeiten — Pensify" }, { property: "og:description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -63,6 +66,8 @@ function presetRange(p: string): [string, string] {
 function TimeTrackingPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const { roles } = usePermissions();
+  const isAdmin = roles.includes("owner") || roles.includes("admin");
   const [preset, setPreset] = useState("week");
   const [from, setFrom] = useState(() => presetRange("week")[0]);
   const [to, setTo] = useState(() => presetRange("week")[1]);
@@ -124,6 +129,16 @@ function TimeTrackingPage() {
     },
   });
 
+  const { data: overtimeRows = [] } = useQuery({ queryKey: ["overtime-pay"], enabled: isAdmin, queryFn: async () => {
+    const { data, error } = await supabase.from("time_entry_overtime").select("time_entry_id, minutes, hourly_rate");
+    if (error) throw error;
+    return data ?? [];
+  } });
+  const payFor = (e: Entry, net: number) => {
+    const ot = overtimeRows.find(o => o.time_entry_id === e.id);
+    return overtimePay(net, ot?.minutes ?? 0, e.cleaners?.hourly_rate ?? 0, ot?.hourly_rate ?? 0);
+  };
+
   const summary = useMemo(() => {
     const byCleaner = new Map<string, { name: string; minutes: number; rate: number; entries: number; amount: number }>();
     let totalMin = 0;
@@ -135,18 +150,18 @@ function TimeTrackingPage() {
       const cur = byCleaner.get(e.cleaner_id) ?? { name: e.cleaners?.full_name ?? "?", minutes: 0, rate, entries: 0, amount: 0 };
       cur.minutes += min;
       cur.entries += 1;
-      cur.amount = (cur.minutes / 60) * cur.rate;
+      cur.amount += payFor(e, min).amount;
       byCleaner.set(e.cleaner_id, cur);
     }
     return { totalMin, byCleaner: Array.from(byCleaner.entries()) };
-  }, [entries]);
+  }, [entries, overtimeRows]);
 
   const markPaid = useMutation({
     mutationFn: async (entry: Entry) => {
       const min = entry.clock_out_at
         ? Math.max(0, Math.round((new Date(entry.clock_out_at).getTime() - new Date(entry.clock_in_at).getTime()) / 60000) - (entry.break_minutes ?? 0))
         : 0;
-      const amount = ((min / 60) * (entry.cleaners?.hourly_rate ?? 0)).toFixed(2);
+      const amount = payFor(entry, min).amount.toFixed(2);
       const { error } = await supabase.rpc("admin_mark_time_entry_paid", {
         _entry_id: entry.id,
         _amount: Number(amount),
@@ -293,12 +308,14 @@ function TimeTrackingPage() {
             </div>
           );
         })()}
-        <Tabs defaultValue="shifts">
+        <Tabs defaultValue={isAdmin ? "shifts" : "overtime"}>
           <TabsList className="h-auto flex-wrap">
-            <TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
+            {isAdmin && <><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
             <TabsTrigger value="pay">{TL[1]}</TabsTrigger>
-            <TabsTrigger value="plan">{TL[2]}</TabsTrigger>
+            <TabsTrigger value="plan">{TL[2]}</TabsTrigger></>}
+            <TabsTrigger value="overtime">{t("overtime.title")}</TabsTrigger>
           </TabsList>
+          <TabsContent value="overtime" className="mt-4 space-y-4"><div className="flex flex-wrap gap-3"><div><Label htmlFor="ot-from">{t("timeTracking.from")}</Label><Input id="ot-from" type="date" value={from} onChange={e => setFrom(e.target.value)} /></div><div><Label htmlFor="ot-to">{t("timeTracking.to")}</Label><Input id="ot-to" type="date" value={to} onChange={e => setTo(e.target.value)} /></div></div><OvertimePanel from={from} to={to} /></TabsContent>
           <TabsContent value="pay" className="mt-4 space-y-4">
         {filters}
         <Section title={t("timeTracking.summary")}>

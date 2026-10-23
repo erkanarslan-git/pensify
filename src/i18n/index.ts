@@ -7,6 +7,7 @@ import tr from "./locales/tr.json";
 import { attendanceTranslations } from "./attendance";
 import { clockTranslations } from "./clock";
 import { shiftTranslations } from "./shift";
+import { overtimeTranslations } from "./overtime";
 import { todosTranslations } from "./todos";
 import { paymentsTranslations } from "./payments";
 import { bankTranslations } from "./bank";
@@ -42,6 +43,9 @@ if (!i18n.isInitialized) {
 // Keep translations fresh after hot reloads (init runs only once per page).
 for (const [lng, data] of Object.entries({ de, en, tr })) {
   i18n.addResourceBundle(lng, "translation", data, true, true);
+}
+for (const lng of SUPPORTED_LANGS) {
+  i18n.addResourceBundle(lng, "translation", { shift: shiftTranslations[lng], overtime: overtimeTranslations[lng] }, true, true);
 }
 
 export default i18n;
