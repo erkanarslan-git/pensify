@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { BedDouble, CalendarCheck, Globe, Pause, Play, ShieldCheck, Smile, Sparkles } from "lucide-react";
 
@@ -17,6 +18,7 @@ const ROW_Y = [30, 90, 150, 210, 270, 330];
 const HUB = { x: 300, y: 180 };
 
 export function LoginFlow({ c }: { c: Copy }) {
+  const { t } = useTranslation();
   const [paused, setPaused] = useState(false);
   const [active, setActive] = useState(0);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -121,7 +123,7 @@ export function LoginFlow({ c }: { c: Copy }) {
 
       <div className="mt-4 flex max-w-[600px] items-center justify-between">
         <span className="text-[11px] opacity-60">{c.caption}</span>
-        <button onClick={() => setPaused((p) => !p)} aria-label={paused ? "Play" : "Pause"}
+        <button onClick={() => setPaused((p) => !p)} aria-label={paused ? t("legacyUi.play") : t("legacyUi.pause")}
           className="grid h-9 w-9 place-items-center rounded-full border border-[oklch(0.85_0.06_250/0.3)] hover:bg-[oklch(1_0_0/0.08)]">
           {paused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
         </button>

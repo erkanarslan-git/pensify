@@ -300,7 +300,7 @@ export function NewReservationDialog({
                 </div>
                 <div className="col-span-full space-y-2">
                   <Label htmlFor="companyAddress" className="text-xs text-muted-foreground uppercase tracking-wider">{t("newRes.billingAddress")}</Label>
-                  <Input id="companyAddress" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} maxLength={300} placeholder="Straße, PLZ, Ort" className="bg-card" />
+                  <Input id="companyAddress" value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} maxLength={300} placeholder={t("legacyUi.addressPlaceholder")} className="bg-card" />
                 </div>
               </>
             )}

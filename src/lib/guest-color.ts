@@ -8,8 +8,8 @@ export function guestColor(name: string) {
   }
   const hue = Math.abs(h) % 360;
   return {
-    bg: `hsl(${hue} 65% 90%)`,
-    fg: `hsl(${hue} 55% 22%)`,
+    bg: `hsl(${hue} 65% var(--guest-surface-lightness))`,
+    fg: `hsl(${hue} 55% var(--guest-ink-lightness))`,
     accent: `hsl(${hue} 60% 50%)`,
   };
 }

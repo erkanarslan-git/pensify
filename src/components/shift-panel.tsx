@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -16,7 +17,7 @@ import { shiftNeedsWarning } from "@/lib/shift-warning";
 type Prop = { id: string; name: string; address?: string | null; latitude?: number | null; longitude?: number | null } | null;
 
 const fmt = (iso: string | Date) =>
-  new Date(iso).toLocaleTimeString("de-DE", { timeZone: BUSINESS_TIME_ZONE, hour: "2-digit", minute: "2-digit" });
+  new Date(iso).toLocaleTimeString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, hour: "2-digit", minute: "2-digit" });
 
 export const myShiftKey = ["my-shift"] as const;
 

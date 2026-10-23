@@ -1,3 +1,5 @@
+import { legacyText } from "@/i18n/legacy-text";
+import { displayLocale } from "@/i18n/legacy-ui";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { Fragment as FragmentRow } from "react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -15,7 +17,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { ALL_ROLES, ROLE_LABEL, PERMISSIONS, type AppRole } from "@/lib/permissions";
+import { ALL_ROLES, PERMISSIONS, type AppRole } from "@/lib/permissions";
 import { adminCreateUser, adminDeleteUser, adminSetUserBanned, adminResetUserPassword } from "@/lib/admin-users.functions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -91,14 +93,14 @@ function TeamPage() {
       const { error } = await supabase.rpc("admin_set_role", { _user_id: userId, _role: role });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); qc.invalidateQueries({ queryKey: ["cleaners"] }); qc.invalidateQueries({ queryKey: ["my-permissions"] }); setAdding(null); toast.success("Rolle vergeben"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); qc.invalidateQueries({ queryKey: ["cleaners"] }); qc.invalidateQueries({ queryKey: ["my-permissions"] }); setAdding(null); toast.success(legacyText('Rolle vergeben')); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const setRolePerm = useMutation({
     mutationFn: async ({ role, permission, allowed }: { role: AppRole; permission: string; allowed: boolean }) => {
       const { data: orgId } = await supabase.rpc("active_organization_id");
-      if (!orgId) throw new Error("Keine eindeutige Organisation");
+      if (!orgId) throw new Error(legacyText('Keine eindeutige Organisation'));
       const { error } = await (supabase as any).from("role_permissions").upsert({ organization_id: orgId, role, permission, allowed, updated_at: new Date().toISOString() }, { onConflict: "organization_id,role,permission" });
       if (error) throw error;
     },
@@ -114,24 +116,24 @@ function TeamPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["access-requests"] });
       qc.invalidateQueries({ queryKey: ["admin-users"] });
-      toast.success("Erledigt");
+      toast.success(legacyText('Erledigt'));
     },
     onError: (e: any) => toast.error(e.message),
   });
 
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => { await deleteFn({ data: { userId } }); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success("Benutzer gelöscht"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(legacyText('Benutzer gelöscht')); },
     onError: (e: any) => toast.error(e.message),
   });
   const banUser = useMutation({
     mutationFn: async ({ userId, banned }: { userId: string; banned: boolean }) => { await banFn({ data: { userId, banned } }); },
-    onSuccess: (_d, v) => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(v.banned ? "Benutzer gesperrt" : "Benutzer aktiviert"); },
+    onSuccess: (_d, v) => { qc.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(v.banned ? legacyText('Benutzer gesperrt') : legacyText('Benutzer aktiviert')); },
     onError: (e: any) => toast.error(e.message),
   });
   const resetPw = useMutation({
     mutationFn: async ({ userId, password }: { userId: string; password: string }) => { await resetPwFn({ data: { userId, password } }); },
-    onSuccess: () => toast.success("Passwort zurückgesetzt"),
+    onSuccess: () => toast.success(legacyText('Passwort zurückgesetzt')),
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -191,16 +193,16 @@ function TeamPage() {
   const selected = (users.data ?? []).find((u: any) => u.user_id === selectedId) ?? null;
 
   return (
-    <AppShell title="Team & Rollen" subtitle="Zuständigkeiten klar verteilen">
+    <AppShell title={legacyText('Team & Rollen')} subtitle={legacyText('Zuständigkeiten klar verteilen')}>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-        <StatCard highlight icon={<Users className="w-4 h-4" />} label="Benutzer" value={stats.users} />
-        <StatCard icon={<Inbox className="w-4 h-4" />} label="Offene Anfragen" value={stats.requests} />
-        <StatCard icon={<Lock className="w-4 h-4" />} label="Gesperrt" value={stats.banned} />
-        <StatCard icon={<UserX className="w-4 h-4" />} label="Ohne Rolle" value={stats.noRole} />
+        <StatCard highlight icon={<Users className="w-4 h-4" />} label={legacyText('Benutzer')} value={stats.users} />
+        <StatCard icon={<Inbox className="w-4 h-4" />} label={legacyText('Offene Anfragen')} value={stats.requests} />
+        <StatCard icon={<Lock className="w-4 h-4" />} label={legacyText('Gesperrt')} value={stats.banned} />
+        <StatCard icon={<UserX className="w-4 h-4" />} label={legacyText('Ohne Rolle')} value={stats.noRole} />
       </div>
 
       {pendingRequests.length > 0 && (
-        <Section title={`Offene Zugriffsanfragen (${pendingRequests.length})`}>
+        <Section title={t("legacyUi.pendingAccess", { count: pendingRequests.length })}>
           <div className="space-y-2">
             {pendingRequests.map((r: any) => {
               const user = (users.data ?? []).find((u: any) => u.user_id === r.user_id);
@@ -209,21 +211,19 @@ function TeamPage() {
                   <Inbox className="w-4 h-4 text-warning" />
                   <div className="flex-1 min-w-[200px]">
                     <div className="text-sm font-medium">{user?.full_name || "—"} <span className="text-muted-foreground font-normal">· {user?.email}</span></div>
-                    <div className="text-xs text-muted-foreground">Wunschrolle: {ROLE_LABEL[(r.requested_role ?? "manager") as AppRole]} · {new Date(r.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</div>
+                    <div className="text-xs text-muted-foreground">{legacyText("Wunschrolle")}: {t(`roles.${(r.requested_role ?? "manager") as AppRole}`)} · {new Date(r.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}</div>
                     {r.message && <div className="text-xs mt-1 italic">"{r.message}"</div>}
                   </div>
                   <Select defaultValue={r.requested_role ?? "manager"} onValueChange={(v) => (r._role = v)}>
                     <SelectTrigger className="h-8 w-36"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {ALL_ROLES.filter((x) => x !== "owner").map((x) => <SelectItem key={x} value={x}>{ROLE_LABEL[x]}</SelectItem>)}
+                      {ALL_ROLES.filter((x) => x !== "owner").map((x) => <SelectItem key={x} value={x}>{t(`roles.${x}`)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <Button size="sm" onClick={() => resolveRequest.mutate({ id: r.id, role: (r._role ?? r.requested_role ?? "manager") as AppRole, approve: true })}>
-                    <CheckCircle2 className="w-4 h-4 mr-1" /> Freigeben
-                  </Button>
+                    <CheckCircle2 className="w-4 h-4 mr-1" />{legacyText('Freigeben')}</Button>
                   <Button size="sm" variant="outline" onClick={() => resolveRequest.mutate({ id: r.id, role: "manager", approve: false })}>
-                    <XCircle className="w-4 h-4 mr-1" /> Ablehnen
-                  </Button>
+                    <XCircle className="w-4 h-4 mr-1" />{legacyText('Ablehnen')}</Button>
                 </div>
               );
             })}
@@ -234,7 +234,7 @@ function TeamPage() {
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 pt-3 border-b border-border">
           <div className="flex gap-5">
-            {([["team", "Team"], ["roles", "Rollen & Rechte"]] as const).map(([k, l]) => (
+            {([["team", legacyText('Team')], ["roles", legacyText('Rollen & Rechte')]] as const).map(([k, l]) => (
               <button key={k} onClick={() => setTab(k)}
                 className={`pb-3 text-sm font-medium border-b-2 -mb-px transition-colors ${tab === k ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 {l}
@@ -243,8 +243,7 @@ function TeamPage() {
           </div>
           {tab === "team" && (
             <Button size="sm" className="mb-2" onClick={() => setCreateOpen(true)}>
-              <UserPlus className="w-3.5 h-3.5 mr-1" /> Mitarbeitende hinzufügen
-            </Button>
+              <UserPlus className="w-3.5 h-3.5 mr-1" />{legacyText('Mitarbeitende hinzufügen')}</Button>
           )}
         </div>
 
@@ -254,20 +253,20 @@ function TeamPage() {
               <Select value={locFilter} onValueChange={setLocFilter}>
                 <SelectTrigger className="rounded-xl"><Building2 className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle Standorte</SelectItem>
+                  <SelectItem value="all">{legacyText('Alle Standorte')}</SelectItem>
                   {propsQ.data?.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="rounded-xl"><Shield className="w-4 h-4 mr-1 text-muted-foreground" /><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle Rollen</SelectItem>
-                  {ALL_ROLES.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+                  <SelectItem value="all">{legacyText('Alle Rollen')}</SelectItem>
+                  {ALL_ROLES.map((r) => <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>)}
                 </SelectContent>
               </Select>
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name suchen…"
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={legacyText('Name suchen…')}
                   className="w-full h-10 pl-9 pr-3 rounded-xl border border-input bg-card text-sm" />
               </div>
             </div>
@@ -275,10 +274,10 @@ function TeamPage() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 text-xs text-muted-foreground">
                   <tr>
-                    <th className="text-left px-4 py-2.5 font-medium">Mitarbeitende</th>
-                    <th className="text-left px-4 py-2.5 font-medium">Rolle</th>
-                    <th className="text-left px-4 py-2.5 font-medium">Standorte</th>
-                    <th className="text-left px-4 py-2.5 font-medium">Status</th>
+                    <th className="text-left px-4 py-2.5 font-medium">{legacyText('Mitarbeitende')}</th>
+                    <th className="text-left px-4 py-2.5 font-medium">{legacyText('Rolle')}</th>
+                    <th className="text-left px-4 py-2.5 font-medium">{legacyText('Standorte')}</th>
+                    <th className="text-left px-4 py-2.5 font-medium">{legacyText('Status')}</th>
                     <th className="w-10" />
                   </tr>
                 </thead>
@@ -301,15 +300,15 @@ function TeamPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1">
-                            {(u.roles ?? []).length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
-                            {(u.roles as AppRole[]).map((r) => <Badge key={r} tone={ROLE_TONE[r]}>{ROLE_LABEL[r]}</Badge>)}
+                            {(u.roles ?? []).length === 0 && <span className="text-xs text-muted-foreground">{legacyText('Keine Rolle')}</span>}
+                            {(u.roles as AppRole[]).map((r) => <Badge key={r} tone={ROLE_TONE[r]}>{t(`roles.${r}`)}</Badge>)}
                           </div>
                         </td>
                         <td className="px-4 py-3">
                           {hasAllAccess(u.roles ?? []) ? (
-                            <span className="rounded-md bg-muted px-2 py-0.5 text-xs">Alle Standorte</span>
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-xs">{legacyText('Alle Standorte')}</span>
                           ) : locs.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">Nicht zugewiesen</span>
+                            <span className="text-xs text-muted-foreground">{legacyText('Nicht zugewiesen')}</span>
                           ) : (
                             <div className="flex items-center gap-1">
                               <span className="rounded-md bg-muted px-2 py-0.5 text-xs truncate max-w-[160px]">{propName(locs[0])}</span>
@@ -318,39 +317,39 @@ function TeamPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          {isBanned ? <Badge tone="destructive">Gesperrt</Badge> : <Badge tone="success">Aktiv</Badge>}
+                          {isBanned ? <Badge tone="destructive">{legacyText('Gesperrt')}</Badge> : <Badge tone="success">{legacyText('Aktiv')}</Badge>}
                         </td>
                         <td className="px-2 text-muted-foreground"><ChevronRight className="w-4 h-4" /></td>
                       </tr>
                     );
                   })}
                   {filtered.length === 0 && (
-                    <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">Keine Mitarbeitenden gefunden.</td></tr>
+                    <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">{legacyText('Keine Mitarbeitenden gefunden.')}</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
-            <div className="px-4 py-3 text-xs text-muted-foreground border-t border-border">{filtered.length} von {users.data?.length ?? 0} Mitarbeitenden · Zeile anklicken für Details</div>
+            <div className="px-4 py-3 text-xs text-muted-foreground border-t border-border">{t("legacyUi.staffCount", { shown: filtered.length, total: users.data?.length ?? 0 })}</div>
           </>
         ) : (
           <div className="overflow-x-auto">
-            <div className="px-4 py-2 text-xs text-muted-foreground">Klicke auf eine Zelle, um die Berechtigung umzuschalten.</div>
+            <div className="px-4 py-2 text-xs text-muted-foreground"></div>
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
-                  <th className="text-left p-3">Berechtigung</th>
-                  {ALL_ROLES.map((r) => <th key={r} className="p-3 text-center">{ROLE_LABEL[r]}</th>)}
+                  <th className="text-left p-3">{legacyText('Berechtigung')}</th>
+                  {ALL_ROLES.map((r) => <th key={r} className="p-3 text-center">{t(`roles.${r}`)}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {groups.map((g) => (
                   <FragmentRow key={`g-${g}`}>
                     <tr className="bg-muted/20">
-                      <td colSpan={ALL_ROLES.length + 1} className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase">{g}</td>
+                      <td colSpan={ALL_ROLES.length + 1} className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase">{legacyText(g)}</td>
                     </tr>
                     {PERMISSIONS.filter((p) => p.group === g).map((p) => (
                       <tr key={p.key} className="border-t border-border">
-                        <td className="p-3">{t(`payments.permissions.${p.key}`, { defaultValue: p.label })}</td>
+                        <td className="p-3">{t(`payments.permissions.${p.key}`, { defaultValue: legacyText(p.label) })}</td>
                         {ALL_ROLES.map((r) => {
                           const on = rolePerm(r, p.key);
                           const isOwner = r === "owner";
@@ -359,7 +358,7 @@ function TeamPage() {
                               <button disabled={isOwner}
                                 onClick={() => setRolePerm.mutate({ role: r, permission: p.key, allowed: !on })}
                                 className={`w-7 h-7 rounded-md border transition-colors ${on ? "bg-success/15 border-success/40 text-success" : "bg-muted/40 border-border text-muted-foreground/50"} ${isOwner ? "opacity-60 cursor-not-allowed" : "hover:opacity-80"}`}
-                                title={isOwner ? "Inhaber hat immer alle Rechte" : on ? "Erlaubt" : "Verweigert"}>
+                                title={isOwner ? legacyText('Inhaber hat immer alle Rechte') : on ? legacyText('Erlaubt') : legacyText('Verweigert')}>
                                 {on ? "✓" : "—"}
                               </button>
                             </td>
@@ -392,18 +391,18 @@ function TeamPage() {
                     <Initials name={u.full_name || u.email} big />
                     <div className="min-w-0">
                       <SheetTitle className="truncate">{u.full_name || "—"}</SheetTitle>
-                      <div className="mt-1">{isBanned ? <Badge tone="destructive">Gesperrt</Badge> : <Badge tone="success">Aktiv</Badge>}</div>
+                      <div className="mt-1">{isBanned ? <Badge tone="destructive">{legacyText('Gesperrt')}</Badge> : <Badge tone="success">{legacyText('Aktiv')}</Badge>}</div>
                       <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 truncate"><Mail className="w-3 h-3" /> {u.email}</div>
                     </div>
                   </div>
                 </SheetHeader>
 
-                <PanelSection title="Rollen">
+                <PanelSection title={legacyText('Rollen')}>
                   <div className="flex flex-wrap gap-1.5">
-                    {u.roles.length === 0 && <span className="text-xs text-muted-foreground">Keine Rolle</span>}
+                    {u.roles.length === 0 && <span className="text-xs text-muted-foreground">{legacyText('Keine Rolle')}</span>}
                     {(u.roles as AppRole[]).map((r) => (
                       <span key={r} className="inline-flex items-center gap-1 rounded-full border border-border pl-2 pr-1 py-0.5 text-xs">
-                        <Shield className="w-3 h-3" /> {ROLE_LABEL[r]}
+                        <Shield className="w-3 h-3" /> {t(`roles.${r}`)}
                         <Lock className="h-3 w-3 text-muted-foreground" />
                       </span>
                     ))}
@@ -412,7 +411,7 @@ function TeamPage() {
                     <div className="flex gap-2 mt-2">
                       <Select value={adding?.userId === u.user_id ? adding.role : missing[0]} onValueChange={(v) => setAdding({ userId: u.user_id, role: v as AppRole })}>
                         <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
-                        <SelectContent>{missing.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}</SelectContent>
+                        <SelectContent>{missing.map((r) => <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>)}</SelectContent>
                       </Select>
                       <Button size="sm" variant="outline" onClick={() => addRole.mutate({ userId: u.user_id, role: adding?.userId === u.user_id ? adding.role : missing[0] })}>
                         <Shield className="w-3 h-3 mr-1" /> {t("teamSafety.changeRole")}
@@ -425,11 +424,11 @@ function TeamPage() {
 
                 <MemberDepartments userId={u.user_id} />
 
-                <PanelSection title="Zugewiesene Standorte" action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
+                <PanelSection title={legacyText('Zugewiesene Standorte')} action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
                   {hasAllAccess(u.roles) ? (
-                    <div className="text-sm text-muted-foreground">Alle Standorte (Inhaber/Admin)</div>
+                    <div className="text-sm text-muted-foreground">{legacyText('Alle Standorte (Inhaber/Admin)')}</div>
                   ) : locs.length === 0 ? (
-                    <div className="text-sm text-muted-foreground">Noch kein Standort zugewiesen.</div>
+                    <div className="text-sm text-muted-foreground">{legacyText('Noch kein Standort zugewiesen.')}</div>
                   ) : (
                     <div className="space-y-1.5">
                       {locs.map((id) => (
@@ -445,25 +444,24 @@ function TeamPage() {
                 <EmployeeAttendance userId={u.user_id} />
                 <UserActivity userId={u.user_id} />
 
-                <PanelSection title="Zugang & Sicherheit">
+                <PanelSection title={legacyText('Zugang & Sicherheit')}>
                   <div className="flex flex-wrap gap-2">
                     <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
                     <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
                     <Button size="sm" variant="outline" disabled={isSelf || banUser.isPending}
                       onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
-                      {isBanned ? <><Unlock className="w-3.5 h-3.5 mr-1" /> Freigeben</> : <><Lock className="w-3.5 h-3.5 mr-1" /> Sperren</>}
+                      {isBanned ? <><Unlock className="w-3.5 h-3.5 mr-1" />{legacyText('Freigeben')}</> : <><Lock className="w-3.5 h-3.5 mr-1" />{legacyText('Sperren')}</>}
                     </Button>
                     <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
                       disabled={isSelf || (!iAmOwner && (u.roles.includes("admin") || u.roles.includes("owner")))}
                       onClick={() => setDeleteTarget(u)}>
-                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Löschen
-                    </Button>
+                      <Trash2 className="w-3.5 h-3.5 mr-1" />{legacyText('Löschen')}</Button>
                   </div>
-                  {isSelf && <div className="text-xs text-muted-foreground mt-2">Eigenes Konto kann nicht gesperrt oder gelöscht werden.</div>}
+                  {isSelf && <div className="text-xs text-muted-foreground mt-2">{legacyText('Eigenes Konto kann nicht gesperrt oder gelöscht werden.')}</div>}
                   {(u.roles.includes("admin") || u.roles.includes("owner")) && !isSelf && (
                     <div className="mt-3 flex gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs">
                       <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
-                      <span>Administratoren und Inhaber kann nur der <b>Inhaber</b> löschen.{!iAmOwner && " Du hast dafür keine Berechtigung."}</span>
+                      <span>{t("legacyUi.ownerDelete")}{!iAmOwner && <> {legacyText("Du hast dafür keine Berechtigung.")}</>}</span>
                     </div>
                   )}
                 </PanelSection>
@@ -486,7 +484,7 @@ function TeamPage() {
           await createFn({ data: payload });
           qc.invalidateQueries({ queryKey: ["admin-users"] });
           qc.invalidateQueries({ queryKey: ["cleaners"] });
-          toast.success("Benutzer angelegt");
+          toast.success(legacyText('Benutzer angelegt'));
           setCreateOpen(false);
         }}
       />
@@ -504,24 +502,24 @@ function DeleteUserDialog({ user, onClose, onConfirm }: { user: any | null; onCl
   return (
     <Dialog open={!!user} onOpenChange={(o) => { if (!o) { setTyped(""); setFinalStep(false); onClose(); } }}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Benutzer endgültig löschen</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{legacyText('Benutzer endgültig löschen')}</DialogTitle></DialogHeader>
         <div className="space-y-3 text-sm">
-          <p>Das Konto von <b>{name}</b> wird dauerhaft gelöscht und kann nicht wiederhergestellt werden. Für eine vorübergehende Sperre nutze lieber „Sperren“.</p>
+          <p>{t("legacyUi.deleteAccount", { name })}</p>
           {isPrivileged && (
             <div className="flex gap-2 rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs">
               <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
-              <span>Diese Person ist Administrator/Inhaber. Nur der Inhaber darf sie löschen.</span>
+              <span>{legacyText('Diese Person ist Administrator/Inhaber. Nur der Inhaber darf sie löschen.')}</span>
             </div>
           )}
           {finalStep && <p className="border border-destructive/40 bg-destructive/10 p-3 font-medium text-destructive">{t("teamSafety.confirmAgain")}</p>}
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Zur Bestätigung den Namen eingeben: <b className="text-foreground">{name}</b></span>
+            <span className="text-xs text-muted-foreground">{t("legacyUi.confirmName", { name })}</span>
             <input autoFocus value={typed} onChange={(e) => setTyped(e.target.value)}
               className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => { setTyped(""); setFinalStep(false); onClose(); }}>Abbrechen</Button>
+          <Button variant="outline" onClick={() => { setTyped(""); setFinalStep(false); onClose(); }}>{legacyText('Abbrechen')}</Button>
           <Button variant="destructive" disabled={!ok} onClick={() => { if (!finalStep) { setFinalStep(true); setTyped(""); return; } setTyped(""); setFinalStep(false); onConfirm(user.user_id); }}>
             <Trash2 className="w-3.5 h-3.5 mr-1" /> {finalStep ? t("common.delete") : t("teamSafety.continue")}
           </Button>
@@ -548,7 +546,8 @@ function PanelSection({ title, action, children }: { title: string; action?: Rea
   );
 }
 
-function UserWorkHours({ userId }: { userId: string }) {
+function UserWorkHours({ userId }: { userId: string }) {  const { t } = useTranslation();
+
   const q = useQuery({
     queryKey: ["team-user-hours", userId],
     queryFn: async () => {
@@ -564,18 +563,18 @@ function UserWorkHours({ userId }: { userId: string }) {
   });
   const mins = (e: any) => e.clock_out_at ? Math.max(0, (new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000 - (e.break_minutes ?? 0)) : 0;
   const total = (q.data ?? []).reduce((s: number, e: any) => s + mins(e), 0);
-  const fmt = (d: string) => new Date(d).toLocaleString("de-DE", { timeZone: "Europe/Berlin", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const fmt = (d: string) => new Date(d).toLocaleString(displayLocale(), { timeZone: "Europe/Berlin", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
   return (
-    <PanelSection title="Arbeitszeiten (14 Tage)" action={q.data ? <span className="text-xs font-semibold text-primary">{(total / 60).toFixed(1)} Std.</span> : undefined}>
-      {q.isLoading ? <div className="text-sm text-muted-foreground">Lädt…</div>
-        : q.data === null ? <div className="text-sm text-muted-foreground">Keine Zeiterfassung für dieses Konto.</div>
-        : q.data!.length === 0 ? <div className="text-sm text-muted-foreground">Keine Einträge in den letzten 14 Tagen.</div>
+    <PanelSection title={legacyText('Arbeitszeiten (14 Tage)')} action={q.data ? <span className="text-xs font-semibold text-primary">{(total / 60).toLocaleString(displayLocale(), { maximumFractionDigits: 1 })} {legacyText("Std.")}</span> : undefined}>
+      {q.isLoading ? <div className="text-sm text-muted-foreground">{legacyText('Lädt…')}</div>
+        : q.data === null ? <div className="text-sm text-muted-foreground">{legacyText('Keine Zeiterfassung für dieses Konto.')}</div>
+        : (q.data ?? []).length === 0 ? <div className="text-sm text-muted-foreground">{legacyText('Keine Einträge in den letzten 14 Tagen.')}</div>
         : (
           <div className="space-y-1">
-            {q.data!.map((e: any) => (
+            {(q.data ?? []).map((e: any) => (
               <div key={e.id} className="flex items-center justify-between gap-2 text-sm rounded-lg px-2 py-1.5 hover:bg-accent/40">
                 <div className="flex items-center gap-2 min-w-0"><Clock className="w-3.5 h-3.5 text-primary shrink-0" /><span className="truncate">{fmt(e.clock_in_at)} · {e.properties?.name ?? "—"}</span></div>
-                <span className="tabular-nums text-xs text-muted-foreground shrink-0">{e.clock_out_at ? `${(mins(e) / 60).toFixed(1)} Std.` : "läuft"}</span>
+                <span className="tabular-nums text-xs text-muted-foreground shrink-0">{e.clock_out_at ? `${(mins(e) / 60).toLocaleString(displayLocale(), { maximumFractionDigits: 1 })} ${legacyText("Std.")}` : legacyText('läuft')}</span>
               </div>
             ))}
           </div>
@@ -584,7 +583,8 @@ function UserWorkHours({ userId }: { userId: string }) {
   );
 }
 
-function UserActivity({ userId }: { userId: string }) {
+function UserActivity({ userId }: { userId: string }) {  const { t } = useTranslation();
+
   const q = useQuery({
     queryKey: ["team-user-activity", userId],
     queryFn: async () => {
@@ -595,15 +595,15 @@ function UserActivity({ userId }: { userId: string }) {
     },
   });
   return (
-    <PanelSection title="Letzte Aktivitäten">
-      {q.isLoading ? <div className="text-sm text-muted-foreground">Lädt…</div>
-        : (q.data ?? []).length === 0 ? <div className="text-sm text-muted-foreground">Keine Aktivitäten protokolliert.</div>
+    <PanelSection title={legacyText('Letzte Aktivitäten')}>
+      {q.isLoading ? <div className="text-sm text-muted-foreground">{legacyText('Lädt…')}</div>
+        : (q.data ?? []).length === 0 ? <div className="text-sm text-muted-foreground">{legacyText('Keine Aktivitäten protokolliert.')}</div>
         : (
           <div className="space-y-1">
             {q.data.map((l: any) => (
               <div key={l.id} className="flex items-center justify-between gap-2 text-sm px-2 py-1.5">
                 <div className="flex items-center gap-2 min-w-0"><History className="w-3.5 h-3.5 text-primary shrink-0" /><span className="truncate">{l.entity} · {l.action}</span></div>
-                <span className="text-xs text-muted-foreground shrink-0">{new Date(l.created_at).toLocaleString("de-DE", { timeZone: "Europe/Berlin", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                <span className="text-xs text-muted-foreground shrink-0">{new Date(l.created_at).toLocaleString(displayLocale(), { timeZone: "Europe/Berlin", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             ))}
           </div>
@@ -612,22 +612,23 @@ function UserActivity({ userId }: { userId: string }) {
   );
 }
 
-function ResetPasswordButton({ onSubmit }: { onSubmit: (pw: string) => void }) {
+function ResetPasswordButton({ onSubmit }: { onSubmit: (pw: string) => void }) {  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const [pw, setPw] = useState("");
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" title="Passwort zurücksetzen"><KeyRound className="w-3.5 h-3.5 mr-1" /> Passwort</Button>
+        <Button size="sm" variant="outline" title={legacyText('Passwort zurücksetzen')}><KeyRound className="w-3.5 h-3.5 mr-1" />{legacyText('Passwort')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
-        <DialogHeader><DialogTitle>Neues Passwort setzen</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{legacyText('Neues Passwort setzen')}</DialogTitle></DialogHeader>
         <input type="text" value={pw} onChange={(e) => setPw(e.target.value)}
-          placeholder="Mind. 8 Zeichen"
+          placeholder={legacyText('Mind. 8 Zeichen')}
           className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button disabled={pw.length < 8} onClick={() => { onSubmit(pw); setOpen(false); setPw(""); }}>Speichern</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>{legacyText('Abbrechen')}</Button>
+          <Button disabled={pw.length < 8} onClick={() => { onSubmit(pw); setOpen(false); setPw(""); }}>{legacyText('Speichern')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -639,6 +640,7 @@ function CreateUserDialog({ open, onOpenChange, onCreate }: {
   onOpenChange: (v: boolean) => void;
   onCreate: (p: { email: string; password: string; full_name?: string; role?: AppRole }) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -658,36 +660,36 @@ function CreateUserDialog({ open, onOpenChange, onCreate }: {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Neuen Benutzer anlegen</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{legacyText('Neuen Benutzer anlegen')}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Voller Name</span>
+            <span className="text-xs text-muted-foreground">{legacyText('Voller Name')}</span>
             <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </label>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">E-Mail *</span>
+            <span className="text-xs text-muted-foreground">{legacyText('E-Mail *')}</span>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </label>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Passwort * (mind. 8 Zeichen)</span>
+            <span className="text-xs text-muted-foreground">{legacyText('Passwort * (mind. 8 Zeichen)')}</span>
             <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </label>
           <label className="grid gap-1">
-            <span className="text-xs text-muted-foreground">Startrolle</span>
+            <span className="text-xs text-muted-foreground">{legacyText('Startrolle')}</span>
             <Select value={role} onValueChange={(v) => setRole(v as any)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Keine Rolle</SelectItem>
+                <SelectItem value="none">{legacyText('Keine Rolle')}</SelectItem>
                 {ALL_ROLES.filter((r) => r !== "owner").map((r) => (
-                  <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+                  <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
-          <Button disabled={busy || !email || password.length < 8} onClick={submit}>Anlegen</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{legacyText('Abbrechen')}</Button>
+          <Button disabled={busy || !email || password.length < 8} onClick={submit}>{legacyText('Anlegen')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -710,7 +712,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
 
   async function set(permission: string, allowed: boolean | null) {
     const { data: orgId } = await supabase.rpc("active_organization_id");
-    if (!orgId) throw new Error("Keine eindeutige Organisation");
+    if (!orgId) throw new Error(legacyText('Keine eindeutige Organisation'));
     if (allowed === null) {
       await supabase.from("user_permissions").delete().eq("organization_id", orgId).eq("user_id", userId).eq("permission", permission);
     } else {
@@ -722,11 +724,11 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline"><Shield className="w-3.5 h-3.5 mr-1" /> Rechte</Button>
+        <Button size="sm" variant="outline"><Shield className="w-3.5 h-3.5 mr-1" />{legacyText('Rechte')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Individuelle Berechtigungen — {userName}</DialogTitle>
+          <DialogTitle>{t("legacyUi.individualPermissions", { name: userName })}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-1">
           {PERMISSIONS.map((p) => {
@@ -735,13 +737,13 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
             return (
               <div key={p.key} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border">
                 <div className="min-w-0">
-                  <div className="text-sm">{t(`payments.permissions.${p.key}`, { defaultValue: p.label })}</div>
-                  <div className="text-xs text-muted-foreground">{p.group} · Standard aus Rolle: {effective(p.key) ? "Erlaubt" : "Verweigert"}</div>
+                  <div className="text-sm">{t(`payments.permissions.${p.key}`, { defaultValue: legacyText(p.label) })}</div>
+                  <div className="text-xs text-muted-foreground">{legacyText(p.group)} · {t("legacyUi.roleDefault", { state: legacyText(effective(p.key) ? "Erlaubt" : "Verweigert") })}</div>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => set(p.key, true)} className={`px-2 py-1 rounded text-xs border ${ov === true ? "bg-success/15 border-success/40 text-success" : "border-border"}`}>Erlauben</button>
-                  <button onClick={() => set(p.key, false)} className={`px-2 py-1 rounded text-xs border ${ov === false ? "bg-destructive/15 border-destructive/40 text-destructive" : "border-border"}`}>Verweigern</button>
-                  <button onClick={() => set(p.key, null)} className={`px-2 py-1 rounded text-xs border ${ov === null ? "bg-muted" : "border-border"}`}>Standard</button>
+                  <button onClick={() => set(p.key, true)} className={`px-2 py-1 rounded text-xs border ${ov === true ? "bg-success/15 border-success/40 text-success" : "border-border"}`}>{legacyText('Erlauben')}</button>
+                  <button onClick={() => set(p.key, false)} className={`px-2 py-1 rounded text-xs border ${ov === false ? "bg-destructive/15 border-destructive/40 text-destructive" : "border-border"}`}>{legacyText('Verweigern')}</button>
+                  <button onClick={() => set(p.key, null)} className={`px-2 py-1 rounded text-xs border ${ov === null ? "bg-muted" : "border-border"}`}>{legacyText('Standard')}</button>
                 </div>
               </div>
             );
@@ -752,7 +754,8 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   );
 }
 
-function PropertyAccessDialog({ userId, userName }: { userId: string; userName: string }) {
+function PropertyAccessDialog({ userId, userName }: { userId: string; userName: string }) {  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState<Set<string> | null>(null);
   const qc = useQueryClient();
@@ -779,20 +782,20 @@ function PropertyAccessDialog({ userId, userName }: { userId: string; userName: 
       const { error } = await (supabase as any).rpc("admin_set_member_properties", { _user_id: userId, _property_ids: Array.from(sel ?? []) });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["member-props", userId] }); qc.invalidateQueries({ queryKey: ["member-props-all"] }); toast.success("Zuweisung gespeichert"); setOpen(false); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["member-props", userId] }); qc.invalidateQueries({ queryKey: ["member-props-all"] }); toast.success(legacyText('Zuweisung gespeichert')); setOpen(false); },
     onError: (e: any) => toast.error(e.message),
   });
   const toggle = (id: string) => setSel((s) => { const n = new Set(s ?? []); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost" title="Standorte zuweisen">Bearbeiten</Button>
+        <Button size="sm" variant="ghost" title={legacyText('Standorte zuweisen')}>{legacyText('Bearbeiten')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Häuser für {userName}</DialogTitle></DialogHeader>
-        <p className="text-xs text-muted-foreground">Rezeption und Objektleitung sehen nur die hier ausgewählten Häuser. Reinigungskräfte sehen zusätzlich Häuser mit zugewiesenen Aufgaben.</p>
+        <DialogHeader><DialogTitle>{t("legacyUi.userLocations", { name: userName })}</DialogTitle></DialogHeader>
+        <p className="text-xs text-muted-foreground">{legacyText('Rezeption und Objektleitung sehen nur die hier ausgewählten Häuser. Reinigungskräfte sehen zusätzlich Häuser mit zugewiesenen Aufgaben.')}</p>
         <div className="max-h-[50vh] overflow-y-auto space-y-1">
-          {(props.isLoading || current.isLoading) && <div className="text-sm text-muted-foreground">Lädt…</div>}
+          {(props.isLoading || current.isLoading) && <div className="text-sm text-muted-foreground">{legacyText('Lädt…')}</div>}
           {props.data?.map((p: any) => (
             <label key={p.id} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
               <input type="checkbox" checked={sel?.has(p.id) ?? false} onChange={() => toggle(p.id)} />
@@ -801,8 +804,8 @@ function PropertyAccessDialog({ userId, userName }: { userId: string; userName: 
           ))}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button disabled={save.isPending || !sel} onClick={() => save.mutate()}>Speichern</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>{legacyText('Abbrechen')}</Button>
+          <Button disabled={save.isPending || !sel} onClick={() => save.mutate()}>{legacyText('Speichern')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

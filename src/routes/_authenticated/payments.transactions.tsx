@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,7 +20,7 @@ type State = "review" | "matched" | "unmatched" | "excluded";
 interface Tx { id: string; booking_status: string; booking_date: string | null; amount: number; currency: string; remittance: string | null; counterparty_name: string | null; counterparty_iban: string | null; match_state: State; review_reason: string | null; matched_automatically: boolean; exclude_reason: string | null; is_sample: boolean }
 interface Open { id: string; reservation_id: string; payment_reference: string; due_date: string; remaining: number; kind: string; guest: string; ibans: string[] }
 interface ManualPay { id: string; reservation_id: string; amount: number; paid_on: string }
-const eur = (n: number, c = "EUR") => n.toLocaleString("de-DE", { style: "currency", currency: c });
+const eur = (n: number, c = "EUR") => n.toLocaleString(displayLocale(), { style: "currency", currency: c });
 
 function BankTransactionsPage() {
   const { t } = useTranslation();
@@ -192,7 +193,7 @@ function MatchDialog({ tx, open, manual, guests, onClose, onDone }: { tx: Tx; op
           <div key={o.id} className={`grid grid-cols-[minmax(0,1fr)_7rem] gap-2 items-center rounded-lg border p-2 ${isSuggested(o) ? "border-primary bg-primary/5" : "border-border"}`}>
             <div className="min-w-0 text-sm">
               <div className="truncate font-medium">{o.guest} {isSuggested(o) && <span className="text-xs text-primary">· {t("bank.suggested")}</span>}</div>
-              <div className="text-xs text-muted-foreground">{formatDateDE(o.due_date)} · <span className="font-mono">{o.payment_reference}</span> · {eur(o.remaining)}{o.kind === "deposit" ? " · Kaution" : ""}</div>
+              <div className="text-xs text-muted-foreground">{formatDateDE(o.due_date)} · <span className="font-mono">{o.payment_reference}</span> · {eur(o.remaining)}{o.kind === "deposit" ? " · " + t("paymentExtra.deposit") : ""}</div>
             </div>
             <input inputMode="decimal" placeholder="0,00" value={alloc[o.id] ?? ""} onChange={(e) => setAlloc({ ...alloc, [o.id]: e.target.value })}
               onFocus={() => { if (!alloc[o.id]) setAlloc({ ...alloc, [o.id]: String(Math.min(o.remaining, Math.max(rest, 0)).toFixed(2)) }); }}

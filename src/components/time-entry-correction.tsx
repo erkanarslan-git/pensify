@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -86,7 +87,7 @@ export function TimeEntryCorrectionDialog({
     onError: (e) => toast.error(t(clockErrorKey(e))),
   });
 
-  const fmt = (v: string | null) => (v ? new Date(v).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : "—");
+  const fmt = (v: string | null) => (v ? new Date(v).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE }) : "—");
 
   return (
     <Dialog open={!!entry} onOpenChange={(o) => !o && onClose()}>

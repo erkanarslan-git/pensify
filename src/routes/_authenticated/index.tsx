@@ -102,10 +102,10 @@ function Dashboard() {
       const end = new Date(d); end.setDate(end.getDate() + 1);
       const endIso = end.toISOString().slice(0, 10);
       const occ = (weekRes ?? []).filter((r: any) => r.check_in < endIso && r.check_out > iso).length;
-      arr.push({ day: d.toLocaleDateString(undefined, { weekday: "short" }), rate: totalRooms ? Math.round((occ / totalRooms) * 100) : 0 });
+      arr.push({ day: d.toLocaleDateString(i18n.language, { weekday: "short" }), rate: totalRooms ? Math.round((occ / totalRooms) * 100) : 0 });
     }
     return arr;
-  }, [weekRes, totalRooms]);
+  }, [weekRes, totalRooms, i18n.language]);
 
   const channelData = useMemo(() => Object.entries(
     (weekRes ?? []).reduce<Record<string, number>>((acc, r: any) => { acc[r.channel] = (acc[r.channel] ?? 0) + 1; return acc; }, {})
@@ -152,7 +152,7 @@ function Dashboard() {
               <Link key={s.label} to={s.to as any} search={s.search as any}
                 className={`group flex min-w-0 flex-col rounded-2xl p-4 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${s.tile}`}>
                 <span className="text-sm font-medium opacity-95">{s.label}</span>
-                <div className="mt-3 text-4xl font-semibold tabular-nums text-white">{s.value}</div>
+                <div className="mt-3 text-4xl font-semibold tabular-nums">{s.value}</div>
                 <div className="mt-2 truncate text-xs opacity-85">{s.hint}</div>
               </Link>
             ))}
@@ -162,7 +162,7 @@ function Dashboard() {
             className={`group rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${k.tile ?? "border border-border bg-card"}`}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{k.label}</span>
-              <span className={`grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition ${k.tile ? "border border-white/40 text-white group-hover:bg-white group-hover:text-foreground" : "border border-border group-hover:bg-primary group-hover:text-primary-foreground"}`}><ArrowUpRight className="h-4 w-4" /></span>
+              <span className={`grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition ${k.tile ? "border border-current/40 text-current group-hover:bg-card group-hover:text-card-foreground" : "border border-border group-hover:bg-primary group-hover:text-primary-foreground"}`}><ArrowUpRight className="h-4 w-4" /></span>
             </div>
             <div className={`mt-4 text-5xl font-semibold tabular-nums ${k.tile ? "text-white" : "text-foreground"}`}>{k.value}</div>
             <div className={`mt-2 text-sm ${k.tile ? "opacity-85" : "text-muted-foreground"}`}>{k.hint}</div>
@@ -259,7 +259,7 @@ function Dashboard() {
                 </div>
               ))}
               {upcoming.length === 0 && (
-                <div className="py-6 text-sm text-muted-foreground">Keine anstehenden Check-outs</div>
+                <div className="py-6 text-sm text-muted-foreground">{t("pages.notifications.noCheckouts")}</div>
               )}
             </div>
           </Section>

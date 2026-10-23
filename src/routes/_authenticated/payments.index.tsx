@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,7 +23,7 @@ interface Sched { kind: string; paid: number; id: string; reservation_id: string
 interface Pay { kind: string; reversed_at: string | null; id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null; source: string; bank_transaction_id: string | null }
 type Filter = "unpaid" | "overdue" | "all";
 
-const eur = (n: number) => n.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
+const eur = (n: number) => n.toLocaleString(displayLocale(), { style: "currency", currency: "EUR" });
 const stateCls: Record<InstallmentState, string> = {
   paid: "bg-success/15 text-success", partial: "bg-warning/15 text-warning", overdue: "bg-destructive/15 text-destructive", open: "bg-primary/10 text-primary",
 };

@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
@@ -261,11 +262,11 @@ function ReservationsPage() {
                             </div>
                           </div>
                         </div>
-                        <span className="md:hidden text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString("de-DE")}</span>
+                        <span className="md:hidden text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
                         <span className="hidden md:block text-muted-foreground tabular-nums">{r.room?.number ?? "—"}</span>
                         <span className="text-xs md:text-sm tabular-nums text-muted-foreground md:text-foreground">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
                         <span className="md:block text-right md:text-left"><Badge tone={st.tone}>{st.label}</Badge></span>
-                        <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString("de-DE")}</span>
+                        <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
                         <div className="col-span-2 md:col-span-1 flex justify-end gap-1.5 w-full md:w-[120px]">
                           <button
                             onClick={() => setEditId(r.id)}

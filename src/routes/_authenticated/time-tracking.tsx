@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { BUSINESS_TIME_ZONE, businessDayBounds, businessDate } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge, Kpi } from "@/components/app-shell";
@@ -212,7 +213,7 @@ function TimeTrackingPage() {
   const [correcting, setCorrecting] = useState<{ entry: CorrectableEntry; endNow: boolean } | null>(null);
 
   function exportCsv() {
-    const rows = [["Cleaner", "Property", "Start", "End", "Minutes", "Break (min)", "Status", "Paid", "Amount"]];
+    const rows = [[t("departments.personnel"), t("nav.properties"), t("timeTracking.start"), t("timeTracking.end"), t("timeTracking.duration"), t("clock.breakMin"), t("resv.thStatus"), t("timeTracking.markedPaid"), t("timeTracking.amount")]];
     for (const e of entries) {
       const min = e.clock_out_at && !e.needs_review
         ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0))
@@ -264,7 +265,7 @@ function TimeTrackingPage() {
               <Input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPreset("custom"); }} />
             </div>
             <div>
-              <Label className="text-xs">{t("nav.cleaners")}</Label>
+              <Label className="text-xs">{t("departments.personnel")}</Label>
               <Select value={cleanerFilter} onValueChange={setCleanerFilter}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -338,7 +339,7 @@ function TimeTrackingPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-                    <th className="px-5 py-2 font-medium">{t("nav.cleaners")}</th>
+                    <th className="px-5 py-2 font-medium">{t("departments.personnel")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.shifts")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.hours")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.rate")}</th>
@@ -378,7 +379,7 @@ function TimeTrackingPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-                    <th className="px-5 py-2 font-medium">{t("nav.cleaners")}</th>
+                    <th className="px-5 py-2 font-medium">{t("departments.personnel")}</th>
                     <th className="px-5 py-2 font-medium">{t("nav.properties")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.start")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.end")}</th>
@@ -396,9 +397,9 @@ function TimeTrackingPage() {
                       <tr key={e.id} className="border-b border-border last:border-0">
                         <td className="px-5 py-2">{e.cleaners?.full_name}</td>
                         <td className="px-5 py-2">{e.properties?.name}</td>
-                        <td className="px-5 py-2 text-xs whitespace-nowrap">{new Date(e.clock_in_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</td>
+                        <td className="px-5 py-2 text-xs whitespace-nowrap">{new Date(e.clock_in_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}</td>
                         <td className="px-5 py-2 text-xs whitespace-nowrap">
-                          {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : <Badge tone="warning">{t(e.needs_review ? "clock.missingClockOut" : "timeTracking.active")}</Badge>}
+                          {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE }) : <Badge tone="warning">{t(e.needs_review ? "clock.missingClockOut" : "timeTracking.active")}</Badge>}
                         </td>
                         <td className="px-5 py-2">
                           {e.clock_out_at ? `${Math.floor(min / 60)}h ${min % 60}m` : "—"}

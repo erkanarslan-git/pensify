@@ -62,7 +62,7 @@ export function LockScreen({ name, email, onUnlock, onSignOut }: {
           <form onSubmit={submit} className="mt-5 space-y-3 text-left">
             <label className="block">
               <span className="text-xs font-medium opacity-70">{c.pw}</span>
-              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--brand-navy)]/20 bg-background px-3 focus-within:border-[color:var(--brand-orange)]">
+              <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--brand-navy)]/20 bg-background text-foreground px-3 focus-within:border-[color:var(--brand-orange)]">
                 <Lock className="h-4 w-4 opacity-50" />
                 <input type="password" autoFocus required autoComplete="current-password" value={pw}
                   onChange={(e) => setPw(e.target.value)} className="w-full bg-transparent py-2.5 text-sm outline-none" />

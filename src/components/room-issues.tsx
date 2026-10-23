@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -123,7 +124,7 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
             <span className="flex-1 min-w-[160px]">{i.description}</span>
             <span className="text-xs text-muted-foreground">
               {i.reporter && `${i.reporter} · `}
-              {new Date(i.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+              {new Date(i.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
             </span>
             <div className="w-full sm:w-auto space-y-1">
               {i.can_assign ? <select aria-label={t("departments.maintenanceAssign")} value={i.assigned_to ?? ""} disabled={assigning === i.id}
@@ -132,7 +133,7 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
                 {i.assigned_to && !workers.some((w) => w.user_id === i.assigned_to) && <option value={i.assigned_to} disabled>{i.assignee || t("departments.unnamed")}</option>}
                 {workers.map((w) => <option key={w.user_id} value={w.user_id}>{w.full_name || t("departments.unnamed")}</option>)}
               </select> : <span className="text-sm">{i.assignee || t("cleaning.notAssigned")}</span>}
-              {i.assigned_at && <div className="text-xs text-muted-foreground">{t("departments.assignedBy", { name: i.assigner || t("departments.unnamed") })} · {new Date(i.assigned_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div>}
+              {i.assigned_at && <div className="text-xs text-muted-foreground">{t("departments.assignedBy", { name: i.assigner || t("departments.unnamed") })} · {new Date(i.assigned_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div>}
             </div>
             {canResolve && (
               <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="text-sm px-3 py-2 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1">

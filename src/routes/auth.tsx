@@ -108,7 +108,7 @@ function Field({ icon, label, children }: { icon: React.ReactNode; label: string
   return (
     <label className="block">
       <span className="text-xs font-medium opacity-70">{label}</span>
-      <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--brand-navy)]/20 bg-background px-3 focus-within:border-[color:var(--brand-orange)] focus-within:ring-2 focus-within:ring-[color:var(--brand-orange)]/25">
+      <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--brand-navy)]/20 bg-background text-foreground px-3 focus-within:border-[color:var(--brand-orange)] focus-within:ring-2 focus-within:ring-[color:var(--brand-orange)]/25">
         <span className="opacity-50">{icon}</span>
         {children}
       </div>

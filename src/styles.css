@@ -77,6 +77,8 @@
 
 /* Paper & Ink — restrained editorial surfaces with semantic operational states */
 :root {
+  --guest-surface-lightness: 90%;
+  --guest-ink-lightness: 22%;
   --radius: 0.375rem;
   /* Pension Highway brand */
   --brand-navy: oklch(0.33 0.09 258);
@@ -136,6 +138,8 @@
 }
 
 .dark {
+  --guest-surface-lightness: 26%;
+  --guest-ink-lightness: 92%;
   --background: oklch(0.17 0.035 260);
   --foreground: oklch(0.96 0.015 255);
   --card: oklch(0.21 0.04 260);

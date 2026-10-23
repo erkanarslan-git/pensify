@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
@@ -259,7 +260,7 @@ function CleaningPage() {
                       <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 sm:py-2.5 text-sm hover:bg-accent/40 transition-colors">
                         <div className="w-20 font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
                         <div className="w-28 text-muted-foreground tabular-nums">
-                          {due.toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                          {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </div>
                         <div className="w-28"><Badge tone={cleaningNeedsReview(task) ? "warning" : meta.tone}>{cleaningNeedsReview(task) ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge></div>
                         <div className="flex-1 min-w-[160px]">

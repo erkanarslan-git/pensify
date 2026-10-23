@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { geoText } from "@/i18n/geo";
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useQuery } from "@tanstack/react-query";
@@ -30,7 +33,7 @@ function useGeoWatch() {
   const [nonce, setNonce] = useState(0);
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError("Konum API desteklenmiyor");
+      setError(geoText("Konum API desteklenmiyor"));
       setPending(false);
       return;
     }
@@ -66,6 +69,7 @@ type PropertyLite = {
 };
 
 function GeoTestPage() {
+  useTranslation();
   const geo = useGeoWatch();
   const [selectedId, setSelectedId] = useState<string>("");
 
@@ -106,42 +110,40 @@ function GeoTestPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <header className="h-14 flex items-center justify-between px-4 border-b border-border bg-background/80 backdrop-blur sticky top-0">
-        <div className="font-semibold tracking-tight">Geofence Test</div>
+        <div className="font-semibold tracking-tight">{geoText("Geofence Test")}</div>
         <button
           onClick={geo.refresh}
           className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded border border-border hover:bg-accent"
         >
-          <RefreshCw className="w-3.5 h-3.5" /> Yenile
-        </button>
+          <RefreshCw className="w-3.5 h-3.5" />{geoText("Yenile")}</button>
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-4">
         {/* Current position */}
         <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <div className="text-xs uppercase text-muted-foreground mb-2">Mevcut konum</div>
+          <div className="text-xs uppercase text-muted-foreground mb-2">{geoText("Mevcut konum")}</div>
           {geo.pending ? (
             <div className="inline-flex items-center gap-2 text-muted-foreground text-sm">
-              <Loader2 className="w-4 h-4 animate-spin" /> Konum alınıyor…
-            </div>
+              <Loader2 className="w-4 h-4 animate-spin" />{geoText("Konum alınıyor…")}</div>
           ) : geo.error ? (
             <div className="inline-flex items-center gap-2 text-destructive text-sm">
               <AlertTriangle className="w-4 h-4" /> {geo.error}
             </div>
           ) : geo.reading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <Stat label="Enlem" value={geo.reading.lat.toFixed(6)} />
-              <Stat label="Boylam" value={geo.reading.lng.toFixed(6)} />
+              <Stat label={geoText("Enlem")} value={geo.reading.lat.toFixed(6)} />
+              <Stat label={geoText("Boylam")} value={geo.reading.lng.toFixed(6)} />
               <Stat
-                label="Doğruluk"
+                label={geoText("Doğruluk")}
                 value={`±${Math.round(geo.reading.accuracy)} m`}
                 tone={geo.reading.accuracy <= 50 ? "ok" : geo.reading.accuracy <= 200 ? "warn" : "bad"}
               />
-              <Stat label="Zaman" value={new Date(geo.reading.ts).toLocaleTimeString("de-DE", { timeZone: BUSINESS_TIME_ZONE })} />
+              <Stat label={geoText("Zaman")} value={new Date(geo.reading.ts).toLocaleTimeString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })} />
             </div>
           ) : null}
           {geo.reading && (
             <div className="text-xs text-muted-foreground mt-3">
-              Kabul kuralı: <code>mesafe ≤ geofence yarıçapı + doğruluk</code>. Doğruluk üst sınırı: ±{MAX_GEOFENCE_ACCURACY_M} m.
+              {geoText("Kabul kuralı")}: <code>{geoText("mesafe ≤ geofence yarıçapı + doğruluk")}</code>. {geoText("Doğruluk üst sınırı")}: ±{MAX_GEOFENCE_ACCURACY_M} m.
             </div>
           )}
         </section>
@@ -149,14 +151,13 @@ function GeoTestPage() {
         {/* Property list */}
         <section className="rounded-2xl border border-border bg-card shadow-soft overflow-hidden">
           <div className="px-5 pt-5 pb-3 text-xs uppercase text-muted-foreground">
-            Lokasyonlar ({rows.length})
+            {geoText("Lokasyonlar")} ({rows.length})
           </div>
           {q.isLoading ? (
             <div className="p-5 text-sm text-muted-foreground inline-flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" /> Laden…
-            </div>
+              <Loader2 className="w-4 h-4 animate-spin" />{geoText("Laden…")}</div>
           ) : rows.length === 0 ? (
-            <div className="p-5 text-sm text-muted-foreground">Lokasyon yok.</div>
+            <div className="p-5 text-sm text-muted-foreground">{geoText("Lokasyon yok.")}</div>
           ) : (
             <ul className="divide-y divide-border">
               {rows.map((r) => (
@@ -171,11 +172,10 @@ function GeoTestPage() {
                         {!r.hasCoords ? (
                           "Koordinat tanımlı değil"
                         ) : r.dist == null ? (
-                          `Yarıçap ${r.radius} m`
+                          `${geoText("Yarıçap")} ${r.radius} m`
                         ) : (
-                          <>
-                            Mesafe <b className="font-mono">{Math.round(r.dist)} m</b> · Yarıçap{" "}
-                            {r.radius} m · Etkin{" "}
+                          <>{geoText("Mesafe")}<b className="font-mono">{Math.round(r.dist)} m</b> · {geoText("Yarıçap")} 
+                            {r.radius} m · {geoText("Etkin")} 
                             <span className="font-mono">{Math.round(r.effective ?? 0)} m</span>
                           </>
                         )}
@@ -184,30 +184,20 @@ function GeoTestPage() {
                     <div className="shrink-0">
                       {r.accepted === null ? (
                         <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
-                          {!r.hasCoords ? "Koord. yok" : "Konum bekleniyor"}
+                          {!r.hasCoords ? geoText("Koord. yok") : geoText("Konum bekleniyor")}
                         </Badge>
                       ) : r.accepted ? (
                         r.fullyInside ? (
-                          <Badge tone="ok" icon={<CheckCircle2 className="w-3 h-3" />}>
-                            İçeride
-                          </Badge>
+                          <Badge tone="ok" icon={<CheckCircle2 className="w-3 h-3" />}>{geoText("İçeride")}</Badge>
                         ) : (
-                          <Badge tone="ok" icon={<CheckCircle2 className="w-3 h-3" />}>
-                            Kesişim (kabul)
-                          </Badge>
+                          <Badge tone="ok" icon={<CheckCircle2 className="w-3 h-3" />}>{geoText("Kesişim (kabul)")}</Badge>
                         )
                       ) : r.accuracyTooLow ? (
-                        <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
-                          Doğruluk düşük
-                        </Badge>
+                        <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>{geoText("Doğruluk düşük")}</Badge>
                       ) : r.intersects ? (
-                        <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>
-                          Sınırda (red)
-                        </Badge>
+                        <Badge tone="warn" icon={<AlertTriangle className="w-3 h-3" />}>{geoText("Sınırda (red)")}</Badge>
                       ) : (
-                        <Badge tone="bad" icon={<XCircle className="w-3 h-3" />}>
-                          Uzak
-                        </Badge>
+                        <Badge tone="bad" icon={<XCircle className="w-3 h-3" />}>{geoText("Uzak")}</Badge>
                       )}
                     </div>
                   </button>
@@ -228,9 +218,7 @@ function GeoTestPage() {
           )}
         </section>
 
-        <p className="text-xs text-muted-foreground text-center">
-          Mavi = senin doğruluk çemberin · Yeşil = lokasyonun geofence çemberi
-        </p>
+        <p className="text-xs text-muted-foreground text-center">{geoText("Mavi = senin doğruluk çemberin · Yeşil = lokasyonun geofence çemberi")}</p>
         {selected && null}
       </main>
     </div>
@@ -290,16 +278,12 @@ function Diagram({
 }) {
   if (!hasCoords) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground my-4">
-        Bu lokasyon için koordinat tanımlı değil — kesişim çizilemiyor.
-      </div>
+      <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground my-4">{geoText("Bu lokasyon için koordinat tanımlı değil — kesişim çizilemiyor.")}</div>
     );
   }
   if (distance == null) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground my-4">
-        Konum henüz alınmadı.
-      </div>
+      <div className="rounded-xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground my-4">{geoText("Konum henüz alınmadı.")}</div>
     );
   }
   // Choose a scale so both circles fit
@@ -324,9 +308,7 @@ function Diagram({
         {/* Geofence */}
         <circle cx={cx} cy={cy} r={rGeo} fill="var(--success)" fillOpacity="0.15" stroke="var(--success)" strokeWidth="1.5" />
         <circle cx={cx} cy={cy} r="3" fill="var(--success)" />
-        <text x={cx + 6} y={cy - 6} className="text-[10px]" fill="currentColor">
-          Lokasyon
-        </text>
+        <text x={cx + 6} y={cy - 6} className="text-[10px]" fill="currentColor">{geoText("Lokasyon")}</text>
 
         {/* Accuracy circle */}
         <circle
@@ -340,9 +322,7 @@ function Diagram({
           strokeDasharray="4 3"
         />
         <circle cx={userX} cy={userY} r="3" fill="var(--primary)" />
-        <text x={userX + 6} y={userY - 6} className="text-[10px]" fill="currentColor">
-          Sen
-        </text>
+        <text x={userX + 6} y={userY - 6} className="text-[10px]" fill="currentColor">{geoText("Sen")}</text>
 
         {/* Distance line */}
         <line
@@ -385,20 +365,20 @@ function Details({
 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-      <Stat label="Lokasyon enlem" value={row.p.latitude?.toFixed(6) ?? "—"} />
-      <Stat label="Lokasyon boylam" value={row.p.longitude?.toFixed(6) ?? "—"} />
-      <Stat label="Yarıçap" value={`${row.radius} m`} />
-      <Stat label="Mesafe" value={row.dist != null ? `${Math.round(row.dist)} m` : "—"} />
-      <Stat label="Doğruluk" value={`±${Math.round(row.acc)} m`} />
+      <Stat label={geoText("Lokasyon enlem")} value={row.p.latitude?.toFixed(6) ?? "—"} />
+      <Stat label={geoText("Lokasyon boylam")} value={row.p.longitude?.toFixed(6) ?? "—"} />
+      <Stat label={geoText("Yarıçap")} value={`${row.radius} m`} />
+      <Stat label={geoText("Mesafe")} value={row.dist != null ? `${Math.round(row.dist)} m` : "—"} />
+      <Stat label={geoText("Doğruluk")} value={`±${Math.round(row.acc)} m`} />
       <Stat
-        label="Etkin mesafe"
+        label={geoText("Etkin mesafe")}
         value={row.effective != null ? `${Math.round(row.effective)} m` : "—"}
       />
-      <Stat label="Kesişim?" value={row.intersects ? "Evet" : "Hayır"} />
-      <Stat label="Tamamen içeride?" value={row.fullyInside ? "Evet" : "Hayır"} />
+      <Stat label={geoText("Kesişim?")} value={row.intersects ? geoText("Evet") : geoText("Hayır")} />
+      <Stat label={geoText("Tamamen içeride?")} value={row.fullyInside ? geoText("Evet") : geoText("Hayır")} />
       <Stat
-        label="Sonuç"
-        value={row.accepted === null ? "—" : row.accepted ? "Kabul" : row.accuracyTooLow ? "Doğruluk düşük" : "Red"}
+        label={geoText("Sonuç")}
+        value={row.accepted === null ? "—" : row.accepted ? geoText("Kabul") : row.accuracyTooLow ? geoText("Doğruluk düşük") : geoText("Red")}
         tone={row.accepted === null ? "warn" : row.accepted ? "ok" : "bad"}
       />
     </div>

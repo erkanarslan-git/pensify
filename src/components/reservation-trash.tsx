@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { displayLocale } from "@/i18n/legacy-ui";
+import { Button } from "@/components/ui/button";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +11,7 @@ import { formatDateDE } from "@/lib/date-de";
 
 /** Admin-only recycle bin for soft-deleted reservations. */
 export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
+  const { t } = useTranslation();
   const { data = [], refetch, isLoading } = useQuery({
     queryKey: ["reservations-trash"],
     queryFn: async () => {
@@ -25,24 +29,24 @@ export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
         const { data: profs } = await supabase.from("profiles").select("id,full_name").in("id", ids);
         (profs ?? []).forEach((p: any) => names.set(p.id, p.full_name ?? "—"));
       }
-      return rows.map((r) => ({ ...r, deleter: names.get(r.deleted_by) ?? "Unbekannt" }));
+      return rows.map((r) => ({ ...r, deleter: names.get(r.deleted_by) ?? null }));
     },
   });
 
   const act = async (fn: "restore_reservation" | "purge_reservation", id: string) => {
-    if (fn === "purge_reservation" && !confirm("Endgültig löschen? Das kann nicht rückgängig gemacht werden.")) return;
+    if (fn === "purge_reservation" && !confirm(t("legacyUi.purgeConfirm"))) return;
     const { error } = await (supabase as any).rpc(fn, { _id: id });
     if (error) {
-      toast.error(error.message.includes("overlap") ? "Wiederherstellen nicht möglich: Zimmer ist in diesem Zeitraum belegt." : "Aktion fehlgeschlagen.");
+      toast.error(error.message.includes("overlap") ? t("legacyUi.restoreConflict") : t("cleaning.actionFailed"));
       return;
     }
-    toast.success(fn === "restore_reservation" ? "Buchung wiederhergestellt" : "Endgültig gelöscht");
+    toast.success(fn === "restore_reservation" ? t("legacyUi.restored") : t("legacyUi.purged"));
     refetch();
     onChanged();
   };
 
-  if (isLoading) return <div className="text-sm text-muted-foreground">Lädt…</div>;
-  if (!data.length) return <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">Papierkorb ist leer.</div>;
+  if (isLoading) return <div className="text-sm text-muted-foreground">{t("common.loading")}</div>;
+  if (!data.length) return <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">{t("legacyUi.trashEmpty")}</div>;
 
   return (
     <div className="rounded-xl border border-border bg-card divide-y divide-border/60">
@@ -52,19 +56,19 @@ export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
           <div className="flex-1 min-w-[180px]">
             <div className="font-medium">{r.guest_name}</div>
             <div className="text-xs text-muted-foreground">
-              {r.property?.name} · #{r.room?.number ?? "—"} · {sourceLabel(r.channel)} · {formatDateDE(r.check_in)} → {formatDateDE(r.check_out)}
+              {r.property?.name} · #{r.room?.number ?? "—"} · {sourceLabel(r.channel, key => t(key))} · {formatDateDE(r.check_in)} → {formatDateDE(r.check_out)}
             </div>
           </div>
           <div className="text-xs text-muted-foreground min-w-[200px]">
-            Gelöscht von <span className="font-medium text-foreground">{r.deleter}</span> am {new Date(r.deleted_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
-            {r.delete_reason && <div>Grund: {r.delete_reason}</div>}
+            {t("legacyUi.deletedBy", { name: r.deleter ?? t("pages.logs.system"), date: new Date(r.deleted_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE }) })}
+            {r.delete_reason && <div>{t("legacyUi.reason")}: {r.delete_reason}</div>}
           </div>
-          <button onClick={() => act("restore_reservation", r.id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-input text-xs hover:bg-accent">
-            <RotateCcw className="w-3 h-3" /> Wiederherstellen
-          </button>
-          <button onClick={() => act("purge_reservation", r.id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-destructive/40 text-destructive text-xs hover:bg-destructive/10">
-            <Trash2 className="w-3 h-3" /> Endgültig löschen
-          </button>
+          <Button variant="outline" size="sm" onClick={() => act("restore_reservation", r.id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-input text-xs hover:bg-accent">
+            <RotateCcw className="w-3 h-3" /> {t("legacyUi.restore")}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => act("purge_reservation", r.id)} className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-destructive/40 text-destructive text-xs hover:bg-destructive/10">
+            <Trash2 className="w-3 h-3" /> {t("legacyUi.purge")}
+          </Button>
         </div>
       ))}
     </div>
