@@ -1,4 +1,5 @@
 const tr = {
+  permissions: { view_finance: "Finans bilgilerini gör", collect_payments: "Tahsilat kaydet", correct_payments: "Tahsilat düzelt / ters kaydet", manage_payment_plans: "Ödeme planlarını yönet", match_payments: "Banka ödemelerini eşleştir", manage_bank: "Banka bağlantısını yönet" },
   title: "Tahsilat", subtitle: "Uzun süreli konaklamaların aylık ödemeleri",
   newPlan: "Ödeme planı oluştur", dueThisMonth: "Bu ay vadesi gelen", unpaidThisMonth: "Bu ay ödemeyenler", overdueTotal: "Geciken tutar", collectedThisMonth: "Bu ay tahsil edilen",
   fUnpaid: "Ödemeyenler", fOverdue: "Geciken", fAll: "Tümü", empty: "Burada kayıt yok",
@@ -10,8 +11,10 @@ const tr = {
   dueDay: "Her ayın kaçında ödesin?", mode: "Tutar", auto: "Otomatik (toplamı aylara böl)", manual: "Elle aylık tutar", monthly: "Aylık tutar (€)",
   preview: "Taksitler", addRow: "Taksit ekle", total: "Toplam", planSaved: "Ödeme planı kaydedildi", planReplaceNote: "Ödenmemiş eski taksitler bu planla değiştirilir; ödeme alınmış taksitler korunur.",
   recordedBy: "Kaydeden", history: "Ödemeler", saveErr: "Kaydedilemedi", invalid: "Tutar ve tarih geçerli olmalı",
+  reverse: "Ters kayıt", reverseReason: "Düzeltme gerekçesi", confirmReverse: "Ödemeyi ters kaydet", reversed: "Ödeme geçmişi korunarak ters kayıt yapıldı",
 };
 const de: typeof tr = {
+  permissions: { view_finance: "Finanzdaten ansehen", collect_payments: "Zahlungen erfassen", correct_payments: "Zahlungen korrigieren / rückbuchen", manage_payment_plans: "Zahlungspläne verwalten", match_payments: "Bankzahlungen zuordnen", manage_bank: "Bankverbindung verwalten" },
   title: "Zahlungen", subtitle: "Monatliche Zahlungen für Langzeitaufenthalte",
   newPlan: "Zahlungsplan erstellen", dueThisMonth: "Diesen Monat fällig", unpaidThisMonth: "Diesen Monat unbezahlt", overdueTotal: "Überfälliger Betrag", collectedThisMonth: "Diesen Monat eingenommen",
   fUnpaid: "Unbezahlt", fOverdue: "Überfällig", fAll: "Alle", empty: "Keine Einträge",
@@ -23,8 +26,10 @@ const de: typeof tr = {
   dueDay: "Zahltag im Monat", mode: "Betrag", auto: "Automatisch (Gesamtbetrag aufteilen)", manual: "Monatsbetrag manuell", monthly: "Monatsbetrag (€)",
   preview: "Raten", addRow: "Rate hinzufügen", total: "Summe", planSaved: "Zahlungsplan gespeichert", planReplaceNote: "Unbezahlte alte Raten werden ersetzt; Raten mit Zahlungen bleiben erhalten.",
   recordedBy: "Erfasst von", history: "Zahlungen", saveErr: "Speichern fehlgeschlagen", invalid: "Betrag und Datum müssen gültig sein",
+  reverse: "Rückbuchen", reverseReason: "Grund der Korrektur", confirmReverse: "Zahlung rückbuchen", reversed: "Zahlung rückgebucht; Verlauf bleibt erhalten",
 };
 const en: typeof tr = {
+  permissions: { view_finance: "View finance", collect_payments: "Record payments", correct_payments: "Correct / reverse payments", manage_payment_plans: "Manage payment plans", match_payments: "Match bank payments", manage_bank: "Manage bank connection" },
   title: "Payments", subtitle: "Monthly payments for long stays",
   newPlan: "Create payment plan", dueThisMonth: "Due this month", unpaidThisMonth: "Unpaid this month", overdueTotal: "Overdue amount", collectedThisMonth: "Collected this month",
   fUnpaid: "Unpaid", fOverdue: "Overdue", fAll: "All", empty: "Nothing here",
@@ -36,5 +41,6 @@ const en: typeof tr = {
   dueDay: "Payment day of month", mode: "Amount", auto: "Automatic (split total)", manual: "Manual monthly amount", monthly: "Monthly amount (€)",
   preview: "Installments", addRow: "Add installment", total: "Total", planSaved: "Payment plan saved", planReplaceNote: "Unpaid old installments are replaced; installments with payments are kept.",
   recordedBy: "Recorded by", history: "Payments", saveErr: "Could not save", invalid: "Amount and date must be valid",
+  reverse: "Reverse", reverseReason: "Correction reason", confirmReverse: "Reverse payment", reversed: "Payment reversed; history retained",
 };
 export const paymentsTranslations = { tr, en, de };

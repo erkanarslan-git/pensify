@@ -16,10 +16,11 @@ INSERT INTO public.member_departments(organization_id,member_id,department,is_wo
  ('de000000-0000-0000-0000-000000000001','de100000-0000-0000-0000-000000000001','cleaning',false,true,true);
 SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000001',true);
 DO $$ DECLARE r jsonb; BEGIN
- IF public.my_report_teams() IS DISTINCT FROM ARRAY['cleaning']::text[] THEN RAISE EXCEPTION 'lead scope mismatch'; END IF;
- r:=public.department_work_report(current_date,current_date);
- IF r->'allowedTeams' <> '["cleaning"]'::jsonb THEN RAISE EXCEPTION 'other department granted'; END IF;
- IF EXISTS(SELECT 1 FROM jsonb_array_elements(r->'items') i WHERE i->>'kind'<>'cleaning') THEN RAISE EXCEPTION 'other department leaked'; END IF;
+ IF cardinality(public.my_report_teams())<>0 THEN RAISE EXCEPTION 'lead report grant must not allow special report'; END IF;
+ BEGIN
+  r:=public.department_work_report(current_date,current_date);
+  RAISE EXCEPTION 'lead report returned data';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN
   PERFORM public.department_work_report(current_date,current_date,'de900000-0000-0000-0000-000000000002');
   RAISE EXCEPTION 'foreign property allowed';
@@ -46,10 +47,18 @@ UPDATE public.organization_members SET active=true WHERE id='de100000-0000-0000-
 SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000002',true);
 DO $$ BEGIN
  IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'owner scope mismatch'; END IF;
+ BEGIN
+  PERFORM public.department_work_report(current_date,current_date,'de900000-0000-0000-0000-000000000002');
+  RAISE EXCEPTION 'owner allowed foreign or unknown property';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
 UPDATE public.organization_members SET role='admin' WHERE id='de100000-0000-0000-0000-000000000002';
 DO $$ BEGIN
- IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'admin scope mismatch'; END IF;
+ IF cardinality(public.my_report_teams())<>0 THEN RAISE EXCEPTION 'admin must not access special report'; END IF;
+ BEGIN
+  PERFORM public.department_work_report(current_date,current_date);
+  RAISE EXCEPTION 'admin report returned data';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
 UPDATE public.organization_members SET role='reception' WHERE id='de100000-0000-0000-0000-000000000002';
 INSERT INTO public.member_departments(organization_id,member_id,department,is_worker,is_lead) VALUES
@@ -59,7 +68,11 @@ DO $$ BEGIN
 END $$;
 UPDATE public.member_departments SET lead_can_report=true WHERE member_id='de100000-0000-0000-0000-000000000002' AND department='hr';
 DO $$ BEGIN
- IF public.my_report_teams() IS DISTINCT FROM ARRAY['all','cleaning','office','maintenance']::text[] THEN RAISE EXCEPTION 'explicit HR report grant ignored'; END IF;
+ IF cardinality(public.my_report_teams())<>0 THEN RAISE EXCEPTION 'HR grant must not allow special report'; END IF;
+ BEGIN
+  PERFORM public.department_work_report(current_date,current_date);
+  RAISE EXCEPTION 'HR report returned data';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
 END $$;
 SELECT set_config('request.jwt.claim.sub','de200000-0000-0000-0000-000000000003',true);
 DO $$ BEGIN

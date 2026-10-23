@@ -67,7 +67,9 @@ function TeamPage() {
   const rolePermsQ = useQuery({
     queryKey: ["role-perms"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("role_permissions").select("*");
+      const { data: orgId, error: orgError } = await supabase.rpc("active_organization_id");
+      if (orgError || !orgId) throw new Error("organization_required");
+      const { data, error } = await supabase.from("role_permissions").select("*").eq("organization_id", orgId);
       if (error) throw error;
       return data ?? [];
     },
@@ -76,7 +78,9 @@ function TeamPage() {
   const userPermsQ = useQuery({
     queryKey: ["user-perms"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("user_permissions").select("*");
+      const { data: orgId, error: orgError } = await supabase.rpc("active_organization_id");
+      if (orgError || !orgId) throw new Error("organization_required");
+      const { data, error } = await supabase.from("user_permissions").select("*").eq("organization_id", orgId);
       if (error) throw error;
       return data ?? [];
     },
@@ -346,7 +350,7 @@ function TeamPage() {
                     </tr>
                     {PERMISSIONS.filter((p) => p.group === g).map((p) => (
                       <tr key={p.key} className="border-t border-border">
-                        <td className="p-3">{p.label}</td>
+                        <td className="p-3">{t(`payments.permissions.${p.key}`, { defaultValue: p.label })}</td>
                         {ALL_ROLES.map((r) => {
                           const on = rolePerm(r, p.key);
                           const isOwner = r === "owner";
@@ -696,6 +700,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   onChange: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   // Resolve effective from any of the user's roles (OR)
   const effective = (key: string): boolean => roles.some((r) => rolePerm(r, key));
   const override = (key: string): boolean | null => {
@@ -704,11 +709,11 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   };
 
   async function set(permission: string, allowed: boolean | null) {
+    const { data: orgId } = await supabase.rpc("active_organization_id");
+    if (!orgId) throw new Error("Keine eindeutige Organisation");
     if (allowed === null) {
-      await (supabase as any).from("user_permissions").delete().eq("user_id", userId).eq("permission", permission);
+      await supabase.from("user_permissions").delete().eq("organization_id", orgId).eq("user_id", userId).eq("permission", permission);
     } else {
-      const { data: orgId } = await supabase.rpc("active_organization_id");
-      if (!orgId) throw new Error("Keine eindeutige Organisation");
       await (supabase as any).from("user_permissions").upsert({ organization_id: orgId, user_id: userId, permission, allowed, updated_at: new Date().toISOString() }, { onConflict: "organization_id,user_id,permission" });
     }
     onChange();
@@ -730,7 +735,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
             return (
               <div key={p.key} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border">
                 <div className="min-w-0">
-                  <div className="text-sm">{p.label}</div>
+                  <div className="text-sm">{t(`payments.permissions.${p.key}`, { defaultValue: p.label })}</div>
                   <div className="text-xs text-muted-foreground">{p.group} · Standard aus Rolle: {effective(p.key) ? "Erlaubt" : "Verweigert"}</div>
                 </div>
                 <div className="flex gap-1">

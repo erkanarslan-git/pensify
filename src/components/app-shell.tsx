@@ -156,7 +156,7 @@ export function AppShell({ title, subtitle, actions, children }: {
     },
   });
   const visibleGroups = navGroups
-    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [], timeAccess.data === true)) }))
+    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [], timeAccess.data === true, perms.can)) }))
     .filter((g) => g.items.length > 0);
   const primaryRole: AppRole | null = perms.roles.includes("owner")
     ? "owner"

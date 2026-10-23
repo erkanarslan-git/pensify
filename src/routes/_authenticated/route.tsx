@@ -33,7 +33,18 @@ export const Route = createFileRoute("/_authenticated")({
        ? await supabase.rpc("my_report_teams")
        : { data: [], error: null };
      const { data: timeAccess } = path === "/time-tracking" ? await supabase.rpc("my_time_management_access") : { data: false };
-     if (!canAccessRoute(path, roleList, reportError ? [] : reportTeams ?? [], timeAccess === true)) {
+     const financePath = path === "/payments" || path.startsWith("/payments/") || path === "/analytics";
+     let financeAllowed = false;
+     if (financePath) {
+       const { data: org } = await supabase.rpc("active_organization_id");
+       if (org) {
+         const { data: allowed, error: permissionError } = await supabase.rpc("has_organization_permission", {
+           _org: org, _permission: path === "/payments/bank" ? "manage_bank" : "view_finance",
+         });
+         financeAllowed = !permissionError && allowed === true;
+       }
+     }
+     if (!canAccessRoute(path, roleList, reportError ? [] : reportTeams ?? [], timeAccess === true, () => financeAllowed)) {
       // Cleaner-only users land on /me; everyone else home
       const isCleaner = roleList.includes("cleaner");
       const isStaff = roleList.some((r) => ["owner", "admin", "manager", "reception"].includes(r));

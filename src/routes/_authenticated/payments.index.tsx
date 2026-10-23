@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
 import { buildReplacementSchedule, validReplacementSchedule, installmentState, type Installment, type InstallmentState } from "@/lib/payments";
+import { usePermissions } from "@/hooks/use-permissions";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/payments/")({
   head: () => ({ meta: [{ title: "Tahsilat — Pensify" }, { name: "description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:title", content: "Tahsilat — Pensify" }, { property: "og:description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/payments/")({
 
 interface Res { id: string; guest_name: string; room_id: string; check_in: string; check_out: string; revenue: number; payer_ibans: string[] }
 interface Sched { id: string; reservation_id: string; due_date: string; amount: number; payment_reference: string; hasPayments: boolean }
-interface Pay { id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null }
+interface Pay { id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null; source: string; bank_transaction_id: string | null }
 type Filter = "unpaid" | "overdue" | "all";
 
 const eur = (n: number) => n.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
@@ -29,6 +31,7 @@ const nights = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(
 function PaymentsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const perm = usePermissions();
   const today = businessDate();
   const month = today.slice(0, 7);
   const [filter, setFilter] = useState<Filter>("unpaid");
@@ -40,7 +43,7 @@ function PaymentsPage() {
     queryFn: async () => {
       const [s, p, r, rm, pr] = await Promise.all([
         supabase.from("payment_schedules").select("id,reservation_id,due_date,amount,payment_reference,payments(id)").order("due_date").limit(5000),
-        supabase.from("payments").select("id,schedule_id,reservation_id,amount,paid_on,method,note,recorded_by,source").is("reversed_at", null).order("paid_on", { ascending: false }).limit(5000),
+        supabase.from("payments").select("id,schedule_id,reservation_id,amount,paid_on,method,note,recorded_by,source,bank_transaction_id").is("reversed_at", null).order("paid_on", { ascending: false }).limit(5000),
         supabase.from("reservations").select("id,guest_name,room_id,check_in,check_out,revenue,status,payer_ibans").is("deleted_at", null).not("status", "in", "(cancelled,no_show)").limit(5000),
         supabase.from("rooms").select("id,number"),
         supabase.from("profiles").select("id,full_name"),
@@ -97,10 +100,10 @@ function PaymentsPage() {
           ))}
         </div>
         <Link to="/payments/transactions" className="ml-auto inline-flex items-center gap-2 px-3 py-2.5 rounded-xl border border-input bg-card text-sm"><Landmark className="w-4 h-4" />{t("bank.transactions")}</Link>
-        <Link to="/payments/bank" title={t("bank.settings")} aria-label={t("bank.settings")} className="inline-flex items-center px-3 py-2.5 rounded-xl border border-input bg-card"><Settings className="w-4 h-4" /></Link>
-        <button onClick={() => setPlanning(true)} className=" inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
+        {perm.can("manage_bank") && <Link to="/payments/bank" title={t("bank.settings")} aria-label={t("bank.settings")} className="inline-flex items-center px-3 py-2.5 rounded-xl border border-input bg-card"><Settings className="w-4 h-4" /></Link>}
+        {perm.can("manage_payment_plans") && <Button onClick={() => setPlanning(true)}>
           <Plus className="w-4 h-4" />{t("payments.newPlan")}
-        </button>
+        </Button>}
       </div>
 
       <div className="rounded-2xl border border-border bg-card divide-y divide-border/60">
@@ -115,10 +118,10 @@ function PaymentsPage() {
               <div className="font-semibold tabular-nums">{eur(r.remaining || r.amount)}</div>
               <span className={`text-xs px-2 py-0.5 rounded-full ${stateCls[r.state]}`}>{t(`payments.state.${r.state}`)}</span>
             </div>
-            {r.state !== "paid" && (
-              <button onClick={() => setPaying(r)} className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium">
-                <Wallet className="w-4 h-4" />{t("payments.takePayment")}
-              </button>
+            {(perm.can("collect_payments") || perm.can("correct_payments")) && (
+              <Button variant={r.state === "paid" ? "outline" : "default"} onClick={() => setPaying(r)} className="col-span-2 sm:col-span-1">
+                <Wallet className="w-4 h-4" />{t(r.state === "paid" || !perm.can("collect_payments") ? "payments.history" : "payments.takePayment")}
+              </Button>
             )}
           </div>
         ))}
@@ -168,12 +171,24 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
   sched: Sched; guest: string; remaining: number; history: Pay[]; names: Map<string, string>; onClose: () => void; onDone: () => void;
 }) {
   const { t } = useTranslation();
+  const perm = usePermissions();
   const [amount, setAmount] = useState(String(remaining.toFixed(2)));
   const [date, setDate] = useState(businessDate());
   const [method, setMethod] = useState("cash");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reversing, setReversing] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+  const reverse = async () => {
+    if (!reversing || busy || !perm.can("correct_payments") || reason.trim().length < 3) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("reverse_manual_payment", { _id: reversing, _reason: reason.trim() });
+    setBusy(false);
+    if (error) return toast.error(t("payments.saveErr"));
+    toast.success(t("payments.reversed")); onDone(); onClose();
+  };
   const save = async () => {
+    if (!perm.can("collect_payments") || busy) return;
     const a = Number(amount.replace(",", "."));
     if (!(a > 0) || !date) return toast.error(t("payments.invalid"));
     setBusy(true);
@@ -185,6 +200,7 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
   return (
     <Modal title={t("payments.payTitle", { guest })} onClose={onClose}>
       <div className="text-sm text-muted-foreground mb-3">{t("payments.due")}: {formatDateDE(sched.due_date)} · {t("payments.remaining")}: {eur(remaining)}</div>
+      {perm.can("collect_payments") && remaining > 0 && <>
       <label className="text-xs text-muted-foreground">{t("payments.amount")}</label>
       <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputCls} />
       <label className="text-xs text-muted-foreground mt-3 block">{t("payments.payDate")}</label>
@@ -197,6 +213,7 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
       </div>
       <label className="text-xs text-muted-foreground mt-3 block">{t("payments.note")}</label>
       <input value={note} onChange={(e) => setNote(e.target.value)} className={inputCls} />
+      </>}
       {history.length > 0 && (
         <div className="mt-4 text-xs">
           <div className="font-medium mb-1">{t("payments.history")}</div>
@@ -204,13 +221,19 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
             <div key={p.id} className="flex justify-between py-1 border-t border-border/60">
               <span>{formatDateDE(p.paid_on)} · {t(`payments.methods.${p.method}`)}{p.note ? ` · ${p.note}` : ""}</span>
               <span>{eur(p.amount)} · {t("payments.recordedBy")}: {p.recorded_by ? names.get(p.recorded_by) || "—" : "—"}</span>
+              {perm.can("correct_payments") && p.source === "manual" && !p.bank_transaction_id && <Button variant="ghost" size="sm" onClick={() => { setReversing(p.id); setReason(""); }}>{t("payments.reverse")}</Button>}
             </div>
           ))}
         </div>
       )}
+      {reversing && <div className="mt-4 space-y-2">
+        <label htmlFor="payment-reversal-reason" className="text-sm">{t("payments.reverseReason")}</label>
+        <textarea id="payment-reversal-reason" value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} />
+        <Button variant="destructive" disabled={busy || reason.trim().length < 3} onClick={reverse}>{t("payments.confirmReverse")}</Button>
+      </div>}
       <div className="grid grid-cols-2 gap-2 mt-5">
         <button onClick={onClose} className="py-3 rounded-xl border border-input">{t("common.cancel")}</button>
-        <button disabled={busy} onClick={save} className="py-3 rounded-xl bg-primary text-primary-foreground font-medium disabled:opacity-50">{t("payments.save")}</button>
+        {perm.can("collect_payments") && remaining > 0 && <Button disabled={busy} onClick={save}>{t("payments.save")}</Button>}
       </div>
     </Modal>
   );
@@ -248,12 +271,13 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
       setBusy(false); onDone(); return toast.error(t("payments.invalid"));
     }
     const removable = current.data.filter((s) => s.payments.length === 0).map((s) => s.id);
+    const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
+    const { error: payerError } = await supabase.rpc("save_reservation_payer_ibans", { _reservation: res.id, _ibans: ibanList });
+    if (payerError) { setBusy(false); return toast.error(t("payments.saveErr")); }
     if (removable.length) {
       const { error } = await supabase.from("payment_schedules").delete().in("id", removable);
       if (error) { setBusy(false); return toast.error(t("payments.saveErr")); }
     }
-    const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
-    await supabase.from("reservations").update({ payer_ibans: ibanList } as never).eq("id", res.id);
     const { error } = rows.length ? await supabase.from("payment_schedules").insert(rows.map((r) => ({ reservation_id: res.id, due_date: r.due_date, amount: r.amount })) as never) : { error: null };
     setBusy(false);
     if (error) return toast.error(t("payments.saveErr"));
