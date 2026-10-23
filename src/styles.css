@@ -369,3 +369,5 @@
   .tv-activity-list { max-height: 55px; }
   .tv-middle { min-height: 230px; }
 }
+
+@media (min-width: 900px) { .tv-side .tv-activity { max-height: 190px; overflow: hidden; } }
