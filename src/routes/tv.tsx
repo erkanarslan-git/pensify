@@ -20,6 +20,8 @@ function TvPage() {
   const { t, i18n } = useTranslation();
   const [token, setToken] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [online, setOnline] = useState(true);
+  const [now, setNow] = useState(Date.now());
   const [sound, setSound] = useState(false);
   const [deltas, setDeltas] = useState<ReturnType<typeof tvDeltas> | null>(null);
   const [changeAt, setChangeAt] = useState<string | null>(null);
@@ -33,7 +35,13 @@ function TvPage() {
     const parsed = tvTokenSchema.safeParse(window.location.hash.slice(1));
     setToken(parsed.success ? parsed.data : null);
     setLoaded(true);
-    return () => { void audio.current?.close(); };
+    setOnline(navigator.onLine);
+    const lost = () => { setOnline(false); reconnecting.current = true; };
+    const restored = () => { setOnline(true); };
+    window.addEventListener("offline", lost);
+    window.addEventListener("online", restored);
+    const timer = window.setInterval(() => setNow(Date.now()), 15000);
+    return () => { window.removeEventListener("offline", lost); window.removeEventListener("online", restored); window.clearInterval(timer); void audio.current?.close(); };
   }, []);
   const query = useQuery({ queryKey: ["tv-snapshot", token], enabled: !!token, queryFn: () => read({ data: { token: token ?? "" } }), refetchInterval: 30000, refetchIntervalInBackground: true, retry: 1, staleTime: 0 });
   useEffect(() => {
@@ -66,12 +74,13 @@ function TvPage() {
   if (!token || query.data === null || (!query.data && query.isError)) return <main className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background p-6 text-center text-foreground"><img src={brandLogo.url} alt="Pension Highway" className="w-48" /><h1 className="text-2xl font-semibold">{t("tv.title")}</h1><p>{t(query.isError ? "tv.unavailable" : "tv.invalid")}</p>{query.isError && <Button onClick={() => query.refetch()}>{t("tv.retry")}</Button>}</main>;
   const data = query.data;
   if (!data) return null;
+  const disconnected = !online || query.isError || now - Date.parse(data.at) > 90000;
   const max = Math.max(1, ...data.weekly.flatMap(day => [day.arrivals, day.departures]));
   const time = (value: string) => businessTime(new Date(value));
   return <main className="min-h-screen bg-background p-4 text-foreground sm:p-8">
     <header className="mb-7 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
       <div className="flex min-w-0 items-center gap-5"><img src={brandLogo.url} alt="Pension Highway" className="w-32 shrink-0 sm:w-44" /><div className="min-w-0"><h1 className="break-words text-2xl font-semibold sm:text-3xl">{data.organization}</h1><p className="mt-1 text-sm text-muted-foreground">{new Intl.DateTimeFormat(i18n.resolvedLanguage, { timeZone: BUSINESS_TIME_ZONE, dateStyle: "full" }).format(new Date(data.at))}</p></div></div>
-      <div className="flex items-center gap-2"><span role="status" className={`mr-2 flex max-w-64 items-center gap-2 text-sm ${query.isError ? "text-destructive" : "text-muted-foreground"}`}>{query.isError ? <WifiOff className="h-4 w-4 shrink-0" /> : <Wifi className="h-4 w-4 shrink-0" />}{t(query.isError ? "tv.disconnected" : "tv.live")}</span><Button size="icon" variant="outline" title={t(sound ? "tv.mute" : "tv.sound")} aria-label={t(sound ? "tv.mute" : "tv.sound")} onClick={toggleSound}>{sound ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}</Button><Button size="icon" variant="outline" title={t("tv.fullscreen")} aria-label={t("tv.fullscreen")} onClick={() => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen().catch(() => {}); }}><Maximize className="h-5 w-5" /></Button></div>
+      <div className="flex items-center gap-2"><span role="status" className={`mr-2 flex max-w-64 items-center gap-2 text-sm ${disconnected ? "text-destructive" : "text-muted-foreground"}`}>{disconnected ? <WifiOff className="h-4 w-4 shrink-0" /> : <Wifi className="h-4 w-4 shrink-0" />}{t(disconnected ? "tv.disconnected" : "tv.live")}</span><Button size="icon" variant="outline" title={t(sound ? "tv.mute" : "tv.sound")} aria-label={t(sound ? "tv.mute" : "tv.sound")} onClick={toggleSound}>{sound ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}</Button><Button size="icon" variant="outline" title={t("tv.fullscreen")} aria-label={t("tv.fullscreen")} onClick={() => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen().catch(() => {}); }}><Maximize className="h-5 w-5" /></Button></div>
     </header>
     <section className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-5">
       {(["created", "occupied", "ready", "arrivals", "departures"] as const).map((key, index) => <article key={key} className={`rounded-lg p-5 ${index === 0 ? "brand-tile" : "border border-border bg-card"}`}><p className="text-sm">{t(`tv.${key}`)}</p><div className="mt-3 text-4xl font-semibold tabular-nums">{data.totals[key]}{key === "occupied" && <span className="ml-2 text-base font-normal opacity-70">/ {data.totals.total}</span>}</div><p className="mt-3 min-h-5 text-xs opacity-75">{deltas?.[key] ? `${deltas[key] > 0 ? "↑ +" : "↓ "}${deltas[key]} · ${changeAt ? time(changeAt) : ""}` : ""}</p></article>)}

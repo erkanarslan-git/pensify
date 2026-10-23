@@ -121,10 +121,12 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
     const next = { ...channelColors, [ch]: color };
     setChannelColors(next);
     saveChannelColors(next);
+    void supabase.rpc("save_tv_source_colors", { _colors: next }).then(({ error }) => { if (error) toast.error(t("tv.failed")); });
   }
   function resetColors() {
     setChannelColors(DEFAULT_CHANNEL_COLORS);
     saveChannelColors(DEFAULT_CHANNEL_COLORS);
+    void supabase.rpc("save_tv_source_colors", { _colors: DEFAULT_CHANNEL_COLORS }).then(({ error }) => { if (error) toast.error(t("tv.failed")); });
   }
 
   return (
