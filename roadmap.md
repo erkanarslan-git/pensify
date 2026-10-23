@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [x] TV tam ekran yazıları küçültüldü, başlık/sayı/alt yazı sabit aralıklı ortalı grup yapıldı; lokasyonlara tek/çift satır tonu eklendi. Gerçek fullscreen 1920/2560/3840 kontrolünde sekiz kartta çakışma/taşma yok; dönüş/ses/telefon ve 32 TV testi geçti.
 - [x] Ortak yazı ailesi/ölçüleri, 700 ağırlığı ve kart/form/pencere hizaları düzeltildi; 9 oturumlu ekran, telefon ve rezervasyon penceresi kontrol edildi. 32 TV testi, beş ekran boyutu, ses/%55/dönüş/çevrimdışı/iptal geçti. Gerçek yeni olay kutlaması üretim kaydı değiştirilmeden denenmedi.
 - [x] TV son istek: günlük/alt sayılar doğrulandı, import otomatik sayılmıyor; lokasyonlu gerçek öncelikler, görünür ses yüzdesi; en fazla iki dengeli alanı dolduran lokasyon sayfası ve farklı gradientler. 32 test, gerçek girişsiz bağlantıyla 5+5 dönüş, ses/ayar/çevrimdışı/iptal ve beş ekran boyutu geçti. Gerçek yeni olay ve sıfırdan farklı günlük kayıt sınırları aşağıda korunur.
 - [x] TV son görsel düzenleme: ortak marka/temizlik/bakım gradientleri, sabit yazı hizaları, kalıcı Live kartı, yumuşak açılış/sayfa geçişi ve kibar üç notalı ses; 24 test ve gerçek bağlantıyla 1366×768, 938×607, Full HD/4K/telefon, ses/çevrimdışı/iptal kontrolleri geçti.
