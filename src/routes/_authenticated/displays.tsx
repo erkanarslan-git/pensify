@@ -6,6 +6,7 @@ import { Monitor, Plus, Copy, ExternalLink, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +24,7 @@ function DisplaysPage() {
   const [link, setLink] = useState<{ id: string; url: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const query = useQuery({ queryKey: ["tv-displays"], queryFn: async () => {
-    const { data, error } = await supabase.from("tv_displays").select("id,name,created_at,revoked_at").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("tv_displays").select("id,name,created_at,revoked_at,rotation_seconds").order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   } });
@@ -40,6 +41,10 @@ function DisplaysPage() {
       setName("");
       await client.invalidateQueries({ queryKey: ["tv-displays"] });
     } catch { toast.error(t("tv.failed")); } finally { setBusy(false); }
+  }
+  async function setRotation(id: string, seconds: number) {
+    setBusy(true);
+    try { const { error } = await supabase.rpc("set_tv_rotation", { _id: id, _seconds: seconds }); if (error) throw error; await client.invalidateQueries({queryKey:["tv-displays"]}); } catch { toast.error(t("tv.failed")); } finally { setBusy(false); }
   }
   async function revoke(id: string) {
     setBusy(true);
@@ -61,9 +66,9 @@ function DisplaysPage() {
       <Button asChild><a href={link.url} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4" />{t("tv.open")}</a></Button>
     </div>}
     <p className="my-5 max-w-2xl text-sm text-muted-foreground">{t("tv.savedLink")}</p>
-    {query.isError ? <p role="alert">{t("tv.failed")}</p> : query.isLoading ? <p>{t("common.loading")}</p> : !query.data?.length ? <p className="text-muted-foreground">{t("tv.empty")}</p> : <div className="max-w-3xl divide-y divide-border">{query.data.map(display => <div key={display.id} className="flex items-center justify-between gap-3 py-4">
+    {query.isError ? <p role="alert">{t("tv.failed")}</p> : query.isLoading ? <p>{t("common.loading")}</p> : !query.data?.length ? <p className="text-muted-foreground">{t("tv.empty")}</p> : <div className="max-w-3xl divide-y divide-border">{query.data.map(display => <div key={display.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
       <div className="flex min-w-0 items-center gap-3"><Monitor className="h-5 w-5 shrink-0 text-primary" /><div className="min-w-0"><p className="break-words font-medium">{display.name}</p><p className="text-xs text-muted-foreground">{t(display.revoked_at ? "tv.revoked" : "tv.active")}</p></div></div>
-      {!display.revoked_at && <Button variant="outline" disabled={busy} onClick={() => revoke(display.id)}><Ban className="mr-2 h-4 w-4" />{t("tv.revoke")}</Button>}
+      {!display.revoked_at && <div className="flex shrink-0 items-center gap-2"><Select value={String(display.rotation_seconds)} disabled={busy} onValueChange={value=>setRotation(display.id,Number(value))}><SelectTrigger aria-label={t("tv.rotation")} className="w-32"><SelectValue/></SelectTrigger><SelectContent>{[5,10,15,20].map(seconds=><SelectItem key={seconds} value={String(seconds)}>{t("tv.rotationSeconds",{count:seconds})}</SelectItem>)}</SelectContent></Select><Button variant="outline" disabled={busy} onClick={() => revoke(display.id)}><Ban className="mr-2 h-4 w-4" />{t("tv.revoke")}</Button></div>}
     </div>)}</div>}
   </AppShell>;
 }

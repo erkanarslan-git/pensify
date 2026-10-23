@@ -1,11 +1,15 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [x] Onaylı TV belgesi: güçlü dalgalı kartlar ve %84/%16 üst yerleşim, Almanca açık ekran; Full HD/4K/küçük ekran doğrulandı.
+- [x] TV: günlük KPI/alt sayılar, tekil rezervasyonlar, fiziksel doluluk ve kaynak/lokasyonlu güvenli olaylar, gerçek öncelikler.
+- [x] TV: otomatik lokasyon sayfaları/5–20sn ayar, güvenilir 8sn delta, 5sn kutlama/konfeti ve seviye kontrollü ses; 24 test geçti.
+- [x] TV: gerçek anonim bağlantı, Full HD/4K/uzun isim, ses/ayar/iptal, tekrar/reconnect/gün değişimi testleri; docs/tv-acceptance.md veri kaynakları ve sınırları.
 - [x] TV tasarımı image-43 referansına göre düzenlendi: ilk kart mavi, diğerleri açık zemin/canlı vurgulu; ekran yüksekliğini dolduran tablo, sağ özetler, alt grafik. 938×607, Full HD/4K, telefon, üç dil ve açık/koyu görünüm kontrol edildi; 5 test, anonim bağlantı/ses/iptal kontrolleri geçti. Bu tur yalnız tasarım.
 - [x] TV: önceki durum tonlarında canlı renkler, 2×4 kart, kompakt tablo/sayfalama ve tam genişlikte alt grafik; 938×607, Full HD/4K, üç dil, açık/koyu ve anonim bağlantı kontrolü.
-- [ ] TV belgesinin eksikleri: günlük tekil tamamlanan temizlik/bakım, manuel/otomatik rezervasyon ve iptal ayrımı, giriş/çıkış alt durumları, ödeme ödenen/kısmi/açık adetleri; mevcut snapshot bunları sağlamıyor. Oda durumu sayıları günlük tamamlanma gibi etiketlenmedi.
-- [ ] TV: güvenilir yeni rezervasyon olayıyla kaynak/lokasyon, gruplu kutlama/konfeti, ayrı ses/seviye/kalıcı tercih; öncelikli giriş/temizlik/kritik bakım/geciken görevler; oturumlu filtreli detay bağlantıları ve gerçek zamanlı veri desteği. Ayrı kapsam uygulaması gerekli, bu turda yalnız görünüm ve belge kontrolü istendi.
-- [ ] TV kabul testleri: günlük KPI/import/retry/DST/tenant izolasyonu ve uzun süreli çalıştırma; mevcut 5 yardımcı test ve anonim tarayıcı kontrolleri tam belge onayı değildir.
+- [x] Son onaylı TV belgesindeki günlük KPI, ödeme alt sayıları, yeni olay kutlaması, öncelikler ve dönüş kapsamı tamamlandı; eski kapsamın detay bağlantıları ve ayrı realtime aboneliği bu son belgede yok, eklenmedi.
+- [ ] Gerçek otomatik rezervasyon kutlama kontrolü: sağlayıcının güvenilir oluşturma zamanı mevcut iCal verisinde yok; eski import kutlanmaz. Gerçek sağlayıcı ve uygun olay bekleniyor.
+- [ ] Sıfırdan farklı günlük ödeme/iş KPI ve üretim kutlamasının canlı uçtan uca kontrolü: uygun gerçek kayıt yok; test için işletme kaydı değiştirilmedi. Kural testleri geçti.
 - [x] Mesai, yetki, ödeme ve Berlin saati: 15 dosyada 76 test geçti.
 - [x] Anonim TV: firma kapsamlı iptal edilebilir bağlantı, kişisel verisiz özet, lokasyonlar, anonim olaylar, 7 günlük grafik/vade sayıları; 30 saniyede sunucu görünümüyle yenileme, tekilleştirme/ses/reduced-motion, DE/EN/TR.
 - [x] 111 test geçti; gerçek sahip hesabıyla geçici bağlantı oluşturma–girişsiz açma–iptal kontrolü, 10 lokasyon/84 oda, üç dil, telefon taşma, çevrimdışı uyarı ve yeniden bağlanma doğrulandı. Ham display kayıtları/izinsiz oluşturma/geçersiz token engelli; TV kimliği Mesai Takibi'ne giriş sağlamıyor. Deneme bağlantıları iptal edildi.

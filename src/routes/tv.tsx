@@ -1,141 +1,135 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { Maximize, Volume2, VolumeX, Wifi, WifiOff, CalendarPlus, BedDouble, DoorOpen, LogIn, LogOut, Brush, Wrench, Coins, MapPin, Activity, ListChecks, ChartColumn, ChevronLeft, ChevronRight } from "lucide-react";
+import { Maximize, Volume2, VolumeX, Wifi, WifiOff, CalendarPlus, BedDouble, DoorOpen, LogIn, LogOut, Brush, Wrench, Coins, ChevronLeft, ChevronRight, Pause, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTvSnapshot } from "@/lib/tv.functions";
-import { newTvEvents, tvDeltas, tvTokenSchema, type TvSnapshot } from "@/lib/tv";
-import { BUSINESS_TIME_ZONE, businessTime } from "@/lib/business-time";
+import { tvUpdate, nextTvPage, TV_DELTA_MS, TV_CELEBRATION_MS, tvTokenSchema, type TvSnapshot } from "@/lib/tv";
+import { BUSINESS_TIME_ZONE, businessDate, businessTime } from "@/lib/business-time";
 import { normalizeChannel } from "@/lib/guest-color";
-import brandLogo from "@/assets/pension-highway-logo.png.asset.json";
 
 export const Route = createFileRoute("/tv")({
-  head: () => ({ meta: [{ title: "Operasyon TV — Pensify" }, { name: "description", content: "Pensify anonim günlük operasyon özeti." }, { property: "og:title", content: "Operasyon TV — Pensify" }, { property: "og:description", content: "Lokasyon durumları ve anonim günlük operasyon özeti." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }, { name: "referrer", content: "no-referrer" }] }),
-  component: TvPage,
+ head: () => ({ meta: [{ title: "Pensify — TV-Betriebsübersicht" }, { name: "description", content: "Live-Betriebsübersicht mit Reservierungen, Zimmerstatus und Standorten ohne personenbezogene Daten." }, { property: "og:title", content: "Pensify — TV-Betriebsübersicht" }, { property: "og:description", content: "Anonyme Tagesübersicht für den Hotelbetrieb." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }, { name: "referrer", content: "no-referrer" }] }), component: TvPage,
 });
-
+const sourceLabels: Record<string,string> = {booking:"Booking.com",airbnb:"Airbnb",expedia:"Expedia",check24:"Check24",website:"Website",direct:"Direkt",operation:"Betrieb",ical:"iCal"};
+function sourceName(source:string) { return sourceLabels[source] ?? sourceLabels[normalizeChannel(source)]; }
 function TvPage() {
-  const { t, i18n } = useTranslation();
-  const [token, setToken] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [online, setOnline] = useState(true);
-  const [now, setNow] = useState(Date.now());
-  const [sound, setSound] = useState(false);
-  const [locationPage, setLocationPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [deltas, setDeltas] = useState<ReturnType<typeof tvDeltas> | null>(null);
-  const [changeAt, setChangeAt] = useState<string | null>(null);
-  const [highlight, setHighlight] = useState<string[]>([]);
-  const seen = useRef<string[] | null>(null);
-  const previous = useRef<TvSnapshot["totals"] | null>(null);
-  const reconnecting = useRef(false);
-  const audio = useRef<AudioContext | null>(null);
-  const locationSection = useRef<HTMLElement | null>(null);
-  const read = useServerFn(getTvSnapshot);
-  useEffect(() => {
-    const parsed = tvTokenSchema.safeParse(window.location.hash.slice(1));
-    setToken(parsed.success ? parsed.data : null);
-    setLoaded(true);
-    setOnline(navigator.onLine);
-    const lost = () => { setOnline(false); reconnecting.current = true; };
-    const restored = () => { setOnline(true); };
-    window.addEventListener("offline", lost);
-    window.addEventListener("online", restored);
-    const timer = window.setInterval(() => setNow(Date.now()), 15000);
-    return () => { window.removeEventListener("offline", lost); window.removeEventListener("online", restored); window.clearInterval(timer); void audio.current?.close(); };
-  }, []);
-  const query = useQuery({ queryKey: ["tv-snapshot", token], enabled: !!token, queryFn: () => read({ data: { token: token ?? "" } }), refetchInterval: 30000, refetchIntervalInBackground: true, retry: 1, staleTime: 0 });
-  useEffect(() => {
-    if (query.isError) reconnecting.current = true;
-  }, [query.isError]);
-  useEffect(() => {
-    const section = locationSection.current;
-    if (!section) return;
-    const resize = () => {
-      const row = section.querySelector("tbody tr");
-      const heading = section.querySelector(".tv-band-heading");
-      const tableHead = section.querySelector("thead");
-      const tableFoot = section.querySelector("tfoot");
-      if (!row || !heading || !tableHead || !tableFoot) return;
-      const style = getComputedStyle(section);
-      const available = section.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - heading.getBoundingClientRect().height - tableHead.getBoundingClientRect().height - tableFoot.getBoundingClientRect().height - 10;
-      setPageSize(Math.max(1, Math.floor(available / row.getBoundingClientRect().height)));
-    };
-    const observer = new ResizeObserver(resize);
-    observer.observe(section);
-    const row = section.querySelector("tbody tr");
-    if (row) observer.observe(row);
-    void document.fonts.ready.then(resize);
-    resize();
-    return () => observer.disconnect();
-  }, [query.data?.properties.length, loaded]);
-  useEffect(() => {
-    if (!query.data) return;
-    const fresh = newTvEvents(seen.current, query.data.events, reconnecting.current);
-    const differences = tvDeltas(previous.current, query.data.totals);
-    if (Object.values(differences).some(value => value !== 0)) { setDeltas(differences); setChangeAt(query.data.at); }
-    setHighlight(fresh.map(event => event.id));
-    seen.current = Array.from(new Set([...(seen.current ?? []), ...query.data.events.map(event => event.id)])).slice(-2000);
-    previous.current = query.data.totals;
-    reconnecting.current = false;
-    if (fresh.length && sound && audio.current?.state === "running") {
-      const oscillator = audio.current.createOscillator();
-      const gain = audio.current.createGain();
-      oscillator.frequency.value = 660;
-      gain.gain.setValueAtTime(0.04, audio.current.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audio.current.currentTime + 0.15);
-      oscillator.connect(gain); gain.connect(audio.current.destination);
-      oscillator.start(); oscillator.stop(audio.current.currentTime + 0.15);
-    }
-  }, [query.dataUpdatedAt, query.data, sound]);
-  async function toggleSound() {
-    if (sound) { setSound(false); return; }
-    try { audio.current ??= new AudioContext(); await audio.current.resume(); setSound(true); } catch { setSound(false); }
-  }
-  if (!loaded || (token && query.isPending)) return <main className="grid min-h-screen place-items-center bg-background text-foreground">{t("common.loading")}</main>;
-  if (!token || query.data === null || (!query.data && query.isError)) return <main className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background p-6 text-center text-foreground"><img src={brandLogo.url} alt="Pension Highway" className="w-48" /><h1 className="text-2xl font-semibold">{t("tv.title")}</h1><p>{t(query.isError ? "tv.unavailable" : "tv.invalid")}</p>{query.isError && <Button onClick={() => query.refetch()}>{t("tv.retry")}</Button>}</main>;
-  const data = query.data;
-  if (!data) return null;
-  const disconnected = !online || query.isError || now - Date.parse(data.at) > 90000;
-  const max = Math.max(1, ...data.weekly.flatMap(day => [day.arrivals, day.departures]));
-  const time = (value: string) => businessTime(new Date(value));
-  const pages = Math.max(1, Math.ceil(data.properties.length / pageSize));
-  const currentPage = Math.min(locationPage, pages - 1);
-  const properties = data.properties.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
-  const occupancy = data.totals.total ? Math.round(data.totals.occupied / data.totals.total * 1000) / 10 : 0;
-  const cards = [
-    { key: "created", value: data.totals.created, icon: CalendarPlus, tone: "created" },
-    { key: "cleaningOpen", value: data.totals.cleaning, icon: Brush, tone: "cleaning" },
-    { key: "maintenanceOpen", value: data.totals.maintenance, icon: Wrench, tone: "maintenance" },
-    { key: "occupied", value: `${occupancy}%`, icon: BedDouble, tone: "occupied" },
-    { key: "arrivals", value: data.totals.arrivals, icon: LogIn, tone: "arrivals" },
-    { key: "departures", value: data.totals.departures, icon: LogOut, tone: "departures" },
-    { key: "dueToday", value: data.dues.dueToday, icon: Coins, tone: "dues" },
-    { key: "ready", value: data.totals.ready, icon: DoorOpen, tone: "ready" },
-  ];
-  return <main className="tv-screen bg-background text-foreground">
-    <header className="tv-header">
-      <div className="flex min-w-0 items-center gap-3"><h1 className="truncate text-2xl font-bold">{data.organization}</h1><span className="tv-header-label border-l border-border pl-3 text-muted-foreground">{t("tv.overview")}</span></div>
-      <div className="flex shrink-0 items-center gap-2"><time className="tv-header-date text-sm">{new Intl.DateTimeFormat(i18n.resolvedLanguage, { timeZone: BUSINESS_TIME_ZONE, dateStyle: "medium" }).format(new Date(data.at))} · {time(data.at)}</time><span role="status" className={`tv-connection ${disconnected ? "text-destructive" : "text-success"}`}>{disconnected ? <WifiOff className="h-4 w-4 shrink-0" /> : <Wifi className="h-4 w-4 shrink-0" />}<span>{t(disconnected ? "tv.disconnected" : "tv.live")}</span></span><Button size="icon" variant="ghost" title={t("tv.fullscreen")} aria-label={t("tv.fullscreen")} onClick={() => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen().catch(() => {}); }}><Maximize className="h-4 w-4" /></Button></div>
-    </header>
-    <section className="tv-summary">
-      {cards.map(({key, value, icon: Icon, tone}) => <article key={key} className={`tv-summary-card tv-tone-${tone} ${key === "created" ? "brand-tile" : "tv-kpi"}`}>
-        <Icon className="tv-card-icon" /><div className="min-w-0"><p className="tv-card-label">{t(`tv.${key}`)}</p><div className="tv-number">{value}</div><p className="tv-card-detail">{key === "occupied" ? `${data.totals.occupied} / ${data.totals.total} ${t("tv.rooms")}` : key in data.totals && deltas?.[key as keyof typeof deltas] ? `${deltas[key as keyof typeof deltas] > 0 ? "↑ +" : "↓ "}${deltas[key as keyof typeof deltas]} · ${changeAt ? time(changeAt) : ""}` : ""}</p></div>
-      </article>)}
-    </section>
-    <div className="tv-middle">
-      <section ref={locationSection} className="tv-location-section min-w-0">
-        <div className="tv-band-heading"><h2><MapPin />{t("tv.locationsOverview")}</h2>{pages > 1 && <div className="flex shrink-0 items-center gap-1"><Button size="icon" variant="ghost" aria-label={t("tv.previousPage")} disabled={currentPage === 0} onClick={() => setLocationPage(currentPage - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs tabular-nums">{currentPage + 1} / {pages}</span><Button size="icon" variant="ghost" aria-label={t("tv.nextPage")} disabled={currentPage === pages - 1} onClick={() => setLocationPage(currentPage + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}</div>
-        <div className="tv-table-wrap"><table className="tv-table w-full text-left"><thead><tr>{["location", "total", "occupied", "ready", "cleaning", "maintenance"].map(key => <th key={key}>{t(`tv.${key}`)}</th>)}</tr></thead><tbody>{properties.map(property => <tr key={property.name}><td className="tv-location-name"><span>{property.name}</span><div className="tv-occupancy"><div className="tv-occupancy-track"><div style={{width: `${property.total ? property.occupied / property.total * 100 : 0}%`}} /></div><small>{property.total ? Math.round(property.occupied / property.total * 100) : 0}%</small></div></td>{(["total", "occupied", "ready", "cleaning", "maintenance"] as const).map(key => <td key={key} data-tone={key === "total" ? undefined : key} className={`tv-tone-${key} tabular-nums`}>{property[key]}</td>)}</tr>)}</tbody><tfoot><tr><th>{t("tv.total")}</th>{(["total", "occupied", "ready", "cleaning", "maintenance"] as const).map(key => <td key={key} className="font-semibold tabular-nums">{data.totals[key]}</td>)}</tr></tfoot></table></div>{!data.properties.length && <p className="p-3 text-muted-foreground">{t("tv.noLocations")}</p>}
-      </section>
-      <aside className="tv-side min-w-0">
-        <section className="tv-activity"><div className="tv-band-heading"><h2><Activity />{t("tv.flow")}</h2></div><div className="tv-activity-list">{data.events.slice(0, 5).map(event => <div key={event.id} className={`tv-event ${highlight.includes(event.id) ? "tv-event-new" : ""}`} style={{borderLeftColor: data.colors[normalizeChannel(event.source)]}}><time>{time(event.at)}</time><span>{t(`tv.${event.kind}`)}</span></div>)}{!data.events.length && <p className="p-3 text-sm text-muted-foreground">{t("tv.noEvents")}</p>}</div></section>
-        <section className="tv-important"><div className="tv-band-heading"><h2><ListChecks />{t("tv.priorities")}</h2></div><dl>{(["cleaning", "maintenance"] as const).map(key => <div key={key} className={`tv-stat-row tv-tone-${key}`}><dd>{data.totals[key]}</dd><dt>{t(`tv.${key === "cleaning" ? "cleaningOpen" : "maintenanceOpen"}`)}</dt></div>)}<div className="tv-stat-row tv-tone-dues"><dd>{data.dues.overdue}</dd><dt>{t("tv.overdue")}</dt></div></dl></section>
-      </aside>
-    </div>
-    <section className="tv-chart-section"><div className="tv-band-heading"><h2><ChartColumn />{t("tv.week")}</h2><div className="flex gap-3 text-xs"><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-tv-arrival" />{t("tv.arrival")}</span><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-tv-departure" />{t("tv.departure")}</span></div></div><div className="tv-chart">{data.weekly.map(day => <div key={day.day} className="tv-day"><div className="tv-bars">{(["arrivals", "departures"] as const).map((key, index) => <div key={key} className="tv-bar-column"><span>{day[key]}</span><div className={index === 0 ? "bg-tv-arrival" : "bg-tv-departure"} style={{ height: `${day[key] / max * 72}%`, minHeight: day[key] ? 3 : 0 }} /></div>)}</div><p>{new Intl.DateTimeFormat(i18n.resolvedLanguage, {timeZone: BUSINESS_TIME_ZONE, weekday: "short"}).format(new Date(`${day.day}T12:00:00Z`))}</p></div>)}</div></section>
-    <footer className="tv-footer"><span>{t("tv.updated")}: {time(data.at)} · Europe/Berlin</span><Button size="sm" variant="ghost" aria-label={t(sound ? "tv.mute" : "tv.sound")} onClick={toggleSound}>{sound ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}{t(sound ? "tv.mute" : "tv.sound")}</Button></footer>
-  </main>;
+ const { i18n } = useTranslation();
+ const t = i18n.getFixedT("de");
+ const [token,setToken] = useState<string|null>(null);
+ const [loaded,setLoaded] = useState(false);
+ const [online,setOnline] = useState(true);
+ const [now,setNow] = useState(Date.now());
+ const [sound,setSound] = useState(false);
+ const [activated,setActivated] = useState(false);
+ const [volume,setVolume] = useState(35);
+ const [locationPage,setLocationPage] = useState(0);
+ const [pageSize,setPageSize] = useState(1);
+ const [eventSize,setEventSize] = useState(3);
+ const [paused,setPaused] = useState(false);
+ const [interacting,setInteracting] = useState(false);
+ const [progress,setProgress] = useState(0);
+ const [deltas,setDeltas] = useState<Record<string,number>>({});
+ const [highlight,setHighlight] = useState<string[]>([]);
+ const [celebration,setCelebration] = useState<TvSnapshot["events"]>([]);
+ const previous = useRef<TvSnapshot|null>(null);
+ const reconnecting = useRef(false);
+ const audio = useRef<AudioContext|null>(null);
+ const soundPrefs = useRef({sound:false,volume:35});
+ const deltaTimer = useRef<ReturnType<typeof setTimeout>|null>(null);
+ const celebrationTimer = useRef<ReturnType<typeof setTimeout>|null>(null);
+ const highlightTimer = useRef<ReturnType<typeof setTimeout>|null>(null);
+ const locationSection = useRef<HTMLElement|null>(null);
+ const eventList = useRef<HTMLDivElement|null>(null);
+ const read = useServerFn(getTvSnapshot);
+ soundPrefs.current = {sound,volume};
+ useEffect(()=>{
+  const parsed=tvTokenSchema.safeParse(window.location.hash.slice(1)); setToken(parsed.success?parsed.data:null); setLoaded(true); setOnline(navigator.onLine);
+  try { const saved=Number(localStorage.getItem("pensify.tv.volume")); if(localStorage.getItem("pensify.tv.volume") && Number.isFinite(saved)) setVolume(Math.max(0,Math.min(100,saved))); } catch { /* Optional preferences. */ }
+  const lost=()=>{setOnline(false);reconnecting.current=true;}; const restored=()=>setOnline(true);
+  window.addEventListener("offline",lost);window.addEventListener("online",restored);
+  const timer=setInterval(()=>setNow(Date.now()),1000);
+  return ()=>{window.removeEventListener("offline",lost);window.removeEventListener("online",restored);clearInterval(timer); if(deltaTimer.current)clearTimeout(deltaTimer.current);if(celebrationTimer.current)clearTimeout(celebrationTimer.current);if(highlightTimer.current)clearTimeout(highlightTimer.current);void audio.current?.close();};
+ },[]);
+ const query=useQuery({queryKey:["tv-snapshot-v2",token],enabled:!!token,queryFn:async()=>{
+  const snapshot=await read({data:{token:token??""}});
+  // A delayed response cannot roll back a newer validated display.
+  return snapshot && previous.current && Date.parse(snapshot.at)<Date.parse(previous.current.at)?previous.current:snapshot;
+ },refetchInterval:10000,refetchIntervalInBackground:true,retry:1,staleTime:0});
+ const data=query.data;
+ const pages=Math.max(1,Math.ceil((data?.properties.length??0)/pageSize));
+ const currentPage=Math.min(locationPage,pages-1);
+ useEffect(()=>{if(query.isError)reconnecting.current=true;},[query.isError]);
+ useEffect(()=>{
+  if(data && (now-Date.parse(data.at)>90000)) reconnecting.current=true;
+  if(data && data.day!==businessDate(new Date(now)) && online) void query.refetch();
+ },[now,data?.day,online]);
+ useEffect(()=>{
+  const section=locationSection.current;const events=eventList.current;if(!section||!events)return;
+  const resize=()=>{
+   const heading=section.querySelector(".tv-band-heading");const head=section.querySelector("thead");const foot=section.querySelector("tfoot");if(!heading||!head||!foot)return;
+   const style=getComputedStyle(section);const base=parseFloat(style.getPropertyValue("--tv-row-height"))||44;
+   // Capacity uses all names, not just the shorter names on the current page.
+   const nameWidth=section.querySelector(".tv-location-name")?.getBoundingClientRect().width??150;
+   const canvas=document.createElement("canvas");const ctx=canvas.getContext("2d");const nameStyle=section.querySelector(".tv-location-name");
+   let rowHeight=base;if(ctx&&nameStyle){const cs=getComputedStyle(nameStyle);ctx.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;const longest=Math.max(0,...(data?.properties??[]).map(p=>ctx.measureText(p.name).width));const lines=Math.max(1,Math.ceil(longest/Math.max(1,nameWidth)));rowHeight=Math.max(base,lines*parseFloat(cs.fontSize)*1.2+8);}
+   const available=section.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-heading.getBoundingClientRect().height-head.getBoundingClientRect().height-foot.getBoundingClientRect().height-12;
+   // Narrow layouts stack the occupancy bar below the name and need extra room.
+   const stacked=window.matchMedia("(max-width: 699px)").matches;
+   setPageSize(Math.max(1,Math.floor(available/(rowHeight+(stacked?14:0)))));
+   const eventHeight=parseFloat(getComputedStyle(events).getPropertyValue("--tv-event-height"))||42;setEventSize(Math.max(1,Math.floor(events.clientHeight/eventHeight)));
+  };
+  const observer=new ResizeObserver(resize);observer.observe(section);observer.observe(events);resize();void document.fonts.ready.then(resize);return()=>observer.disconnect();
+ },[data?.properties.length,loaded]);
+ useEffect(()=>{
+  if(!data)return;const update=tvUpdate(previous.current,data,reconnecting.current);previous.current=data;reconnecting.current=false;
+  setDeltas(update.deltas);setHighlight(update.events.map(e=>e.id));
+  if(deltaTimer.current)clearTimeout(deltaTimer.current);deltaTimer.current=setTimeout(()=>setDeltas({}),TV_DELTA_MS);
+  if(highlightTimer.current)clearTimeout(highlightTimer.current);highlightTimer.current=setTimeout(()=>setHighlight([]),1500);
+  if(!update.celebrations.length)return;
+  setCelebration(update.celebrations);if(celebrationTimer.current)clearTimeout(celebrationTimer.current);celebrationTimer.current=setTimeout(()=>setCelebration([]),TV_CELEBRATION_MS);
+  const prefs=soundPrefs.current;if(!prefs.sound||audio.current?.state!=="running")return;
+  const oscillator=audio.current.createOscillator();const gain=audio.current.createGain();oscillator.frequency.setValueAtTime(660,audio.current.currentTime);oscillator.frequency.setValueAtTime(880,audio.current.currentTime+.1);gain.gain.setValueAtTime(.08*prefs.volume/100,audio.current.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,audio.current.currentTime+.25);oscillator.connect(gain);gain.connect(audio.current.destination);oscillator.start();oscillator.stop(audio.current.currentTime+.25);
+ },[query.dataUpdatedAt,data]);
+ useEffect(()=>{
+  setProgress(0);if(pages<=1||paused||interacting)return;
+  const start=Date.now();const interval=(data?.rotationSeconds??10)*1000;
+  const timer=setInterval(()=>{const elapsed=Date.now()-start;if(elapsed>=interval){setLocationPage(p=>nextTvPage(p,pages));setProgress(0);}else setProgress(elapsed/interval*100);},100);
+  return()=>clearInterval(timer);
+ },[pages,currentPage,paused,interacting,data?.rotationSeconds]);
+ async function toggleSound(){if(sound){setSound(false);return;}try{audio.current??=new AudioContext();await audio.current.resume();setSound(true);setActivated(true);}catch{setSound(false);}}
+ function changeVolume(value:number){setVolume(value);try{localStorage.setItem("pensify.tv.volume",String(value));}catch{/* Optional. */}}
+ if(!loaded||(token&&query.isPending))return <main lang="de" className="tv-empty grid min-h-screen place-items-center">{t("tv.loading")}</main>;
+ if(!token||data===null||(!data&&query.isError))return <main lang="de" className="tv-empty flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center"><h1 className="text-3xl font-bold">Pensify</h1><p>{t(query.isError?"tv.unavailable":"tv.invalid")}</p>{query.isError&&<Button onClick={()=>query.refetch()}>{t("tv.retry")}</Button>}</main>;
+ if(!data)return null;
+ const disconnected=!online||query.isError||now-Date.parse(data.at)>90000;
+ const time=(value:string)=>businessTime(new Date(value));
+ const occupancy=data.totals.total?data.totals.occupied/data.totals.total*100:0;
+ const cards=[
+  {key:"created",value:data.metrics.created,icon:CalendarPlus,tone:"created",detail:t("tv.automaticManual",{automatic:data.metrics.automatic,manual:data.metrics.manual})+(data.metrics.unknownOrigin?` · ${t("tv.unknownOrigin",{count:data.metrics.unknownOrigin})}`:"")},
+  {key:"cleaned",value:data.metrics.cleaned,icon:Brush,tone:"cleaning",detail:t("tv.review",{count:data.metrics.review})},
+  {key:"maintenanceDone",value:data.metrics.maintenanceDone,icon:Wrench,tone:"maintenance",detail:t("tv.maintenanceDetail",{count:data.metrics.maintenanceOpen})},
+  {key:"occupied",value:`${new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(occupancy)}%`,icon:BedDouble,tone:"occupied",detail:t("tv.occupancyDetail",{occupied:data.totals.occupied,total:data.totals.total})},
+  {key:"arrivals",value:data.totals.arrivals,icon:LogIn,tone:"arrivals",detail:t("tv.arrivalDetail",{arrived:data.metrics.arrived,expected:data.metrics.arrivalExpected})},
+  {key:"departures",value:data.totals.departures,icon:LogOut,tone:"departures",detail:t("tv.departureDetail",{departed:data.metrics.departed,expected:data.metrics.departureExpected})},
+  {key:"dueToday",value:data.dues.dueToday,icon:Coins,tone:"dues",detail:t("tv.paymentDetail",data.dues)},
+  {key:"ready",value:data.totals.ready,icon:DoorOpen,tone:"ready",detail:t("tv.readyDetail")},
+ ];
+ const properties=data.properties.slice(currentPage*pageSize,(currentPage+1)*pageSize);
+ const max=Math.max(1,...data.weekly.flatMap(d=>[d.arrivals,d.departures]));
+ const priorities=[{key:"arrivalNotReady",tone:"arrival"},{key:"cleaningPriority",tone:"cleaning"},{key:"dueOpen",tone:"payment"},{key:"maintenanceBlocking",tone:"maintenance"}] as const;
+ const celebrationFirst=celebration[0];const multipleLocations=new Set(celebration.map(e=>e.location)).size>1;
+ return <main lang="de" className="tv-screen">
+  <header className="tv-header"><div className="tv-header-brand"><h1>Pensify</h1><span className="tv-header-label">{t("tv.overview")}</span></div><div className="tv-header-tools"><time className="tv-header-date">{new Intl.DateTimeFormat("de-DE",{timeZone:BUSINESS_TIME_ZONE,day:"numeric",month:"long",year:"numeric"}).format(new Date(now))} · {time(new Date(now).toISOString())}</time><span role="status" className="tv-connection" data-offline={disconnected}>{disconnected?<WifiOff size={16}/>:<Wifi size={16}/>}<span>{t(disconnected?"tv.disconnected":"tv.live")}</span></span><Button size="icon" variant="ghost" title={t("tv.fullscreen")} aria-label={t("tv.fullscreen")} onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen();else void document.documentElement.requestFullscreen().catch(()=>{});}}><Maximize size={18}/></Button></div></header>
+  <div className="tv-top"><section className="tv-summary">{cards.map(({key,value,icon:Icon,tone,detail})=><article key={key} data-metric={key} className={`tv-summary-card tv-tone-${tone}`}><svg className="tv-card-waves" viewBox="0 0 300 230" preserveAspectRatio="none" aria-hidden="true"><path d="M80 260C100 130 210 70 350 55" fill="none" stroke="currentColor" strokeWidth="24"/><path d="M120 260C145 150 235 115 350 98" fill="none" stroke="currentColor" strokeWidth="22"/><path d="M162 260C185 185 258 158 350 145" fill="none" stroke="currentColor" strokeWidth="20"/></svg><Icon className="tv-card-icon"/><div className="tv-card-content"><p className="tv-card-label">{t(`tv.${key}`)}</p><div className="tv-number-line"><span className="tv-number">{value}</span>{!!deltas[key]&&<span className="tv-delta" data-negative={deltas[key]<0}>{deltas[key]>0?`+${deltas[key]}`:`−${Math.abs(deltas[key])}`}</span>}</div><p className="tv-card-detail">{detail}</p></div></article>)}</section>
+   <aside className="tv-celebration-area" aria-live="polite">{celebrationFirst&&<><div className="tv-confetti" key={celebrationFirst.id} aria-hidden="true">{Array.from({length:18},(_,i)=><i key={i} style={{"--confetti-x":`${(i*37)%100}%`,"--confetti-delay":`${i*.035}s`,"--confetti-color":`var(${["--tv-chart-in","--tv-chart-out","--tv-success","--tv-warn"][i%4]})`} as CSSProperties}/>)}</div><div className="tv-celebration" style={{"--tv-source":data.colors[normalizeChannel(celebrationFirst.source)]} as CSSProperties}><Sparkles/><strong>{t(celebration.length>1?"tv.newReservations":"tv.newReservation",{count:celebration.length})}</strong><p>{sourceName(celebrationFirst.source)} · {multipleLocations?t("tv.allLocations"):celebrationFirst.location}</p></div></>}</aside>
+  </div>
+  <div className="tv-middle"><section ref={locationSection} className="tv-location-section" onMouseEnter={()=>setInteracting(true)} onMouseLeave={()=>setInteracting(false)} onFocus={()=>setInteracting(true)} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setInteracting(false);}}><div className="tv-band-heading"><h2>{t("tv.locationsOverview")}</h2>{pages>1&&<div className="tv-page-controls"><Button size="icon" variant="ghost" aria-label={t("tv.previousPage")} onClick={()=>setLocationPage((currentPage+pages-1)%pages)}><ChevronLeft size={15}/></Button><span className="tv-page-status">{t("tv.page",{page:currentPage+1,pages})}<i className="tv-page-progress" style={{width:`${progress}%`}}/></span><Button size="icon" variant="ghost" aria-label={t("tv.nextPage")} onClick={()=>setLocationPage(nextTvPage(currentPage,pages))}><ChevronRight size={15}/></Button><Button size="icon" variant="ghost" aria-label={t(paused?"tv.resume":"tv.pause")} title={t(paused?"tv.resume":"tv.pause")} onClick={()=>setPaused(v=>!v)}>{paused?<Play size={13}/>:<Pause size={13}/>}</Button></div>}</div><div className="tv-table-wrap"><table className="tv-table"><thead><tr>{["location","total","occupiedColumn","readyColumn","cleaning","maintenance"].map(k=><th key={k}>{t(`tv.${k}`)}</th>)}</tr></thead><tbody key={`${currentPage}-${pageSize}`}>{properties.map(p=><tr key={p.name}><td><div className="tv-location-cell"><span className="tv-location-name">{p.name}</span><div className="tv-occupancy"><div className="tv-occupancy-track"><div style={{width:`${p.total?p.occupied/p.total*100:0}%`}}/></div><small>{p.total?Math.round(p.occupied/p.total*100):0}%</small></div></div></td>{(["total","occupied","ready","cleaning","maintenance"] as const).map(k=><td key={k}>{p[k]}</td>)}</tr>)}</tbody><tfoot><tr><th>{t("tv.totalAll")}</th>{(["total","occupied","ready","cleaning","maintenance"] as const).map(k=><td key={k}>{data.totals[k]}</td>)}</tr></tfoot></table></div></section>
+   <aside className="tv-side"><section className="tv-activity"><div className="tv-band-heading"><h2>{t("tv.flow")}</h2></div><div ref={eventList} className="tv-activity-list">{data.events.slice(0,eventSize).map(e=><div key={e.id} className={`tv-event ${highlight.includes(e.id)?"tv-event-new":""}`} style={{"--tv-source":e.source==="operation"?"var(--tv-success)":data.colors[normalizeChannel(e.source)]} as CSSProperties}><time>{time(e.at)}</time><i className="tv-event-dot"/><span className="tv-event-source">{sourceName(e.source)}</span><span className="tv-event-description">{t(`tv.${e.kind}`)}{e.location&&<small>{e.location}</small>}</span></div>)}{!data.events.length&&<p className="tv-no-priorities">{t("tv.noEvents")}</p>}</div></section><section className="tv-important"><div className="tv-band-heading"><h2>{t("tv.priorities")}</h2></div><dl>{priorities.filter(p=>data.priorities[p.key]>0).map(p=><div key={p.key} className={`tv-stat-row tv-stat-${p.tone}`}><dd>{data.priorities[p.key]}</dd><dt>{t(`tv.${p.key}`)}</dt></div>)}{!priorities.some(p=>data.priorities[p.key]>0)&&<p className="tv-no-priorities">{t("tv.noPriorities")}</p>}</dl></section></aside>
+  </div>
+  <section className="tv-chart-section"><div className="tv-band-heading"><h2>{t("tv.week")}</h2><div className="tv-chart-legend"><span><i className="tv-chart-in"/>{t("tv.arrival")}</span><span><i className="tv-chart-out"/>{t("tv.departure")}</span></div></div><div className="tv-chart">{data.weekly.map(d=><div key={d.day} className="tv-day"><div className="tv-bars">{(["arrivals","departures"] as const).map((k,i)=><div key={k} className="tv-bar-column"><span>{d[k]}</span><div className={i===0?"tv-chart-in":"tv-chart-out"} style={{height:`${d[k]/max*72}%`}}/></div>)}</div><p>{new Intl.DateTimeFormat("de-DE",{timeZone:BUSINESS_TIME_ZONE,weekday:"short"}).format(new Date(`${d.day}T12:00:00Z`))}</p></div>)}</div></section>
+  <footer className="tv-footer"><span>{t("tv.updated")}: {time(data.at)}</span><div className="tv-footer-tools"><span className="tv-footer-note">{t("tv.office")}</span><Button size="sm" variant="ghost" aria-label={t(!activated?"tv.sound":sound?"tv.mute":"tv.soundOn")} onClick={toggleSound}>{sound?<Volume2 size={15}/>:<VolumeX size={15}/>} {t(!activated?"tv.sound":sound?"tv.mute":"tv.soundOn")}</Button><label className="tv-volume">{t("tv.volume")}<input aria-label={t("tv.volume")} type="range" min="0" max="100" value={volume} onChange={e=>changeVolume(Number(e.target.value))}/></label></div></footer>
+ </main>;
 }

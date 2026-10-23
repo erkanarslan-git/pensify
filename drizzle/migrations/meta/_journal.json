@@ -428,6 +428,13 @@
       "when": 1792717591145,
       "tag": "0060_tv_explicit_least_privilege",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792719639017,
+      "tag": "0061_tv_approved_metrics_and_rotation",
+      "breakpoints": true
     }
   ]
 }
