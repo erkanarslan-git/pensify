@@ -9,7 +9,7 @@
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
 - Track .env with publishable values only; secrets stay in the secret store. Why: hosted builds need VITE_* to load.
-- Room types, rate plans, occupancy prices, bulk rooms and WordPress imports are written only via SECURITY DEFINER RPCs (save_room_type_full, create_rooms_bulk, set_room_type_active, move_rooms_to_type, save_occupancy_prices, import_wp_rooms) that resolve org server-side and check property access + manage_rooms (import: owner/admin). Why: atomic writes and DB-enforced permissions.
+- Room/rate/occupancy writes use SECURITY DEFINER RPCs: save_room_type_full, create_rooms_bulk, set_room_type_active, move_rooms_to_type, save_occupancy_prices, import_wp_rooms. Resolve org, property access and manage_rooms; import owner/admin only. Why: atomic authorized writes.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
 - WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
@@ -21,7 +21,7 @@
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
 
-- Property summary cards use natural-height CSS columns. Why: compact cards without truncated names.
+- Property cards use natural-height CSS columns. Why: no truncated names.
 - Channel sync separates overview, pilot, diagnostics and history; keep authorization/outbound safeguards. Dispatch expands all daily tasks without changing assignment/sending. Why: clear daily status.
 - Business time uses shared Berlin helpers; UTC stored, daily shifts grouped by start date. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; 16h stale exits zero/review via org-scoped SQL cron; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
@@ -31,4 +31,5 @@
 - Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
-- TV: revocable hashed org tokens, strict anonymous DTO, deduped daily metrics, checked-in occupancy, immutable origins, silent reset; at most two balanced pages, fixed row tracks. Why: privacy, accurate counts, no replay.
+- TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, two balanced fixed-row pages. Why: privacy, no replay.
+- Typography: shared CSS type scale and title/label line heights; load used font weights, no vertical text offsets. Why: aligned text across screens, preserved TV density.
