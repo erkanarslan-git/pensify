@@ -2871,46 +2871,124 @@ export type Database = {
           },
         ]
       }
+      todo_activity: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          organization_id: string
+          todo_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          organization_id: string
+          todo_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          todo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_activity_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_activity_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
+          archived_at: string | null
+          assigned_to: string | null
           created_at: string
           created_by: string | null
           done: boolean
           done_at: string | null
           done_by: string | null
+          due_at: string | null
           due_date: string | null
           id: string
           notes: string | null
           organization_id: string
           priority: string
+          property_id: string | null
+          recurrence: string
+          recurrence_period: string | null
+          recurrence_root: string | null
+          reminder_at: string | null
+          reminder_status: string
+          reservation_id: string | null
+          room_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          assigned_to?: string | null
           created_at?: string
           created_by?: string | null
           done?: boolean
           done_at?: string | null
           done_by?: string | null
+          due_at?: string | null
           due_date?: string | null
           id?: string
           notes?: string | null
           organization_id: string
           priority?: string
+          property_id?: string | null
+          recurrence?: string
+          recurrence_period?: string | null
+          recurrence_root?: string | null
+          reminder_at?: string | null
+          reminder_status?: string
+          reservation_id?: string | null
+          room_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          assigned_to?: string | null
           created_at?: string
           created_by?: string | null
           done?: boolean
           done_at?: string | null
           done_by?: string | null
+          due_at?: string | null
           due_date?: string | null
           id?: string
           notes?: string | null
           organization_id?: string
           priority?: string
+          property_id?: string | null
+          recurrence?: string
+          recurrence_period?: string | null
+          recurrence_root?: string | null
+          reminder_at?: string | null
+          reminder_status?: string
+          reservation_id?: string | null
+          room_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -2920,6 +2998,34 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "todos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -3259,6 +3365,7 @@ export type Database = {
         Args: { _org: string; _property?: string; _user: string }
         Returns: boolean
       }
+      can_read_todo: { Args: { _id: string }; Returns: boolean }
       cleaner_user: { Args: { _cleaner: string }; Returns: string }
       cleaning_assignment_options: {
         Args: never
@@ -3330,6 +3437,10 @@ export type Database = {
       }
       exclude_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
+        Returns: undefined
+      }
+      general_todo_action: {
+        Args: { _action: string; _id: string; _note?: string }
         Returns: undefined
       }
       has_department_assignment: {
@@ -3500,6 +3611,7 @@ export type Database = {
         Args: { _review: number; _warning: number }
         Returns: undefined
       }
+      save_general_todo: { Args: { _input: Json }; Returns: string }
       save_guest_prices: {
         Args: { _prices: Json; _room_type_id: string }
         Returns: undefined

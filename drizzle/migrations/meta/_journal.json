@@ -498,6 +498,13 @@
       "when": 1792723971763,
       "tag": "0070_redact_legacy_room_codes_in_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1792724010167,
+      "tag": "0071_extend_general_tasks_scoped_workflow",
+      "breakpoints": true
     }
   ]
 }
