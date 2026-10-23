@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { loadChannelColors } from "@/lib/channel-colors";
+import { loadActiveTvDisplays } from "@/lib/tv-displays";
 
 export const Route = createFileRoute("/_authenticated/displays")({
   head: () => ({ meta: [{ title: "TV Ekranları — Pensify" }, { name: "description", content: "Pensify anonim operasyon ekranlarının bağlantılarını yönetin." }, { property: "og:title", content: "TV Ekranları — Pensify" }, { property: "og:description", content: "Firma kapsamlı, iptal edilebilir operasyon ekranları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -23,11 +24,7 @@ function DisplaysPage() {
   const [name, setName] = useState("");
   const [link, setLink] = useState<{ id: string; url: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const query = useQuery({ queryKey: ["tv-displays"], queryFn: async () => {
-    const { data, error } = await supabase.from("tv_displays").select("id,name,created_at,revoked_at,rotation_seconds").order("created_at", { ascending: false });
-    if (error) throw error;
-    return data;
-  } });
+  const query = useQuery({ queryKey: ["tv-displays"], queryFn: ({ signal }) => loadActiveTvDisplays(signal), refetchInterval: 30_000 });
   async function create() {
     setBusy(true);
     try {

@@ -1,9 +1,12 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [x] Öncelik TV listesi: iptal edilmiş geçici bağlantılar veritabanı sorgusunda dışlanıyor; iptal sonrası anında/diğer oturumda 30sn yenilenir. İptal geçmişi ve TV görünümü korundu. 1 kural testi, gerçek sahip hesabında geçici başlığın yokluğu ve aktif filtre isteği doğrulandı.
+- [x] Yeni 11 aşamalı belge güncel e449004 kod/migration kanıtıyla yeniden karşılaştırıldı: docs/remaining-scope-review.md. Eski tamamlandı işaretleri tek başına kanıt sayılmadı; 3–11 kısmi/eksik işleri aşağıda korunuyor.
 - [x] Yeni kalan kapsam 1 uygulama: Yapılan İşler firma sahibine özel; finans görüntüleme/tahsilat/düzeltme/plan/banka izinleri ayrı, menü ve sunucu firma/lokasyon kapsamlı. Gerekçeli ters kayıt geçmişi silmez; plan editörü IBAN'ı dar yetkili yoldan kaydeder. 28 kural testi ve 10 salt-okunur DB güvenlik doğrulaması geçti; gerçek sahip hesabıyla rapor/tahsilat/plan penceresi/banka/ekip ekranları açıldı, hata yok. TV değişmedi.
 - [ ] Kapsam 1 canlı delegasyon/ters kayıt ve tenant/department SQL testleri: ayrı yetkili test ortamı ve uygun ödeme kaydı bekliyor; mevcut SQL oturumu organization_members tablo sahibi değil. Gerçek işletme verisi test için değiştirilmedi.
-- [ ] Yeni kalan kapsam 2: rezervasyon gerçek sunucu arama/filtre/sayfalama 10/20/30/40/50, toplam/export ve takvim kapsamı.
+- [x] Yeni kalan kapsam 2 uygulama: firma/lokasyon yetkili sunucu arama/filtre/sıralama/sayfalama 10/20/30/40/50, tam toplam/CSV, görünür aralıklı 7/14/30 takvim; 300ms debounce ve eski yanıt koruması. 9 kural testi (1234 CSV/DST dahil), gerçek sahip hesabında ad/boş/özel karakter araması, CSV, sıralama, üç dil ve telefon kontrolü geçti; hata yok.
+- [ ] Kapsam 2 büyük veri/çoklu rol canlı doğrulaması: mevcut hesapta tek silinmemiş rezervasyon var; ikinci sayfa/1000+ kayıt ve A/B izolasyonu ayrı test verisi/yetkili ortam bekliyor. Üretim verisi test için değiştirilmedi.
 - [ ] Yeni kalan kapsam 3: boş gerçek çıkışlı inceleme modeli, ayarlı eşikler/saatlik job görünürlüğü; Berlin günlerine çalışma/mola dağıtımı.
 - [ ] Yeni kalan kapsam 4: temizlik sorun/kontrol ayrımı, lokasyon tercihi ve gerekçeli geçmiş; açıklamasız kategori bildirimi.
 - [ ] Yeni kalan kapsam 5: mevcut yapılacaklarda atama/ilişkiler/not/geçmiş/ek/tekrar ve gerçek hatırlatma durumu.

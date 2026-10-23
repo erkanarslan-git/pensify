@@ -11,6 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { guestColor, sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { loadCalendarData } from "@/lib/calendar-data.functions";
+import { businessDate } from "@/lib/business-time";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Takvim — Pensify" }, { name: "description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pensify" }, { property: "og:description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -93,7 +96,7 @@ function CalendarPage() {
   }, []);
 
   // Helper: is given iso date strictly before today?
-  const todayIsoStr = new Date().toISOString().slice(0, 10);
+  const todayIsoStr = businessDate();
   const isPastDate = (dIso: string) => dIso < todayIsoStr;
 
   function tryOpenNew(payload: { date: string; propertyId?: string; roomNumber?: string }) {
@@ -181,21 +184,26 @@ function CalendarPage() {
   const [realProperties, setRealProperties] = useState<UnifiedProperty[]>([]);
   const [realRooms, setRealRooms] = useState<UnifiedRoom[]>([]);
   const [realReservations, setRealReservations] = useState<UnifiedRes[]>([]);
+  const [todayRoomIds, setTodayRoomIds] = useState<Set<string>>(new Set());
+  const [loadError, setLoadError] = useState(false);
+  const fetchCalendar = useServerFn(loadCalendarData);
 
   useEffect(() => {
+    let current = true;
+    const controller = new AbortController();
     (async () => {
-      const [{ data: props }, { data: rms }, { data: res }, { data: tasks }] = await Promise.all([
-        supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id,floor,status").order("floor", { ascending: true, nullsFirst: true }).order("number"),
-        supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status").is("deleted_at", null).not("status", "in", "(cancelled,no_show)"),
-        supabase.from("cleaning_tasks").select("room_id,status,notes").in("status", ["pending", "in_progress", "problem"]),
-      ]);
+      try {
+      setLoadError(false);
+      const result = await fetchCalendar({ data: { start: start.toISOString().slice(0, 10), days: range as 7 | 14 | 30, propertyId }, signal: controller.signal });
+      if (!current) return;
+      const { properties: props, rooms: rms, reservations: res, tasks } = result;
+      setTodayRoomIds(new Set(result.todayReservations.map(r => r.room_id)));
       setRealProperties((props ?? []) as UnifiedProperty[]);
       const cleaningByRoom = new Map<string, { needsCleaning: boolean; issue: string | null }>();
       for (const ct of (tasks ?? []) as { room_id: string; status: string; notes: string | null }[]) {
         const entry = cleaningByRoom.get(ct.room_id) ?? { needsCleaning: false, issue: null };
         entry.needsCleaning = true;
-        if (ct.status === "problem") entry.issue = ct.notes ?? "Sorun bildirildi";
+        if (ct.status === "problem") entry.issue = ct.notes ?? t("calendar.problemRoom");
         cleaningByRoom.set(ct.room_id, entry);
       }
       const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null; status: string }[]).map((r) => ({
@@ -209,8 +217,10 @@ function CalendarPage() {
           id: r.id, realId: r.id, roomId: r.room_id, guestName: r.guest_name,
           source: r.channel, checkIn: r.check_in, checkOut: r.check_out,
         })));
+      } catch { if (current && !controller.signal.aborted) setLoadError(true); }
     })();
-  }, [refreshKey]);
+    return () => { current = false; controller.abort(); };
+  }, [refreshKey, start, range, propertyId]);
 
   const properties: UnifiedProperty[] = realProperties;
   const rooms: UnifiedRoom[] = realRooms;
@@ -231,7 +241,7 @@ function CalendarPage() {
     [start, range],
   );
   const iso = (d: Date) => d.toISOString().slice(0, 10);
-  const today = iso(new Date());
+  const today = businessDate();
 
   const filteredRooms = useMemo(() => {
     return rooms.filter((r) => {
@@ -360,9 +370,7 @@ function CalendarPage() {
     setStart(d);
   };
 
-  const occupiedTodayCount = rooms.filter((r) =>
-    reservations.some((res) => res.roomId === r.id && res.checkIn <= today && res.checkOut > today),
-  ).length;
+  const occupiedTodayCount = rooms.filter(r => todayRoomIds.has(r.id)).length;
   const freeTodayCount = rooms.length - occupiedTodayCount;
   const needsCleaningCount = rooms.filter((r) => r.needsCleaning).length;
   const maintenanceCount = rooms.filter((r) => r.status === "maintenance").length;
@@ -395,6 +403,7 @@ function CalendarPage() {
         </div>
       }
     >
+      {loadError && <p role="alert" className="mb-4 text-sm text-destructive">{t("resv.loadError")}</p>}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         <StatCard label={t("calendar.occupiedToday")} value={occupiedTodayCount} highlight />
         <StatCard label={t("calendar.freeToday")} value={freeTodayCount} />
@@ -468,7 +477,7 @@ function CalendarPage() {
               onClick={() => setRange(r.key)}
               className={`px-3 py-2 text-xs ${range === r.key ? "bg-accent font-medium" : ""}`}
             >
-              {r.label}
+              {t("reservationList.days", { count: r.key })}
             </button>
           ))}
         </div>
@@ -581,9 +590,7 @@ function CalendarPage() {
                 const isNewGroup = rowIdx === 0 || flatRooms[rowIdx - 1].property.id !== p.id;
                 if (isNewGroup) {
                   const groupRooms = flatRooms.filter((fr) => fr.property.id === p.id);
-                  const occupiedToday = groupRooms.filter((fr) =>
-                    reservations.some((res) => res.roomId === fr.room.id && res.checkIn <= today && res.checkOut > today),
-                  ).length;
+                  const occupiedToday = groupRooms.filter(fr => todayRoomIds.has(fr.room.id)).length;
                   cells.push(
                     <div
                       key={`${p.id}-header`}
