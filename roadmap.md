@@ -61,6 +61,7 @@
 - [x] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
 
 ## Mesai (QR) akışı
+- [ ] Mesaim: ortak menü ve üç dilde geri bağlantısı; ekip/personel bağlantısı açıklaması ve oturumlu ekran kontrolü.
 - [x] Mesaim menüsü: üstte doğrudan bağlantı, dar/geniş ekranda erişim ve DE/EN/TR çevirileri; üç dilde bağlantı açıldı.
 - [x] Fazla mesai: kapsamlı şef onayı, kişiye özel saatlik ücret, ayrı süre/tutar; 18 hesap/erişim testi ve ekran kontrolü.
 - [ ] Fazla mesai gerçek onay/ödeme ve firma izolasyon testi: tamamlanmış mesai/şef hesabı ve ayrıcalıklı SQL test erişimi bekliyor.
