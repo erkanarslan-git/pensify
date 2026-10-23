@@ -61,6 +61,7 @@
 - [x] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
 
 ## Mesai (QR) akışı
+- [ ] Mesaim: tıklamayla kamera, QR doğrulama ve aynı sitedeki lokasyon ekranına geçiş; DE/EN/TR, kamera izni ve kapanma testleri.
 - [x] Personel: Temizlik/Bakım/Büro sekmeleri; üst Mesaim kısayolu kaldırıldı; DE/EN/TR metinler, 8 test, oturumlu sekme/telefon kontrolü ve derleme geçti. Bakım/Büro boş; gerçek bölüm personeliyle isim doğrulaması henüz yapılamadı.
 - [x] Mesaim: ortak menü ve üç dilde geri bağlantısı; oturumlu masaüstü menü, /cleaners geri dönüşü ve telefon menüsü doğrulandı; 8 test ve derleme geçti.
 - [x] Tüm çalışanların Mesaim bağlantısı: bölümün Çalışan atamasıyla otomatik mesai profili; ana rol ve temizlik ekibi kapsamı korunur. Çalışan olmayanlara açıklama/yönlendirme, DE/EN/TR; 19 test ve gerçek sahip hesabında önce yönlendirme, sonra İK çalışanı ekranı doğrulandı.

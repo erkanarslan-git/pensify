@@ -10,6 +10,7 @@ import { readPositionOnce, shiftActions, shiftState, type ShiftAction } from "@/
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { canStartShift, type ShiftContext } from "@/lib/shift-context";
+import { ClockQrScanner } from "@/components/clock-qr-scanner";
 
 type Prop = { id: string; name: string; address?: string | null; latitude?: number | null; longitude?: number | null } | null;
 
@@ -121,6 +122,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
         {!open && !property && (
           <p className="text-sm text-muted-foreground flex gap-2 justify-center"><QrCode className="w-4 h-4 shrink-0" /> {t("shift.scanQr")}</p>
         )}
+        {!property && canStartShift(q.data) && <ClockQrScanner />}
 
         <div className="grid gap-3">
           {actions.map((a) => (
