@@ -7,13 +7,14 @@ export const tvSnapshotSchema = z.object({
   rotationSeconds: z.union([z.literal(5),z.literal(10),z.literal(15),z.literal(20)]),
   metrics: z.object({created: count, automatic: count, manual: count, unknownOrigin: count, cleaned: count, review: count, maintenanceDone: count, maintenanceOpen: count, arrived: count, arrivalExpected: count, departed: count, departureExpected: count}).strict(),
   priorities: z.object({arrivalNotReady: count, cleaningPriority: count, dueOpen: count, maintenanceBlocking: count}).strict(),
+  priorityDetails: z.array(z.object({location:z.string(),arrivalNotReady:count,cleaningPriority:count,dueOpen:count,maintenanceBlocking:count}).strict()),
   totals: z.object({ total: count, occupied: count, ready: count, cleaning: count, maintenance: count, arrivals: count, departures: count, created: count }).strict(),
   properties: z.array(z.object({ name: z.string(), total: count, occupied: count, ready: count, cleaning: count, maintenance: count, arrivals: count, departures: count }).strict()),
   weekly: z.array(z.object({ day: z.string(), arrivals: count, departures: count }).strict()),
   events: z.array(z.object({ id: z.string(), at: z.string(), kind: z.enum(["reservation_created", "reservation_removed", "reservation_updated", "cleaning_updated", "maintenance_updated", "task_updated"]), source: z.string(), location: z.string(), eligible: z.boolean() }).strict()),
   dues: z.object({ overdue: count, dueToday: count, dueWeek: count, paid: count, partial: count, open: count }).strict(),
   colors: z.record(z.string().regex(/^#[0-9a-fA-F]{6}$/)),
-}).strict();
+}).strict().refine(s=>s.metrics.created===s.metrics.manual+s.metrics.automatic+s.metrics.unknownOrigin, "Reservation origin counts must reconcile").refine(s=>s.dues.dueToday===s.dues.paid+s.dues.partial+s.dues.open, "Payment states must reconcile");
 export type TvSnapshot = z.infer<typeof tvSnapshotSchema>;
 
 /** Initial and restored connections establish a baseline, never replay old sounds. */

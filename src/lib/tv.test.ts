@@ -3,7 +3,7 @@ import { newTvEvents, tvDeltas, tvSnapshotSchema, tvTokenSchema, tvUpdate, tvMet
 
 const event = { id: "event-1", at: "2026-10-23T00:00:00Z", kind: "reservation_created" as const, source: "booking", location: "Bünde", eligible: true };
 const totals = { total: 84, occupied: 3, ready: 78, cleaning: 3, maintenance: 0, arrivals: 2, departures: 1, created: 1 };
-const snapshot: TvSnapshot = { rotationSeconds: 10, metrics: {created:1,automatic:0,manual:1,unknownOrigin:0,cleaned:18,review:3,maintenanceDone:4,maintenanceOpen:2,arrived:1,arrivalExpected:1,departed:0,departureExpected:1}, priorities:{arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0}, organization: "Test", at: event.at, day: "2026-10-23", totals, properties: [], weekly: [], events: [event], dues: { overdue: 0, dueToday: 0, dueWeek: 0,paid:0,partial:0,open:0 }, colors: { booking: "#003580" } };
+const snapshot: TvSnapshot = { rotationSeconds: 10, priorityDetails: [], metrics: {created:1,automatic:0,manual:1,unknownOrigin:0,cleaned:18,review:3,maintenanceDone:4,maintenanceOpen:2,arrived:1,arrivalExpected:1,departed:0,departureExpected:1}, priorities:{arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0}, organization: "Test", at: event.at, day: "2026-10-23", totals, properties: [], weekly: [], events: [event], dues: { overdue: 0, dueToday: 0, dueWeek: 0,paid:0,partial:0,open:0 }, colors: { booking: "#003580" } };
 describe("TV safety and updates", () => {
   it("rejects personal fields in the response", () => {
     expect(tvSnapshotSchema.safeParse({ ...snapshot, guest_name: "private" }).success).toBe(false);
@@ -67,4 +67,11 @@ describe("Balanced location rotation", () => {
   const items = Array.from({length:9}, (_,i)=>i);
   expect([items.slice(0,slots).length,items.slice(slots).length]).toEqual([5,4]);
  });
+});
+
+describe("TV count reconciliation",()=>{
+ it("rejects four daily reservations when origin counts explain only one",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,metrics:{...snapshot.metrics,created:4}}).success).toBe(false);});
+ it("accepts three payment periods split paid partial and open",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:1}}).success).toBe(true);});
+ it("rejects missing payment state for a due period",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:0}}).success).toBe(false);});
+ it("priority details never contain room or guest identities",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,priorityDetails:[{location:"Bünde",arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0,guest_name:"private"}]}).success).toBe(false);});
 });
