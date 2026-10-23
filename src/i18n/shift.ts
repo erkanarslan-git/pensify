@@ -6,7 +6,7 @@ export const shiftTranslations = {
     elsewhere: "Offene Arbeitszeit bei {{name}}. Bitte zuerst dort beenden.",
     scanQr: "Zum Beginnen bitte den QR-Code am Standort scannen.", gettingLocation: "Standort wird geprüft…",
     noProfile: "Dein Konto ist keinem Mitarbeiterprofil zugeordnet. Bitte Vorgesetzte kontaktieren.",
-    signOut: "Abmelden", since: "Seit {{time}}", breakTotal: "Pause {{m}} Min.", menu: "Meine Zeit",
+    signOut: "Abmelden", since: "Seit {{time}}", breakTotal: "Pause {{m}} Min.", menu: "Mesaim",
   },
   en: {
     title: "My work time", hello: "Hello", state: { idle: "Not started", working: "Working", on_break: "On break", elsewhere: "Active at another location" },
@@ -15,7 +15,7 @@ export const shiftTranslations = {
     elsewhere: "Open work time at {{name}}. Please finish it there first.",
     scanQr: "To start, scan the QR code at the location.", gettingLocation: "Checking location…",
     noProfile: "Your account has no staff profile. Please contact your supervisor.",
-    signOut: "Sign out", since: "Since {{time}}", breakTotal: "Break {{m}} min", menu: "My time",
+    signOut: "Sign out", since: "Since {{time}}", breakTotal: "Break {{m}} min", menu: "Mesaim",
   },
   tr: {
     title: "Mesaim", hello: "Merhaba", state: { idle: "Başlamadı", working: "Çalışıyor", on_break: "Molada", elsewhere: "Başka lokasyonda açık" },
