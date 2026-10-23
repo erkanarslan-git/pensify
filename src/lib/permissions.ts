@@ -37,6 +37,18 @@ export const PERMISSIONS: Permission[] = [
   { key: "manage_integrations", label: "Kanal-Integrationen", group: "Administration", defaultRoles: ["owner", "admin"] },
 ];
 
+export function effectivePermission(key: string, roles: AppRole[], rolePerms: { role: AppRole; permission: string; allowed: boolean }[], userPerms: { permission: string; allowed: boolean }[]): boolean {
+  if (roles.includes("owner")) return true;
+  if (!roles.length) return false;
+  const override = userPerms.find((p) => p.permission === key);
+  if (override) return override.allowed;
+  const def = PERMISSIONS.find((p) => p.key === key);
+  return roles.some((role) => {
+    const row = rolePerms.find((p) => p.role === role && p.permission === key);
+    return row ? row.allowed : def?.defaultRoles.includes(role) === true;
+  });
+}
+
 // Route → required roles (any-of). Single source of truth for navigation + route guard.
 export type RouteAcl = { path: string; roles: AppRole[]; exact?: boolean };
 export const ROUTE_ACL: RouteAcl[] = [
