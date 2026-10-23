@@ -313,7 +313,7 @@ function TimeTrackingPage() {
             </div>
           );
         })()}
-        <Tabs defaultValue={isAdmin ? "daily" : "overtime"}>
+        <Tabs key={isAdmin ? "admin" : "scoped"} defaultValue={isAdmin ? "daily" : "overtime"}>
           <TabsList className="h-auto flex-wrap">
             {isAdmin && <><TabsTrigger value="daily">{t("attendance.tabMonth")}</TabsTrigger><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
             <TabsTrigger value="pay">{TL[1]}</TabsTrigger>

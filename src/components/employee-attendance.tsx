@@ -76,7 +76,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
     const cleanerIds = new Set(data?.cleaners.filter(c => c.user_id === m.user_id).map(c => c.id));
     const entries = data?.entries.filter(e => cleanerIds.has(e.cleaner_id) && localWorkDate(e.clock_in_at, data.timezone) >= from && localWorkDate(e.clock_in_at, data.timezone) <= to) ?? [];
     const workedDates = new Set(entries.map(e => localWorkDate(e.clock_in_at, data?.timezone ?? "Europe/Berlin")));
-    const minutes = entries.reduce((sum,e) => sum + (e.clock_out_at ? Math.max(0, (Date.parse(e.clock_out_at) - Date.parse(e.clock_in_at)) / 60000 - e.break_minutes) : 0), 0);
+    const minutes = entries.reduce((sum,e) => sum + (e.clock_out_at && !e.needs_review ? Math.max(0, (Date.parse(e.clock_out_at) - Date.parse(e.clock_in_at)) / 60000 - e.break_minutes) : 0), 0);
     const days = attendanceDays(m.id, from, to, data?.schedules ?? [], data?.absences ?? [], workedDates);
     return { member: m, days, minutes, counts: Object.fromEntries(kinds.map(k => [k, days.filter(d => d.status === k).length])) };
   });
