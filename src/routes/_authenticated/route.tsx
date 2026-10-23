@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
       // Remember a scanned QR so login returns to the same clock screen.
       const m = /^\/clock\/([A-Za-z0-9_-]{1,128})$/.exec(location.pathname);
       if (m) sessionStorage.setItem("pensify.clockToken", m[1]);
+      else if (location.pathname !== "/") sessionStorage.setItem("pensify.returnTo", location.pathname);
       throw redirect({ to: "/auth" });
     }
 
