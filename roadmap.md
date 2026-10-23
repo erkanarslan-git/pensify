@@ -1,5 +1,11 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Müşteri geçmişi ve sade mesai (23.10.2026)
+- [ ] Misafirler ve Firmalar: kalıcı kişi/firma kartları, açık rezervasyon/ödeyen/konaklayan ilişkileri, belirsiz eski kayıtların onaylı eşleştirilmesi; filtreli geçmiş ve yetkili mali görünüm/çıktı.
+- [ ] Zaman Takibi: boş başlangıç, aranabilir kişi seçimi, tek dönem, kayıt bulunan günlük liste ve küçük özet; sade fazla mesai ve kapalı detay/düzenleme işlemleri; ana ekrandan ücret/ödeme/eşik kontrollerini kaldırma.
+- [ ] İki alanın kural, yetki, üç dil, açık/koyu ve telefon kontrolleri; doğrulanmayanları ayrı raporlama.
+- [ ] Bu iki alanın ardından diğer ekranlarda gereksiz/karmaşık kontrollerin sadeleştirme incelemesi.
+
 ## Kalan işleri tamamlama (23.10.2026)
 - [x] Son paylaşım öncesi inceleme: 52 bilgisayar/telefon sayfa açılışı + 6 koyu telefon ekranı ve 212 test geçti; arama/CSV/form/sekme/telefon menüsü/kamerasız QR kontrol edildi. Salt-okunur hata simülasyonunda panel sahte sıfırları, görevlerde sahte boşluk ve rol hatasında erişim istemeye yönlendirme doğrulandı. AI gizlilik/müsaitlik ve tahsilat tekrar kurtarma riskleri kaynak incelemesinde bulundu, canlı yazma yapılmadı. Misafir contact eksikliği iddiası canlı fonksiyonla çürütüldü. Rapor: Files/Pensify-son-inceleme-2026-10-23.md; düzeltme/yayın yapılmadı, TV ve işletme kayıtları korundu.
 - [x] 23.10 06:50 dil/tema taraması: ekip, rezervasyon pencereleri/çöp kutusu, analiz, kanal/WuBook, erişim isteği, konum testi ve ortak menü/pencere metinleri üç dile bağlandı; tarih/sayı yereli ve koyu görünüm kontrastı düzeltildi. Sahip oturumunda 26 ekran × 3 dil × 2 tema = 156 açılış/taşma/eksik anahtar kontrolü geçti; üç dilde çalışan penceresi, takvim Bugün düğmesi, bağlantı/kontrol sekmeleri ayrıca doğrulandı. 67 mevcut test ve son derleme geçti; TV Almanca/açık düzeni ve işletme verileri korundu. Fiziksel konum, dış hizmet mesajları ve diğer hesaplara özgü gizli durumlar bu turda doğrulanmadı.
