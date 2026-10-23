@@ -6,7 +6,8 @@ export const shiftTranslations = {
     elsewhere: "Offene Arbeitszeit bei {{name}}. Bitte zuerst dort beenden.",
     scanQr: "Zum Beginnen bitte den QR-Code am Standort scannen.", gettingLocation: "Standort wird geprüft…",
     noProfile: "Dein Konto ist keinem Mitarbeiterprofil zugeordnet. Bitte Vorgesetzte kontaktieren.",
-    signOut: "Abmelden", since: "Seit {{time}}", breakTotal: "Pause {{m}} Min.", menu: "Mesaim",
+    signOut: "Abmelden", since: "Seit {{time}}", breakTotal: "Pause {{m}} Min.", menu: "Meine Arbeitszeit",
+    openMenu: "Menü öffnen", expandMenu: "Menü ausklappen", collapseMenu: "Menü einklappen",
   },
   en: {
     title: "My work time", hello: "Hello", state: { idle: "Not started", working: "Working", on_break: "On break", elsewhere: "Active at another location" },
@@ -15,7 +16,8 @@ export const shiftTranslations = {
     elsewhere: "Open work time at {{name}}. Please finish it there first.",
     scanQr: "To start, scan the QR code at the location.", gettingLocation: "Checking location…",
     noProfile: "Your account has no staff profile. Please contact your supervisor.",
-    signOut: "Sign out", since: "Since {{time}}", breakTotal: "Break {{m}} min", menu: "Mesaim",
+    signOut: "Sign out", since: "Since {{time}}", breakTotal: "Break {{m}} min", menu: "My work time",
+    openMenu: "Open menu", expandMenu: "Expand menu", collapseMenu: "Collapse menu",
   },
   tr: {
     title: "Mesaim", hello: "Merhaba", state: { idle: "Başlamadı", working: "Çalışıyor", on_break: "Molada", elsewhere: "Başka lokasyonda açık" },
@@ -25,5 +27,6 @@ export const shiftTranslations = {
     scanQr: "Başlamak için lokasyondaki QR kodu okutun.", gettingLocation: "Konum kontrol ediliyor…",
     noProfile: "Hesabınız bir personel profiline bağlı değil. Lütfen yöneticinize başvurun.",
     signOut: "Hesaptan çık", since: "{{time}} itibarıyla", breakTotal: "Mola {{m}} dk", menu: "Mesaim",
+    openMenu: "Menüyü aç", expandMenu: "Menüyü genişlet", collapseMenu: "Menüyü daralt",
   },
 } as const;

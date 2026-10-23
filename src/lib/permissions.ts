@@ -73,7 +73,8 @@ export function routeRolesFor(pathname: string): AppRole[] | null {
   return best ? best.roles : null;
 }
 
-export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = []): boolean {
+export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = [], timeManagementAccess = false): boolean {
+  if (pathname === "/time-tracking" && timeManagementAccess) return true;
   if (pathname === "/work-report" && allowedReportTeams.length > 0) return true;
   const required = routeRolesFor(pathname);
   if (!required) return false; // unknown route → deny by default

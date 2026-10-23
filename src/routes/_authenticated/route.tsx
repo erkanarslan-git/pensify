@@ -32,7 +32,8 @@ export const Route = createFileRoute("/_authenticated")({
     const { data: reportTeams, error: reportError } = path === "/work-report"
        ? await supabase.rpc("my_report_teams")
        : { data: [], error: null };
-     if (!canAccessRoute(path, roleList, reportError ? [] : reportTeams ?? [])) {
+     const { data: timeAccess } = path === "/time-tracking" ? await supabase.rpc("my_time_management_access") : { data: false };
+     if (!canAccessRoute(path, roleList, reportError ? [] : reportTeams ?? [], timeAccess === true)) {
       // Cleaner-only users land on /me; everyone else home
       const isCleaner = roleList.includes("cleaner");
       const isStaff = roleList.some((r) => ["owner", "admin", "manager", "reception"].includes(r));

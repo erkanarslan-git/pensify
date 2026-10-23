@@ -15,6 +15,9 @@ import i18n from "@/i18n";
 import { EmployeeAttendance } from "@/components/employee-attendance";
 import { TimeEntryCorrectionDialog, type CorrectableEntry } from "@/components/time-entry-correction";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OvertimePanel } from "@/components/overtime-panel";
+import { overtimePay } from "@/lib/overtime";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/time-tracking")({
   head: () => ({ meta: [{ title: `${i18n.t("nav.timeTracking")} — Pensify` }, { name: "description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:title", content: "Arbeitszeiten — Pensify" }, { property: "og:description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -63,6 +66,8 @@ function presetRange(p: string): [string, string] {
 function TimeTrackingPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const { roles } = usePermissions();
+  const isAdmin = roles.includes("owner") || roles.includes("admin");
   const [preset, setPreset] = useState("week");
   const [from, setFrom] = useState(() => presetRange("week")[0]);
   const [to, setTo] = useState(() => presetRange("week")[1]);
@@ -78,6 +83,7 @@ function TimeTrackingPage() {
 
   const { data: cleaners = [] } = useQuery({
     queryKey: ["cleaners-list"],
+    enabled: isAdmin,
     queryFn: async () => {
       const [{ data: list }, { data: rates }] = await Promise.all([
         supabase.from("cleaners").select("id, full_name").order("full_name"),
@@ -91,6 +97,7 @@ function TimeTrackingPage() {
   });
   const { data: properties = [] } = useQuery({
     queryKey: ["properties-list-tt"],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data } = await supabase.from("properties").select("id, name").order("name");
       return data ?? [];
@@ -99,6 +106,7 @@ function TimeTrackingPage() {
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["time-entries", from, to, cleanerFilter, propertyFilter, unpaidOnly],
+    enabled: isAdmin,
     queryFn: async () => {
       let q = supabase
         .from("time_entries")
@@ -124,29 +132,41 @@ function TimeTrackingPage() {
     },
   });
 
+  const { data: overtimeRows = [] } = useQuery({ queryKey: ["overtime-pay"], enabled: isAdmin, queryFn: async () => {
+    const { data, error } = await supabase.from("time_entry_overtime").select("time_entry_id, minutes, hourly_rate");
+    if (error) throw error;
+    return data ?? [];
+  } });
+  const payFor = (e: Entry, net: number) => {
+    const ot = overtimeRows.find(o => o.time_entry_id === e.id);
+    return overtimePay(net, ot?.minutes ?? 0, e.cleaners?.hourly_rate ?? 0, ot?.hourly_rate ?? 0);
+  };
+
   const summary = useMemo(() => {
-    const byCleaner = new Map<string, { name: string; minutes: number; rate: number; entries: number; amount: number }>();
+    const byCleaner = new Map<string, { name: string; minutes: number; rate: number; entries: number; amount: number; overtimeMinutes: number; overtimeAmount: number }>();
     let totalMin = 0;
     for (const e of entries) {
       if (!e.clock_out_at || e.needs_review) continue;
       const min = Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0));
       totalMin += min;
       const rate = e.cleaners?.hourly_rate ?? 0;
-      const cur = byCleaner.get(e.cleaner_id) ?? { name: e.cleaners?.full_name ?? "?", minutes: 0, rate, entries: 0, amount: 0 };
+      const cur = byCleaner.get(e.cleaner_id) ?? { name: e.cleaners?.full_name ?? "?", minutes: 0, rate, entries: 0, amount: 0, overtimeMinutes: 0, overtimeAmount: 0 };
       cur.minutes += min;
       cur.entries += 1;
-      cur.amount = (cur.minutes / 60) * cur.rate;
+      cur.amount += payFor(e, min).amount;
+      cur.overtimeMinutes += payFor(e, min).overtimeMinutes;
+      cur.overtimeAmount += payFor(e, min).overtimeAmount;
       byCleaner.set(e.cleaner_id, cur);
     }
     return { totalMin, byCleaner: Array.from(byCleaner.entries()) };
-  }, [entries]);
+  }, [entries, overtimeRows]);
 
   const markPaid = useMutation({
     mutationFn: async (entry: Entry) => {
       const min = entry.clock_out_at
         ? Math.max(0, Math.round((new Date(entry.clock_out_at).getTime() - new Date(entry.clock_in_at).getTime()) / 60000) - (entry.break_minutes ?? 0))
         : 0;
-      const amount = ((min / 60) * (entry.cleaners?.hourly_rate ?? 0)).toFixed(2);
+      const amount = payFor(entry, min).amount.toFixed(2);
       const { error } = await supabase.rpc("admin_mark_time_entry_paid", {
         _entry_id: entry.id,
         _amount: Number(amount),
@@ -275,13 +295,13 @@ function TimeTrackingPage() {
       title={t("nav.timeTracking")}
       subtitle={t("timeTracking.adminSubtitle")}
       actions={
-        <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
+        isAdmin ? <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
           <Download className="w-4 h-4" /> CSV
-        </Button>
+        </Button> : undefined
       }
     >
       <div className="space-y-4">
-        {(() => {
+        {isAdmin && (() => {
           const L = ({ tr: ["Şu an çalışan", "Toplam saat", "Kayıt", "Ödenmemiş"], de: ["Jetzt aktiv", "Stunden gesamt", "Einträge", "Unbezahlt"], en: ["Active now", "Total hours", "Entries", "Unpaid"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Active now", "Total hours", "Entries", "Unpaid"];
           const mins = entries.reduce((s, e) => s + (e.clock_out_at ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
           return (
@@ -293,12 +313,14 @@ function TimeTrackingPage() {
             </div>
           );
         })()}
-        <Tabs defaultValue="shifts">
+        <Tabs defaultValue={isAdmin ? "shifts" : "overtime"}>
           <TabsList className="h-auto flex-wrap">
-            <TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
+            {isAdmin && <><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
             <TabsTrigger value="pay">{TL[1]}</TabsTrigger>
-            <TabsTrigger value="plan">{TL[2]}</TabsTrigger>
+            <TabsTrigger value="plan">{TL[2]}</TabsTrigger></>}
+            <TabsTrigger value="overtime">{t("overtime.title")}</TabsTrigger>
           </TabsList>
+          <TabsContent value="overtime" className="mt-4 space-y-4"><div className="flex flex-wrap gap-3"><div><Label htmlFor="ot-from">{t("timeTracking.from")}</Label><Input id="ot-from" type="date" value={from} onChange={e => setFrom(e.target.value)} /></div><div><Label htmlFor="ot-to">{t("timeTracking.to")}</Label><Input id="ot-to" type="date" value={to} onChange={e => setTo(e.target.value)} /></div></div><OvertimePanel from={from} to={to} /></TabsContent>
           <TabsContent value="pay" className="mt-4 space-y-4">
         {filters}
         <Section title={t("timeTracking.summary")}>
@@ -317,6 +339,8 @@ function TimeTrackingPage() {
                     <th className="px-5 py-2 font-medium">{t("timeTracking.shifts")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.hours")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.rate")}</th>
+                    <th className="px-5 py-2 font-medium">{t("overtime.overtime")}</th>
+                    <th className="px-5 py-2 font-medium">{t("overtime.amount")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.amount")}</th>
                   </tr>
                 </thead>
@@ -327,6 +351,8 @@ function TimeTrackingPage() {
                       <td className="px-5 py-2">{s.entries}</td>
                       <td className="px-5 py-2">{Math.floor(s.minutes / 60)}h {s.minutes % 60}m</td>
                       <td className="px-5 py-2">{s.rate ? `€${s.rate.toFixed(2)}/h` : "—"}</td>
+                      <td className="px-5 py-2">{s.overtimeMinutes} min</td>
+                      <td className="px-5 py-2">€{s.overtimeAmount.toFixed(2)}</td>
                       <td className="px-5 py-2 font-semibold">{s.rate ? `€${s.amount.toFixed(2)}` : "—"}</td>
                     </tr>
                   ))}

@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; exact?: boolean };
 type NavGroup = { labelKey: string; items: NavItem[] };
@@ -138,6 +139,11 @@ export function AppShell({ title, subtitle, actions, children }: {
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
   const perms = usePermissions();
+  const timeAccess = useQuery({ queryKey: ["time-management-access", perms.userId], enabled: !!perms.userId, queryFn: async () => {
+    const { data, error } = await supabase.rpc("my_time_management_access");
+    if (error) throw error;
+    return data === true;
+  } });
   const reportAccess = useQuery({
     queryKey: ["report-access", perms.userId],
     enabled: !!perms.userId,
@@ -148,7 +154,7 @@ export function AppShell({ title, subtitle, actions, children }: {
     },
   });
   const visibleGroups = navGroups
-    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [])) }))
+    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [], timeAccess.data === true)) }))
     .filter((g) => g.items.length > 0);
   const primaryRole: AppRole | null = perms.roles.includes("owner")
     ? "owner"
@@ -314,36 +320,43 @@ export function AppShell({ title, subtitle, actions, children }: {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 md:h-16 border-b border-border grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 md:px-6 sticky top-0 bg-background/80 backdrop-blur-md z-10">
+        <header className="min-h-14 md:min-h-16 border-b border-border grid grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 md:px-6 py-2 sticky top-0 bg-background/80 backdrop-blur-md z-10">
           <div className="flex items-center gap-2">
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
-                <button
+                <Button variant="outline" size="icon"
                   className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
-                  aria-label="Open menu"
+                  aria-label={t("shift.openMenu")}
                 >
                   <Menu className="w-5 h-5" />
-                </button>
+                </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
                 <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
                 <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
               </SheetContent>
             </Sheet>
-            <button
+            <Button variant="outline" size="icon"
               onClick={toggleCollapsed}
               className="hidden md:grid w-10 h-10 rounded-xl border border-border place-items-center hover:bg-accent transition-colors"
-              aria-label={collapsed ? "Menü ausklappen" : "Menü einklappen"}
-              title={collapsed ? "Menü ausklappen" : "Menü einklappen"}
+              aria-label={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
+              title={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
             >
               {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-            </button>
+            </Button>
           </div>
           <div className="min-w-0">
             <h1 className="text-base md:text-lg font-semibold tracking-tight truncate">{title}</h1>
             {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
           </div>
-          <div className="flex items-center gap-2 justify-self-end">
+          <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2 justify-self-end">
+            {canAccessRoute("/me", perms.roles) && (
+              <Button asChild variant="outline" size="sm" className="shrink-0">
+                <Link to="/me" aria-label={t("shift.menu")} title={t("shift.menu")}>
+                  <Clock /> <span>{t("shift.menu")}</span>
+                </Link>
+              </Button>
+            )}
             {actions}
             <button
               onClick={lock}
