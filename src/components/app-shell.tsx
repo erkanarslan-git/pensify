@@ -139,6 +139,11 @@ export function AppShell({ title, subtitle, actions, children }: {
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
   const perms = usePermissions();
+  const timeAccess = useQuery({ queryKey: ["time-management-access", perms.userId], enabled: !!perms.userId, queryFn: async () => {
+    const { data, error } = await supabase.rpc("my_time_management_access");
+    if (error) throw error;
+    return data === true;
+  } });
   const reportAccess = useQuery({
     queryKey: ["report-access", perms.userId],
     enabled: !!perms.userId,
@@ -149,7 +154,7 @@ export function AppShell({ title, subtitle, actions, children }: {
     },
   });
   const visibleGroups = navGroups
-    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [])) }))
+    .map((g) => ({ ...g, items: g.items.filter((item) => canAccessRoute(item.to, perms.roles, reportAccess.data ?? [], timeAccess.data === true)) }))
     .filter((g) => g.items.length > 0);
   const primaryRole: AppRole | null = perms.roles.includes("owner")
     ? "owner"

@@ -83,6 +83,7 @@ function TimeTrackingPage() {
 
   const { data: cleaners = [] } = useQuery({
     queryKey: ["cleaners-list"],
+    enabled: isAdmin,
     queryFn: async () => {
       const [{ data: list }, { data: rates }] = await Promise.all([
         supabase.from("cleaners").select("id, full_name").order("full_name"),
@@ -96,6 +97,7 @@ function TimeTrackingPage() {
   });
   const { data: properties = [] } = useQuery({
     queryKey: ["properties-list-tt"],
+    enabled: isAdmin,
     queryFn: async () => {
       const { data } = await supabase.from("properties").select("id, name").order("name");
       return data ?? [];
@@ -104,6 +106,7 @@ function TimeTrackingPage() {
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["time-entries", from, to, cleanerFilter, propertyFilter, unpaidOnly],
+    enabled: isAdmin,
     queryFn: async () => {
       let q = supabase
         .from("time_entries")
@@ -290,13 +293,13 @@ function TimeTrackingPage() {
       title={t("nav.timeTracking")}
       subtitle={t("timeTracking.adminSubtitle")}
       actions={
-        <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
+        isAdmin ? <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
           <Download className="w-4 h-4" /> CSV
-        </Button>
+        </Button> : undefined
       }
     >
       <div className="space-y-4">
-        {(() => {
+        {isAdmin && (() => {
           const L = ({ tr: ["Şu an çalışan", "Toplam saat", "Kayıt", "Ödenmemiş"], de: ["Jetzt aktiv", "Stunden gesamt", "Einträge", "Unbezahlt"], en: ["Active now", "Total hours", "Entries", "Unpaid"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Active now", "Total hours", "Entries", "Unpaid"];
           const mins = entries.reduce((s, e) => s + (e.clock_out_at ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
           return (
