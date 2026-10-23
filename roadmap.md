@@ -1,5 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Giriş geri bildirimi ve yerleşim (23.10.2026)
+- [ ] Bekleme ve bağlantı/şifre hata bildirimi; şifreyi göster/gizle; dengeli büyük ekran ve beyaz giriş kartı; tarayıcı doğrulaması.
+
 ## Müşteri geçmişi ve sade mesai (23.10.2026)
 - [x] Misafirler ve Firmalar: kalıcı kişi/firma kartları, açık rezervasyon/ödeyen/konaklayan ilişkileri, belirsiz eski kayıtların onaylı eşleştirilmesi; filtreli geçmiş ve yetkili mali görünüm/çıktı. Test müşteri kartı oluşturuldu, rezervasyon kaydedildi ve geçmişten tekrar açıldı; test rezervasyonu çöp kutusuna taşındı, açıkça adlandırılmış müşteri kartı/audit geçmişi kaldı.
 - [x] Zaman Takibi: boş başlangıç, aranabilir kişi seçimi, tek dönem, kayıt bulunan günlük liste ve küçük özet; sade fazla mesai ve kapalı detay/düzenleme işlemleri; ana ekrandan ücret/ödeme/eşik kontrolleri kaldırıldı. Test Bakım 1 hastalık kaydı liste/özetinde doğrulandı ve gerekçeli iptal edildi; fazla mesai açılışı doğrulandı.
