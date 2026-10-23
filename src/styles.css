@@ -414,10 +414,11 @@
  .tv-location-section,.tv-activity,.tv-important,.tv-chart-section { padding: 5px; } .tv-footer button { padding: 3px; } .tv-volume { font-size: 9px; } .tv-chart-legend { gap: 5px; } .tv-chart-legend i { width: 6px; height: 6px; } .tv-delta { font-size: 10px; }
 }
 .tv-confetti.tv-confetti-full { position: fixed; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; }
-.tv-confetti-full i { top: -20px; width: 10px; height: 18px; border-radius: 2px; animation: tv-confetti-fall var(--confetti-time,3s) cubic-bezier(.2,.6,.4,1) both; animation-delay: var(--confetti-delay); }
+.tv-confetti-full i { top: var(--burst-y); left: var(--burst-x); width: 11px; height: 18px; border-radius: 2px; opacity: 0; animation: tv-confetti-burst var(--confetti-time,3s) cubic-bezier(.15,.8,.3,1) both; animation-delay: var(--confetti-delay); }
+@keyframes tv-confetti-burst { 0% { transform: translate(0,0) scale(.3) rotate(0); opacity: 1; } 30% { transform: translate(var(--burst-dx),var(--burst-dy)) scale(1) rotate(180deg); opacity: 1; } 100% { transform: translate(var(--burst-dx),calc(var(--burst-dy) + 70vh)) rotate(var(--confetti-spin)); opacity: 0; } }
 .tv-confetti-full i[data-shape="1"] { width: 12px; height: 12px; border-radius: 50%; }
 .tv-confetti-full i[data-shape="2"] { width: 6px; height: 22px; }
-.tv-confetti-full b { position: absolute; bottom: -140px; left: var(--balloon-x); width: 64px; height: 80px; border-radius: 50% 50% 48% 48%; background: radial-gradient(circle at 32% 28%, color-mix(in oklab, var(--confetti-color) 40%, var(--card)) 0 12%, var(--confetti-color) 45%); opacity: .92; animation: tv-balloon var(--balloon-time,4.5s) ease-in both; animation-delay: var(--balloon-delay); }
+.tv-confetti-full b { position: absolute; bottom: -140px; left: var(--balloon-x); width: 78px; height: 96px; border-radius: 50% 50% 48% 48%; background: radial-gradient(circle at 32% 28%, color-mix(in oklab, var(--confetti-color) 40%, var(--card)) 0 12%, var(--confetti-color) 45%); opacity: .92; animation: tv-balloon var(--balloon-time,4.5s) ease-in both; animation-delay: var(--balloon-delay); }
 .tv-confetti-full b::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 70px; background: var(--muted-foreground); }
 @keyframes tv-confetti-fall { 0% { transform: translate(0,0) rotate(0); opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(var(--confetti-drift,0),105vh) rotate(var(--confetti-spin,540deg)); opacity: 0; } }
 @keyframes tv-balloon { 0% { transform: translate(0,0) rotate(-4deg); opacity: 0; } 10% { opacity: .92; } 50% { transform: translate(18px,-55vh) rotate(5deg); } 100% { transform: translate(-12px,-120vh) rotate(-4deg); opacity: .92; } }
