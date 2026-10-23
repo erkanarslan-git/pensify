@@ -26,8 +26,11 @@ export const PERMISSIONS: Permission[] = [
   { key: "manage_rooms", label: "Zimmer & Pensionen verwalten", group: "Stammdaten", defaultRoles: ["owner", "admin"] },
   { key: "assign_cleaning", label: "Reinigung zuweisen", group: "Reinigung", defaultRoles: ["owner", "admin", "manager"] },
   { key: "do_cleaning", label: "Eigene Reinigungsaufträge bearbeiten", group: "Reinigung", defaultRoles: ["owner", "admin", "manager", "cleaner"] },
-  { key: "view_finance", label: "Umsatz & Abrechnung ansehen", group: "Finanzen", defaultRoles: ["owner", "admin", "manager"] },
-  { key: "match_payments", label: "Bankzahlungen zuordnen", group: "Finanzen", defaultRoles: ["owner", "admin"] },
+  { key: "view_finance", label: "Umsatz & Abrechnung ansehen", group: "Finanzen", defaultRoles: ["owner"] },
+  { key: "collect_payments", label: "Zahlungen erfassen", group: "Finanzen", defaultRoles: ["owner"] },
+  { key: "correct_payments", label: "Zahlungen korrigieren / rückbuchen", group: "Finanzen", defaultRoles: ["owner"] },
+  { key: "manage_payment_plans", label: "Zahlungspläne verwalten", group: "Finanzen", defaultRoles: ["owner"] },
+  { key: "match_payments", label: "Bankzahlungen zuordnen", group: "Finanzen", defaultRoles: ["owner"] },
   { key: "manage_bank", label: "Bankverbindung verwalten", group: "Finanzen", defaultRoles: ["owner"] },
   { key: "pay_cleaners", label: "Lohn freigeben / als bezahlt markieren", group: "Finanzen", defaultRoles: ["owner", "admin"] },
   { key: "manage_team", label: "Team & Rollen verwalten", group: "Administration", defaultRoles: ["owner", "admin"] },
@@ -74,9 +77,11 @@ export function routeRolesFor(pathname: string): AppRole[] | null {
   return best ? best.roles : null;
 }
 
-export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = [], timeManagementAccess = false): boolean {
+export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = [], timeManagementAccess = false, can?: (key: string) => boolean): boolean {
   if (pathname === "/time-tracking" && timeManagementAccess) return true;
   if (pathname === "/work-report") return roles.includes("owner");
+  if (pathname === "/payments/bank") return roles.includes("owner") || can?.("manage_bank") === true;
+  if (pathname === "/payments" || pathname.startsWith("/payments/") || pathname === "/analytics") return roles.includes("owner") || can?.("view_finance") === true;
   const required = routeRolesFor(pathname);
   if (!required) return false; // unknown route → deny by default
   return required.some((r) => roles.includes(r));

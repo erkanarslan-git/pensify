@@ -10,7 +10,7 @@ const Input = z.object({
   propertyId: z.string().uuid().optional(),
 });
 
-// The database resolves the caller's organization, departments and property access.
+// The database resolves the active organization and enforces owner-only access.
 export const getWorkReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
