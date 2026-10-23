@@ -3157,6 +3157,7 @@ export type Database = {
         Returns: undefined
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
+      attendance_review_controls: { Args: never; Returns: Json }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_finance_action: {
         Args: { _org: string; _permission: string; _property: string }
@@ -3367,6 +3368,10 @@ export type Database = {
           room_type_id: string
           total: number
         }[]
+      }
+      save_attendance_review_controls: {
+        Args: { _review: number; _warning: number }
+        Returns: undefined
       }
       save_guest_prices: {
         Args: { _prices: Json; _room_type_id: string }
