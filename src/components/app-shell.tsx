@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
-import brandLogo from "@/assets/pension-highway-logo.png.asset.json";
+import brandLogo from "@/assets/pension-highway-logo.png";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -235,7 +235,7 @@ export function AppShell({ title, subtitle, actions, children }: {
           </div>
         ) : (
           <div className="rounded-lg bg-[color:var(--brand-cream)] px-2 py-1.5 shadow-soft">
-            <img src={brandLogo.url} alt="Pension Highway" className="h-8 w-auto" />
+            <img src={brandLogo} alt="Pension Highway" className="h-8 w-auto" />
           </div>
         )}
       </div>
