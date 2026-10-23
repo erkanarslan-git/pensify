@@ -12,6 +12,7 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { buildAiTools } from "@/lib/ai-tools.server";
 import { buildPrivacyMap } from "@/lib/ai-privacy.server";
 
@@ -26,7 +27,8 @@ export const Route = createFileRoute("/api/chat")({
         const supabaseUrl = process.env.SUPABASE_URL!;
         const supabasePublishable = process.env.SUPABASE_PUBLISHABLE_KEY!;
         const lovableKey = process.env.LOVABLE_API_KEY;
-        if (!lovableKey) return new Response("LOVABLE_API_KEY missing", { status: 500 });
+        const openaiKey = process.env.OPENAI_API_KEY;
+        if (!lovableKey && !openaiKey) return new Response("AI key missing (LOVABLE_API_KEY or OPENAI_API_KEY)", { status: 500 });
 
         const supabase = createClient<Database>(supabaseUrl, supabasePublishable, {
           global: { headers: { Authorization: `Bearer ${token}` } },
@@ -78,8 +80,10 @@ export const Route = createFileRoute("/api/chat")({
           ),
         }));
 
-        const gateway = createLovableAiGatewayProvider(lovableKey);
-        const model = gateway("google/gemini-3-flash-preview");
+        // Self-hosted deployments (e.g. Hostinger) use their own OpenAI key.
+        const model = lovableKey
+          ? createLovableAiGatewayProvider(lovableKey)("google/gemini-3-flash-preview")
+          : createOpenAICompatible({ name: "openai", baseURL: "https://api.openai.com/v1", apiKey: openaiKey })(process.env.OPENAI_MODEL || "gpt-4.1-mini");
 
         const today = new Date().toISOString().slice(0, 10);
         const system = `Sen Pensify pansiyon işletme sisteminin dahili AI asistanısın.
