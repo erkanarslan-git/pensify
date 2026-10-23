@@ -14,7 +14,7 @@
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
 - WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
 - Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
-- Membership/department triggers enable time profiles for active cleaners or department workers; cleaning-active stays role-driven. Why: one identity, no role change or cleaning access leak.
+- Membership/department triggers enable time profiles for cleaners/workers; breaks use time eligibility, not cleaning-active. Why: one identity, no cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
 - Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
 - After a successful cleaning transition, await refreshCleaningQueries for tasks, dashboard (including inactive cache), and action center. Why: completed rooms must leave cleaning counts immediately using committed database status.
@@ -24,10 +24,11 @@
 - Property summary cards use natural-height CSS columns. Why: compact cards without truncated names.
 - Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
 - Dispatch shows all daily tasks in expandable employee rows; sending/assignment logic unchanged. Why: no hidden tasks or outbound actions.
-- Business time formatting and dispatch day boundaries use the shared business-time helpers; persist UTC instants and respect daylight-saving transitions. Why: display and scheduling must agree independently of browser and legacy settings.
+- Business time uses shared Berlin helpers; UTC stored, daily shifts grouped by start date. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, idempotent single shift; own-open-only employees; reasoned logged corrections; forgotten exits zero/review; cleaning never closes shifts. Overtime RPC scopes approval, snapshots personal rates, subtracts overtime from regular minutes; server computes pay. Why: accountable hours, no double pay.
 - Read subdirectory AGENTS.md before edits there.
 - Payments: reservation-derived org/property, can_manage_payments access; rebuilds retain payment-history months and subtract their obligations. Why: auditable collections without duplicate debt.
 - Work reports use caller-scoped department_work_report: owner/admin all, explicitly granted HR all, enabled leads granted departments/accessed properties; source policies unchanged, reporter/resolver distinct. Why: scoped reports, opt-in delegation.
 - Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
+- QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
