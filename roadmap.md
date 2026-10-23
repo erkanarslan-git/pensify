@@ -2,8 +2,9 @@
 
 ## Kalan işleri tamamlama (23.10.2026)
 - [x] Mesai, yetki, ödeme ve Berlin saati: 15 dosyada 76 test geçti.
-- [ ] Anonim TV: firma kapsamlı iptal edilebilir bağlantı, kişisel veri içermeyen özet, lokasyonlar, olaylar ve 7 günlük grafik; üç dil ve testler.
-- [ ] Son ekran/dil kontrolü ve gerçek hesapla TV bağlantısı oluşturma–açma–iptal testi.
+- [x] Anonim TV: firma kapsamlı iptal edilebilir bağlantı, kişisel verisiz özet, lokasyonlar, anonim olaylar, 7 günlük grafik/vade sayıları; 30 saniyede sunucu görünümüyle yenileme, tekilleştirme/ses/reduced-motion, DE/EN/TR.
+- [x] 111 test geçti; gerçek sahip hesabıyla geçici bağlantı oluşturma–girişsiz açma–iptal kontrolü, 10 lokasyon/84 oda, üç dil, telefon taşma, çevrimdışı uyarı ve yeniden bağlanma doğrulandı. Ham display kayıtları/izinsiz oluşturma/geçersiz token engelli; TV kimliği Mesai Takibi'ne giriş sağlamıyor. Deneme bağlantıları iptal edildi.
+- [ ] Ayrıcalıklı TV/tenant SQL bütünleşme kontrolleri: salt okunur test oturumu ve fonksiyon izni engeli; gerçek veriler değiştirilmedi. Girişsiz gerçek API güvenlik kontrolleri geçti.
 - [ ] Fiziksel QR/GPS ve gerçek şef/fazla mesai/ödeme kayıtlarıyla deneme: fiziksel cihaz ve uygun kayıtlar bekliyor; gerçek işletme verileri test amacıyla değiştirilmeyecek.
 - [ ] Sparkasse ve WuBook: dış sağlayıcı erişimi ve Booking.com otel kimliği/canlı geçiş onayı bekliyor; gönderim kapalı tutulacak.
 
@@ -27,7 +28,7 @@
 
 - [x] Yapılan İşler: Tümü/Temizlik/Büro/Bakım sekmeleri; konuya göre özet, grafik, kişiler, detay ve CSV; bakımda bildiren/çözen ayrı. 12 test ve oturumlu tarayıcı kontrolü geçti.
 - [x] Yapılan İşler: tüm görünümlerde dönem/lokasyona göre sabit renkli toplamlar; Genel toplamlar/İş kayıtları/Kim yaptı ayrımı; atanmamış işler açık etiketli, kişi kimlikleri ortak kullanıcıya bağlı.
-- [ ] 8. Anonim TV ekranı
+- [x] 8. Anonim TV ekranı: Araçlar → TV ekranları; yalnız sahip/admin bağlantı oluşturur/iptal eder, TV kimliği yalnız firma kapsamlı anonim özet okur. 111 test ve gerçek bağlantı akışı doğrulandı; ayrıcalıklı SQL testleri erişim engeline takıldı.
 
 - [x] Temizlik tamamlandığında Genel Bakış hemen yenileniyor; 6 test geçti. Giriş yapılmış ekranda geri alınan tamamlanmış görev yeniden bitirildi: müsait 75→76, sarı 6→5; toplam 84 korundu.
 
