@@ -59,7 +59,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
         if (error) throw error;
         return a;
       }
-      const pos = await readPositionOnce();
+      const pos = open.requires_exit_location === false ? null : await readPositionOnce();
       const { error } = await supabase.rpc("clock_stop", {
         _entry_id: open.id,
         _lat: (pos?.lat ?? null) as unknown as number,
