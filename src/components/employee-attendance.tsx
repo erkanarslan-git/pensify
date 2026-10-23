@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { DailyAttendanceLedger } from "@/components/daily-attendance-ledger";
+import { type DailyTimeEntry } from "@/lib/daily-time";
 
 const weekdayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const kinds = ["sick", "leave", "excused", "unexcused"];
@@ -23,7 +25,7 @@ const dayTones: Record<string, string> = {
   excused: "border-info/40 bg-info/10 text-info-foreground dark:text-info",
 };
 
-export function EmployeeAttendance({ userId }: { userId?: string }) {
+export function EmployeeAttendance({ userId, daily = false }: { userId?: string; daily?: boolean }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { can } = usePermissions();
@@ -41,7 +43,7 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
   const from = `${month}-01`;
   const to = month ? format(endOfMonth(parseISO(from)), "yyyy-MM-dd") : "";
   const q = useQuery({
-    queryKey: ["employee-attendance", month],
+    queryKey: ["employee-attendance", month, userId ?? null],
     enabled: !!month,
     queryFn: async () => {
       const orgRes = await supabase.rpc("active_organization_id");
@@ -54,7 +56,7 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
         supabase.from("employee_work_schedules").select("*").eq("organization_id", org).lte("effective_from", to),
         supabase.from("employee_absences").select("*").eq("organization_id", org).lte("start_date", to).gte("end_date", from).order("created_at", { ascending: false }),
         supabase.from("cleaners").select("id,user_id,full_name").eq("organization_id", org),
-        supabase.from("time_entries").select("cleaner_id,clock_in_at,clock_out_at,break_minutes").eq("organization_id", org).gte("clock_in_at", new Date(Date.parse(`${from}T00:00:00Z`) - 86400000).toISOString()).lt("clock_in_at", new Date(Date.parse(`${to}T00:00:00Z`) + 2 * 86400000).toISOString()),
+        supabase.from("time_entries").select("id,cleaner_id,clock_in_at,clock_out_at,break_minutes,break_started_at,needs_review,properties(name)").eq("organization_id", org).gte("clock_in_at", new Date(Date.parse(`${from}T00:00:00Z`) - 86400000).toISOString()).lt("clock_in_at", new Date(Date.parse(`${to}T00:00:00Z`) + 2 * 86400000).toISOString()),
         supabase.from("organizations").select("timezone").eq("id", org).single(),
       ]);
       for (const result of results) if (result.error) throw result.error;
@@ -114,7 +116,7 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
     {q.isPending ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : <>
       {!members.length && <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}
       {!userId && <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-accent text-left"><tr><th className="p-2">{t("attendance.employee")}</th><th className="p-2">{t("attendance.actualHours")}</th>{kinds.map(k => <th className="p-2" key={k}>{t(`attendance.${k}`)}</th>)}</tr></thead><tbody>{report.map(r => <tr key={r.member.id} className="border-b border-border"><td className="p-2"><Button variant="link" className="h-auto p-0" onClick={() => { setSelectedMember(r.member.id); setWorkdays([]); }}>{name(r.member.user_id)}</Button></td><td className="p-2 tabular-nums">{(r.minutes / 60).toFixed(2)}</td>{kinds.map(k => <td className="p-2 tabular-nums" key={k}>{r.counts[k]}</td>)}</tr>)}</tbody></table></div>}
-      {member && <Tabs defaultValue={canManage ? (activeSchedule ? "absence" : "workdays") : "month"}>
+      {member && <Tabs defaultValue={daily ? "month" : canManage ? (activeSchedule ? "absence" : "workdays") : "month"}>
         <TabsList className="grid w-full grid-cols-3">
           {canManage && <TabsTrigger value="absence">{t("attendance.tabAbsence")}</TabsTrigger>}
           {canManage && <TabsTrigger value="workdays">{t("attendance.workdays")}</TabsTrigger>}
@@ -145,7 +147,7 @@ export function EmployeeAttendance({ userId }: { userId?: string }) {
           <div className="attendance-print-report space-y-3">
             <h4 className="font-semibold">{name(member.user_id)} · {month}</h4>
             <div className="text-sm">{t("attendance.actualHours")}: <b>{((current?.minutes ?? 0) / 60).toFixed(2)}</b> · {t("attendance.separate")}: <b>{current?.days.filter(d => kinds.includes(d.status)).length ?? 0}</b></div>
-            <table className="w-full text-sm"><thead><tr className="border-b border-border text-left text-muted-foreground"><th className="px-2 py-2 font-medium">{t("attendance.date")}</th><th className="px-2 py-2 font-medium">{t("attendance.status")}</th></tr></thead><tbody>{current?.days.map(d => <tr key={d.date} className={`border-b ${dayTones[d.status] ?? "border-border bg-muted/30 text-muted-foreground"}`}><td className="whitespace-nowrap px-2 py-2 tabular-nums">{format(parseISO(d.date), "dd.MM.yyyy")} <span className="ml-1 text-xs">{t(`attendance.${weekdayKeys[(parseISO(d.date).getDay() + 6) % 7]}`)}</span></td><td className="px-2 py-2"><span>{t(`attendance.${d.status}`)}</span>{d.absence && d.worked && <div className="text-xs font-medium">{t("attendance.conflict")}</div>}</td></tr>)}</tbody></table>
+            <DailyAttendanceLedger days={current?.days ?? []} entries={(data?.entries.filter(e => data.cleaners.some(c => c.id === e.cleaner_id && c.user_id === member.user_id)) ?? []) as DailyTimeEntry[]} />
           </div>
         </TabsContent>
       </Tabs>}

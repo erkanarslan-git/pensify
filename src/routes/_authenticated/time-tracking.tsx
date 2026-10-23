@@ -313,14 +313,15 @@ function TimeTrackingPage() {
             </div>
           );
         })()}
-        <Tabs defaultValue={isAdmin ? "shifts" : "overtime"}>
+        <Tabs defaultValue={isAdmin ? "daily" : "overtime"}>
           <TabsList className="h-auto flex-wrap">
-            {isAdmin && <><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
+            {isAdmin && <><TabsTrigger value="daily">{t("attendance.tabMonth")}</TabsTrigger><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
             <TabsTrigger value="pay">{TL[1]}</TabsTrigger>
             <TabsTrigger value="plan">{TL[2]}</TabsTrigger></>}
             <TabsTrigger value="overtime">{t("overtime.title")}</TabsTrigger>
           </TabsList>
           <TabsContent value="overtime" className="mt-4 space-y-4"><div className="flex flex-wrap gap-3"><div><Label htmlFor="ot-from">{t("timeTracking.from")}</Label><Input id="ot-from" type="date" value={from} onChange={e => setFrom(e.target.value)} /></div><div><Label htmlFor="ot-to">{t("timeTracking.to")}</Label><Input id="ot-to" type="date" value={to} onChange={e => setTo(e.target.value)} /></div></div><OvertimePanel from={from} to={to} /></TabsContent>
+          {isAdmin && <TabsContent value="daily" className="mt-4"><EmployeeAttendance daily /></TabsContent>}
           <TabsContent value="pay" className="mt-4 space-y-4">
         {filters}
         <Section title={t("timeTracking.summary")}>
