@@ -63,7 +63,7 @@
 ## Mesai (QR) akışı
 - [x] Personel: Temizlik/Bakım/Büro sekmeleri; üst Mesaim kısayolu kaldırıldı; DE/EN/TR metinler, 8 test, oturumlu sekme/telefon kontrolü ve derleme geçti. Bakım/Büro boş; gerçek bölüm personeliyle isim doğrulaması henüz yapılamadı.
 - [x] Mesaim: ortak menü ve üç dilde geri bağlantısı; oturumlu masaüstü menü, /cleaners geri dönüşü ve telefon menüsü doğrulandı; 8 test ve derleme geçti.
-- [ ] Mesai personel bağlantısı: bölüm çalışanı ataması sahip/bakım/büro için mesai profili oluşturmuyor; ana rolü değiştirmeden bölüm temelli profil otomasyonu ayrı uygulama bekliyor.
+- [ ] Tüm çalışanların Mesaim bağlantısı: bölüm çalışanı atamasıyla otomatik profil, ana rol korunur; çalışan olmayanlara doğru yönlendirme. Uygulama ve doğrulama devam ediyor.
 - [x] Mesaim menüsü: üstte doğrudan bağlantı, dar/geniş ekranda erişim ve DE/EN/TR çevirileri; üç dilde bağlantı açıldı.
 - [x] Fazla mesai: kapsamlı şef onayı, kişiye özel saatlik ücret, ayrı süre/tutar; 18 hesap/erişim testi ve ekran kontrolü.
 - [ ] Fazla mesai gerçek onay/ödeme ve firma izolasyon testi: tamamlanmış mesai/şef hesabı ve ayrıcalıklı SQL test erişimi bekliyor.
