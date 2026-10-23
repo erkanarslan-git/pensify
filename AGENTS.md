@@ -29,5 +29,5 @@
 - Read subdirectory AGENTS.md before edits there.
 - Payments: reservation-derived org/property, can_manage_payments access; rebuilds retain payment-history months and subtract their obligations. Why: auditable collections without duplicate debt.
 - Work reports use caller-scoped department_work_report: owner/admin all, explicitly granted HR all, enabled leads granted departments/accessed properties; source policies unchanged, reporter/resolver distinct. Why: scoped reports, opt-in delegation.
-- Sidebar groups: Daily Work/Stays/Operations/Finance/Admin/Tools; AI + Channel Sync in Tools; /me uses AppShell. Why: consistent navigation, no dead-end shift shortcut.
+- Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
