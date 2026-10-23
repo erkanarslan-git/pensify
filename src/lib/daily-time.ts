@@ -1,6 +1,6 @@
 import { businessDayBounds } from './business-time';
 import type { AttendanceBreak } from './attendance-export';
-export type DailyTimeEntry = { id: string; cleaner_id: string; clock_in_at: string; clock_out_at: string | null; break_minutes: number; break_started_at: string | null; needs_review: boolean; properties: { name: string } | null };
+export type DailyTimeEntry = { id: string; cleaner_id: string; clock_in_at: string; clock_out_at: string | null; break_minutes: number; break_started_at: string | null; needs_review: boolean; can_correct?: boolean; status?: string; properties: { name: string } | null };
 /** UTC interval intersections, with cumulative rounding so adjacent days never duplicate minutes. */
 export function dailyTime(entries: DailyTimeEntry[], day: string, now: number, breaks: AttendanceBreak[] = []) {
   const bounds = businessDayBounds(day);

@@ -1071,6 +1071,59 @@ export type Database = {
           },
         ]
       }
+      customer_parties: {
+        Row: {
+          address: string | null
+          contact: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          kind: string
+          name: string
+          organization_id: string
+          phone: string | null
+          updated_at: string
+          vat: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          kind: string
+          name: string
+          organization_id: string
+          phone?: string | null
+          updated_at?: string
+          vat?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          organization_id?: string
+          phone?: string | null
+          updated_at?: string
+          vat?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_parties_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dispatch_messages: {
         Row: {
           body: string
@@ -2119,6 +2172,92 @@ export type Database = {
             columns: ["room_type_id"]
             isOneToOne: false
             referencedRelation: "room_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservation_customers: {
+        Row: {
+          linked_at: string
+          linked_by: string | null
+          organization_id: string
+          payer_id: string
+          reservation_id: string
+        }
+        Insert: {
+          linked_at?: string
+          linked_by?: string | null
+          organization_id: string
+          payer_id: string
+          reservation_id: string
+        }
+        Update: {
+          linked_at?: string
+          linked_by?: string | null
+          organization_id?: string
+          payer_id?: string
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservation_customers_organization_id_payer_id_fkey"
+            columns: ["organization_id", "payer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_parties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "reservation_customers_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: true
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservation_occupants: {
+        Row: {
+          organization_id: string
+          person_id: string
+          reservation_id: string
+        }
+        Insert: {
+          organization_id: string
+          person_id: string
+          reservation_id: string
+        }
+        Update: {
+          organization_id?: string
+          person_id?: string
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_occupants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservation_occupants_organization_id_person_id_fkey"
+            columns: ["organization_id", "person_id"]
+            isOneToOne: false
+            referencedRelation: "customer_parties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "reservation_occupants_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
             referencedColumns: ["id"]
           },
         ]
@@ -3459,6 +3598,7 @@ export type Database = {
         Returns: undefined
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
+      attendance_personnel: { Args: never; Returns: Json }
       attendance_review_controls: { Args: never; Returns: Json }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_finance_action: {
@@ -3470,6 +3610,10 @@ export type Database = {
         Returns: boolean
       }
       can_read_bank_transactions: { Args: { _org: string }; Returns: boolean }
+      can_read_customer: {
+        Args: { _id: string; _org: string }
+        Returns: boolean
+      }
       can_read_employee_time: {
         Args: { _org: string; _property?: string; _user: string }
         Returns: boolean
@@ -3538,6 +3682,10 @@ export type Database = {
         Args: { _booking: Json; _lines: Json }
         Returns: string
       }
+      create_customer_booking: {
+        Args: { _booking: Json; _lines: Json }
+        Returns: string
+      }
       create_rooms_bulk: {
         Args: {
           _floor: number
@@ -3548,6 +3696,22 @@ export type Database = {
         Returns: number
       }
       create_tv_display: { Args: { _name: string }; Returns: Json }
+      customer_history: {
+        Args: {
+          _active?: boolean
+          _from?: string
+          _kind?: string
+          _page?: number
+          _party?: string
+          _person?: string
+          _property?: string
+          _search?: string
+          _size?: number
+          _status?: string
+          _to?: string
+        }
+        Returns: Json
+      }
       default_organization_id: { Args: never; Returns: string }
       department_work_report: {
         Args: { _from: string; _property?: string; _to: string }
@@ -3623,6 +3787,15 @@ export type Database = {
       import_wp_rooms: { Args: { _batch: Json }; Returns: Json }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_organization_member: { Args: { _org: string }; Returns: boolean }
+      link_reservation_customers: {
+        Args: {
+          _confirm: boolean
+          _payer: string
+          _people: string[]
+          _reservations: string[]
+        }
+        Returns: undefined
+      }
       list_access_secret_metadata: {
         Args: { _property: string; _room?: string }
         Returns: Json
@@ -3674,6 +3847,10 @@ export type Database = {
       overtime_board: { Args: { _from: string; _to: string }; Returns: Json }
       payment_reservation_context: {
         Args: { _reservation: string }
+        Returns: Json
+      }
+      personnel_overtime: {
+        Args: { _from: string; _to: string; _user_id: string }
         Returns: Json
       }
       purge_reservation: { Args: { _id: string }; Returns: undefined }
@@ -3789,6 +3966,7 @@ export type Database = {
         Args: { _review: number; _warning: number }
         Returns: undefined
       }
+      save_customer: { Args: { _data: Json; _id?: string }; Returns: string }
       save_general_todo: { Args: { _input: Json }; Returns: string }
       save_guest_prices: {
         Args: { _prices: Json; _room_type_id: string }

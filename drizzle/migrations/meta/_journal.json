@@ -596,6 +596,20 @@
       "when": 1792741743714,
       "tag": "0084_properties_scoped_read",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1792743890167,
+      "tag": "0085_personnel_first_attendance",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "7",
+      "when": 1792743976124,
+      "tag": "0086_permanent_customer_history",
+      "breakpoints": true
     }
   ]
 }

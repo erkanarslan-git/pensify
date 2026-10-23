@@ -1,0 +1,16 @@
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { CustomerPicker } from '@/components/customer-picker';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { CustomerKind } from '@/lib/customer-history';
+export function ReservationCustomerLinks({reservationIds,defaultKind='person',initialName='',onSaved}:{reservationIds:string[];defaultKind?:CustomerKind;initialName?:string;onSaved?:()=>void}){
+ const {t}=useTranslation();const qc=useQueryClient();const [kind,setKind]=useState<CustomerKind>(defaultKind);const [payer,setPayer]=useState('');const [people,setPeople]=useState<{id:string;name:string}[]>([]);const [busy,setBusy]=useState(false);
+ const q=useQuery({queryKey:['reservation-customer-links',...reservationIds],queryFn:async()=>{const id=reservationIds[0];if(!id)return null;const [c,o]=await Promise.all([supabase.from('reservation_customers').select('payer_id').eq('reservation_id',id).maybeSingle(),supabase.from('reservation_occupants').select('person_id,customer_parties(name)').eq('reservation_id',id)]);if(c.error||o.error)throw c.error??o.error;return {payer:c.data?.payer_id,people:(o.data??[]).map(x=>({id:x.person_id,name:x.customer_parties?.name??'—'}))};}});
+ useEffect(()=>{if(q.data){setPayer(q.data.payer??'');setPeople(q.data.people);}},[q.data]);
+ const save=async()=>{if(!payer||busy)return;setBusy(true);try{const {error}=await supabase.rpc('link_reservation_customers',{_reservations:reservationIds,_payer:payer,_people:people.map(p=>p.id),_confirm:true});if(error)throw error;await qc.invalidateQueries({queryKey:['customer-history']});await qc.invalidateQueries({queryKey:['reservation-customer-links']});toast.success(t('payments.saved'));onSaved?.();}catch{toast.error(t('guests.failed'));}finally{setBusy(false);}};
+ return <div className="space-y-3">{q.isError&&<p role="alert">{t('guests.failed')}</p>}<Select value={kind} onValueChange={v=>{setKind(v as CustomerKind);setPayer('');}}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="person">{t('records.person')}</SelectItem><SelectItem value="company">{t('records.company')}</SelectItem></SelectContent></Select><CustomerPicker kind={kind} value={payer} onChange={p=>setPayer(p.id)} label={t('records.payer')} initialName={initialName}/><details><summary className="cursor-pointer text-sm">{t('records.occupants')} ({people.length})</summary><div className="mt-3 space-y-2">{people.map(p=><div key={p.id} className="flex justify-between items-center gap-2"><span>{p.name}</span><Button variant="ghost" size="sm" onClick={()=>setPeople(ps=>ps.filter(x=>x.id!==p.id))}>×</Button></div>)}<CustomerPicker kind="person" value="" label={t('records.addPerson')} onChange={p=>setPeople(ps=>ps.some(x=>x.id===p.id)?ps:[...ps,{id:p.id,name:p.name}])}/></div></details><Button disabled={!payer||busy||q.isPending} onClick={save}>{t('records.confirmMatch')}</Button></div>;
+}
