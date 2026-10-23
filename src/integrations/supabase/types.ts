@@ -3561,9 +3561,19 @@ export type Database = {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
       }
+      finance_dashboard: { Args: { _today: string }; Returns: Json }
       general_todo_action: {
         Args: { _action: string; _id: string; _note?: string }
         Returns: undefined
+      }
+      guest_directory: {
+        Args: {
+          _kind?: string
+          _page?: number
+          _search?: string
+          _size?: number
+        }
+        Returns: Json
       }
       has_department_assignment: {
         Args: { _department: string; _org: string; _target?: string }

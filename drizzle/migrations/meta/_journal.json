@@ -526,6 +526,13 @@
       "when": 1792724535297,
       "tag": "0074_private_todo_attachment_access",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1792724565288,
+      "tag": "0075_scoped_guest_directory_and_finance_totals",
+      "breakpoints": true
     }
   ]
 }
