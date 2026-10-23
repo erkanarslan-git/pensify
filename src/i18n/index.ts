@@ -45,7 +45,13 @@ for (const [lng, data] of Object.entries({ de, en, tr })) {
   i18n.addResourceBundle(lng, "translation", data, true, true);
 }
 for (const lng of SUPPORTED_LANGS) {
-  i18n.addResourceBundle(lng, "translation", { shift: shiftTranslations[lng], overtime: overtimeTranslations[lng] }, true, true);
+  i18n.addResourceBundle(lng, "translation", {
+    attendance: attendanceTranslations[lng], clock: clockTranslations[lng],
+    shift: shiftTranslations[lng], overtime: overtimeTranslations[lng],
+    todos: todosTranslations[lng], payments: paymentsTranslations[lng],
+    bank: bankTranslations[lng], teamSafety: teamSafetyTranslations[lng],
+    bookingAvailability: bookingAvailabilityTranslations[lng], departments: departmentTranslations[lng],
+  }, true, true);
 }
 
 export default i18n;
