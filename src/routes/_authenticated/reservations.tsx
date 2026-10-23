@@ -1,18 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
-import { useState, useMemo, useDeferredValue, useEffect } from "react";
-import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { sourceColor, sourceLabel, normalizeChannel, ACTIVE_CHANNELS } from "@/lib/guest-color";
-import { businessDayBounds, businessDate } from "@/lib/business-time";
+import { sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
+import { businessDate } from "@/lib/business-time";
 import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 import { ReservationTrash } from "@/components/reservation-trash";
 import { formatDateDE } from "@/lib/date-de";
+import { Button } from "@/components/ui/button";
+import { useServerFn } from "@tanstack/react-start";
+import { listReservations, exportReservations } from "@/lib/reservation-list.functions";
+import { RESERVATION_PAGE_SIZES, reservationCsvCell, type ReservationFilters, type ReservationListRow } from "@/lib/reservation-list";
 
 type Search = { property?: string; created?: string };
 
@@ -27,21 +31,7 @@ export const Route = createFileRoute("/_authenticated/reservations")({
   component: ReservationsPage,
 });
 
-interface Row {
-  id: string;
-  guest_name: string;
-  channel: string;
-  status: string;
-  check_in: string;
-  check_out: string;
-  guests_count: number;
-  revenue: number;
-  created_at: string;
-  customer_type?: string | null;
-  company_name?: string | null;
-  room: { number: string; property_id: string } | null;
-  property: { id: string; name: string } | null;
-}
+type Row = ReservationListRow;
 
 type Period = "upcoming" | "today" | "past" | "all" | "trash";
 
@@ -70,65 +60,39 @@ function ReservationsPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("all");
   const [page, setPage] = useState(0);
-  const PAGE_SIZE = 25;
-  const dq = useDeferredValue(q);
-
-  const today = new Date().toISOString().slice(0, 10);
-
+  const [pageSize, setPageSize] = useState<10 | 20 | 30 | 40 | 50>(20);
+  const [dq, setDq] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [sort, setSort] = useState<ReservationFilters["sort"]>("arrivalAsc");
+  const [exportBusy, setExportBusy] = useState(false);
+  const fetchList = useServerFn(listReservations);
+  const fetchExport = useServerFn(exportReservations);
+  const today = businessDate();
+  useEffect(() => {
+    const timer = setTimeout(() => { setDq(q.trim()); setPage(0); }, 300);
+    return () => clearTimeout(timer);
+  }, [q]);
+  useEffect(() => setPage(0), [src, prop, period, status, createdTodayOnly, from, to, sort, pageSize]);
+  const filters: ReservationFilters = {
+    search: dq, propertyId: prop, source: src as ReservationFilters["source"],
+    status: status as ReservationFilters["status"], period: period === "trash" ? "all" : period,
+    createdTodayOnly, from, to, sort,
+  };
   const { data, refetch, error, isLoading } = useQuery({
-    queryKey: ["reservations-list"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reservations")
-        .select("id,guest_name,channel,status,check_in,check_out,guests_count,revenue,created_at,customer_type,company_name,room:rooms(number,property_id),property:properties(id,name)")
-        .is("deleted_at", null)
-        .order("check_in", { ascending: true })
-        .limit(1000);
-      if (error) throw error;
-      return (data ?? []) as unknown as Row[];
-    },
+    queryKey: ["reservations-list", filters, page, pageSize, today],
+    queryFn: ({ signal }) => fetchList({ data: { ...filters, page, pageSize }, signal }),
+    enabled: period !== "trash",
   });
-
-  const rows = data ?? [];
-  const active = (r: Row) => r.status !== "cancelled" && r.status !== "no_show";
-  const arrivals = rows.filter((r) => active(r) && r.check_in === today).length;
-  const departures = rows.filter((r) => active(r) && r.check_out === today).length;
-  const staying = rows.filter((r) => active(r) && r.check_in <= today && r.check_out > today).length;
-
+  const arrivals = data?.stats.arrivals;
+  const departures = data?.stats.departures;
+  const staying = data?.stats.staying;
   const channels = ACTIVE_CHANNELS;
-  const properties = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const r of rows) if (r.property) map.set(r.property.id, r.property.name);
-    return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [rows]);
-
-  const filtered = useMemo(
-    () =>
-      rows.filter((r) => {
-        if (src !== "all" && normalizeChannel(r.channel) !== src) return false;
-        if (prop !== "all" && r.property?.id !== prop) return false;
-        if (status !== "all" && r.status !== status) return false;
-        if (dq && !`${r.guest_name ?? ""} ${r.company_name ?? ""} ${r.room?.number ?? ""}`.toLowerCase().includes(dq.trim().toLowerCase())) return false;
-        if (period === "upcoming" && r.check_out < today) return false;
-        if (period === "today" && !(r.check_in <= today && r.check_out >= today)) return false;
-        if (period === "past" && r.check_out >= today) return false;
-        if (createdTodayOnly) {
-          const bounds = businessDayBounds(businessDate());
-          if (!(r.created_at >= bounds.start && r.created_at < bounds.end)) return false;
-        }
-        return true;
-      }),
-    [rows, dq, src, prop, period, today, status, createdTodayOnly],
-  );
-
-  useEffect(() => setPage(0), [dq, src, prop, period, status, createdTodayOnly]);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, pageCount - 1);
-  const ordered = useMemo(() => {
-    const byProp = [...filtered].sort((a, b) => (a.property?.name ?? "").localeCompare(b.property?.name ?? "") || (period === "past" ? b.check_in.localeCompare(a.check_in) : a.check_in.localeCompare(b.check_in)));
-    return byProp;
-  }, [filtered, period]);
-  const pageItems = ordered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+  const properties = data?.properties ?? [];
+  const pageCount = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
+  const safePage = data?.page ?? page;
+  useEffect(() => { if (data && page !== data.page) setPage(data.page); }, [data, page]);
+  const pageItems = data?.rows ?? [];
   const groups = useMemo(() => {
     const list = properties
       .map((p) => ({ ...p, items: pageItems.filter((r) => r.property?.id === p.id) }))
@@ -137,6 +101,18 @@ function ReservationsPage() {
   }, [properties, pageItems]);
 
   const isLocked = (r: Row) => r.check_out <= today && !isAdmin;
+
+  async function download() {
+    setExportBusy(true);
+    try {
+      const rows = await fetchExport({ data: filters });
+      const headings = [t("resv.thGuest"), t("resv.companyTag"), t("calendar.allPensions"), t("resv.thRoom"), t("resv.thPeriod"), t("resv.thStatus"), t("common.allSources"), t("resv.thAmount")];
+      const lines = [headings, ...rows.map(r => [r.guest_name, r.company_name, r.property?.name, r.room?.number, `${r.check_in} → ${r.check_out}`, t(`resStatus.${r.status}`), sourceLabel(r.channel, k => t(k)), r.revenue])];
+      const url = URL.createObjectURL(new Blob(["\ufeff" + lines.map(line => line.map(reservationCsvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }));
+      const anchor = document.createElement("a"); anchor.href = url; anchor.download = `Pensify-${today}.csv`; anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch { toast.error(t("resv.loadError")); } finally { setExportBusy(false); }
+  }
 
   const softDelete = async (r: Row) => {
     const reason = window.prompt(t("resv.deletePrompt", { name: r.guest_name }), "");
@@ -158,7 +134,7 @@ function ReservationsPage() {
   return (
     <AppShell
       title={t("pages.reservations.title")}
-      subtitle={t("resv.bookingsSubtitle", { count: filtered.length })}
+      subtitle={t("resv.bookingsSubtitle", { count: data?.total ?? 0 })}
       actions={
         <button
           onClick={() => setNewOpen(true)}
@@ -173,6 +149,7 @@ function ReservationsPage() {
         <StatCard icon={<LogOut className="w-4 h-4" />} label={t("resv.departuresToday")} value={departures} />
         <StatCard icon={<BedDouble className="w-4 h-4" />} label={t("resv.guestsInHouse")} value={staying} />
       </div>
+      <p className="mb-3 text-xs text-muted-foreground">{t("reservationList.filteredScope")}</p>
 
       <div className="inline-flex flex-wrap gap-1 p-1 mb-3 rounded-xl bg-muted">
         {periods.map((p) => (
@@ -192,6 +169,7 @@ function ReservationsPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            maxLength={120}
             placeholder={t("resv.searchGuest")}
             className="w-full pl-9 pr-3 py-2 rounded-md border border-input bg-card text-sm outline-none focus:ring-2 focus:ring-ring"
           />
@@ -220,6 +198,15 @@ function ReservationsPage() {
         >
           {t("resv.createdTodayToggle")}
         </button>
+        <input type="date" aria-label={t("reservationList.from")} value={from} onChange={e => setFrom(e.target.value)} className="min-w-0 rounded-md border border-input bg-card px-3 py-2 text-sm" />
+        <input type="date" aria-label={t("reservationList.to")} value={to} onChange={e => setTo(e.target.value)} className="min-w-0 rounded-md border border-input bg-card px-3 py-2 text-sm" />
+        <select aria-label={t("reservationList.sort")} value={sort} onChange={e => setSort(e.target.value as ReservationFilters["sort"])} className="max-w-full rounded-md border border-input bg-card px-3 py-2 text-sm">
+          {["arrivalAsc", "arrivalDesc", "createdDesc"].map(value => <option key={value} value={value}>{t(`reservationList.${value}`)}</option>)}
+        </select>
+        <select aria-label={t("reservationList.pageSize")} value={pageSize} onChange={e => setPageSize(Number(e.target.value) as typeof pageSize)} className="rounded-md border border-input bg-card px-3 py-2 text-sm">
+          {RESERVATION_PAGE_SIZES.map(size => <option key={size} value={size}>{size}</option>)}
+        </select>
+        <Button variant="outline" onClick={download} disabled={exportBusy || period === "trash"}><Download className="mr-2 h-4 w-4" />{t("reservationList.export")}</Button>
       </div>
 
       {period === "trash" && isAdmin ? (
@@ -238,8 +225,6 @@ function ReservationsPage() {
       ) : (
         <div className="space-y-3">
           {groups.map((g) => {
-            const gArr = g.items.filter((r) => active(r) && r.check_in === today).length;
-            const gDep = g.items.filter((r) => active(r) && r.check_out === today).length;
             return (
               <details key={g.id} open className="group rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
                 <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none">
@@ -248,9 +233,6 @@ function ReservationsPage() {
                     <span className="font-semibold truncate">{g.name}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{g.items.length}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {gArr} {t("resv.arrivalsToday")} · {gDep} {t("resv.departuresToday")}
-                  </span>
                 </summary>
                 <div className="hidden md:grid grid-cols-[minmax(0,1fr)_64px_190px_110px_80px_auto] gap-4 px-4 py-2 border-t border-border bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
                   <span>{t("resv.thGuest")}</span><span>{t("resv.thRoom")}</span><span>{t("resv.thPeriod")}</span><span>{t("resv.thStatus")}</span><span className="text-right">{t("resv.thAmount")}</span><span className="w-[120px]" />
@@ -314,9 +296,9 @@ function ReservationsPage() {
           })}
           {pageCount > 1 && (
             <div className="flex items-center justify-center gap-3 pt-2 text-sm">
-              <button disabled={safePage === 0} onClick={() => setPage(safePage - 1)} className="px-3 py-1.5 rounded-md border border-input bg-card disabled:opacity-40">‹</button>
+              <Button variant="outline" size="icon" title={t("reservationList.previous")} aria-label={t("reservationList.previous")} disabled={safePage === 0} onClick={() => setPage(safePage - 1)}><ChevronLeft className="h-4 w-4" /></Button>
               <span className="tabular-nums text-muted-foreground">{safePage + 1} / {pageCount}</span>
-              <button disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)} className="px-3 py-1.5 rounded-md border border-input bg-card disabled:opacity-40">›</button>
+              <Button variant="outline" size="icon" title={t("reservationList.next")} aria-label={t("reservationList.next")} disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)}><ChevronRight className="h-4 w-4" /></Button>
             </div>
           )}
         </div>
@@ -333,11 +315,11 @@ function ReservationsPage() {
   );
 }
 
-function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: number; highlight?: boolean }) {
+function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: number | undefined; highlight?: boolean }) {
   return (
     <div className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
       <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
-      <div className="text-3xl font-semibold mt-1 tabular-nums">{value}</div>
+      <div className="text-3xl font-semibold mt-1 tabular-nums">{value ?? "—"}</div>
     </div>
   );
 }
