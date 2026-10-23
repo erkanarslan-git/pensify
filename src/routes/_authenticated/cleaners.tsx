@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
+import { DepartmentStaff } from "@/components/department-staff";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, Plus, Pencil, Trash2, UserCheck, UserX, Users, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
@@ -29,9 +31,9 @@ import {
 export const Route = createFileRoute("/_authenticated/cleaners")({
   head: () => ({ meta: [
     { title: "Personal — Pensify" },
-    { name: "description", content: "Reinigungspersonal und Zugangsdaten verwalten." },
+    { name: "description", content: "Personal für Reinigung, Wartung und Büro im Überblick." },
     { property: "og:title", content: "Personal — Pensify" },
-    { property: "og:description", content: "Reinigungspersonal und Zugangsdaten verwalten." },
+    { property: "og:description", content: "Personal für Reinigung, Wartung und Büro im Überblick." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),
@@ -54,6 +56,7 @@ function CleanersPage() {
   const qc = useQueryClient();
   const { can } = usePermissions();
   const canManage = can("manage_team");
+  const [department, setDepartment] = useState("cleaning");
   const [confirmName, setConfirmName] = useState("");
   const [editing, setEditing] = useState<(Partial<CleanerRow> & { password?: string }) | null>(null);
   const [deleting, setDeleting] = useState<CleanerRow | null>(null);
@@ -133,12 +136,17 @@ function CleanersPage() {
 
   return (
     <AppShell
-      title={t("pages.cleaners.title")}
-      subtitle={t("pages.cleaners.subtitle", { count: list.filter((c) => c.active).length })}
+      title={t("departments.personnel")}
       actions={
         canManage ? <Button asChild size="sm"><Link to="/team"><Users className="w-4 h-4 mr-1" />{t("teamSafety.addInTeam")}</Link></Button> : undefined
       }
     >
+      <Tabs value={department} onValueChange={setDepartment} className="mb-5">
+        <TabsList className="w-full sm:w-auto">
+          {["cleaning", "maintenance", "office"].map(d => <TabsTrigger key={d} value={d} className="flex-1">{t(`departments.${d}`)}</TabsTrigger>)}
+        </TabsList>
+      </Tabs>
+      {department === "maintenance" || department === "office" ? <DepartmentStaff department={department} /> : <>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
         <StaffStat highlight icon={<Users className="w-4 h-4" />} label={t("cleaners.active")} value={list.filter((c) => c.active).length} onClick={() => setStatusFilter("active")} />
         <StaffStat icon={<UserX className="w-4 h-4" />} label={t("cleaners.inactive")} value={list.filter((c) => !c.active).length} onClick={() => setStatusFilter("inactive")} />
@@ -189,6 +197,7 @@ function CleanersPage() {
         ))}
       </div>
 
+      </>}
       {/* Edit dialog */}
       <Dialog open={!!attendanceUser} onOpenChange={open => !open && setAttendanceUser(null)}>
         <DialogContent className="sm:max-w-2xl"><DialogHeader><DialogTitle>{attendanceUser?.full_name} · {t("attendance.title")}</DialogTitle></DialogHeader>{attendanceUser?.user_id ? <EmployeeAttendance userId={attendanceUser.user_id} /> : <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}</DialogContent>
