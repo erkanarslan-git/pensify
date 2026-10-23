@@ -40,7 +40,7 @@ function PaymentsPage() {
   const [search,setSearch] = useState(""); const [debounced,setDebounced] = useState(""); const [page,setPage] = useState(0); const [size,setSize] = useState(20);
   useEffect(()=>{const timer=setTimeout(()=>{setDebounced(search);setPage(0);},300);return()=>clearTimeout(timer);},[search]);
   useEffect(()=>setPage(0),[filter]);
-  const planQuery=useQuery({queryKey:["payment-plan-context"],enabled:planning,queryFn:async()=>{const result=await supabase.rpc("finance_dashboard",{_today:today});if(result.error)throw result.error;return result.data as unknown as {reservations:Res[];schedules:Sched[]};}});
+
 
   const { data, isPending, isError } = useQuery({
     queryKey: ["payments-page",debounced,filter,page,size],
@@ -124,8 +124,7 @@ function PaymentsPage() {
           onClose={() => setPaying(null)} onDone={refresh} />
       )}
       {planning && (
-        <PlanDialog reservations={(planQuery.data?.reservations ?? []).filter((r) => nights(r.check_in, r.check_out) >= 28 && r.check_out > today)}
-          rooms={data?.rooms ?? new Map()} schedules={planQuery.data?.schedules ?? []}
+        <PlanDialog rooms={data?.rooms ?? new Map()}
           onClose={() => setPlanning(false)} onDone={refresh} />
       )}
     </AppShell>
@@ -242,11 +241,17 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
   );
 }
 
-function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
-  reservations: Res[]; rooms: Map<string, string>; schedules: Sched[]; onClose: () => void; onDone: () => void;
+function PlanDialog({ rooms, onClose, onDone }: {
+  rooms: Map<string, string>; onClose: () => void; onDone: () => void;
 }) {
   const { t } = useTranslation();
   const [resId, setResId] = useState("");
+  const [candidateSearch,setCandidateSearch]=useState(""); const [candidatePage,setCandidatePage]=useState(0);
+  const candidates=useQuery({queryKey:["payment-plan-context",candidateSearch,candidatePage],queryFn:async()=>{const r=await supabase.rpc("finance_plan_candidates",{_today:businessDate(),_search:candidateSearch,_page:candidatePage,_size:20});if(r.error)throw r.error;return r.data as unknown as {total:number;rows:Res[]};}});
+  const reservations=candidates.data?.rows??[];
+  const contextQuery=useQuery({queryKey:["payment-reservation-context",resId],enabled:!!resId,queryFn:async()=>{const r=await supabase.rpc("payment_reservation_context",{_reservation:resId});if(r.error)throw r.error;return r.data as unknown as {schedules:Sched[]};}});
+  const schedules=contextQuery.data?.schedules??[];
+
   const [dueDay, setDueDay] = useState(1);
   const [mode, setMode] = useState<"auto" | "manual">("auto");
   const [monthly, setMonthly] = useState("");
@@ -262,8 +267,9 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
     setRows(buildReplacementSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined }, schedules.filter((s) => s.reservation_id === id && s.kind === "rent" && s.hasPayments)));
   };
 
+  useEffect(()=>{if(resId&&contextQuery.data)regenerate();},[resId,contextQuery.data]);
   const save = async () => {
-    if (busy || !res) return;
+    if (busy || !res || !contextQuery.data) return;
     if (!validReplacementSchedule(rows, retained)) return toast.error(t("payments.invalid"));
     setBusy(true);
     const ibanList = ibans.split(/[,;\n]/).map(x => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
@@ -276,6 +282,9 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
   const total = [...retained, ...rows].reduce((a, r) => a + (r.amount || 0), 0);
   return (
     <Modal title={t("payments.newPlan")} onClose={onClose}>
+      <input aria-label={t("guests.search")} placeholder={t("guests.search")} value={candidateSearch} maxLength={120} onChange={e=>{setCandidateSearch(e.target.value);setCandidatePage(0);setResId("");setRows([]);}} className={inputCls}/>
+      <div className="flex gap-2 my-2"><Button variant="outline" disabled={candidatePage===0} onClick={()=>{setCandidatePage(p=>p-1);setResId("");setRows([]);}}>{t("guests.previous")}</Button><span>{candidatePage+1}</span><Button variant="outline" disabled={(candidatePage+1)*20>=(candidates.data?.total??0)} onClick={()=>{setCandidatePage(p=>p+1);setResId("");setRows([]);}}>{t("guests.next")}</Button></div>
+      {(candidates.isPending||contextQuery.isFetching)&&<p>{t("common.loading")}</p>}{(candidates.isError||contextQuery.isError)&&<p role="alert">{t("payments.saveErr")}</p>}
       <label className="text-xs text-muted-foreground">{t("payments.reservation")}</label>
       <select value={resId} onChange={(e) => { setResId(e.target.value); setIbans((reservations.find((r) => r.id === e.target.value)?.payer_ibans ?? []).join(", ")); regenerate(e.target.value); }} className={inputCls}>
         <option value="">{t("payments.pickReservation")}</option>
@@ -329,7 +338,7 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
 
       <div className="grid grid-cols-2 gap-2 mt-5">
         <button onClick={onClose} className="py-3 rounded-xl border border-input">{t("common.cancel")}</button>
-        <button disabled={busy || !res} onClick={save} className="py-3 rounded-xl bg-primary text-primary-foreground font-medium disabled:opacity-50">{t("payments.save")}</button>
+        <button disabled={busy || !res || !contextQuery.data} onClick={save} className="py-3 rounded-xl bg-primary text-primary-foreground font-medium disabled:opacity-50">{t("payments.save")}</button>
       </div>
     </Modal>
   );
