@@ -237,12 +237,12 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
   const [busy, setBusy] = useState(false);
   const [ibans, setIbans] = useState("");
   const res = reservations.find((r) => r.id === resId);
-  const retained = schedules.filter((s) => s.reservation_id === resId && s.hasPayments);
+  const retained = schedules.filter((s) => s.reservation_id === resId && s.kind === "rent" && s.hasPayments);
 
   const regenerate = (id = resId, day = dueDay, m = mode, mon = monthly) => {
     const r = reservations.find((x) => x.id === id);
     if (!r) return setRows([]);
-    setRows(buildReplacementSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined }, schedules.filter((s) => s.reservation_id === id && s.hasPayments)));
+    setRows(buildReplacementSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined }, schedules.filter((s) => s.reservation_id === id && s.kind === "rent" && s.hasPayments)));
   };
 
   const save = async () => {
