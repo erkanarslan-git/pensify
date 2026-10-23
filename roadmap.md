@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] Öncelik: iptal edilmiş geçici TV bağlantılarını yönetim listesinden otomatik kaldır; TV tasarımını koru. Yeni yüklenen 11 aşamalı belgeyi çalışan kod ve testlerle yeniden karşılaştır; eski tamamlandı işaretleri tek başına kanıt değildir.
 - [x] Yeni kalan kapsam 1 uygulama: Yapılan İşler firma sahibine özel; finans görüntüleme/tahsilat/düzeltme/plan/banka izinleri ayrı, menü ve sunucu firma/lokasyon kapsamlı. Gerekçeli ters kayıt geçmişi silmez; plan editörü IBAN'ı dar yetkili yoldan kaydeder. 28 kural testi ve 10 salt-okunur DB güvenlik doğrulaması geçti; gerçek sahip hesabıyla rapor/tahsilat/plan penceresi/banka/ekip ekranları açıldı, hata yok. TV değişmedi.
 - [ ] Kapsam 1 canlı delegasyon/ters kayıt ve tenant/department SQL testleri: ayrı yetkili test ortamı ve uygun ödeme kaydı bekliyor; mevcut SQL oturumu organization_members tablo sahibi değil. Gerçek işletme verisi test için değiştirilmedi.
 - [ ] Yeni kalan kapsam 2: rezervasyon gerçek sunucu arama/filtre/sayfalama 10/20/30/40/50, toplam/export ve takvim kapsamı.
