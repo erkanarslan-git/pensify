@@ -32,26 +32,45 @@ function TvPage() {
   const previous = useRef<TvSnapshot["totals"] | null>(null);
   const reconnecting = useRef(false);
   const audio = useRef<AudioContext | null>(null);
+  const locationSection = useRef<HTMLElement | null>(null);
   const read = useServerFn(getTvSnapshot);
   useEffect(() => {
     const parsed = tvTokenSchema.safeParse(window.location.hash.slice(1));
     setToken(parsed.success ? parsed.data : null);
     setLoaded(true);
     setOnline(navigator.onLine);
-    const resize = () => setPageSize(window.innerWidth >= 900 ? Math.max(3, Math.min(12, Math.floor((window.innerHeight - 650) / 48))) : 10);
-    resize();
-    window.addEventListener("resize", resize);
     const lost = () => { setOnline(false); reconnecting.current = true; };
     const restored = () => { setOnline(true); };
     window.addEventListener("offline", lost);
     window.addEventListener("online", restored);
     const timer = window.setInterval(() => setNow(Date.now()), 15000);
-    return () => { window.removeEventListener("resize", resize); window.removeEventListener("offline", lost); window.removeEventListener("online", restored); window.clearInterval(timer); void audio.current?.close(); };
+    return () => { window.removeEventListener("offline", lost); window.removeEventListener("online", restored); window.clearInterval(timer); void audio.current?.close(); };
   }, []);
   const query = useQuery({ queryKey: ["tv-snapshot", token], enabled: !!token, queryFn: () => read({ data: { token: token ?? "" } }), refetchInterval: 30000, refetchIntervalInBackground: true, retry: 1, staleTime: 0 });
   useEffect(() => {
     if (query.isError) reconnecting.current = true;
   }, [query.isError]);
+  useEffect(() => {
+    const section = locationSection.current;
+    if (!section) return;
+    const resize = () => {
+      const row = section.querySelector("tbody tr");
+      const heading = section.querySelector(".tv-band-heading");
+      const tableHead = section.querySelector("thead");
+      const tableFoot = section.querySelector("tfoot");
+      if (!row || !heading || !tableHead || !tableFoot) return;
+      const style = getComputedStyle(section);
+      const available = section.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - heading.getBoundingClientRect().height - tableHead.getBoundingClientRect().height - tableFoot.getBoundingClientRect().height - 10;
+      setPageSize(Math.max(1, Math.floor(available / row.getBoundingClientRect().height)));
+    };
+    const observer = new ResizeObserver(resize);
+    observer.observe(section);
+    const row = section.querySelector("tbody tr");
+    if (row) observer.observe(row);
+    void document.fonts.ready.then(resize);
+    resize();
+    return () => observer.disconnect();
+  }, [query.data?.properties.length, loaded]);
   useEffect(() => {
     if (!query.data) return;
     const fresh = newTvEvents(seen.current, query.data.events, reconnecting.current);
@@ -107,9 +126,9 @@ function TvPage() {
       </article>)}
     </section>
     <div className="tv-middle">
-      <section className="tv-location-section min-w-0">
+      <section ref={locationSection} className="tv-location-section min-w-0">
         <div className="tv-band-heading"><h2><MapPin />{t("tv.locationsOverview")}</h2>{pages > 1 && <div className="flex shrink-0 items-center gap-1"><Button size="icon" variant="ghost" aria-label={t("tv.previousPage")} disabled={currentPage === 0} onClick={() => setLocationPage(currentPage - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs tabular-nums">{currentPage + 1} / {pages}</span><Button size="icon" variant="ghost" aria-label={t("tv.nextPage")} disabled={currentPage === pages - 1} onClick={() => setLocationPage(currentPage + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}</div>
-        <div className="tv-table-wrap"><table className="tv-table w-full text-left"><thead><tr>{["location", "total", "occupied", "ready", "cleaning", "maintenance"].map(key => <th key={key}>{t(`tv.${key}`)}</th>)}</tr></thead><tbody>{properties.map(property => <tr key={property.name}><td className="tv-location-name"><span>{property.name}</span><div className="tv-occupancy-track"><div style={{width: `${property.total ? property.occupied / property.total * 100 : 0}%`}} /></div></td>{(["total", "occupied", "ready", "cleaning", "maintenance"] as const).map(key => <td key={key} data-tone={key === "total" ? undefined : key} className={`tv-tone-${key} tabular-nums`}>{property[key]}</td>)}</tr>)}</tbody><tfoot><tr><th>{t("tv.total")}</th>{(["total", "occupied", "ready", "cleaning", "maintenance"] as const).map(key => <td key={key} className="font-semibold tabular-nums">{data.totals[key]}</td>)}</tr></tfoot></table></div>{!data.properties.length && <p className="p-3 text-muted-foreground">{t("tv.noLocations")}</p>}
+        <div className="tv-table-wrap"><table className="tv-table w-full text-left"><thead><tr>{["location", "total", "occupied", "ready", "cleaning", "maintenance"].map(key => <th key={key}>{t(`tv.${key}`)}</th>)}</tr></thead><tbody>{properties.map(property => <tr key={property.name}><td className="tv-location-name"><span>{property.name}</span><div className="tv-occupancy"><div className="tv-occupancy-track"><div style={{width: `${property.total ? property.occupied / property.total * 100 : 0}%`}} /></div><small>{property.total ? Math.round(property.occupied / property.total * 100) : 0}%</small></div></td>{(["total", "occupied", "ready", "cleaning", "maintenance"] as const).map(key => <td key={key} data-tone={key === "total" ? undefined : key} className={`tv-tone-${key} tabular-nums`}>{property[key]}</td>)}</tr>)}</tbody><tfoot><tr><th>{t("tv.total")}</th>{(["total", "occupied", "ready", "cleaning", "maintenance"] as const).map(key => <td key={key} className="font-semibold tabular-nums">{data.totals[key]}</td>)}</tr></tfoot></table></div>{!data.properties.length && <p className="p-3 text-muted-foreground">{t("tv.noLocations")}</p>}
       </section>
       <aside className="tv-side min-w-0">
         <section className="tv-activity"><div className="tv-band-heading"><h2><Activity />{t("tv.flow")}</h2></div><div className="tv-activity-list">{data.events.slice(0, 5).map(event => <div key={event.id} className={`tv-event ${highlight.includes(event.id) ? "tv-event-new" : ""}`} style={{borderLeftColor: data.colors[normalizeChannel(event.source)]}}><time>{time(event.at)}</time><span>{t(`tv.${event.kind}`)}</span></div>)}{!data.events.length && <p className="p-3 text-sm text-muted-foreground">{t("tv.noEvents")}</p>}</div></section>
