@@ -61,7 +61,7 @@
 - [x] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
 
 ## Mesai (QR) akışı
-- [ ] Mesaim: tıklamayla kamera, QR doğrulama ve aynı sitedeki lokasyon ekranına geçiş; DE/EN/TR, kamera izni ve kapanma testleri.
+- [x] Mesaim: tıklamayla kamera, sunucuda QR doğrulama ve yerel lokasyon ekranına geçiş; DE/EN/TR. Kamera yok/kapama ve telefon taşma kontrolü geçti; fiziksel kamera ve gerçek QR okutma bekliyor.
 - [x] Personel: Temizlik/Bakım/Büro sekmeleri; üst Mesaim kısayolu kaldırıldı; DE/EN/TR metinler, 8 test, oturumlu sekme/telefon kontrolü ve derleme geçti. Bakım/Büro boş; gerçek bölüm personeliyle isim doğrulaması henüz yapılamadı.
 - [x] Mesaim: ortak menü ve üç dilde geri bağlantısı; oturumlu masaüstü menü, /cleaners geri dönüşü ve telefon menüsü doğrulandı; 8 test ve derleme geçti.
 - [x] Tüm çalışanların Mesaim bağlantısı: bölümün Çalışan atamasıyla otomatik mesai profili; ana rol ve temizlik ekibi kapsamı korunur. Çalışan olmayanlara açıklama/yönlendirme, DE/EN/TR; 19 test ve gerçek sahip hesabında önce yönlendirme, sonra İK çalışanı ekranı doğrulandı.
@@ -70,6 +70,7 @@
 - [x] Fazla mesai: kapsamlı şef onayı, kişiye özel saatlik ücret, ayrı süre/tutar; 18 hesap/erişim testi ve ekran kontrolü.
 - [ ] Fazla mesai gerçek onay/ödeme ve firma izolasyon testi: tamamlanmış mesai/şef hesabı ve ayrıcalıklı SQL test erişimi bekliyor.
 - [x] Aşama 1: Sade çalışan ekranı (QR + Mesaim), ayrı mola aralıkları, tekrar basmaya dayanıklı mola/devam, girişten sonra QR'a dönüş
-- [ ] Aşama 2: Mesai Takibi'nde personelin bütün günleri (gün durumu, oturum/mola/net, gün detayı)
+- [x] Aşama 2: Mesai Takibi ilk görünümünde aylık günlük liste; gün durumu/oturum/mola/net, açılır lokasyon ve mola aralıkları. İnceleme kayıtları net toplamdan çıkarıldı; bakım/büro mola RPC'leri mesai uygunluğuna bağlandı. 30 test geçti; gerçek hesapta aylık liste ve telefon kamera durumu doğrulandı.
+- [ ] Gün detayı gerçek oturum/mola ve fiziksel QR testi: mevcut dönemde mesai kaydı yok; test ortamında fiziksel kamera yok. Şef/İK kapsamı Aşama 3'te devam edecek.
 - [ ] Aşama 3: Şef/İK kapsamlı erişim (sunucu tarafı) + export
 - [ ] Aşama 4: Bitirirken konum kontrolü, unutulan çıkış zamanlayıcısı ve uyarı eşikleri
