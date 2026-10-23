@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { AttendanceReviewControls } from "@/components/attendance-review-controls";
 import { DailyAttendanceLedger } from "@/components/daily-attendance-ledger";
 import { type DailyTimeEntry } from "@/lib/daily-time";
 import type { AttendanceBoard } from "@/lib/attendance-board";
@@ -32,7 +33,7 @@ const dayTones: Record<string, string> = {
 export function EmployeeAttendance({ userId, daily = false }: { userId?: string; daily?: boolean }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { can } = usePermissions();
+  const { can, roles } = usePermissions();
   const canManageTeam = can("manage_team");
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedMember, setSelectedMember] = useState("");
@@ -112,6 +113,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   const today = businessDate();
   const activeSchedule = memberSchedules.find(s => s.effective_from <= today) ?? memberSchedules[0];
   return <section className="space-y-4">
+    {(roles.includes("owner") || roles.includes("admin")) && <AttendanceReviewControls />}
     {q.isPending ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : <>
       {!members.length && <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}
       {!userId && <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-accent text-left"><tr><th className="p-2">{t("attendance.employee")}</th><th className="p-2">{t("attendance.actualHours")}</th>{kinds.map(k => <th className="p-2" key={k}>{t(`attendance.${k}`)}</th>)}</tr></thead><tbody>{report.map(r => <tr key={r.member.id} className="border-b border-border"><td className="p-2"><Button variant="link" className="h-auto p-0" onClick={() => { setSelectedMember(r.member.id); setWorkdays([]); }}>{name(r.member.user_id)}</Button></td><td className="p-2 tabular-nums">{(r.minutes / 60).toFixed(2)}</td>{kinds.map(k => <td className="p-2 tabular-nums" key={k}>{r.counts[k]}</td>)}</tr>)}</tbody></table></div>}
