@@ -25,7 +25,8 @@ function BankTransactionsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const perm = usePermissions();
-  const canMatch = perm.can("match_payments");
+  const canMatch = perm.can("match_payments") && perm.can("collect_payments");
+  const canCorrect = perm.can("correct_payments");
   const [view, setView] = useState<State>("review");
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
@@ -49,7 +50,7 @@ function BankTransactionsPage() {
       const open: Open[] = (s.data ?? []).filter((x) => res.has(x.reservation_id)).map((x) => ({
         id: x.id, reservation_id: x.reservation_id, payment_reference: x.payment_reference, due_date: x.due_date, kind: x.kind,
         remaining: Math.round((Number(x.amount) - (paid.get(x.id) ?? 0)) * 100) / 100,
-        guest: res.get(x.reservation_id)!.guest_name, ibans: res.get(x.reservation_id)!.payer_ibans ?? [],
+        guest: res.get(x.reservation_id)?.guest_name ?? "—", ibans: res.get(x.reservation_id)?.payer_ibans ?? [],
       })).filter((x) => x.remaining > 0);
       const manual: ManualPay[] = (p.data ?? []).filter((x) => x.source === "manual" && !x.bank_transaction_id).map((x) => ({ id: x.id, reservation_id: x.reservation_id, amount: Number(x.amount), paid_on: x.paid_on }));
       return { txs: (tx.data ?? []).map((x) => ({ ...x, amount: Number(x.amount) })) as Tx[], open, manual, guests: new Map([...res].map(([k, v]) => [k, v.guest_name])) };
@@ -109,15 +110,15 @@ function BankTransactionsPage() {
               </div>
             </div>
             <div className={`text-right font-semibold tabular-nums ${x.amount < 0 ? "text-destructive" : ""}`}>{eur(x.amount, x.currency)}</div>
-            {canMatch && (
+            {(canMatch || canCorrect) && (
               <div className="col-span-2 sm:col-span-1 grid grid-cols-2 sm:flex gap-2">
-                {(x.match_state === "review" || x.match_state === "unmatched") && x.booking_status === "booked" && x.amount > 0 && !x.is_sample && (
+                {canMatch && (x.match_state === "review" || x.match_state === "unmatched") && x.booking_status === "booked" && x.amount > 0 && !x.is_sample && (
                   <button onClick={() => setMatching(x)} className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-primary text-primary-foreground"><Check className="w-4 h-4" />{t("bank.match")}</button>
                 )}
-                {(x.match_state === "review" || x.match_state === "unmatched") && (
+                {canCorrect && (x.match_state === "review" || x.match_state === "unmatched") && (
                   <button onClick={() => setReasonFor({ tx: x, action: "exclude" })} className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl border border-input"><Ban className="w-4 h-4" />{t("bank.exclude")}</button>
                 )}
-                {(x.match_state === "matched" || x.match_state === "excluded") && (
+                {canCorrect && (x.match_state === "matched" || x.match_state === "excluded") && (
                   <button onClick={() => setReasonFor({ tx: x, action: "unmatch" })} className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl border border-input"><Undo2 className="w-4 h-4" />{t("bank.unmatch")}</button>
                 )}
               </div>

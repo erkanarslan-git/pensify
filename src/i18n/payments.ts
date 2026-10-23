@@ -10,6 +10,7 @@ const tr = {
   dueDay: "Her ayın kaçında ödesin?", mode: "Tutar", auto: "Otomatik (toplamı aylara böl)", manual: "Elle aylık tutar", monthly: "Aylık tutar (€)",
   preview: "Taksitler", addRow: "Taksit ekle", total: "Toplam", planSaved: "Ödeme planı kaydedildi", planReplaceNote: "Ödenmemiş eski taksitler bu planla değiştirilir; ödeme alınmış taksitler korunur.",
   recordedBy: "Kaydeden", history: "Ödemeler", saveErr: "Kaydedilemedi", invalid: "Tutar ve tarih geçerli olmalı",
+  reverse: "Ters kayıt", reverseReason: "Düzeltme gerekçesi", confirmReverse: "Ödemeyi ters kaydet", reversed: "Ödeme geçmişi korunarak ters kayıt yapıldı",
 };
 const de: typeof tr = {
   title: "Zahlungen", subtitle: "Monatliche Zahlungen für Langzeitaufenthalte",
@@ -23,6 +24,7 @@ const de: typeof tr = {
   dueDay: "Zahltag im Monat", mode: "Betrag", auto: "Automatisch (Gesamtbetrag aufteilen)", manual: "Monatsbetrag manuell", monthly: "Monatsbetrag (€)",
   preview: "Raten", addRow: "Rate hinzufügen", total: "Summe", planSaved: "Zahlungsplan gespeichert", planReplaceNote: "Unbezahlte alte Raten werden ersetzt; Raten mit Zahlungen bleiben erhalten.",
   recordedBy: "Erfasst von", history: "Zahlungen", saveErr: "Speichern fehlgeschlagen", invalid: "Betrag und Datum müssen gültig sein",
+  reverse: "Rückbuchen", reverseReason: "Grund der Korrektur", confirmReverse: "Zahlung rückbuchen", reversed: "Zahlung rückgebucht; Verlauf bleibt erhalten",
 };
 const en: typeof tr = {
   title: "Payments", subtitle: "Monthly payments for long stays",
@@ -36,5 +38,6 @@ const en: typeof tr = {
   dueDay: "Payment day of month", mode: "Amount", auto: "Automatic (split total)", manual: "Manual monthly amount", monthly: "Monthly amount (€)",
   preview: "Installments", addRow: "Add installment", total: "Total", planSaved: "Payment plan saved", planReplaceNote: "Unpaid old installments are replaced; installments with payments are kept.",
   recordedBy: "Recorded by", history: "Payments", saveErr: "Could not save", invalid: "Amount and date must be valid",
+  reverse: "Reverse", reverseReason: "Correction reason", confirmReverse: "Reverse payment", reversed: "Payment reversed; history retained",
 };
 export const paymentsTranslations = { tr, en, de };
