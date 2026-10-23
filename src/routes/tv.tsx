@@ -76,7 +76,9 @@ function TvPage() {
    const canvas=document.createElement("canvas");const ctx=canvas.getContext("2d");const nameStyle=section.querySelector(".tv-location-name");
    let rowHeight=base;if(ctx&&nameStyle){const cs=getComputedStyle(nameStyle);ctx.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;const longest=Math.max(0,...(data?.properties??[]).map(p=>ctx.measureText(p.name).width));const lines=Math.max(1,Math.ceil(longest/Math.max(1,nameWidth)));rowHeight=Math.max(base,lines*parseFloat(cs.fontSize)*1.2+8);}
    const available=section.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-heading.getBoundingClientRect().height-head.getBoundingClientRect().height-foot.getBoundingClientRect().height-12;
-   setPageSize(Math.max(1,Math.floor(available/rowHeight)));
+   // Narrow layouts stack the occupancy bar below the name and need extra room.
+   const stacked=window.matchMedia("(max-width: 699px)").matches;
+   setPageSize(Math.max(1,Math.floor(available/(rowHeight+(stacked?14:0)))));
    const eventHeight=parseFloat(getComputedStyle(events).getPropertyValue("--tv-event-height"))||42;setEventSize(Math.max(1,Math.floor(events.clientHeight/eventHeight)));
   };
   const observer=new ResizeObserver(resize);observer.observe(section);observer.observe(events);resize();void document.fonts.ready.then(resize);return()=>observer.disconnect();
