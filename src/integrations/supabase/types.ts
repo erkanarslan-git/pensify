@@ -3572,6 +3572,15 @@ export type Database = {
         }
         Returns: Json
       }
+      finance_plan_candidates: {
+        Args: {
+          _page?: number
+          _search?: string
+          _size?: number
+          _today: string
+        }
+        Returns: Json
+      }
       general_todo_action: {
         Args: { _action: string; _id: string; _note?: string }
         Returns: undefined
