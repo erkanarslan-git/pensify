@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 type NavItem = { to: string; labelKey: string; icon: typeof LayoutDashboard; exact?: boolean };
 type NavGroup = { labelKey: string; items: NavItem[] };
@@ -318,32 +319,39 @@ export function AppShell({ title, subtitle, actions, children }: {
           <div className="flex items-center gap-2">
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
-                <button
+                <Button variant="outline" size="icon"
                   className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
-                  aria-label="Open menu"
+                  aria-label={t("shift.openMenu")}
                 >
                   <Menu className="w-5 h-5" />
-                </button>
+                </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
                 <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
                 <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
               </SheetContent>
             </Sheet>
-            <button
+            <Button variant="outline" size="icon"
               onClick={toggleCollapsed}
               className="hidden md:grid w-10 h-10 rounded-xl border border-border place-items-center hover:bg-accent transition-colors"
-              aria-label={collapsed ? "Menü ausklappen" : "Menü einklappen"}
-              title={collapsed ? "Menü ausklappen" : "Menü einklappen"}
+              aria-label={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
+              title={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
             >
               {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-            </button>
+            </Button>
           </div>
           <div className="min-w-0">
             <h1 className="text-base md:text-lg font-semibold tracking-tight truncate">{title}</h1>
             {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-2 justify-self-end">
+            {canAccessRoute("/me", perms.roles) && (
+              <Button asChild variant="outline" size="sm" className="shrink-0">
+                <Link to="/me" aria-label={t("shift.menu")} title={t("shift.menu")}>
+                  <Clock /> <span className="hidden sm:inline">{t("shift.menu")}</span>
+                </Link>
+              </Button>
+            )}
             {actions}
             <button
               onClick={lock}
