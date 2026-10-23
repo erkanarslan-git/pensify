@@ -207,12 +207,13 @@ function PropertiesPage() {
         </div>
       )}
 
-      <PropertyDialog
+      {open && <PropertyDialog
+        key={editing?.id ?? "new"}
         open={open}
         onOpenChange={setOpen}
         editing={editing}
         cities={cities}
-      />
+      />}
     </AppShell>
   );
 }
@@ -265,28 +266,13 @@ function PropertyDialog({
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [form, setForm] = useState({
-    name: "",
-    address: "",
-    city_id: "",
-    latitude: "",
-    longitude: "",
-    geofence_radius_m: "300",
+    name: editing?.name ?? "",
+    address: editing?.address ?? "",
+    city_id: editing?.city_id ?? cities[0]?.id ?? "",
+    latitude: editing?.latitude?.toString() ?? "",
+    longitude: editing?.longitude?.toString() ?? "",
+    geofence_radius_m: (editing?.geofence_radius_m ?? 300).toString(),
   });
-
-  // Reset form when dialog opens
-  function handleOpenChange(v: boolean) {
-    if (v) {
-      setForm({
-        name: editing?.name ?? "",
-        address: editing?.address ?? "",
-        city_id: editing?.city_id ?? cities[0]?.id ?? "",
-        latitude: editing?.latitude?.toString() ?? "",
-        longitude: editing?.longitude?.toString() ?? "",
-        geofence_radius_m: (editing?.geofence_radius_m ?? 300).toString(),
-      });
-    }
-    onOpenChange(v);
-  }
 
   const save = useMutation({
     mutationFn: async () => {
@@ -318,7 +304,7 @@ function PropertyDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{editing ? t("pensions.editPension") : t("pensions.addNew")}</DialogTitle>
