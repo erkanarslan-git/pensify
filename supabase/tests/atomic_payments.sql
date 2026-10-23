@@ -9,7 +9,7 @@ BEGIN
  SELECT r.* INTO room FROM public.rooms r WHERE r.organization_id=org AND r.active AND r.status<>'maintenance' LIMIT 1;
  IF room.id IS NULL THEN RAISE EXCEPTION 'test room required'; END IF;
  INSERT INTO public.reservations(organization_id,property_id,room_id,guest_name,check_in,check_out,status,channel,revenue)
- VALUES(org,room.property_id,room.id,'Reversible finance test','2035-01-01','2035-04-01','confirmed','direct',300) RETURNING id INTO res;
+ VALUES(org,room.property_id,room.id,'Reversible finance test','2035-01-01','2035-04-01','confirmed','direct',public.quote_room_price(room.id,'2035-01-01','2035-04-01',1)) RETURNING id INTO res;
  INSERT INTO public.payment_schedules(reservation_id,due_date,amount) VALUES(res,'2035-01-01',100) RETURNING id INTO schedule;
  receipt:=public.collect_payment_receipt(request,res,120,'2035-01-01','cash','test',jsonb_build_array(jsonb_build_object('schedule_id',schedule,'amount',100)),'rent');
  PERFORM public.collect_payment_receipt(request,res,120,'2035-01-01','cash','test',jsonb_build_array(jsonb_build_object('schedule_id',schedule,'amount',100)),'rent');
