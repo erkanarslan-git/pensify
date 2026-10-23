@@ -23,6 +23,7 @@ import { Route as AuthenticatedCleaningRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDispatchRouteImport } from './routes/_authenticated/dispatch'
 import { Route as AuthenticatedDisplaysRouteImport } from './routes/_authenticated/displays'
 import { Route as AuthenticatedGeoTestRouteImport } from './routes/_authenticated/geo-test'
+import { Route as AuthenticatedGuestsRouteImport } from './routes/_authenticated/guests'
 import { Route as AuthenticatedMaintenanceRouteImport } from './routes/_authenticated/maintenance'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -121,6 +122,11 @@ const AuthenticatedDisplaysRoute = AuthenticatedDisplaysRouteImport.update({
 const AuthenticatedGeoTestRoute = AuthenticatedGeoTestRouteImport.update({
   id: '/geo-test',
   path: '/geo-test',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuestsRoute = AuthenticatedGuestsRouteImport.update({
+  id: '/guests',
+  path: '/guests',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMaintenanceRoute =
@@ -302,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/dispatch': typeof AuthenticatedDispatchRoute
   '/displays': typeof AuthenticatedDisplaysRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
+  '/guests': typeof AuthenticatedGuestsRoute
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/dispatch': typeof AuthenticatedDispatchRoute
   '/displays': typeof AuthenticatedDisplaysRoute
   '/geo-test': typeof AuthenticatedGeoTestRoute
+  '/guests': typeof AuthenticatedGuestsRoute
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   '/_authenticated/dispatch': typeof AuthenticatedDispatchRoute
   '/_authenticated/displays': typeof AuthenticatedDisplaysRoute
   '/_authenticated/geo-test': typeof AuthenticatedGeoTestRoute
+  '/_authenticated/guests': typeof AuthenticatedGuestsRoute
   '/_authenticated/maintenance': typeof AuthenticatedMaintenanceRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -438,6 +447,7 @@ export interface FileRouteTypes {
     | '/dispatch'
     | '/displays'
     | '/geo-test'
+    | '/guests'
     | '/maintenance'
     | '/me'
     | '/notifications'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/dispatch'
     | '/displays'
     | '/geo-test'
+    | '/guests'
     | '/maintenance'
     | '/me'
     | '/notifications'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dispatch'
     | '/_authenticated/displays'
     | '/_authenticated/geo-test'
+    | '/_authenticated/guests'
     | '/_authenticated/maintenance'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
@@ -671,6 +683,13 @@ declare module '@tanstack/react-router' {
       path: '/geo-test'
       fullPath: '/geo-test'
       preLoaderRoute: typeof AuthenticatedGeoTestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guests': {
+      id: '/_authenticated/guests'
+      path: '/guests'
+      fullPath: '/guests'
+      preLoaderRoute: typeof AuthenticatedGuestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/maintenance': {
@@ -907,6 +926,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDispatchRoute: typeof AuthenticatedDispatchRoute
   AuthenticatedDisplaysRoute: typeof AuthenticatedDisplaysRoute
   AuthenticatedGeoTestRoute: typeof AuthenticatedGeoTestRoute
+  AuthenticatedGuestsRoute: typeof AuthenticatedGuestsRoute
   AuthenticatedMaintenanceRoute: typeof AuthenticatedMaintenanceRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -938,6 +958,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDispatchRoute: AuthenticatedDispatchRoute,
   AuthenticatedDisplaysRoute: AuthenticatedDisplaysRoute,
   AuthenticatedGeoTestRoute: AuthenticatedGeoTestRoute,
+  AuthenticatedGuestsRoute: AuthenticatedGuestsRoute,
   AuthenticatedMaintenanceRoute: AuthenticatedMaintenanceRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,

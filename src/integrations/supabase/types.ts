@@ -1718,6 +1718,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_receipts: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          request_payload: Json
+          reservation_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          request_payload: Json
+          reservation_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          request_payload?: Json
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_receipts_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_schedules: {
         Row: {
           amount: number
@@ -1794,11 +1839,13 @@ export type Database = {
           bank_transaction_id: string | null
           created_at: string
           id: string
+          kind: string
           method: string
           note: string | null
           organization_id: string
           paid_on: string
           property_id: string
+          receipt_id: string | null
           recorded_by: string | null
           reservation_id: string
           reverse_reason: string | null
@@ -1812,11 +1859,13 @@ export type Database = {
           bank_transaction_id?: string | null
           created_at?: string
           id?: string
+          kind?: string
           method?: string
           note?: string | null
           organization_id: string
           paid_on?: string
           property_id: string
+          receipt_id?: string | null
           recorded_by?: string | null
           reservation_id: string
           reverse_reason?: string | null
@@ -1830,11 +1879,13 @@ export type Database = {
           bank_transaction_id?: string | null
           created_at?: string
           id?: string
+          kind?: string
           method?: string
           note?: string | null
           organization_id?: string
           paid_on?: string
           property_id?: string
+          receipt_id?: string | null
           recorded_by?: string | null
           reservation_id?: string
           reverse_reason?: string | null
@@ -1863,6 +1914,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "payment_receipts"
             referencedColumns: ["id"]
           },
           {
@@ -2916,6 +2974,57 @@ export type Database = {
           },
         ]
       }
+      todo_attachments: {
+        Row: {
+          content_type: string
+          created_at: string
+          file_name: string
+          id: string
+          object_path: string
+          organization_id: string
+          size_bytes: number
+          todo_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          file_name: string
+          id?: string
+          object_path: string
+          organization_id: string
+          size_bytes: number
+          todo_id: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          file_name?: string
+          id?: string
+          object_path?: string
+          organization_id?: string
+          size_bytes?: number
+          todo_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_attachments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_attachments_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           archived_at: string | null
@@ -3402,6 +3511,19 @@ export type Database = {
         Returns: undefined
       }
       clock_toggle_break: { Args: { _entry_id: string }; Returns: string }
+      collect_payment_receipt: {
+        Args: {
+          _allocations: Json
+          _amount: number
+          _date: string
+          _kind?: string
+          _method: string
+          _note: string
+          _request_id: string
+          _reservation: string
+        }
+        Returns: string
+      }
       correct_time_entry: {
         Args: {
           _break_minutes: number
@@ -3439,9 +3561,38 @@ export type Database = {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
       }
+      finance_dashboard: { Args: { _today: string }; Returns: Json }
+      finance_installment_page: {
+        Args: {
+          _filter?: string
+          _page?: number
+          _search?: string
+          _size?: number
+          _today: string
+        }
+        Returns: Json
+      }
+      finance_plan_candidates: {
+        Args: {
+          _page?: number
+          _search?: string
+          _size?: number
+          _today: string
+        }
+        Returns: Json
+      }
       general_todo_action: {
         Args: { _action: string; _id: string; _note?: string }
         Returns: undefined
+      }
+      guest_directory: {
+        Args: {
+          _kind?: string
+          _page?: number
+          _search?: string
+          _size?: number
+        }
+        Returns: Json
       }
       has_department_assignment: {
         Args: { _department: string; _org: string; _target?: string }
@@ -3521,6 +3672,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       overtime_board: { Args: { _from: string; _to: string }; Returns: Json }
+      payment_reservation_context: {
+        Args: { _reservation: string }
+        Returns: Json
+      }
       purge_reservation: { Args: { _id: string }; Returns: undefined }
       quote_room_price:
         | {
@@ -3536,11 +3691,21 @@ export type Database = {
             }
             Returns: number
           }
+      remove_todo_attachment: { Args: { _id: string }; Returns: undefined }
       reopen_cleaning_task: {
         Args: {
           _reason: string
           _task_id: string
           _to: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Returns: undefined
+      }
+      replace_payment_plan: {
+        Args: {
+          _ibans: string[]
+          _reservation: string
+          _retained: Json
+          _rows: Json
         }
         Returns: undefined
       }
@@ -3559,6 +3724,15 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: string
+      }
+      reserve_todo_attachment: {
+        Args: {
+          _file_name: string
+          _size: number
+          _todo: string
+          _type: string
+        }
+        Returns: Json
       }
       resolve_clock_property: {
         Args: { _token: string }
@@ -3684,6 +3858,10 @@ export type Database = {
         Args: { _member: string }
         Returns: undefined
       }
+      todo_attachment_access: {
+        Args: { _path: string; _write: boolean }
+        Returns: boolean
+      }
       transition_cleaning_task: {
         Args: {
           _task_id: string
@@ -3696,6 +3874,18 @@ export type Database = {
       tv_snapshot_v3: { Args: { _token: string }; Returns: Json }
       unmatch_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
+        Returns: undefined
+      }
+      update_guest_contact: {
+        Args: {
+          _address: string
+          _company: string
+          _contact: string
+          _email: string
+          _phone: string
+          _reservation: string
+          _vat: string
+        }
         Returns: undefined
       }
       verify_cron_secret: {

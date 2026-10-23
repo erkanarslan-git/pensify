@@ -1,11 +1,11 @@
 export type TodoPriority = "low" | "normal" | "high" | "urgent";
-export interface TodoLike { due_date: string | null; done: boolean; priority: string }
+export interface TodoLike { due_date: string | null; due_at?: string | null; done: boolean; priority: string }
 
 const RANK: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
 
 /** Overdue = not done and due date strictly before today (business date, YYYY-MM-DD). */
-export function isOverdue(t: TodoLike, today: string): boolean {
-  return !t.done && !!t.due_date && t.due_date < today;
+export function isOverdue(t: TodoLike, today: string, now = Date.now()): boolean {
+  return !t.done && (t.due_at ? Date.parse(t.due_at) < now : !!t.due_date && t.due_date < today);
 }
 
 /** Open first; then overdue, then by due date (none last), then priority. */

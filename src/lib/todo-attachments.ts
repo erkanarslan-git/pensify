@@ -1,0 +1,2 @@
+export const TODO_FILE_TYPES = ["image/jpeg","image/png","image/webp","application/pdf"];
+export function validTodoAttachment(file: { size: number; type: string }) { return file.size > 0 && file.size <= 10 * 1024 * 1024 && TODO_FILE_TYPES.includes(file.type); }

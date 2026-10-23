@@ -20,6 +20,10 @@ import { cleaningInspectionTranslations } from "./cleaning-inspection";
 import { integrationTranslations } from "./integrations";
 import { accessCodeTranslations } from "./access-codes";
 import { todoDetailTranslations } from "./todo-details";
+import { guestDirectoryTranslations } from "./guest-directory";
+import { paymentExtraTranslations } from "./payment-extra";
+import { calendarExtraTranslations } from "./calendar-extra";
+import { fallbackTranslations } from "./fallback";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -63,6 +67,10 @@ for (const lng of SUPPORTED_LANGS) {
     integrations: integrationTranslations[lng],
     accessCodes: accessCodeTranslations[lng],
     todoDetails: todoDetailTranslations[lng],
+    guests: guestDirectoryTranslations[lng],
+    paymentExtra: paymentExtraTranslations[lng],
+    calendarExtra: calendarExtraTranslations[lng],
+    fallback: fallbackTranslations[lng],
   }, true, true);
 }
 

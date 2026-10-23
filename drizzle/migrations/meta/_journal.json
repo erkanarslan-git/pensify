@@ -512,6 +512,76 @@
       "when": 1792724031438,
       "tag": "0072_fix_new_todo_record_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1792724462488,
+      "tag": "0073_atomic_payment_receipts_and_plan_replacement",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1792724535297,
+      "tag": "0074_private_todo_attachment_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1792724565288,
+      "tag": "0075_scoped_guest_directory_and_finance_totals",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1792724720360,
+      "tag": "0076_harden_new_workflow_input_validation",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1792724842130,
+      "tag": "0077_finance_pagination_and_guest_contact_edit",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1792724933788,
+      "tag": "0078_lock_secret_tables_and_safe_guest_grouping",
+      "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1792725046861,
+      "tag": "0079_direct_scoped_finance_pagination",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1792725250166,
+      "tag": "0080_paged_payment_plan_candidates",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1792725296626,
+      "tag": "0081_guest_existing_contact_projection",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1792725371213,
+      "tag": "0082_finance_page_room_identity",
+      "breakpoints": true
     }
   ]
 }

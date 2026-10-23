@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, AlertTriangle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/todos")({
   component: TodosPage,
 });
 
-interface Todo { id: string; title: string; due_date: string | null; priority: string; done: boolean; created_by: string | null; done_by: string | null; created_at: string; assigned_to: string | null; property_id: string | null; room_id: string | null; reservation_id: string | null; notes: string | null; due_at: string | null }
+interface Todo { id: string; title: string; due_date: string | null; priority: string; done: boolean; created_by: string | null; done_by: string | null; created_at: string; assigned_to: string | null; property_id: string | null; room_id: string | null; reservation_id: string | null; notes: string | null; due_at: string | null; recurrence:string; reminder_at:string|null }
 type Filter = "open" | "overdue" | "today" | "mine" | "upcoming" | "done" | "all";
 const PRIOS = ["low", "normal", "high", "urgent"] as const;
 const prioCls: Record<string, string> = {
@@ -43,6 +43,7 @@ function TodosPage() {
   const [room, setRoom] = useState(""); const [reservation, setReservation] = useState("");
   const [time, setTime] = useState(""); const [notes, setNotes] = useState("");
   const [repeat, setRepeat] = useState("none"); const [reminder, setReminder] = useState("");
+  const [editing,setEditing]=useState<string|null>(null);
   const [details, setDetails] = useState<Todo | null>(null);
   const { data: options } = useQuery({ queryKey: ["todo-options"], queryFn: () => loadTodoOptions() });
   const { data: links } = useQuery({ queryKey: ["todo-links", property], enabled: !!property, queryFn: async () => {
@@ -55,19 +56,13 @@ function TodosPage() {
     queryFn: async () => {
       const rows: Todo[] = [];
       for (let offset = 0; ; offset += 500) {
-        const { data, error } = await supabase.from("todos").select("id,title,due_date,due_at,notes,priority,done,created_by,done_by,created_at,assigned_to,property_id,room_id,reservation_id").is("archived_at", null).order("created_at", { ascending: false }).order("id").range(offset, offset + 499);
+        const { data, error } = await supabase.from("todos").select("id,title,due_date,due_at,notes,priority,done,created_by,done_by,created_at,assigned_to,property_id,room_id,reservation_id,recurrence,reminder_at").is("archived_at", null).order("created_at", { ascending: false }).order("id").range(offset, offset + 499);
         if (error) throw error; rows.push(...(data ?? []) as Todo[]); if ((data?.length ?? 0) < 500) break;
       }
       return rows;
     },
   });
-  const { data: names = {} } = useQuery({
-    queryKey: ["todo-users"],
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id,full_name");
-      return Object.fromEntries((data ?? []).map((p) => [p.id, p.full_name ?? ""])) as Record<string, string>;
-    },
-  });
+  const names = Object.fromEntries((options?.users ?? []).map(user => [user.id, user.name]));
   const refresh = () => qc.invalidateQueries({ queryKey: ["todos"] });
 
   const add = async () => {
@@ -75,9 +70,9 @@ function TodosPage() {
     let dueAt: string | null = null; let reminderAt: string | null = null;
     try { dueAt = due && time ? berlinLocalToIso(`${due}T${time}`) : null; reminderAt = reminder ? berlinLocalToIso(reminder) : null; }
     catch { toast.error(t("todos.saveErr")); return; }
-    const { error } = await supabase.rpc("save_general_todo", { _input: { title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt } });
+    const { error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt } });
     if (error) return toast.error(t("todos.saveErr"));
-    setTitle(""); setDue(""); setPrio("normal"); refresh();
+    setEditing(null); setTitle(""); setDue(""); setPrio("normal"); setAssigned(""); setProperty(""); setRoom(""); setReservation(""); setTime(""); setNotes(""); setRepeat("none"); setReminder(""); refresh();
   };
   const toggle = async (x: Todo) => {
     const { error } = await supabase.rpc("general_todo_action", { _id: x.id, _action: x.done ? "reopen" : "complete" });
@@ -135,7 +130,7 @@ function TodosPage() {
         <select value={prio} onChange={(e) => setPrio(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-background text-sm">
           {PRIOS.map((p) => <option key={p} value={p}>{t(`todos.p.${p}`)}</option>)}
         </select>
-        <button onClick={add} disabled={!title.trim()} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50"><Plus className="w-4 h-4" />{t("todos.add")}</button>
+        <button onClick={add} disabled={!title.trim()} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50"><Plus className="w-4 h-4" />{t(editing?"common.save":"todos.add")}</button>
       </div>
 
       <details className="mb-4"><summary className="cursor-pointer text-sm font-semibold">{t("todoDetails.details")}</summary><div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -184,6 +179,7 @@ function TodosPage() {
                     </div>
                   </div>
                   <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${prioCls[x.priority] ?? prioCls.normal}`}>{t(`todos.p.${x.priority}`)}</span>
+                  <Button variant="ghost" size="icon" aria-label={t("common.edit")} onClick={()=>{setEditing(x.id);setTitle(x.title);setDue(x.due_date??"");setPrio(x.priority);setAssigned(x.assigned_to??"");setProperty(x.property_id??"");setRoom(x.room_id??"");setReservation(x.reservation_id??"");setNotes(x.notes??"");setRepeat(x.recurrence);setReminder(x.reminder_at?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(x.reminder_at)).replace(" ","T"):"");setTime(x.due_at?new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"}).format(new Date(x.due_at)):"");window.scrollTo({top:0,behavior:"smooth"});}}><Pencil className="h-4 w-4"/></Button>
                   <button onClick={() => remove(x)} aria-label={t("todos.del")} className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4" /></button>
                 </div>
               );

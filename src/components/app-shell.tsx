@@ -64,6 +64,7 @@ const navGroups: NavGroup[] = [
     labelKey: "nav.groups.stay",
     items: [
       { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
+      { to: "/guests", labelKey: "guests.title", icon: Users },
       { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
     ],
   },
