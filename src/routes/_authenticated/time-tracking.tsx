@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OvertimePanel } from "@/components/overtime-panel";
 import { overtimePay } from "@/lib/overtime";
 import { usePermissions } from "@/hooks/use-permissions";
+import { csvText } from "@/lib/attendance-export";
 
 export const Route = createFileRoute("/_authenticated/time-tracking")({
   head: () => ({ meta: [{ title: `${i18n.t("nav.timeTracking")} — Pensify` }, { name: "description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:title", content: "Arbeitszeiten — Pensify" }, { property: "og:description", content: "Arbeitsstunden und monatliche Anwesenheit getrennt erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -228,7 +229,7 @@ function TimeTrackingPage() {
         e.paid_amount?.toString() ?? "",
       ]);
     }
-    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = csvText(rows);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -313,15 +314,16 @@ function TimeTrackingPage() {
             </div>
           );
         })()}
-        <Tabs key={isAdmin ? "admin" : "scoped"} defaultValue={isAdmin ? "daily" : "overtime"}>
+        <Tabs key={isAdmin ? "admin" : "scoped"} defaultValue="daily">
           <TabsList className="h-auto flex-wrap">
-            {isAdmin && <><TabsTrigger value="daily">{t("attendance.tabMonth")}</TabsTrigger><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
+            <TabsTrigger value="daily">{t("attendance.tabMonth")}</TabsTrigger>
+            {isAdmin && <><TabsTrigger value="shifts">{TL[0]}</TabsTrigger>
             <TabsTrigger value="pay">{TL[1]}</TabsTrigger>
             <TabsTrigger value="plan">{TL[2]}</TabsTrigger></>}
             <TabsTrigger value="overtime">{t("overtime.title")}</TabsTrigger>
           </TabsList>
           <TabsContent value="overtime" className="mt-4 space-y-4"><div className="flex flex-wrap gap-3"><div><Label htmlFor="ot-from">{t("timeTracking.from")}</Label><Input id="ot-from" type="date" value={from} onChange={e => setFrom(e.target.value)} /></div><div><Label htmlFor="ot-to">{t("timeTracking.to")}</Label><Input id="ot-to" type="date" value={to} onChange={e => setTo(e.target.value)} /></div></div><OvertimePanel from={from} to={to} /></TabsContent>
-          {isAdmin && <TabsContent value="daily" className="mt-4"><EmployeeAttendance daily /></TabsContent>}
+          <TabsContent value="daily" className="mt-4"><EmployeeAttendance daily /></TabsContent>
           <TabsContent value="pay" className="mt-4 space-y-4">
         {filters}
         <Section title={t("timeTracking.summary")}>
