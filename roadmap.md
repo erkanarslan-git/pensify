@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] TV: canlı renkler ve 16:9 kompakt yerleşim; yüklenen belgenin tüm maddeleriyle uygulama karşılaştırması.
 - [x] Mesai, yetki, ödeme ve Berlin saati: 15 dosyada 76 test geçti.
 - [x] Anonim TV: firma kapsamlı iptal edilebilir bağlantı, kişisel verisiz özet, lokasyonlar, anonim olaylar, 7 günlük grafik/vade sayıları; 30 saniyede sunucu görünümüyle yenileme, tekilleştirme/ses/reduced-motion, DE/EN/TR.
 - [x] 111 test geçti; gerçek sahip hesabıyla geçici bağlantı oluşturma–girişsiz açma–iptal kontrolü, 10 lokasyon/84 oda, üç dil, telefon taşma, çevrimdışı uyarı ve yeniden bağlanma doğrulandı. Ham display kayıtları/izinsiz oluşturma/geçersiz token engelli; TV kimliği Mesai Takibi'ne giriş sağlamıyor. Deneme bağlantıları iptal edildi.
