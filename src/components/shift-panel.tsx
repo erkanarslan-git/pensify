@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { clockErrorKey } from "@/i18n/clock";
 import { readPositionOnce, shiftActions, shiftState, type ShiftAction } from "@/lib/shift-actions";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { canStartShift, type ShiftContext } from "@/lib/shift-context";
 
 type Prop = { id: string; name: string; address?: string | null; latitude?: number | null; longitude?: number | null } | null;
 
@@ -21,19 +24,11 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
   const [confirm, setConfirm] = useState<string | null>(null);
 
   const q = useQuery({
-    queryKey: myShiftKey,
+    queryKey: [...myShiftKey, property?.id ?? null],
     queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) throw new Error("unauthenticated");
-      const { data: cleaner } = await supabase.from("cleaners").select("id, full_name, active").eq("user_id", u.user.id).eq("active", true).maybeSingle();
-      if (!cleaner) return { cleaner: null, open: null, email: u.user.email };
-      const { data: open } = await supabase
-        .from("time_entries")
-        .select("id, property_id, clock_in_at, break_minutes, break_started_at, properties(name)")
-        .eq("cleaner_id", cleaner.id)
-        .is("clock_out_at", null)
-        .maybeSingle();
-      return { cleaner, open, email: u.user.email };
+      const { data, error } = await supabase.rpc("my_shift_context", { _property_id: property?.id as unknown as string });
+      if (error) throw error;
+      return data as unknown as ShiftContext;
     },
   });
 
@@ -41,6 +36,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
     mutationFn: async (a: ShiftAction) => {
       const open = q.data?.open;
       if (a === "start") {
+        if (!q.data || !canStartShift(q.data)) throw new Error("no_staff_profile");
         if (!property) throw new Error("unknown_location");
         const needsLoc = property.latitude != null && property.longitude != null;
         const pos = needsLoc ? await readPositionOnce() : null;
@@ -86,13 +82,20 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
   });
 
   if (q.isLoading) return <div className="py-10 grid place-items-center text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin" /></div>;
+  if (q.isError) return <div role="alert" className="space-y-3 text-sm text-destructive"><p>{t(clockErrorKey(q.error))}</p><Button variant="outline" onClick={() => q.refetch()}>{t("shift.retry")}</Button></div>;
   if (!q.data) return null;
   const { cleaner, open } = q.data;
-  if (!cleaner) return <div className="rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm">{t("shift.noProfile")}</div>;
+  if (!cleaner) return (
+    <div className="space-y-4 rounded-lg border border-border bg-card p-5">
+      <h2 className="text-lg font-semibold">{t("shift.notEmployeeTitle")}</h2>
+      <p className="text-sm text-muted-foreground">{t(q.data.status === "no_membership" ? "shift.noMembership" : q.data.can_manage_team ? "shift.managerGuidance" : "shift.employeeGuidance")}</p>
+      <Button asChild variant="outline"><Link to={q.data.can_manage_team ? "/team" : "/"}>{t(q.data.can_manage_team ? "shift.openTeam" : "shift.returnHome")}</Link></Button>
+    </div>
+  );
 
   const pid = property?.id ?? open?.property_id ?? null;
   const state = shiftState(open, pid);
-  const actions = shiftActions(open, pid);
+  const actions = shiftActions(open, pid).filter(a => a !== "start" || canStartShift(q.data));
   const openName = (open as { properties?: { name?: string } } | null)?.properties?.name ?? "";
   const busy = act.isPending;
 
@@ -100,7 +103,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
     <div className="space-y-4">
       <div className="rounded-2xl brand-tile p-5 shadow-soft">
         <div className="text-xs uppercase opacity-80">{t("shift.hello")}</div>
-        <div className="text-xl font-semibold">{cleaner.full_name || q.data.email}</div>
+        <div className="text-xl font-semibold">{cleaner.full_name}</div>
         {(property?.name || openName) && (
           <div className="text-sm opacity-90 mt-1 inline-flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {property?.name ?? openName}</div>
         )}
@@ -121,18 +124,16 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
 
         <div className="grid gap-3">
           {actions.map((a) => (
-            <button
+            <Button
               key={a}
+              variant={a === "finish" ? "destructive" : a === "start" ? "default" : "outline"}
               disabled={busy}
               onClick={() => act.mutate(a)}
-              className={
-                "w-full min-h-16 rounded-xl text-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 " +
-                (a === "finish" ? "bg-destructive text-destructive-foreground" : a === "start" ? "bg-primary text-primary-foreground" : "border border-border bg-background")
-              }
+              className="w-full min-h-16 rounded-lg text-lg font-semibold"
             >
               {busy && act.variables === a ? <Loader2 className="w-5 h-5 animate-spin" /> : a === "start" || a === "resume" ? <Play className="w-5 h-5" /> : a === "break" ? <Pause className="w-5 h-5" /> : <Square className="w-5 h-5" />}
               {t(`shift.${a}`)}
-            </button>
+            </Button>
           ))}
         </div>
         {busy && act.variables === "start" && <p className="text-xs text-center text-muted-foreground">{t("shift.gettingLocation")}</p>}

@@ -14,7 +14,7 @@
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
 - WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
 - Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
-- Organization membership creates/updates the linked cleaner profile through a database trigger; the staff roster is role-driven and user creation lives in Team. Why: one identity, automatic role changes, no manual linking.
+- Membership/department triggers enable time profiles for active cleaners or department workers; cleaning-active stays role-driven. Why: one identity, no role change or cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
 - Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
 - After a successful cleaning transition, await refreshCleaningQueries for tasks, dashboard (including inactive cache), and action center. Why: completed rooms must leave cleaning counts immediately using committed database status.

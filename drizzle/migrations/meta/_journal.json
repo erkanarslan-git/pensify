@@ -379,6 +379,13 @@
       "when": 1792714546296,
       "tag": "0053_supervisor_overtime_approvals",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1792715760563,
+      "tag": "0054_department_employee_shift_access",
+      "breakpoints": true
     }
   ]
 }
