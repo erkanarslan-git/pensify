@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,9 +18,9 @@ export const Route = createFileRoute("/_authenticated/payments/bank")({
   component: BankSettingsPage,
 });
 
-const fmt = (s: string | null) => s ? new Date(s).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : null;
+const fmt = (s: string | null) => s ? new Date(s).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : null;
 const statusCls: Record<string, string> = {
-  not_configured: "bg-muted text-muted-foreground", connecting: "bg-info/20 text-info-foreground", connected: "bg-success/15 text-success",
+  not_configured: "bg-muted text-muted-foreground", connecting: "bg-info/20 text-info-foreground dark:text-info", connected: "bg-success/15 text-success",
   reauth_required: "bg-warning/15 text-warning", error: "bg-destructive/15 text-destructive", disconnected: "bg-muted text-muted-foreground",
 };
 

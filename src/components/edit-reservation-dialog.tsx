@@ -1,3 +1,4 @@
+import { displayLocale } from "@/i18n/legacy-ui";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -115,8 +116,8 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Kayıt bulunamadı</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">Bu rezervasyon yüklenemedi. Yetkiniz olmayabilir veya kayıt silinmiş olabilir.</p>
+          <DialogHeader><DialogTitle>{t("legacyUi.recordMissing")}</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">{t("legacyUi.recordFailed")}</p>
         </DialogContent>
       </Dialog>
     );
@@ -126,11 +127,11 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
 
   const submit = async () => {
     if (!r) return;
-    if (readOnly) { toast.error("Keine Berechtigung", { description: "Vergangene Buchungen dürfen nur Manager/Admin/Inhaber bearbeiten." }); return; }
+    if (readOnly) { toast.error(t("legacyUi.noPermission"), { description: t("legacyUi.pastRestricted") }); return; }
     const isCompany = r.customer_type === "company";
-    if (isCompany && !r.company_name?.trim()) return toast.error("Firmenname ist erforderlich");
-    if (!r.guest_name.trim()) return toast.error("Gastname ist erforderlich");
-    if (r.check_out <= r.check_in) return toast.error("Abreise muss nach der Anreise liegen");
+    if (isCompany && !r.company_name?.trim()) return toast.error(t("newRes.errCompanyName"));
+    if (!r.guest_name.trim()) return toast.error(t("newRes.errGuestName"));
+    if (r.check_out <= r.check_in) return toast.error(t("newRes.errDates"));
     const room = rooms.find((x) => x.id === r.room_id);
     const orig = original;
     const stayUnchanged = !!orig && orig.room_id === r.room_id && orig.check_in === r.check_in && orig.check_out === r.check_out
@@ -159,10 +160,10 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     setSaving(false);
     if (error) {
       if (error.message.includes("room_not_bookable")) { toast.error(t("bookingAvailability.unavailable")); return; }
-      toast.error("Güncellenemedi", { description: error.message });
+      toast.error(t("legacyUi.updateFailed"), { description: error.message });
       return;
     }
-    toast.success("Rezervasyon güncellendi");
+    toast.success(t("legacyUi.updated"));
     onOpenChange(false);
     onSaved?.();
   };
@@ -173,54 +174,54 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Rezervasyonu düzenle</DialogTitle>
+          <DialogTitle>{t("legacyUi.editReservation")}</DialogTitle>
           <DialogDescription>
             {r && (
               <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <UserIcon className="w-3 h-3" />
-                Oluşturan: {creatorEmail ?? "—"} · {new Date(r.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
+                {t("legacyUi.createdBy")}: {creatorEmail ?? "—"} · {new Date(r.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
 
         {loading || !r ? (
-          <div className="py-12 text-center text-sm text-muted-foreground">Laden…</div>
+          <div className="py-12 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
         ) : (
           <>
             {readOnly && (
-              <div className="mb-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-foreground flex items-center gap-2">
+              <div className="mb-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-foreground dark:text-warning flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5" />
-                Vergangene Buchung — nur Manager, Admin oder Inhaber dürfen bearbeiten. Ansicht ist schreibgeschützt.
+                {t("legacyUi.pastRestricted")}
               </div>
             )}
             <fieldset disabled={readOnly} className={readOnly ? "opacity-90" : ""}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div className="col-span-full grid gap-1">
-                <span className="text-xs text-muted-foreground">Bucht eine Person oder eine Firma?</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.personOrCompany")}</span>
                 <div className="inline-flex rounded-md border border-input overflow-hidden w-fit">
                   {(["person", "company"] as const).map((ct) => (
                     <button key={ct} type="button" onClick={() => update("customer_type", ct)}
                       className={`px-4 py-1.5 text-sm ${((r.customer_type ?? "person") === ct) ? "bg-primary text-primary-foreground" : "bg-card"}`}>
-                      {ct === "person" ? "Privatperson" : "Firma"}
+                      {ct === "person" ? t("newRes.person") : t("newRes.company")}
                     </button>
                   ))}
                 </div>
               </div>
               {r.customer_type === "company" && (
                 <label className="col-span-full grid gap-1">
-                  <span className="text-xs text-muted-foreground">Firmenname *</span>
+                  <span className="text-xs text-muted-foreground">{t("newRes.companyName")}</span>
                   <input value={r.company_name ?? ""} onChange={(e) => update("company_name", e.target.value)}
                     className="px-3 py-2 rounded-md border border-input bg-card" />
                 </label>
               )}
               <label className="col-span-full grid gap-1">
-                <span className="text-xs text-muted-foreground">{r.customer_type === "company" ? "Gast / Ansprechpartner *" : "Gastname *"}</span>
+                <span className="text-xs text-muted-foreground">{r.customer_type === "company" ? t("newRes.contactPerson") + " *" : t("newRes.guestName")}</span>
                 <input value={r.guest_name} onChange={(e) => update("guest_name", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Lokasyon</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.property")}</span>
                 <select value={r.property_id} onChange={(e) => {
                   update("property_id", e.target.value);
                   const first = rooms.find((x) => x.property_id === e.target.value && canBookRoom(x, r.check_in, r.check_out, stays, r.id));
@@ -230,7 +231,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Oda</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.room")}</span>
                 <select value={r.room_id} onChange={(e) => update("room_id", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
                   {!propRooms.some((x) => x.id === r.room_id) && <option value={r.room_id} disabled>{t("bookingAvailability.unavailable")}</option>}
@@ -239,37 +240,37 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Giriş</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.checkIn")}</span>
                 <input type="date" value={r.check_in} onChange={(e) => update("check_in", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Çıkış</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.checkOut")}</span>
                 <input type="date" value={r.check_out} onChange={(e) => update("check_out", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Kanal</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.channel")}</span>
                 <select value={r.channel} onChange={(e) => update("channel", e.target.value as Channel)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
                   {Array.from(new Set<string>([r.channel, ...enabledChannels])).map((c) => <option key={c} value={c}>{sourceLabel(c, (k) => t(k))}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Durum</span>
+                <span className="text-xs text-muted-foreground">{t("resv.thStatus")}</span>
                 <select value={r.status} onChange={(e) => update("status", e.target.value as Status)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {STATUSES.map((s) => <option key={s} value={s}>{t(`resStatus.${s}`)}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Kişi</span>
+                <span className="text-xs text-muted-foreground">{t("common.guests")}</span>
                 <input type="number" min={1} value={r.guests_count}
                   onChange={(e) => update("guests_count", Math.max(1, +e.target.value || 1))}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Tutar (€)</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.amount")}</span>
                 <input type="number" min={0} step="0.01" value={r.revenue}
                   onChange={(e) => update("revenue", Math.max(0, +e.target.value || 0))}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
@@ -285,17 +286,17 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 </label>
               )}
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">E-posta</span>
+                <span className="text-xs text-muted-foreground">{t("common.email")}</span>
                 <input value={r.guest_email ?? ""} onChange={(e) => update("guest_email", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">Telefon</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.phone")}</span>
                 <input value={r.guest_phone ?? ""} onChange={(e) => update("guest_phone", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
               <label className="col-span-full grid gap-1">
-                <span className="text-xs text-muted-foreground">Notlar</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.note")}</span>
                 <textarea value={r.notes ?? ""} onChange={(e) => update("notes", e.target.value)} rows={2}
                   className="px-3 py-2 rounded-md border border-input bg-card resize-none" />
               </label>
@@ -307,12 +308,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 <History className="w-4 h-4" />
-                Değişiklik geçmişi {history.length > 0 && `(${history.length})`}
+                {t("pages.logs.title")} {history.length > 0 && `(${history.length})`}
               </button>
               {showHistory && (
                 <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
                   {history.length === 0 ? (
-                    <div className="text-xs text-muted-foreground">Kayıt yok ya da görüntüleme yetkiniz yok.</div>
+                    <div className="text-xs text-muted-foreground">{t("legacyUi.historyEmpty")}</div>
                   ) : history.map((h) => {
                     const old = h.diff?.old ?? {};
                     const nw = h.diff?.new ?? {};
@@ -321,22 +322,22 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                       <div key={h.id} className="rounded-md border border-border p-2 text-xs">
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Clock className="w-3 h-3" />
-                          {new Date(h.created_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
-                          <span className="px-1.5 py-0.5 rounded bg-accent">{h.action}</span>
-                          <span className="ml-auto">{h.actor_email ?? "sistem"}</span>
+                          {new Date(h.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}
+                          <span className="px-1.5 py-0.5 rounded bg-accent">{t(`pages.logs.${({ INSERT: "create", UPDATE: "update", DELETE: "delete" } as Record<string, string>)[h.action] ?? "action"}`)}</span>
+                          <span className="ml-auto">{h.actor_email ?? t("pages.logs.system")}</span>
                         </div>
                         {h.action === "UPDATE" && changes.length > 0 && (
                           <ul className="mt-1.5 space-y-0.5">
                             {changes.map((k) => (
                               <li key={k}>
-                                <span className="font-medium">{k}:</span>{" "}
+                                <span className="font-medium">{t(({ property_id: "newRes.property", room_id: "newRes.room", guest_name: "resv.thGuest", guest_email: "common.email", guest_phone: "newRes.phone", guests_count: "common.guests", check_in: "newRes.checkIn", check_out: "newRes.checkOut", channel: "newRes.channel", status: "resv.thStatus", revenue: "newRes.amount", notes: "newRes.note" })[k])}:</span>{" "}
                                 <span className="text-muted-foreground line-through">{String(old[k] ?? "—")}</span>{" → "}
                                 <span>{String(nw[k] ?? "—")}</span>
                               </li>
                             ))}
                           </ul>
                         )}
-                        {h.action === "INSERT" && <div className="mt-1 text-muted-foreground">Oluşturuldu</div>}
+                        {h.action === "INSERT" && <div className="mt-1 text-muted-foreground">{t("pages.logs.create")}</div>}
                       </div>
                     );
                   })}

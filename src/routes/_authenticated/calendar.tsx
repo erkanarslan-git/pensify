@@ -622,7 +622,7 @@ function CalendarPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex cursor-help">
-                                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                <Sparkles className="w-3.5 h-3.5 text-warning" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
@@ -634,7 +634,7 @@ function CalendarPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex cursor-help">
-                                <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                                <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-[240px] text-xs">
@@ -671,7 +671,7 @@ function CalendarPage() {
                   const pastStyle = past
                     ? {
                         backgroundImage:
-                          "repeating-linear-gradient(135deg, hsl(var(--muted)/0.35) 0 6px, transparent 6px 12px)",
+                          "repeating-linear-gradient(135deg, color-mix(in oklab, var(--muted) 35%, transparent) 0 6px, transparent 6px 12px)",
                       }
                     : undefined;
                   cells.push(
@@ -692,7 +692,7 @@ function CalendarPage() {
                            return (
                              <div
                                onMouseDown={draggable ? (e) => startMoveDrag(e, occupant) : undefined}
-                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-amber-400 ring-offset-1 ring-offset-background" : ""}`}
+                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-warning ring-offset-1 ring-offset-background" : ""}`}
                                style={{
                                  width: `calc(${span} * 100% - 8px)`,
                                  left: dragDays !== 0 ? `calc(0.25rem + ${dragDays * 100}%)` : undefined,
@@ -743,8 +743,8 @@ function CalendarPage() {
         </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> {t("calendar.legendColor")}</div>
-          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> {t("calendar.cleaningPending")}</div>
-          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-red-500" /> {t("calendar.problemRoom")}</div>
+          <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-warning" /> {t("calendar.cleaningPending")}</div>
+          <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-destructive" /> {t("calendar.problemRoom")}</div>
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
             <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> {t("calendar.shortcuts")}
           </button>
