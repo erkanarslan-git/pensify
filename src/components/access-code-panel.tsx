@@ -21,12 +21,16 @@ export function AccessCodePanel({ propertyId, roomId }: { propertyId: string; ro
   const reveal = async () => {
     if (revealed !== null) { setRevealed(null); return; }
     setBusy(true);
-    const { data, error } = await supabase.rpc("reveal_access_secret", { _property: propertyId, ... (roomId ? { _room: roomId } : {}), _kind: kind });
+    // PostgreSQL permits NULL for property-level codes; generated RPC argument types omit nullability.
+    const { data, error } = await supabase.rpc("reveal_access_secret", { _property: propertyId, _room: roomId ?? (null as unknown as string), _kind: kind });
     setBusy(false); if (error) { toast.error(t("accessCodes.failed")); return; } setRevealed(data ?? "—");
   };
   const save = async () => {
     setBusy(true);
-    const { error } = await supabase.rpc("save_access_secret", { _property: propertyId, ... (roomId ? { _room: roomId } : {}), _kind: kind, _value: value, ... (from ? { _from: berlinLocalToIso(from) } : {}), ... (until ? { _until: berlinLocalToIso(until) } : {}) });
+    let start: string | undefined; let end: string | undefined;
+    try { start = from ? berlinLocalToIso(from) : undefined; end = until ? berlinLocalToIso(until) : undefined; }
+    catch { setBusy(false); toast.error(t("accessCodes.failed")); return; }
+    const { error } = await supabase.rpc("save_access_secret", { _property: propertyId, _room: roomId ?? (null as unknown as string), _kind: kind, _value: value, ... (start ? { _from: start } : {}), ... (end ? { _until: end } : {}) });
     setBusy(false); if (error) { toast.error(t("accessCodes.failed")); return; } setValue(""); setRevealed(null); toast.success(t("accessCodes.saved"));
   };
   return <section className="space-y-3 border-t border-border pt-3"><h3 className="text-sm font-semibold">{t("accessCodes.title")}</h3><select aria-label={t("accessCodes.title")} value={kind} onChange={(e) => setKind(e.target.value as Kind)} className="w-full rounded-md border border-input bg-card p-2 text-sm">{(["building", "door", "keybox"] as const).map((k) => <option key={k} value={k}>{t(`accessCodes.${k}`)}</option>)}</select>
