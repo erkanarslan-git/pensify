@@ -700,6 +700,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   onChange: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   // Resolve effective from any of the user's roles (OR)
   const effective = (key: string): boolean => roles.some((r) => rolePerm(r, key));
   const override = (key: string): boolean | null => {
@@ -708,11 +709,11 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   };
 
   async function set(permission: string, allowed: boolean | null) {
+    const { data: orgId } = await supabase.rpc("active_organization_id");
+    if (!orgId) throw new Error("Keine eindeutige Organisation");
     if (allowed === null) {
-      await (supabase as any).from("user_permissions").delete().eq("user_id", userId).eq("permission", permission);
+      await supabase.from("user_permissions").delete().eq("organization_id", orgId).eq("user_id", userId).eq("permission", permission);
     } else {
-      const { data: orgId } = await supabase.rpc("active_organization_id");
-      if (!orgId) throw new Error("Keine eindeutige Organisation");
       await (supabase as any).from("user_permissions").upsert({ organization_id: orgId, user_id: userId, permission, allowed, updated_at: new Date().toISOString() }, { onConflict: "organization_id,user_id,permission" });
     }
     onChange();
