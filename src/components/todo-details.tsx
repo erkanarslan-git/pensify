@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { TodoAttachments } from "./todo-attachments";
+import { loadTodoOptions } from "@/lib/todo-data.functions";
 export function TodoDetails({ id, title, onClose }: { id: string; title: string; onClose: () => void }) {
   const { t } = useTranslation(); const qc = useQueryClient(); const [note, setNote] = useState(""); const [busy, setBusy] = useState(false);
+  const names=useQuery({queryKey:["todo-options"],queryFn:()=>loadTodoOptions()});
   const q = useQuery({ queryKey: ["todo-detail", id], queryFn: async () => {
     const [task, events] = await Promise.all([supabase.from("todos").select("notes,reminder_at,reminder_status").eq("id", id).single(), supabase.from("todo_activity").select("id,kind,body,created_at,actor_id").eq("todo_id", id).order("created_at", { ascending: false })]);
     if (task.error || events.error) throw new Error("unavailable"); return { task: task.data, events: events.data ?? [] };
