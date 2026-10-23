@@ -456,6 +456,13 @@
       "when": 1792722183572,
       "tag": "0064_finance_active_scope_and_payer_update",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1792723255901,
+      "tag": "0065_attendance_missing_checkout_review",
+      "breakpoints": true
     }
   ]
 }

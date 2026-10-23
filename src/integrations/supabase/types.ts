@@ -90,6 +90,35 @@ export type Database = {
           },
         ]
       }
+      attendance_review_settings: {
+        Row: {
+          organization_id: string
+          review_after_minutes: number
+          updated_at: string
+          warning_after_minutes: number
+        }
+        Insert: {
+          organization_id: string
+          review_after_minutes?: number
+          updated_at?: string
+          warning_after_minutes?: number
+        }
+        Update: {
+          organization_id?: string
+          review_after_minutes?: number
+          updated_at?: string
+          warning_after_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_review_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
