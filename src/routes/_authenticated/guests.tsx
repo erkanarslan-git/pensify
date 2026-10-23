@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { loadGuestDirectory } from "@/lib/guest-directory.functions";
 import type { GuestEntry } from "@/lib/guest-directory";
 import { formatDateDE } from "@/lib/date-de";
+import { GuestContactEditor } from "@/components/guest-contact-editor";
 export const Route = createFileRoute("/_authenticated/guests")({
   head: () => ({ meta: [{ title: "Misafirler ve Firmalar — Pensify" }, { name: "description", content: "Yetkili lokasyonlardaki mevcut misafir, firma ve konaklama kayıtları." }, { property: "og:title", content: "Misafirler ve Firmalar — Pensify" }, { property: "og:description", content: "Misafir ve firmaların konaklama geçmişi." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Guests,
 });
