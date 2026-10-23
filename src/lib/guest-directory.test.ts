@@ -7,3 +7,8 @@ it("only an existing booking relation groups multiple room stays", () => {
   expect(guestIdentity({id:"one",bookingId:"existing"})).toBe("booking:existing");
   expect(guestIdentity({id:"two",bookingId:"existing"})).toBe("booking:existing");
 });
+it("two separate reservations are distinct even when contacts match", () => {
+  const first={id:"one",email:"shared@example.test",phone:"123"};
+  const second={id:"two",email:"shared@example.test",phone:"123"};
+  expect(guestIdentity(first)).not.toBe(guestIdentity(second));
+});
