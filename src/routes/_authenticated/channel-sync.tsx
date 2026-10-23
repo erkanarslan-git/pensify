@@ -53,7 +53,7 @@ function ChannelSyncPage() {
     queryKey: ["channels-page"],
     queryFn: async () => {
       const [res, out, conf, set] = await Promise.all([
-        supabase.from("reservations").select("channel,created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(2000),
+        supabase.from("reservations").select("channel,created_at").gte("created_at", since).is("deleted_at", null).order("created_at", { ascending: false }).limit(2000),
         supabase.from("integration_outbox").select("id,event,status,created_at,sent_at,last_error").order("created_at", { ascending: false }).limit(30),
         supabase.from("conflict_alerts").select("id,incoming_channel,check_in,check_out").eq("status", "open"),
         supabase.from("app_settings").select("value").eq("key", SETTINGS_KEY).maybeSingle(),

@@ -30,6 +30,7 @@ export const Route = createFileRoute("/api/public/ical/rooms/$roomId")({
           .from("reservations")
           .select("id,ical_uid,check_in,check_out,guest_name,channel,status")
           .eq("room_id", params.roomId)
+          .is("deleted_at", null)
           .neq("status", "cancelled");
 
         const ics = buildICal({

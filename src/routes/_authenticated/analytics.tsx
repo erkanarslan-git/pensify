@@ -39,7 +39,7 @@ function AnalyticsPage() {
       const [rooms, tasks, res] = await Promise.all([
         supabase.from("rooms").select("id,status"),
         supabase.from("cleaning_tasks").select("id,status").gte("created_at", startDate),
-        supabase.from("reservations").select("id,check_in,check_out,channel,revenue").gte("check_in", startDate).neq("status", "cancelled"),
+        supabase.from("reservations").select("id,check_in,check_out,channel,revenue").gte("check_in", startDate).is("deleted_at", null).neq("status", "cancelled"),
       ]);
       return {
         rooms: rooms.data ?? [],

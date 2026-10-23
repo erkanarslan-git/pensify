@@ -28,6 +28,7 @@ function NotificationsPage() {
           .from("reservations")
           .select("id,guest_name,check_out,room:rooms(number),property:properties(name)")
           .gte("check_out", today).lte("check_out", in7)
+          .is("deleted_at", null)
           .neq("status", "cancelled")
           .order("check_out").limit(10),
         supabase

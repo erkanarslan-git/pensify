@@ -13,6 +13,7 @@ export async function findConflict({ roomId, checkIn, checkOut, ignoreId }: Conf
     .from("reservations")
     .select("id,guest_name,check_in,check_out,channel,status")
     .eq("room_id", roomId)
+    .is("deleted_at", null)
     .neq("status", "cancelled")
     .lt("check_in", checkOut)
     .gt("check_out", checkIn);
