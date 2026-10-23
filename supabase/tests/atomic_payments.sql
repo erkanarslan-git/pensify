@@ -1,6 +1,6 @@
 -- Requires privileged transactional test access. Everything rolls back.
 BEGIN;
-DO $$ DECLARE u uuid; org uuid; room record; res uuid; schedule uuid; request uuid:=gen_random_uuid(); receipt uuid; retained jsonb; rejected boolean; total numeric;
+DO $$ DECLARE u uuid; org uuid; room record; res uuid; schedule uuid; request uuid:=gen_random_uuid(); receipt uuid; retained jsonb; rejected boolean; total numeric; page jsonb;
 BEGIN
  SELECT user_id,organization_id INTO u,org FROM public.organization_members WHERE active AND role='owner' LIMIT 1;
  IF u IS NULL THEN RAISE EXCEPTION 'test owner required'; END IF;
@@ -23,6 +23,9 @@ BEGIN
  PERFORM public.replace_payment_plan(res,'[{"due_date":"2035-02-01","amount":100},{"due_date":"2035-03-01","amount":100}]',retained,ARRAY[]::text[]);
  PERFORM public.replace_payment_plan(res,'[{"due_date":"2035-02-01","amount":100},{"due_date":"2035-03-01","amount":100}]',retained,ARRAY[]::text[]);
  IF (SELECT count(*) FROM public.payment_schedules WHERE reservation_id=res)<>3 THEN RAISE EXCEPTION 'plan duplicated'; END IF;
+ page:=public.finance_installment_page('2035-02-01','Reversible finance test','all',0,10);
+ IF (page->>'total')::int<>3 OR jsonb_array_length(page->'schedules')<>3 THEN RAISE EXCEPTION 'page wrong'; END IF;
+ IF (page->'reservations'->0) ? 'payer_ibans' THEN RAISE EXCEPTION 'page exposes bank details'; END IF;
  rejected:=false;
  BEGIN DELETE FROM public.reservations WHERE id=res; EXCEPTION WHEN raise_exception THEN IF SQLERRM='financial_history_requires_archive' THEN rejected:=true; ELSE RAISE; END IF; END;
  IF NOT rejected THEN RAISE EXCEPTION 'financial history deleted'; END IF;
