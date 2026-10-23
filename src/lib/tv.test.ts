@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { newTvEvents, tvDeltas, tvSnapshotSchema, tvTokenSchema, tvUpdate, tvMetricValues, nextTvPage, TV_DELTA_MS, TV_CELEBRATION_MS, type TvSnapshot } from "./tv";
+import { newTvEvents, tvDeltas, tvSnapshotSchema, tvTokenSchema, tvUpdate, tvMetricValues, nextTvPage, tvLocationLayout, TV_DELTA_MS, TV_CELEBRATION_MS, type TvSnapshot } from "./tv";
 
 const event = { id: "event-1", at: "2026-10-23T00:00:00Z", kind: "reservation_created" as const, source: "booking", location: "Bünde", eligible: true };
 const totals = { total: 84, occupied: 3, ready: 78, cleaning: 3, maintenance: 0, arrivals: 2, departures: 1, created: 1 };
-const snapshot: TvSnapshot = { rotationSeconds: 10, metrics: {created:1,automatic:0,manual:1,unknownOrigin:0,cleaned:18,review:3,maintenanceDone:4,maintenanceOpen:2,arrived:1,arrivalExpected:1,departed:0,departureExpected:1}, priorities:{arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0}, organization: "Test", at: event.at, day: "2026-10-23", totals, properties: [], weekly: [], events: [event], dues: { overdue: 0, dueToday: 0, dueWeek: 0,paid:0,partial:0,open:0 }, colors: { booking: "#003580" } };
+const snapshot: TvSnapshot = { rotationSeconds: 10, priorityDetails: [], metrics: {created:1,automatic:0,manual:1,unknownOrigin:0,cleaned:18,review:3,maintenanceDone:4,maintenanceOpen:2,arrived:1,arrivalExpected:1,departed:0,departureExpected:1}, priorities:{arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0}, organization: "Test", at: event.at, day: "2026-10-23", totals, properties: [], weekly: [], events: [event], dues: { overdue: 0, dueToday: 0, dueWeek: 0,paid:0,partial:0,open:0 }, colors: { booking: "#003580" } };
 describe("TV safety and updates", () => {
   it("rejects personal fields in the response", () => {
     expect(tvSnapshotSchema.safeParse({ ...snapshot, guest_name: "private" }).success).toBe(false);
@@ -50,4 +50,28 @@ describe("Approved TV invariants",()=>{
  it("single-page rotation stays put",()=>{expect(nextTvPage(0,1)).toBe(0);});
  it("only approved intervals are valid",()=>{for(const rotationSeconds of [5,10,15,20])expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds}).success).toBe(true);expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds:3}).success).toBe(false);});
  it("missing metrics are an error not zero",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,metrics:undefined}).success).toBe(false);});
+});
+describe("Balanced location rotation", () => {
+ it("splits ten locations five and five even at a three-row capacity", () => {
+  expect(tvLocationLayout(10, 3)).toEqual({ pages: 2, slots: 5 });
+ });
+ it("splits eight locations four and four", () => {
+  expect(tvLocationLayout(8, 3)).toEqual({ pages: 2, slots: 4 });
+ });
+ it("uses one full page when all locations fit", () => {
+  expect(tvLocationLayout(10, 10)).toEqual({ pages: 1, slots: 10 });
+ });
+ it("keeps odd pages within one item and never loses a location", () => {
+  const { pages, slots } = tvLocationLayout(9, 2);
+  expect(pages).toBe(2); expect(slots).toBe(5);
+  const items = Array.from({length:9}, (_,i)=>i);
+  expect([items.slice(0,slots).length,items.slice(slots).length]).toEqual([5,4]);
+ });
+});
+
+describe("TV count reconciliation",()=>{
+ it("rejects four daily reservations when origin counts explain only one",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,metrics:{...snapshot.metrics,created:4}}).success).toBe(false);});
+ it("accepts three payment periods split paid partial and open",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:1}}).success).toBe(true);});
+ it("rejects missing payment state for a due period",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:0}}).success).toBe(false);});
+ it("priority details never contain room or guest identities",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,priorityDetails:[{location:"Bünde",arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0,guest_name:"private"}]}).success).toBe(false);});
 });

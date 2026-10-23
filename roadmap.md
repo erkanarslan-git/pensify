@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [x] TV son istek: günlük/alt sayılar doğrulandı, import otomatik sayılmıyor; lokasyonlu gerçek öncelikler, görünür ses yüzdesi; en fazla iki dengeli alanı dolduran lokasyon sayfası ve farklı gradientler. 32 test, gerçek girişsiz bağlantıyla 5+5 dönüş, ses/ayar/çevrimdışı/iptal ve beş ekran boyutu geçti. Gerçek yeni olay ve sıfırdan farklı günlük kayıt sınırları aşağıda korunur.
 - [x] TV son görsel düzenleme: ortak marka/temizlik/bakım gradientleri, sabit yazı hizaları, kalıcı Live kartı, yumuşak açılış/sayfa geçişi ve kibar üç notalı ses; 24 test ve gerçek bağlantıyla 1366×768, 938×607, Full HD/4K/telefon, ses/çevrimdışı/iptal kontrolleri geçti.
 - [x] Onaylı TV belgesi: güçlü dalgalı kartlar ve %84/%16 üst yerleşim, Almanca açık ekran; Full HD/4K/küçük ekran doğrulandı.
 - [x] TV: günlük KPI/alt sayılar, tekil rezervasyonlar, fiziksel doluluk ve kaynak/lokasyonlu güvenli olaylar, gerçek öncelikler.
