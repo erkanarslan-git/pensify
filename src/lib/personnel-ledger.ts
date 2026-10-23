@@ -17,5 +17,5 @@ export function personnelLedger(board: AttendanceBoard, memberId: string, from: 
   return { ...day, worked, status: statuses[0] ?? emptyStatus, statuses: statuses.length ? statuses : [emptyStatus], absences, time };
  });
  const visible = allDays ? rows : rows.filter(r => r.worked || r.absences.length > 0 || r.time.needsReview);
- return { entries, rows: visible, summary: { worked: rows.filter(r => r.worked).length, sick: rows.filter(r => r.absences.some(a => a.kind === 'sick')).length, leave: rows.filter(r => r.absences.some(a => a.kind === 'leave')).length, net: rows.reduce((s,r) => s+r.time.netMinutes,0), review: new Set(rows.flatMap(r => r.time.sessions.filter(e => e.needs_review).map(e => e.id))).size } };
+ return { entries, rows: visible, summary: { worked: rows.filter(r => r.worked).length, sick: rows.filter(r => r.absences.some(a => a.kind === 'sick')).length, leave: rows.filter(r => r.absences.some(a => a.kind === 'leave')).length, excused: rows.filter(r => r.absences.some(a => a.kind === 'excused')).length, unexcused: rows.filter(r => r.absences.some(a => a.kind === 'unexcused')).length, net: rows.reduce((s,r) => s+r.time.netMinutes,0), review: new Set(rows.flatMap(r => r.time.sessions.filter(e => e.needs_review).map(e => e.id))).size } };
 }
