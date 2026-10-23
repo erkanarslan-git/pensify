@@ -386,6 +386,13 @@
       "when": 1792715760563,
       "tag": "0054_department_employee_shift_access",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1792716144231,
+      "tag": "0055_employee_break_eligibility",
+      "breakpoints": true
     }
   ]
 }
