@@ -1,0 +1,1 @@
+DO $$ DECLARE definition text; BEGIN SELECT pg_get_functiondef('public.save_general_todo(jsonb)'::regprocedure) INTO definition; definition:=replace(definition,'IF item IS NOT NULL THEN SELECT * INTO old FROM public.todos WHERE id=item FOR UPDATE;','SELECT * INTO old FROM public.todos WHERE id=item FOR UPDATE; IF item IS NOT NULL THEN'); EXECUTE definition; END $$;

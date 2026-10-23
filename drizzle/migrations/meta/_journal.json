@@ -505,6 +505,13 @@
       "when": 1792724010167,
       "tag": "0071_extend_general_tasks_scoped_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1792724031438,
+      "tag": "0072_fix_new_todo_record_validation",
+      "breakpoints": true
     }
   ]
 }
