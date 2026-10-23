@@ -519,6 +519,13 @@
       "when": 1792724462488,
       "tag": "0073_atomic_payment_receipts_and_plan_replacement",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1792724535297,
+      "tag": "0074_private_todo_attachment_access",
+      "breakpoints": true
     }
   ]
 }

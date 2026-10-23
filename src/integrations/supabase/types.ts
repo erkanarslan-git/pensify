@@ -2974,6 +2974,57 @@ export type Database = {
           },
         ]
       }
+      todo_attachments: {
+        Row: {
+          content_type: string
+          created_at: string
+          file_name: string
+          id: string
+          object_path: string
+          organization_id: string
+          size_bytes: number
+          todo_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          file_name: string
+          id?: string
+          object_path: string
+          organization_id: string
+          size_bytes: number
+          todo_id: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          file_name?: string
+          id?: string
+          object_path?: string
+          organization_id?: string
+          size_bytes?: number
+          todo_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_attachments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_attachments_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           archived_at: string | null
@@ -3607,6 +3658,7 @@ export type Database = {
             }
             Returns: number
           }
+      remove_todo_attachment: { Args: { _id: string }; Returns: undefined }
       reopen_cleaning_task: {
         Args: {
           _reason: string
@@ -3639,6 +3691,15 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: string
+      }
+      reserve_todo_attachment: {
+        Args: {
+          _file_name: string
+          _size: number
+          _todo: string
+          _type: string
+        }
+        Returns: Json
       }
       resolve_clock_property: {
         Args: { _token: string }
@@ -3763,6 +3824,10 @@ export type Database = {
       sync_member_time_profile: {
         Args: { _member: string }
         Returns: undefined
+      }
+      todo_attachment_access: {
+        Args: { _path: string; _write: boolean }
+        Returns: boolean
       }
       transition_cleaning_task: {
         Args: {
