@@ -860,6 +860,10 @@ export type Database = {
           created_at: string
           due_at: string
           id: string
+          inspected_at: string | null
+          inspected_by: string | null
+          inspection_note: string | null
+          inspection_state: string
           notes: string | null
           organization_id: string
           photos_count: number
@@ -874,6 +878,10 @@ export type Database = {
           created_at?: string
           due_at: string
           id?: string
+          inspected_at?: string | null
+          inspected_by?: string | null
+          inspection_note?: string | null
+          inspection_state?: string
           notes?: string | null
           organization_id?: string
           photos_count?: number
@@ -888,6 +896,10 @@ export type Database = {
           created_at?: string
           due_at?: string
           id?: string
+          inspected_at?: string | null
+          inspected_by?: string | null
+          inspection_note?: string | null
+          inspection_state?: string
           notes?: string | null
           organization_id?: string
           photos_count?: number
@@ -1833,6 +1845,7 @@ export type Database = {
           active: boolean
           address: string
           city_id: string
+          cleaning_inspection_required: boolean
           clock_without_location: boolean
           clock_without_location_at: string | null
           clock_without_location_by: string | null
@@ -1856,6 +1869,7 @@ export type Database = {
           active?: boolean
           address: string
           city_id: string
+          cleaning_inspection_required?: boolean
           clock_without_location?: boolean
           clock_without_location_at?: string | null
           clock_without_location_by?: string | null
@@ -1879,6 +1893,7 @@ export type Database = {
           active?: boolean
           address?: string
           city_id?: string
+          cleaning_inspection_required?: boolean
           clock_without_location?: boolean
           clock_without_location_at?: string | null
           clock_without_location_by?: string | null
@@ -3334,6 +3349,23 @@ export type Database = {
             }
             Returns: number
           }
+      reopen_cleaning_task: {
+        Args: {
+          _reason: string
+          _task_id: string
+          _to: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Returns: undefined
+      }
+      report_room_issue: {
+        Args: {
+          _category: string
+          _description?: string
+          _room_id: string
+          _task_id?: string
+        }
+        Returns: string
+      }
       request_access: {
         Args: {
           _message: string
@@ -3355,6 +3387,10 @@ export type Database = {
       restore_reservation: { Args: { _id: string }; Returns: undefined }
       reverse_manual_payment: {
         Args: { _id: string; _reason: string }
+        Returns: undefined
+      }
+      review_cleaning_task: {
+        Args: { _approved: boolean; _reason?: string; _task_id: string }
         Returns: undefined
       }
       review_stale_shifts: { Args: never; Returns: number }
@@ -3414,6 +3450,10 @@ export type Database = {
         Returns: string
       }
       save_tv_source_colors: { Args: { _colors: Json }; Returns: undefined }
+      set_cleaning_inspection_preference: {
+        Args: { _property: string; _required: boolean }
+        Returns: undefined
+      }
       set_employee_overtime_rate: {
         Args: { _cleaner_id: string; _rate: number }
         Returns: undefined

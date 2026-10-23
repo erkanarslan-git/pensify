@@ -470,6 +470,13 @@
       "when": 1792723299746,
       "tag": "0066_attendance_review_controls",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1792723501439,
+      "tag": "0067_cleaning_inspection_and_optional_issue",
+      "breakpoints": true
     }
   ]
 }
