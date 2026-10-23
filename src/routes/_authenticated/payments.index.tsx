@@ -42,7 +42,7 @@ function PaymentsPage() {
   useEffect(()=>setPage(0),[filter]);
   const planQuery=useQuery({queryKey:["payment-plan-context"],enabled:planning,queryFn:async()=>{const result=await supabase.rpc("finance_dashboard",{_today:today});if(result.error)throw result.error;return result.data as unknown as {reservations:Res[];schedules:Sched[]};}});
 
-  const { data } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["payments-page",debounced,filter,page,size],
     queryFn: async () => {
       const [result, rm, pr] = await Promise.all([
@@ -70,6 +70,7 @@ function PaymentsPage() {
 
   return (
     <AppShell title={t("payments.title")} subtitle={t("payments.subtitle")}>
+      {isError&&<p role="alert">{t("payments.saveErr")}</p>}{isPending&&<p>{t("common.loading")}</p>}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <Stat cls="brand-tile" label={t("payments.dueThisMonth")} value={eur(stats.due)} />
         <Stat cls="tile-warning" label={t("payments.unpaidThisMonth")} value={String(stats.unpaid)} onClick={() => setFilter("unpaid")} />
@@ -188,7 +189,7 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
     const payload={_reservation:sched.reservation_id,_amount:a,_date:date,_method:method,_note:note.trim(),_kind:sched.kind === "deposit" ? "deposit" : "rent",_allocations:chosen};
     const key=`pensify-payment-retry:${sched.reservation_id}`;
     const previous=sessionStorage.getItem(key); let requestId:string=crypto.randomUUID();
-    if(previous){try{const saved=JSON.parse(previous) as {id:string;payload:string};if(saved.payload===JSON.stringify(payload))requestId=saved.id;}catch{/* invalid local retry state is ignored */}}
+    if(previous){try{const saved=JSON.parse(previous) as {id:string;payload:string};if(saved.payload!==JSON.stringify(payload)){setBusy(false);return toast.error(t("paymentExtra.retrySame"));}requestId=saved.id;}catch{/* invalid local retry state is ignored */}}
     sessionStorage.setItem(key,JSON.stringify({id:requestId,payload:JSON.stringify(payload)}));
     const { error } = await supabase.rpc("collect_payment_receipt", { _request_id:requestId,...payload });
     if(!error)sessionStorage.removeItem(key);
