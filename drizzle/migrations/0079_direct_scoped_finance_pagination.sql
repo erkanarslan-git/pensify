@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION public.finance_installment_page(_today date,_search text DEFAULT '',_filter text DEFAULT 'unpaid',_page integer DEFAULT 0,_size integer DEFAULT 20) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE org uuid:=public.active_organization_id(); result jsonb;
+BEGIN
+ IF auth.uid() IS NULL OR org IS NULL THEN RAISE EXCEPTION 'forbidden'; END IF;
+ IF _today IS NULL OR _page IS NULL OR _page<0 OR _size IS NULL OR _size NOT IN(10,20,30,40,50) OR _search IS NULL OR length(_search)>120 OR _filter IS NULL OR _filter NOT IN('all','unpaid','overdue') THEN RAISE EXCEPTION 'invalid_filter'; END IF;
+ WITH scoped AS MATERIALIZED (SELECT r.* FROM public.reservations r WHERE r.organization_id=org AND public.can_finance_action(org,r.property_id,'view_finance')),
+ schedules AS (SELECT s.*,coalesce((SELECT sum(p.amount) FROM public.payments p WHERE p.organization_id=org AND p.schedule_id=s.id AND p.reversed_at IS NULL),0) paid,EXISTS(SELECT 1 FROM public.payments p WHERE p.organization_id=org AND p.schedule_id=s.id) AS "hasPayments" FROM public.payment_schedules s JOIN scoped r ON r.id=s.reservation_id WHERE s.organization_id=org AND r.deleted_at IS NULL AND r.status NOT IN('cancelled','no_show')),
+ filtered AS (SELECT s.* FROM schedules s JOIN scoped r ON r.id=s.reservation_id WHERE (_search='' OR position(lower(_search) IN lower(concat_ws(' ',r.guest_name,r.company_name,s.payment_reference)))>0) AND (_filter='all' OR (s.amount>s.paid AND CASE WHEN _filter='overdue' THEN s.due_date<_today ELSE s.due_date<date_trunc('month',_today)+interval '1 month' END))),
+ page_rows AS MATERIALIZED (SELECT * FROM filtered ORDER BY due_date,id LIMIT _size OFFSET _page::bigint*_size),
+ payments AS (SELECT p.* FROM public.payments p JOIN scoped r ON r.id=p.reservation_id WHERE p.organization_id=org)
+ SELECT jsonb_build_object('total',(SELECT count(*) FROM filtered),'schedules',coalesce((SELECT jsonb_agg(to_jsonb(s) ORDER BY due_date,id) FROM page_rows s),'[]'::jsonb),
+ 'reservations',coalesce((SELECT jsonb_agg(jsonb_build_object('id',r.id,'guest_name',r.guest_name,'company_name',r.company_name,'check_in',r.check_in,'check_out',r.check_out,'revenue',r.revenue,'status',r.status,'deleted_at',r.deleted_at,'property_id',r.property_id)) FROM scoped r WHERE EXISTS(SELECT 1 FROM page_rows s WHERE s.reservation_id=r.id)),'[]'::jsonb),
+ 'payments',coalesce((SELECT jsonb_agg(to_jsonb(p)) FROM payments p WHERE EXISTS(SELECT 1 FROM page_rows s WHERE s.id=p.schedule_id)),'[]'::jsonb),
+ 'stats',jsonb_build_object('due',coalesce((SELECT sum(amount) FROM schedules WHERE kind='rent' AND to_char(due_date,'YYYY-MM')=to_char(_today,'YYYY-MM')),0),'unpaid',(SELECT count(*) FROM schedules WHERE kind='rent' AND amount>paid AND to_char(due_date,'YYYY-MM')=to_char(_today,'YYYY-MM')),'overdue',coalesce((SELECT sum(greatest(0,amount-paid)) FROM schedules WHERE kind='rent' AND due_date<_today),0),'collected',coalesce((SELECT sum(amount) FROM payments WHERE reversed_at IS NULL AND kind<>'deposit' AND to_char(paid_on,'YYYY-MM')=to_char(_today,'YYYY-MM')),0),'unallocated',coalesce((SELECT sum(amount) FROM payments WHERE reversed_at IS NULL AND kind='unallocated'),0),'deposit',coalesce((SELECT sum(amount) FROM payments WHERE reversed_at IS NULL AND kind='deposit'),0))) INTO result;
+ RETURN result;
+END $$;
+REVOKE ALL ON FUNCTION public.finance_installment_page(date,text,text,integer,integer) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.finance_installment_page(date,text,text,integer,integer) TO authenticated;

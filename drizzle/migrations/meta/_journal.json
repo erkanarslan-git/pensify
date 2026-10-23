@@ -554,6 +554,13 @@
       "when": 1792724933788,
       "tag": "0078_lock_secret_tables_and_safe_guest_grouping",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1792725046861,
+      "tag": "0079_direct_scoped_finance_pagination",
+      "breakpoints": true
     }
   ]
 }
