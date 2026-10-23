@@ -1,6 +1,10 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] Onaylı TV belgesi: güçlü dalgalı kartlar ve %84/%16 üst yerleşim, Almanca açık ekran.
+- [ ] TV: gerçek günlük KPI/alt sayılar ve kaynak/lokasyonlu güvenli olaylar, gerçek öncelikler.
+- [ ] TV: otomatik lokasyon sayfaları/ayar, güvenilir 8sn delta, 5sn kutlama/konfeti ve seviye kontrollü ses.
+- [ ] TV: gerçek anonim bağlantı, Full HD/4K/uzun isim ve tekrar/reconnect/gün değişimi testleri; veri kaynakları raporu.
 - [x] TV tasarımı image-43 referansına göre düzenlendi: ilk kart mavi, diğerleri açık zemin/canlı vurgulu; ekran yüksekliğini dolduran tablo, sağ özetler, alt grafik. 938×607, Full HD/4K, telefon, üç dil ve açık/koyu görünüm kontrol edildi; 5 test, anonim bağlantı/ses/iptal kontrolleri geçti. Bu tur yalnız tasarım.
 - [x] TV: önceki durum tonlarında canlı renkler, 2×4 kart, kompakt tablo/sayfalama ve tam genişlikte alt grafik; 938×607, Full HD/4K, üç dil, açık/koyu ve anonim bağlantı kontrolü.
 - [ ] TV belgesinin eksikleri: günlük tekil tamamlanan temizlik/bakım, manuel/otomatik rezervasyon ve iptal ayrımı, giriş/çıkış alt durumları, ödeme ödenen/kısmi/açık adetleri; mevcut snapshot bunları sağlamıyor. Oda durumu sayıları günlük tamamlanma gibi etiketlenmedi.

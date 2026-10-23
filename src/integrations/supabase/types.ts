@@ -1968,6 +1968,7 @@ export type Database = {
           deleted_by: string | null
           discount_amount: number | null
           discount_reason: string | null
+          external_created_at: string | null
           external_id: string | null
           guest_email: string | null
           guest_name: string
@@ -1988,6 +1989,7 @@ export type Database = {
           status_before_delete:
             | Database["public"]["Enums"]["reservation_status"]
             | null
+          tv_origin: string | null
           updated_at: string
         }
         Insert: {
@@ -2004,6 +2006,7 @@ export type Database = {
           deleted_by?: string | null
           discount_amount?: number | null
           discount_reason?: string | null
+          external_created_at?: string | null
           external_id?: string | null
           guest_email?: string | null
           guest_name: string
@@ -2024,6 +2027,7 @@ export type Database = {
           status_before_delete?:
             | Database["public"]["Enums"]["reservation_status"]
             | null
+          tv_origin?: string | null
           updated_at?: string
         }
         Update: {
@@ -2040,6 +2044,7 @@ export type Database = {
           deleted_by?: string | null
           discount_amount?: number | null
           discount_reason?: string | null
+          external_created_at?: string | null
           external_id?: string | null
           guest_email?: string | null
           guest_name?: string
@@ -2060,6 +2065,7 @@ export type Database = {
           status_before_delete?:
             | Database["public"]["Enums"]["reservation_status"]
             | null
+          tv_origin?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2814,6 +2820,7 @@ export type Database = {
           name: string
           organization_id: string
           revoked_at: string | null
+          rotation_seconds: number
           token_hash: string
         }
         Insert: {
@@ -2823,6 +2830,7 @@ export type Database = {
           name: string
           organization_id: string
           revoked_at?: string | null
+          rotation_seconds?: number
           token_hash: string
         }
         Update: {
@@ -2832,6 +2840,7 @@ export type Database = {
           name?: string
           organization_id?: string
           revoked_at?: string | null
+          rotation_seconds?: number
           token_hash?: string
         }
         Relationships: [
@@ -3373,6 +3382,10 @@ export type Database = {
         }
         Returns: number
       }
+      set_tv_rotation: {
+        Args: { _id: string; _seconds: number }
+        Returns: undefined
+      }
       soft_delete_reservation: {
         Args: { _id: string; _reason?: string }
         Returns: undefined
@@ -3389,6 +3402,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["cleaning_status"]
       }
       tv_snapshot: { Args: { _token: string }; Returns: Json }
+      tv_snapshot_v2: { Args: { _token: string }; Returns: Json }
       unmatch_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined

@@ -21,7 +21,7 @@ export const getTvSnapshot = createServerFn({ method: "POST" })
         return fetch(input, { ...init, headers });
       } },
     });
-    const { data: snapshot, error } = await client.rpc("tv_snapshot", { _token: data.token });
+    const { data: snapshot, error } = await client.rpc("tv_snapshot_v2", { _token: data.token });
     if (error) throw new Error("display_unavailable");
     return snapshot === null ? null : tvSnapshotSchema.parse(snapshot);
   });
