@@ -147,9 +147,7 @@ export function WuBookTestPanel() {
 
       {!acc?.lcode ? (
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Legt bei WuBook eine separate Testunterkunft an (ohne Booking.com, Airbnb oder Expedia). Echte Zimmer und Buchungen bleiben unberührt.
-          </p>
+          <p className="text-sm text-muted-foreground">{legacyText('Legt bei WuBook eine separate Testunterkunft an (ohne Booking.com, Airbnb oder Expedia). Echte Zimmer und Buchungen bleiben unberührt.')}</p>
           {!reviewing ? (
             <>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -202,8 +200,7 @@ export function WuBookTestPanel() {
               </dl>
               <p className="text-xs">{legacyText('Achtung: Dies erstellt ein echtes Konto bei WuBook. Kanäle werden nicht verbunden. Das Passwort wird nur einmal angezeigt.')}</p>
               <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} /> Ich bestätige das Anlegen der Testunterkunft.
-              </label>
+                <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />{legacyText('Ich bestätige das Anlegen der Testunterkunft.')}</label>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => { setReviewing(false); setConfirmed(false); }}>{legacyText('Zurück')}</Button>
                 <Button size="sm" disabled={!confirmed || busy !== null} onClick={() => act("create", async () => {
@@ -263,9 +260,9 @@ export function WuBookTestPanel() {
               })}>{busy === "url" ? <Loader2 className="h-4 w-4 animate-spin" /> : legacyText('Prüfen')}</Button>
             </div>
             <dl className="text-sm space-y-1">
-              <div><dt className="text-muted-foreground inline">Erwartet: </dt><dd className="inline break-all">{st?.expectedUrl ?? "—"}</dd></div>
-              <div><dt className="text-muted-foreground inline">Bei WuBook: </dt><dd className="inline break-all">{(pc?.["registered"] as string) ?? "—"}</dd></div>
-              <div><dt className="text-muted-foreground inline">Status: </dt><dd className="inline">{pc ? (pc["matches"] ? legacyText('Stimmt überein') : legacyText('Stimmt nicht überein')) : legacyText('Noch nicht geprüft')} · {fmt(pc?.["checked_at"])}</dd></div>
+              <div><dt className="text-muted-foreground inline">{legacyText('Erwartet:')}</dt><dd className="inline break-all">{st?.expectedUrl ?? "—"}</dd></div>
+              <div><dt className="text-muted-foreground inline">{legacyText('Bei WuBook:')}</dt><dd className="inline break-all">{(pc?.["registered"] as string) ?? "—"}</dd></div>
+              <div><dt className="text-muted-foreground inline">{legacyText('Status:')}</dt><dd className="inline">{pc ? (pc["matches"] ? legacyText('Stimmt überein') : legacyText('Stimmt nicht überein')) : legacyText('Noch nicht geprüft')} · {fmt(pc?.["checked_at"])}</dd></div>
             </dl>
           </section>
 

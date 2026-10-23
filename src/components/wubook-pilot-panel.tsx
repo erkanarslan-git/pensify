@@ -99,9 +99,7 @@ export function WuBookPilotPanel() {
         </div>
       )}
 
-      <p className="text-sm text-muted-foreground">
-        Legt die gewählte Pension als eigene Unterkunft bei WuBook an. Es werden noch keine Zimmer, Preise oder Verfügbarkeiten gesendet und keine Kanäle verbunden.
-      </p>
+      <p className="text-sm text-muted-foreground">{legacyText('Legt die gewählte Pension als eigene Unterkunft bei WuBook an. Es werden noch keine Zimmer, Preise oder Verfügbarkeiten gesendet und keine Kanäle verbunden.')}</p>
 
       <div className="space-y-1 max-w-md">
         <Label htmlFor="pilot-prop">{legacyText('Pension')}</Label>
@@ -148,8 +146,7 @@ export function WuBookPilotPanel() {
           </dl>
           <p className="text-xs">{legacyText('Dies erstellt ein echtes WuBook-Konto für diese Pension. Das Passwort wird nur einmal angezeigt.')}</p>
           <label className="flex items-center gap-2 text-sm">
-            <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} /> Ich bestätige das Anlegen bei WuBook.
-          </label>
+            <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />{legacyText('Ich bestätige das Anlegen bei WuBook.')}</label>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => { setReviewing(false); setConfirmed(false); }}>{legacyText('Zurück')}</Button>
             <Button size="sm" disabled={!confirmed || busy} onClick={async () => {
@@ -201,13 +198,12 @@ function PilotRooms({ propertyId }: { propertyId: string }) {  const { t } = use
       <p className="font-medium text-sm">{legacyText('Zimmer bei WuBook')}</p>
       <div className="flex flex-wrap items-center gap-2">
         <select aria-label={legacyText('Zimmertyp')} value={selected} onChange={(e) => setTypeId(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
-          {types.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.capacity} {legacyText("Mitarbeitende")})</option>)}
+          {types.map((roomType) => <option key={roomType.id} value={roomType.id}>{roomType.name} ({t("legacyUi.people", { count: roomType.capacity })})</option>)}
         </select>
         <span className="text-xs text-muted-foreground">{legacyText('Anzahl: 1 · Preis: aktueller Pensify-Preis')}</span>
       </div>
       <label className="flex items-center gap-2 text-sm">
-        <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(v === true)} /> Ich bestätige: dieser Zimmertyp wird mit Anzahl 1 bei WuBook angelegt.
-      </label>
+        <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(v === true)} />{legacyText('Ich bestätige: dieser Zimmertyp wird mit Anzahl 1 bei WuBook angelegt.')}</label>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" disabled={!confirm || !selected || busy !== null} onClick={async () => {
           setBusy("create");

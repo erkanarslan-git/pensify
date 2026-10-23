@@ -193,7 +193,7 @@ function MatchDialog({ tx, open, manual, guests, onClose, onDone }: { tx: Tx; op
           <div key={o.id} className={`grid grid-cols-[minmax(0,1fr)_7rem] gap-2 items-center rounded-lg border p-2 ${isSuggested(o) ? "border-primary bg-primary/5" : "border-border"}`}>
             <div className="min-w-0 text-sm">
               <div className="truncate font-medium">{o.guest} {isSuggested(o) && <span className="text-xs text-primary">· {t("bank.suggested")}</span>}</div>
-              <div className="text-xs text-muted-foreground">{formatDateDE(o.due_date)} · <span className="font-mono">{o.payment_reference}</span> · {eur(o.remaining)}{o.kind === "deposit" ? " · " + t("payments.kind.deposit") : ""}</div>
+              <div className="text-xs text-muted-foreground">{formatDateDE(o.due_date)} · <span className="font-mono">{o.payment_reference}</span> · {eur(o.remaining)}{o.kind === "deposit" ? " · " + t("paymentExtra.deposit") : ""}</div>
             </div>
             <input inputMode="decimal" placeholder="0,00" value={alloc[o.id] ?? ""} onChange={(e) => setAlloc({ ...alloc, [o.id]: e.target.value })}
               onFocus={() => { if (!alloc[o.id]) setAlloc({ ...alloc, [o.id]: String(Math.min(o.remaining, Math.max(rest, 0)).toFixed(2)) }); }}

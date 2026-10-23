@@ -50,23 +50,18 @@ function RequestAccessPage() {
             <div className="text-xs text-muted-foreground">{legacyText('Zugriff anfragen')}</div>
           </div>
           <button onClick={signOut} className="ml-auto text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
-            <LogOut className="w-3.5 h-3.5" /> Abmelden
-          </button>
+            <LogOut className="w-3.5 h-3.5" />{legacyText('Abmelden')}</button>
         </div>
 
         {sent ? (
           <div className="space-y-3 text-sm">
             <p className="text-foreground font-medium">{legacyText('Deine Anfrage wurde gesendet.')}</p>
             <p className="text-muted-foreground">{legacyText('Ein Administrator wird sie prüfen. Du erhältst Zugriff, sobald sie freigegeben wurde.')}</p>
-            <button onClick={signOut} className="w-full mt-2 px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">
-              Abmelden
-            </button>
+            <button onClick={signOut} className="w-full mt-2 px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{legacyText('Abmelden')}</button>
           </div>
         ) : (
           <div className="space-y-3 text-sm">
-            <p className="text-muted-foreground">
-              Dein Konto hat noch keine Rolle. Bitte fordere unten Zugriff an — ein Administrator wird die Anfrage prüfen.
-            </p>
+            <p className="text-muted-foreground">{legacyText('Dein Konto hat noch keine Rolle. Bitte fordere unten Zugriff an — ein Administrator wird die Anfrage prüfen.')}</p>
             <label className="grid gap-1">
               <span className="text-xs text-muted-foreground">{legacyText('Gewünschte Rolle')}</span>
               <select

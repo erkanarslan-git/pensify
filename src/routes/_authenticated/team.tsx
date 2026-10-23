@@ -221,11 +221,9 @@ function TeamPage() {
                     </SelectContent>
                   </Select>
                   <Button size="sm" onClick={() => resolveRequest.mutate({ id: r.id, role: (r._role ?? r.requested_role ?? "manager") as AppRole, approve: true })}>
-                    <CheckCircle2 className="w-4 h-4 mr-1" /> Freigeben
-                  </Button>
+                    <CheckCircle2 className="w-4 h-4 mr-1" />{legacyText('Freigeben')}</Button>
                   <Button size="sm" variant="outline" onClick={() => resolveRequest.mutate({ id: r.id, role: "manager", approve: false })}>
-                    <XCircle className="w-4 h-4 mr-1" /> Ablehnen
-                  </Button>
+                    <XCircle className="w-4 h-4 mr-1" />{legacyText('Ablehnen')}</Button>
                 </div>
               );
             })}
@@ -245,8 +243,7 @@ function TeamPage() {
           </div>
           {tab === "team" && (
             <Button size="sm" className="mb-2" onClick={() => setCreateOpen(true)}>
-              <UserPlus className="w-3.5 h-3.5 mr-1" /> Mitarbeitende hinzufügen
-            </Button>
+              <UserPlus className="w-3.5 h-3.5 mr-1" />{legacyText('Mitarbeitende hinzufügen')}</Button>
           )}
         </div>
 
@@ -453,13 +450,12 @@ function TeamPage() {
                     <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
                     <Button size="sm" variant="outline" disabled={isSelf || banUser.isPending}
                       onClick={() => banUser.mutate({ userId: u.user_id, banned: !isBanned })}>
-                      {isBanned ? <><Unlock className="w-3.5 h-3.5 mr-1" /> Freigeben</> : <><Lock className="w-3.5 h-3.5 mr-1" /> Sperren</>}
+                      {isBanned ? <><Unlock className="w-3.5 h-3.5 mr-1" />{legacyText('Freigeben')}</> : <><Lock className="w-3.5 h-3.5 mr-1" />{legacyText('Sperren')}</>}
                     </Button>
                     <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10"
                       disabled={isSelf || (!iAmOwner && (u.roles.includes("admin") || u.roles.includes("owner")))}
                       onClick={() => setDeleteTarget(u)}>
-                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Löschen
-                    </Button>
+                      <Trash2 className="w-3.5 h-3.5 mr-1" />{legacyText('Löschen')}</Button>
                   </div>
                   {isSelf && <div className="text-xs text-muted-foreground mt-2">{legacyText('Eigenes Konto kann nicht gesperrt oder gelöscht werden.')}</div>}
                   {(u.roles.includes("admin") || u.roles.includes("owner")) && !isSelf && (
@@ -572,10 +568,10 @@ function UserWorkHours({ userId }: { userId: string }) {  const { t } = useTrans
     <PanelSection title={legacyText('Arbeitszeiten (14 Tage)')} action={q.data ? <span className="text-xs font-semibold text-primary">{(total / 60).toLocaleString(displayLocale(), { maximumFractionDigits: 1 })} {legacyText("Std.")}</span> : undefined}>
       {q.isLoading ? <div className="text-sm text-muted-foreground">{legacyText('Lädt…')}</div>
         : q.data === null ? <div className="text-sm text-muted-foreground">{legacyText('Keine Zeiterfassung für dieses Konto.')}</div>
-        : q.data!.length === 0 ? <div className="text-sm text-muted-foreground">{legacyText('Keine Einträge in den letzten 14 Tagen.')}</div>
+        : (q.data ?? []).length === 0 ? <div className="text-sm text-muted-foreground">{legacyText('Keine Einträge in den letzten 14 Tagen.')}</div>
         : (
           <div className="space-y-1">
-            {q.data!.map((e: any) => (
+            {(q.data ?? []).map((e: any) => (
               <div key={e.id} className="flex items-center justify-between gap-2 text-sm rounded-lg px-2 py-1.5 hover:bg-accent/40">
                 <div className="flex items-center gap-2 min-w-0"><Clock className="w-3.5 h-3.5 text-primary shrink-0" /><span className="truncate">{fmt(e.clock_in_at)} · {e.properties?.name ?? "—"}</span></div>
                 <span className="tabular-nums text-xs text-muted-foreground shrink-0">{e.clock_out_at ? `${(mins(e) / 60).toLocaleString(displayLocale(), { maximumFractionDigits: 1 })} ${legacyText("Std.")}` : legacyText('läuft')}</span>
@@ -623,7 +619,7 @@ function ResetPasswordButton({ onSubmit }: { onSubmit: (pw: string) => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" title={legacyText('Passwort zurücksetzen')}><KeyRound className="w-3.5 h-3.5 mr-1" /> Passwort</Button>
+        <Button size="sm" variant="outline" title={legacyText('Passwort zurücksetzen')}><KeyRound className="w-3.5 h-3.5 mr-1" />{legacyText('Passwort')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader><DialogTitle>{legacyText('Neues Passwort setzen')}</DialogTitle></DialogHeader>
@@ -728,7 +724,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline"><Shield className="w-3.5 h-3.5 mr-1" /> Rechte</Button>
+        <Button size="sm" variant="outline"><Shield className="w-3.5 h-3.5 mr-1" />{legacyText('Rechte')}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>

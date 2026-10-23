@@ -25,7 +25,7 @@ const RANGES: { key: RangeKey; label: string; days: number; bucket: "day" | "wee
 function AnalyticsPage() {
   const { t, i18n } = useTranslation();
   const [rangeKey, setRangeKey] = useState<RangeKey>("30");
-  const range = RANGES.find((r) => r.key === rangeKey)!;
+  const range = RANGES.find((r) => r.key === rangeKey) ?? RANGES[0];
 
   const startDate = useMemo(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0);

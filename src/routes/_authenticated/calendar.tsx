@@ -742,7 +742,7 @@ function CalendarPage() {
         </div>
         </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% 90%)", borderLeft: "3px solid #003580" }} /> {t("calendar.legendColor")}</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% var(--guest-surface-lightness))", borderLeft: "3px solid var(--primary)" }} /> {t("calendar.legendColor")}</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-warning" /> {t("calendar.cleaningPending")}</div>
           <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-destructive" /> {t("calendar.problemRoom")}</div>
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
