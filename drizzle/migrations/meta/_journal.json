@@ -512,6 +512,13 @@
       "when": 1792724031438,
       "tag": "0072_fix_new_todo_record_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1792724462488,
+      "tag": "0073_atomic_payment_receipts_and_plan_replacement",
+      "breakpoints": true
     }
   ]
 }

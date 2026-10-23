@@ -1718,6 +1718,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_receipts: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          request_payload: Json
+          reservation_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          request_payload: Json
+          reservation_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          request_payload?: Json
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_receipts_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_schedules: {
         Row: {
           amount: number
@@ -1794,11 +1839,13 @@ export type Database = {
           bank_transaction_id: string | null
           created_at: string
           id: string
+          kind: string
           method: string
           note: string | null
           organization_id: string
           paid_on: string
           property_id: string
+          receipt_id: string | null
           recorded_by: string | null
           reservation_id: string
           reverse_reason: string | null
@@ -1812,11 +1859,13 @@ export type Database = {
           bank_transaction_id?: string | null
           created_at?: string
           id?: string
+          kind?: string
           method?: string
           note?: string | null
           organization_id: string
           paid_on?: string
           property_id: string
+          receipt_id?: string | null
           recorded_by?: string | null
           reservation_id: string
           reverse_reason?: string | null
@@ -1830,11 +1879,13 @@ export type Database = {
           bank_transaction_id?: string | null
           created_at?: string
           id?: string
+          kind?: string
           method?: string
           note?: string | null
           organization_id?: string
           paid_on?: string
           property_id?: string
+          receipt_id?: string | null
           recorded_by?: string | null
           reservation_id?: string
           reverse_reason?: string | null
@@ -1863,6 +1914,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "payment_receipts"
             referencedColumns: ["id"]
           },
           {
@@ -3402,6 +3460,19 @@ export type Database = {
         Returns: undefined
       }
       clock_toggle_break: { Args: { _entry_id: string }; Returns: string }
+      collect_payment_receipt: {
+        Args: {
+          _allocations: Json
+          _amount: number
+          _date: string
+          _kind?: string
+          _method: string
+          _note: string
+          _request_id: string
+          _reservation: string
+        }
+        Returns: string
+      }
       correct_time_entry: {
         Args: {
           _break_minutes: number
@@ -3541,6 +3612,15 @@ export type Database = {
           _reason: string
           _task_id: string
           _to: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Returns: undefined
+      }
+      replace_payment_plan: {
+        Args: {
+          _ibans: string[]
+          _reservation: string
+          _retained: Json
+          _rows: Json
         }
         Returns: undefined
       }
