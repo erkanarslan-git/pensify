@@ -456,6 +456,62 @@
       "when": 1792722183572,
       "tag": "0064_finance_active_scope_and_payer_update",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1792723255901,
+      "tag": "0065_attendance_missing_checkout_review",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1792723299746,
+      "tag": "0066_attendance_review_controls",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1792723501439,
+      "tag": "0067_cleaning_inspection_and_optional_issue",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1792723663162,
+      "tag": "0068_guard_cleaning_inspection_writes",
+      "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1792723839153,
+      "tag": "0069_scoped_operational_access_secrets",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1792723971763,
+      "tag": "0070_redact_legacy_room_codes_in_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1792724010167,
+      "tag": "0071_extend_general_tasks_scoped_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1792724031438,
+      "tag": "0072_fix_new_todo_record_validation",
+      "breakpoints": true
     }
   ]
 }

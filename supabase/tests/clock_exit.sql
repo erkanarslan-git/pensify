@@ -27,6 +27,6 @@ BEGIN
  VALUES(c.organization_id,c.id,p.id,started,'manual','active') RETURNING id INTO entry;
  PERFORM set_config('request.jwt.claim.sub','',true);
  PERFORM public.review_stale_shifts();
- IF NOT EXISTS(SELECT 1 FROM public.time_entries WHERE id=entry AND clock_out_at=clock_in_at AND break_minutes=0 AND needs_review AND review_reason='missing_clock_out') THEN RAISE EXCEPTION 'Forgotten exit credited invented time'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.time_entries WHERE id=entry AND clock_out_at IS NULL AND needs_review AND review_reason='missing_clock_out') THEN RAISE EXCEPTION 'Forgotten exit credited invented time'; END IF;
 END $$;
 ROLLBACK;

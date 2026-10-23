@@ -454,7 +454,7 @@
     "newRoom": "Yeni oda",
     "code": "Kod",
     "baseOccupancy": "Temel doluluk",
-    "description": "Açıklama",
+    "description": "Açıklama (isteğe bağlı)",
     "deleteHasRooms": "Bu tipe {{n}} oda bağlı. Odası olan tip silinemez – bir seçenek seçin:",
     "deleteNoRooms": "Fiyat, rezervasyon veya kanal geçmişi olan tipler silinmez; bunun yerine pasife alın.",
     "deactivate": "Oda tipini pasife al",
@@ -785,7 +785,7 @@
   "issues": {
     "reportTitle": "Oda {{room}} için sorun bildir",
     "category": "Sorun türü",
-    "description": "Açıklama",
+    "description": "Açıklama (isteğe bağlı)",
     "placeholder": "Örn. lavabo akıtıyor",
     "descriptionRequired": "Lütfen kısa bir açıklama yazın",
     "send": "Bildir",
@@ -799,6 +799,7 @@
       "electric": "Elektrik",
       "missing": "Eksik malzeme",
       "dirty": "Aşırı kirli",
+      "lock": "Kapı / kilit",
       "other": "Diğer"
     },
     "maintenanceWarning": "Bildirim gönderildiğinde Oda {{room}} otomatik olarak bakıma alınacak ve satışa kapanacak.",

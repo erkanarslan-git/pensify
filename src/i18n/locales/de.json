@@ -454,7 +454,7 @@
     "newRoom": "Neues Zimmer",
     "code": "Code",
     "baseOccupancy": "Grundbelegung",
-    "description": "Beschreibung",
+    "description": "Beschreibung (optional)",
     "deleteHasRooms": "{{n}} Zimmer sind diesem Typ zugeordnet. Ein Typ mit Zimmern kann nicht gelöscht werden – wählen Sie eine Möglichkeit:",
     "deleteNoRooms": "Typen mit Preis-, Buchungs- oder Kanalverlauf werden nicht gelöscht; setzen Sie sie stattdessen inaktiv.",
     "deactivate": "Zimmertyp inaktiv setzen",
@@ -785,7 +785,7 @@
   "issues": {
     "reportTitle": "Problem für Zimmer {{room}} melden",
     "category": "Art",
-    "description": "Beschreibung",
+    "description": "Beschreibung (optional)",
     "placeholder": "z. B. Waschbecken tropft",
     "descriptionRequired": "Bitte kurz beschreiben",
     "send": "Melden",
@@ -799,6 +799,7 @@
       "electric": "Elektrik",
       "missing": "Fehlendes Material",
       "dirty": "Stark verschmutzt",
+      "lock": "Tür / Schloss",
       "other": "Sonstiges"
     },
     "maintenanceWarning": "Nach dem Senden wird Zimmer {{room}} automatisch in Wartung gesetzt und für den Verkauf gesperrt.",

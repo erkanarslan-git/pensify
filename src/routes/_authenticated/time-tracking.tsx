@@ -1,4 +1,4 @@
-import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
+import { BUSINESS_TIME_ZONE, businessDayBounds, businessDate } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge, Kpi } from "@/components/app-shell";
 import { useMemo, useState } from "react";
@@ -47,7 +47,7 @@ type Entry = {
 function isoDate(d: Date) { return d.toISOString().slice(0, 10); }
 
 function presetRange(p: string): [string, string] {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = new Date(`${businessDate()}T00:00:00Z`);
   if (p === "today") return [isoDate(today), isoDate(today)];
   if (p === "week") {
     const d = new Date(today); d.setDate(d.getDate() - 6);
@@ -114,8 +114,8 @@ function TimeTrackingPage() {
         .select(
           "id, cleaner_id, property_id, clock_in_at, clock_out_at, break_minutes, break_started_at, status, needs_review, review_reason, paid_at, paid_amount, clock_in_lat, clock_in_lng, cleaners(full_name), properties(name)",
         )
-        .gte("clock_in_at", `${from}T00:00:00`)
-        .lte("clock_in_at", `${to}T23:59:59`)
+        .gte("clock_in_at", businessDayBounds(from).start)
+        .lt("clock_in_at", businessDayBounds(to).end)
         .order("clock_in_at", { ascending: false });
       if (cleanerFilter !== "all") q = q.eq("cleaner_id", cleanerFilter);
       if (propertyFilter !== "all") q = q.eq("property_id", propertyFilter);
@@ -214,7 +214,7 @@ function TimeTrackingPage() {
   function exportCsv() {
     const rows = [["Cleaner", "Property", "Start", "End", "Minutes", "Break (min)", "Status", "Paid", "Amount"]];
     for (const e of entries) {
-      const min = e.clock_out_at
+      const min = e.clock_out_at && !e.needs_review
         ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0))
         : 0;
       rows.push([
@@ -304,13 +304,13 @@ function TimeTrackingPage() {
       <div className="space-y-4">
         {isAdmin && (() => {
           const L = ({ tr: ["Şu an çalışan", "Toplam saat", "Kayıt", "Ödenmemiş"], de: ["Jetzt aktiv", "Stunden gesamt", "Einträge", "Unbezahlt"], en: ["Active now", "Total hours", "Entries", "Unpaid"] } as Record<string, string[]>)[i18n.language?.slice(0, 2)] ?? ["Active now", "Total hours", "Entries", "Unpaid"];
-          const mins = entries.reduce((s, e) => s + (e.clock_out_at ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
+          const mins = entries.reduce((s, e) => s + (e.clock_out_at && !e.needs_review ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0)) : 0), 0);
           return (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Kpi accent="primary" label={L[0]} value={entries.filter((e) => !e.clock_out_at).length} />
+              <Kpi accent="primary" label={L[0]} value={entries.filter((e) => !e.clock_out_at && !e.needs_review).length} />
               <Kpi label={L[1]} value={`${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`} />
               <Kpi label={L[2]} value={entries.length} />
-              <Kpi accent="warning" label={L[3]} value={entries.filter((e) => e.clock_out_at && !e.paid_at).length} />
+              <Kpi accent="warning" label={L[3]} value={entries.filter((e) => e.clock_out_at && !e.needs_review && !e.paid_at).length} />
             </div>
           );
         })()}
@@ -389,7 +389,7 @@ function TimeTrackingPage() {
                 </thead>
                 <tbody>
                   {entries.map((e) => {
-                    const min = e.clock_out_at
+                    const min = e.clock_out_at && !e.needs_review
                       ? Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0))
                       : 0;
                     return (
@@ -398,7 +398,7 @@ function TimeTrackingPage() {
                         <td className="px-5 py-2">{e.properties?.name}</td>
                         <td className="px-5 py-2 text-xs whitespace-nowrap">{new Date(e.clock_in_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}</td>
                         <td className="px-5 py-2 text-xs whitespace-nowrap">
-                          {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : <Badge tone="warning">{t("timeTracking.active")}</Badge>}
+                          {e.clock_out_at ? new Date(e.clock_out_at).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : <Badge tone="warning">{t(e.needs_review ? "clock.missingClockOut" : "timeTracking.active")}</Badge>}
                         </td>
                         <td className="px-5 py-2">
                           {e.clock_out_at ? `${Math.floor(min / 60)}h ${min % 60}m` : "—"}
@@ -416,7 +416,7 @@ function TimeTrackingPage() {
                         <td className="px-5 py-2">
                           {e.paid_at ? (
                             <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> €{e.paid_amount?.toFixed(2)}</Badge>
-                          ) : e.clock_out_at ? (
+                          ) : e.clock_out_at || e.needs_review ? (
                             <div className="flex gap-1 flex-wrap">
                               {!e.needs_review && <Button size="sm" variant="outline" onClick={() => markPaid.mutate(e)}>{t("timeTracking.markPaid")}</Button>}
                               <Button size="sm" variant="ghost" onClick={() => setCorrecting({ entry: e, endNow: false })}>{t("clock.correct")}</Button>

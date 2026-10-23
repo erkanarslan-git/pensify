@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { summarizeRooms } from "@/lib/room-summary";
+import { AccessCodePanel, RoomAccessButton } from "@/components/access-code-panel";
 
 const ROOM_STATUSES = ["available", "occupied", "cleaning_required", "cleaning_in_progress", "cleaned", "checkout_today", "maintenance"];
 
@@ -82,7 +83,6 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [revealedCodes, setRevealedCodes] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<RoomStatus>("available");
   const [bulkSaving, setBulkSaving] = useState(false);
   const [page, setPage] = useState(1);
@@ -93,7 +93,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       setLoading(true);
       const [pr, rm, cl, rt, live] = await Promise.all([
         supabase.from("properties").select("id,name,address,city_id,organization_id").order("name"),
-        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,key_code,default_cleaner_id,room_type_id")
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
         supabase.from("room_types").select("id,name,code,property_id").order("name"),
@@ -257,7 +257,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
           </div>
           {selected.size > 0 && <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl brand-tile px-3 py-2 shadow-sm"><span className="mr-auto text-sm font-medium">{t("rooms.selectedCount", { count: selected.size })}</span><select value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value as RoomStatus)} className="h-8 rounded-md border border-input bg-card px-2 text-xs text-foreground">{(Object.keys(statusMeta) as RoomStatus[]).map((status) => <option key={status} value={status}>{t(`status.${status}`)}</option>)}</select><Button size="sm" variant="secondary" onClick={() => applyBulkStatus(bulkStatus)} disabled={bulkSaving}>{t("rooms.applyStatus")}</Button><Button size="sm" variant="secondary" onClick={() => applyBulkStatus("cleaning_required")} disabled={bulkSaving}><Sparkles className="h-4 w-4" />{t("rooms.sendToCleaning")}</Button></div>}
           <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            {list.length === 0 ? <div className="p-5 text-sm text-muted-foreground">{t("rooms.noRooms")}</div> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] border-collapse text-sm"><thead className="sticky top-0 z-10 bg-muted/70"><tr className="border-b border-border text-left text-[11px] font-medium uppercase tracking-wide text-muted-foreground"><th className="w-11 px-3 py-2"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} aria-label={t("rooms.selectPage")} /></th><th className="px-3 py-2">{t("rooms.roomNumber")}</th><th className="px-3 py-2">{t("rooms.property")}</th><th className="px-3 py-2">{t("rooms.roomType")}</th><th className="px-3 py-2">{t("rooms.status")}</th><th className="px-3 py-2">{t("rooms.keyCode")}</th><th className="px-3 py-2">{t("rooms.capacity")}</th><th className="px-3 py-2">{t("rooms.floor")}</th><th className="w-24 px-3 py-2 text-right">{t("rooms.actions")}</th></tr></thead><tbody className="divide-y divide-border">{visibleRooms.map((room) => { const property = properties.find((item) => item.id === room.property_id); const roomType = roomTypes.find((item) => item.id === room.room_type_id); const codeVisible = revealedCodes.has(room.id); return <tr key={room.id} className="group transition-colors hover:bg-muted/60"><td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(room.id)} onChange={() => toggleRoom(room.id)} aria-label={t("rooms.selectRoom", { room: room.number })} /></td><td className="px-3 py-2.5 font-semibold">{room.number}</td><td className="max-w-52 px-3 py-2.5"><span className="block truncate font-medium">{property?.name ?? "—"}</span><span className="block truncate text-xs text-muted-foreground">{property?.address}</span></td><td className="px-3 py-2.5">{roomType?.name ?? t("rooms.withoutRoomType")}</td><td className="px-3 py-2.5"><Badge tone={statusMeta[room.status].tone}>{t(`status.${room.status}`)}</Badge></td><td className="px-3 py-2.5"><div className="flex items-center gap-1.5 font-mono"><span>{room.key_code ? (codeVisible ? room.key_code : "••••") : "—"}</span>{room.key_code && <Button variant="ghost" size="icon" onClick={() => setRevealedCodes((current) => { const next = new Set(current); if (next.has(room.id)) next.delete(room.id); else next.add(room.id); return next; })} title={codeVisible ? t("rooms.hideKeyCode") : t("rooms.showKeyCode")}>{codeVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>}</div></td><td className="px-3 py-2.5"><span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{room.capacity}</span></td><td className="px-3 py-2.5 text-muted-foreground">{floorLabel(room.floor)}</td><td className="px-3 py-2 text-right"><Button variant="ghost" size="icon" onClick={() => setEditing(room)} title={t("common.edit")}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => remove(room.id)} title={t("common.delete")} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></td></tr>; })}</tbody></table></div>}
+            {list.length === 0 ? <div className="p-5 text-sm text-muted-foreground">{t("rooms.noRooms")}</div> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] border-collapse text-sm"><thead className="sticky top-0 z-10 bg-muted/70"><tr className="border-b border-border text-left text-[11px] font-medium uppercase tracking-wide text-muted-foreground"><th className="w-11 px-3 py-2"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} aria-label={t("rooms.selectPage")} /></th><th className="px-3 py-2">{t("rooms.roomNumber")}</th><th className="px-3 py-2">{t("rooms.property")}</th><th className="px-3 py-2">{t("rooms.roomType")}</th><th className="px-3 py-2">{t("rooms.status")}</th><th className="px-3 py-2">{t("rooms.keyCode")}</th><th className="px-3 py-2">{t("rooms.capacity")}</th><th className="px-3 py-2">{t("rooms.floor")}</th><th className="w-24 px-3 py-2 text-right">{t("rooms.actions")}</th></tr></thead><tbody className="divide-y divide-border">{visibleRooms.map((room) => { const property = properties.find((item) => item.id === room.property_id); const roomType = roomTypes.find((item) => item.id === room.room_type_id); return <tr key={room.id} className="group transition-colors hover:bg-muted/60"><td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(room.id)} onChange={() => toggleRoom(room.id)} aria-label={t("rooms.selectRoom", { room: room.number })} /></td><td className="px-3 py-2.5 font-semibold">{room.number}</td><td className="max-w-52 px-3 py-2.5"><span className="block truncate font-medium">{property?.name ?? "—"}</span><span className="block truncate text-xs text-muted-foreground">{property?.address}</span></td><td className="px-3 py-2.5">{roomType?.name ?? t("rooms.withoutRoomType")}</td><td className="px-3 py-2.5"><Badge tone={statusMeta[room.status].tone}>{t(`status.${room.status}`)}</Badge></td><td className="px-3 py-2.5"><RoomAccessButton propertyId={room.property_id} roomId={room.id} /></td><td className="px-3 py-2.5"><span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{room.capacity}</span></td><td className="px-3 py-2.5 text-muted-foreground">{floorLabel(room.floor)}</td><td className="px-3 py-2 text-right"><Button variant="ghost" size="icon" onClick={() => setEditing(room)} title={t("common.edit")}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => remove(room.id)} title={t("common.delete")} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></td></tr>; })}</tbody></table></div>}
           </div>
           {pageCount > 1 && <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground"><span>{t("rooms.page", { page, pages: pageCount })}</span><div className="flex gap-1"><Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage((value) => value - 1)}>{t("rooms.previous")}</Button><Button size="sm" variant="outline" disabled={page === pageCount} onClick={() => setPage((value) => value + 1)}>{t("rooms.next")}</Button></div></div>}
         </>
@@ -340,7 +340,6 @@ export function RoomDialog({
       setStatus(room.status);
       setPropId(room.property_id);
       setNotes(room.notes ?? "");
-      setKeyCode(room.key_code ?? "");
       setDefaultCleanerId(room.default_cleaner_id ?? "");
       setRoomTypeId(room.room_type_id ?? "");
       setShowKeyCode(false);
@@ -372,7 +371,6 @@ export function RoomDialog({
       floor: f,
       status,
       notes: notes.trim() || null,
-      key_code: keyCode.trim() || null,
       default_cleaner_id: defaultCleanerId || null,
       room_type_id: roomTypeId || null,
       organization_id: properties.find((p) => p.id === propId)?.organization_id,
@@ -478,17 +476,7 @@ export function RoomDialog({
             </select>
             <p className="text-[11px] text-muted-foreground mt-1">{t("rooms.cleanerHint")}</p>
           </div>
-          <div>
-            <label className="text-xs text-muted-foreground">{t("rooms.keyCode")}</label>
-            <div className="relative">
-              <KeyRound className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input type={showKeyCode ? "text" : "password"} value={keyCode} onChange={(e) => setKeyCode(e.target.value)} maxLength={20} autoComplete="off" placeholder={t("rooms.keyCodePlaceholder")} className="w-full rounded-md border border-input bg-card py-2 pl-9 pr-11 font-mono text-sm" />
-              <Button type="button" variant="ghost" size="icon" onClick={() => setShowKeyCode((v) => !v)} className="absolute right-1 top-0.5" title={showKeyCode ? t("rooms.hideKeyCode") : t("rooms.showKeyCode")}>
-                {showKeyCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{t("rooms.keyCodeHint")}</p>
-          </div>
+          {room && <AccessCodePanel propertyId={room.property_id} roomId={room.id} />}
           <div>
             <label className="text-xs text-muted-foreground">{t("rooms.notes")}</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />

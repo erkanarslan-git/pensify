@@ -8,9 +8,9 @@ export function csvText(rows: string[][]) {
     return `"${safe.replace(/"/g, '""')}"`;
   }).join(';')).join('\n');
 }
-export function attendanceExportDays(name: string, days: AttendanceDay[], entries: DailyTimeEntry[], status: (key: string) => string, now: number) {
+export function attendanceExportDays(name: string, days: AttendanceDay[], entries: DailyTimeEntry[], status: (key: string) => string, now: number, breaks: AttendanceBreak[] = []) {
   return days.map(day => {
-    const totals = dailyTime(entries, day.date, now);
-    return [name, day.date, status(day.status), String(totals.sessions.length), String(totals.breakMinutes), String(totals.netMinutes), totals.needsReview ? status('review') : totals.active ? status('active') : ''];
+    const totals = dailyTime(entries, day.date, now, breaks);
+    return [name, day.date, status(day.status), String(totals.sessions.length), String(totals.breakMinutes), String(totals.netMinutes), totals.needsReview ? status('review') : totals.active ? status('active') : '', String(totals.ongoingMinutes)];
   });
 }

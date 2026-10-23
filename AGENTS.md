@@ -9,22 +9,22 @@
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
 - Track .env with publishable values only; secrets stay in the secret store. Why: hosted builds need VITE_* to load.
-- Room/rate/occupancy writes use SECURITY DEFINER RPCs: save_room_type_full, create_rooms_bulk, set_room_type_active, move_rooms_to_type, save_occupancy_prices, import_wp_rooms. Resolve org, property access and manage_rooms; import owner/admin only. Why: atomic authorized writes.
+- Room/rate/occupancy writes use scoped atomic RPCs with manage_rooms; imports require owner/admin. Why: authorized writes.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
 - WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
-- Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
+- Access codes live in locked operational_access_secrets; scoped reveal/edit RPCs audit metadata only; lists never fetch values, legacy key_code stays NULL. Why: shared workspace privacy.
 - Membership/department triggers enable time profiles for cleaners/workers; breaks use time eligibility, not cleaning-active. Why: one identity, no cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
 - Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
 - After a successful cleaning transition, await refreshCleaningQueries for tasks, dashboard (including inactive cache), and action center. Why: completed rooms must leave cleaning counts immediately using committed database status.
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
-- WuBook pilot: one non-test channel_accounts row per real WuBook property, linked via channel_property_mappings; room types created only via admin-confirmed new_room and mapped in channel_room_mappings with sync_enabled=false. Why: explicit, auditable, one-step-at-a-time go-live.
+- WuBook pilot: one real account per property; explicit property/room mappings, admin-confirmed new_room, sync_enabled=false. Why: auditable stepwise go-live.
 
 - Property cards use natural-height CSS columns. Why: no truncated names.
-- Channel sync separates overview, pilot, diagnostics and history; keep authorization/outbound safeguards. Dispatch expands all daily tasks without changing assignment/sending. Why: clear daily status.
-- Business time uses shared Berlin helpers; UTC stored, daily shifts grouped by start date. Why: consistent daylight-saving and overnight reporting.
-- Time: server clock, own-open-only, idempotent; checkout DB geofence; 16h stale exits zero/review via org-scoped SQL cron; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
+- Integrations reuse bank/channel screens with truthful status, no automatic outbound activation. Why: safe shared entry.
+- Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
+- Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
 - Read subdirectory AGENTS.md before edits there.
 - Payments: reservation-derived org/property; explicit view/collect/correct/plan/bank permissions via can_finance_action; reasoned reversals retain history. Why: scoped, auditable finance.
 - Work reports use owner-only department_work_report in the active organization; task/time powers stay separate. Why: prevent report delegation and tenant leaks.
@@ -33,4 +33,5 @@
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
 - TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages; management lists active links only. Why: privacy, no replay/clutter.
 - Reservations: org/property-scoped server filters, exact counts and stable ID ordering shared by pages/export. Why: no truncation or scope drift.
-- Typography: shared CSS type scale and title/label line heights; load used font weights, no vertical text offsets. Why: aligned text across screens, preserved TV density.
+- Typography uses shared scale/line heights, actual font weights, no vertical offsets. Why: aligned text and TV density.
+- Cleaning inspection is a separate task state with property opt-in; atomic review/reopen/report RPCs retain reasons and maintenance blocks. Why: problems are not inspections.

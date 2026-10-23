@@ -90,6 +90,35 @@ export type Database = {
           },
         ]
       }
+      attendance_review_settings: {
+        Row: {
+          organization_id: string
+          review_after_minutes: number
+          updated_at: string
+          warning_after_minutes: number
+        }
+        Insert: {
+          organization_id: string
+          review_after_minutes?: number
+          updated_at?: string
+          warning_after_minutes?: number
+        }
+        Update: {
+          organization_id?: string
+          review_after_minutes?: number
+          updated_at?: string
+          warning_after_minutes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_review_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -831,6 +860,10 @@ export type Database = {
           created_at: string
           due_at: string
           id: string
+          inspected_at: string | null
+          inspected_by: string | null
+          inspection_note: string | null
+          inspection_state: string
           notes: string | null
           organization_id: string
           photos_count: number
@@ -845,6 +878,10 @@ export type Database = {
           created_at?: string
           due_at: string
           id?: string
+          inspected_at?: string | null
+          inspected_by?: string | null
+          inspection_note?: string | null
+          inspection_state?: string
           notes?: string | null
           organization_id?: string
           photos_count?: number
@@ -859,6 +896,10 @@ export type Database = {
           created_at?: string
           due_at?: string
           id?: string
+          inspected_at?: string | null
+          inspected_by?: string | null
+          inspection_note?: string | null
+          inspection_state?: string
           notes?: string | null
           organization_id?: string
           photos_count?: number
@@ -1535,6 +1576,74 @@ export type Database = {
           },
         ]
       }
+      operational_access_secrets: {
+        Row: {
+          id: string
+          kind: string
+          organization_id: string
+          property_id: string
+          room_id: string | null
+          secret_value: string
+          updated_at: string
+          updated_by: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          id?: string
+          kind: string
+          organization_id: string
+          property_id: string
+          room_id?: string | null
+          secret_value: string
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          id?: string
+          kind?: string
+          organization_id?: string
+          property_id?: string
+          room_id?: string | null
+          secret_value?: string
+          updated_at?: string
+          updated_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_access_secrets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operational_access_secrets_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operational_access_secrets_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "operational_access_secrets_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           active: boolean
@@ -1804,6 +1913,7 @@ export type Database = {
           active: boolean
           address: string
           city_id: string
+          cleaning_inspection_required: boolean
           clock_without_location: boolean
           clock_without_location_at: string | null
           clock_without_location_by: string | null
@@ -1827,6 +1937,7 @@ export type Database = {
           active?: boolean
           address: string
           city_id: string
+          cleaning_inspection_required?: boolean
           clock_without_location?: boolean
           clock_without_location_at?: string | null
           clock_without_location_by?: string | null
@@ -1850,6 +1961,7 @@ export type Database = {
           active?: boolean
           address?: string
           city_id?: string
+          cleaning_inspection_required?: boolean
           clock_without_location?: boolean
           clock_without_location_at?: string | null
           clock_without_location_by?: string | null
@@ -2759,46 +2871,124 @@ export type Database = {
           },
         ]
       }
+      todo_activity: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          organization_id: string
+          todo_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          organization_id: string
+          todo_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          todo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "todo_activity_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todo_activity_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
+          archived_at: string | null
+          assigned_to: string | null
           created_at: string
           created_by: string | null
           done: boolean
           done_at: string | null
           done_by: string | null
+          due_at: string | null
           due_date: string | null
           id: string
           notes: string | null
           organization_id: string
           priority: string
+          property_id: string | null
+          recurrence: string
+          recurrence_period: string | null
+          recurrence_root: string | null
+          reminder_at: string | null
+          reminder_status: string
+          reservation_id: string | null
+          room_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
+          assigned_to?: string | null
           created_at?: string
           created_by?: string | null
           done?: boolean
           done_at?: string | null
           done_by?: string | null
+          due_at?: string | null
           due_date?: string | null
           id?: string
           notes?: string | null
           organization_id: string
           priority?: string
+          property_id?: string | null
+          recurrence?: string
+          recurrence_period?: string | null
+          recurrence_root?: string | null
+          reminder_at?: string | null
+          reminder_status?: string
+          reservation_id?: string | null
+          room_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
+          assigned_to?: string | null
           created_at?: string
           created_by?: string | null
           done?: boolean
           done_at?: string | null
           done_by?: string | null
+          due_at?: string | null
           due_date?: string | null
           id?: string
           notes?: string | null
           organization_id?: string
           priority?: string
+          property_id?: string | null
+          recurrence?: string
+          recurrence_period?: string | null
+          recurrence_root?: string | null
+          reminder_at?: string | null
+          reminder_status?: string
+          reservation_id?: string | null
+          room_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -2808,6 +2998,34 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_operational_status"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "todos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -3019,6 +3237,10 @@ export type Database = {
         Returns: number
       }
       _require_room_manager: { Args: { _property_id: string }; Returns: string }
+      access_secret_authorized: {
+        Args: { _edit: boolean; _property: string; _room: string }
+        Returns: string
+      }
       active_organization_id: { Args: never; Returns: string }
       admin_get_member_properties: {
         Args: { _user_id: string }
@@ -3128,6 +3350,7 @@ export type Database = {
         Returns: undefined
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
+      attendance_review_controls: { Args: never; Returns: Json }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_finance_action: {
         Args: { _org: string; _permission: string; _property: string }
@@ -3142,6 +3365,7 @@ export type Database = {
         Args: { _org: string; _property?: string; _user: string }
         Returns: boolean
       }
+      can_read_todo: { Args: { _id: string }; Returns: boolean }
       cleaner_user: { Args: { _cleaner: string }; Returns: string }
       cleaning_assignment_options: {
         Args: never
@@ -3215,6 +3439,10 @@ export type Database = {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
       }
+      general_todo_action: {
+        Args: { _action: string; _id: string; _note?: string }
+        Returns: undefined
+      }
       has_department_assignment: {
         Args: { _department: string; _org: string; _target?: string }
         Returns: boolean
@@ -3244,6 +3472,10 @@ export type Database = {
       import_wp_rooms: { Args: { _batch: Json }; Returns: Json }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_organization_member: { Args: { _org: string }; Returns: boolean }
+      list_access_secret_metadata: {
+        Args: { _property: string; _room?: string }
+        Returns: Json
+      }
       list_my_clock_properties: {
         Args: never
         Returns: {
@@ -3304,6 +3536,23 @@ export type Database = {
             }
             Returns: number
           }
+      reopen_cleaning_task: {
+        Args: {
+          _reason: string
+          _task_id: string
+          _to: Database["public"]["Enums"]["cleaning_status"]
+        }
+        Returns: undefined
+      }
+      report_room_issue: {
+        Args: {
+          _category: string
+          _description?: string
+          _room_id: string
+          _task_id?: string
+        }
+        Returns: string
+      }
       request_access: {
         Args: {
           _message: string
@@ -3323,8 +3572,16 @@ export type Database = {
         }[]
       }
       restore_reservation: { Args: { _id: string }; Returns: undefined }
+      reveal_access_secret: {
+        Args: { _kind: string; _property: string; _room: string }
+        Returns: string
+      }
       reverse_manual_payment: {
         Args: { _id: string; _reason: string }
+        Returns: undefined
+      }
+      review_cleaning_task: {
+        Args: { _approved: boolean; _reason?: string; _task_id: string }
         Returns: undefined
       }
       review_stale_shifts: { Args: never; Returns: number }
@@ -3339,6 +3596,22 @@ export type Database = {
           total: number
         }[]
       }
+      save_access_secret: {
+        Args: {
+          _from?: string
+          _kind: string
+          _property: string
+          _room: string
+          _until?: string
+          _value: string
+        }
+        Returns: undefined
+      }
+      save_attendance_review_controls: {
+        Args: { _review: number; _warning: number }
+        Returns: undefined
+      }
+      save_general_todo: { Args: { _input: Json }; Returns: string }
       save_guest_prices: {
         Args: { _prices: Json; _room_type_id: string }
         Returns: undefined
@@ -3380,6 +3653,10 @@ export type Database = {
         Returns: string
       }
       save_tv_source_colors: { Args: { _colors: Json }; Returns: undefined }
+      set_cleaning_inspection_preference: {
+        Args: { _property: string; _required: boolean }
+        Returns: undefined
+      }
       set_employee_overtime_rate: {
         Args: { _cleaner_id: string; _rate: number }
         Returns: undefined

@@ -8,7 +8,8 @@ import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { Button } from "@/components/ui/button";
 import { maintenanceWorkerAllowed, type MaintenanceBoard } from "@/lib/maintenance-assignment";
 
-export const ISSUE_CATEGORIES = ["damage", "plumbing", "electric", "missing", "dirty", "other"] as const;
+import { ISSUE_CATEGORIES, validIssue } from "@/lib/cleaning-inspection";
+export { ISSUE_CATEGORIES } from "@/lib/cleaning-inspection";
 
 export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }: {
   roomId: string; roomLabel: string; taskId?: string; onClose: () => void; onDone: () => void;
@@ -19,13 +20,11 @@ export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!description.trim()) { toast.error(t("issues.descriptionRequired")); return; }
+    if (!validIssue(category, description)) { toast.error(t("cleaning.actionFailed")); return; }
     setSaving(true);
-    const { error } = await supabase.from("room_issues").insert({
-      room_id: roomId, task_id: taskId ?? null, category, description: description.trim(),
-      organization_id: "00000000-0000-0000-0000-000000000000", property_id: "00000000-0000-0000-0000-000000000000",
+    const { error } = await supabase.rpc("report_room_issue", {
+      _room_id: roomId, ... (taskId ? { _task_id: taskId } : {}), _category: category, _description: description.trim(),
     });
-    if (!error && taskId) await supabase.rpc("transition_cleaning_task", { _task_id: taskId, _to: "problem" });
     setSaving(false);
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     toast.success(t("issues.reported"));
@@ -38,19 +37,19 @@ export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }
       <div className="w-full max-w-md rounded-2xl bg-card border border-border p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold">{t("issues.reportTitle", { room: roomLabel })}</h2>
-          <button onClick={onClose} aria-label={t("common.close")}><X className="w-4 h-4" /></button>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("common.close")}><X className="w-4 h-4" /></Button>
         </div>
         <label className="text-xs text-muted-foreground">{t("issues.category")}</label>
         <div className="grid grid-cols-2 gap-2 mt-1 mb-3">
           {ISSUE_CATEGORIES.map((c) => (
-            <button key={c} onClick={() => setCategory(c)}
+            <Button variant="outline" key={c} onClick={() => setCategory(c)} aria-pressed={category === c}
               className={`text-sm px-3 py-2 rounded-lg border ${category === c ? "border-primary bg-primary/10 text-primary font-medium" : "border-input bg-card"}`}>
               {t(`issues.categories.${c}`)}
-            </button>
+            </Button>
           ))}
         </div>
         <label className="text-xs text-muted-foreground">{t("issues.description")}</label>
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
+        <textarea maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
           placeholder={t("issues.placeholder")}
           className="w-full mt-1 px-3 py-2 rounded-md border border-input bg-card text-base" />
         <div className="mt-3 flex gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
@@ -58,10 +57,10 @@ export function ReportIssueDialog({ roomId, roomLabel, taskId, onClose, onDone }
           <span>{t("issues.maintenanceWarning", { room: roomLabel })}</span>
         </div>
         <div className="grid grid-cols-2 gap-2 mt-4">
-          <button onClick={onClose} className="px-3 py-3 text-base rounded-xl border border-input">{t("common.cancel")}</button>
-          <button disabled={saving} onClick={save} className="px-3 py-3 text-base font-medium rounded-xl bg-destructive text-destructive-foreground disabled:opacity-50">
+          <Button variant="outline" disabled={saving} onClick={onClose} className="h-auto px-3 py-3 text-base">{t("common.cancel")}</Button>
+          <Button variant="destructive" disabled={saving} onClick={save} className="h-auto whitespace-normal px-3 py-3 text-base">
             {t("issues.sendAndMaintain")}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

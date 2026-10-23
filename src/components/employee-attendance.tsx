@@ -4,13 +4,16 @@ import { useTranslation } from "react-i18next";
 import { format, endOfMonth, parseISO } from "date-fns";
 import { Download, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { attendanceDays, localWorkDate } from "@/lib/attendance";
+import { attendanceDays } from "@/lib/attendance";
+import { dailyTime } from "@/lib/daily-time";
+import { businessDate } from "@/lib/business-time";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { AttendanceReviewControls } from "@/components/attendance-review-controls";
 import { DailyAttendanceLedger } from "@/components/daily-attendance-ledger";
 import { type DailyTimeEntry } from "@/lib/daily-time";
 import type { AttendanceBoard } from "@/lib/attendance-board";
@@ -30,7 +33,7 @@ const dayTones: Record<string, string> = {
 export function EmployeeAttendance({ userId, daily = false }: { userId?: string; daily?: boolean }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { can } = usePermissions();
+  const { can, roles } = usePermissions();
   const canManageTeam = can("manage_team");
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedMember, setSelectedMember] = useState("");
@@ -65,9 +68,11 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   const name = (uid: string) => data?.profiles.find(p => p.id === uid)?.full_name || data?.cleaners.find(c => c.user_id === uid)?.full_name || "—";
   const report = members.map(m => {
     const cleanerIds = new Set(data?.cleaners.filter(c => c.user_id === m.user_id).map(c => c.id));
-    const entries = data?.entries.filter(e => cleanerIds.has(e.cleaner_id) && localWorkDate(e.clock_in_at, data.timezone) >= from && localWorkDate(e.clock_in_at, data.timezone) <= to) ?? [];
-    const workedDates = new Set(entries.map(e => localWorkDate(e.clock_in_at, data?.timezone ?? "Europe/Berlin")));
-    const minutes = entries.reduce((sum,e) => sum + (e.clock_out_at && !e.needs_review ? Math.max(0, (Date.parse(e.clock_out_at) - Date.parse(e.clock_in_at)) / 60000 - e.break_minutes) : 0), 0);
+    const entries = data?.entries.filter(e => cleanerIds.has(e.cleaner_id)) ?? [];
+    const candidateDays = attendanceDays(m.id, from, to, data?.schedules ?? [], data?.absences ?? [], new Set());
+    const totals = candidateDays.map(day => ({ day: day.date, ...dailyTime(entries, day.date, Date.now(), data?.breaks ?? []) }));
+    const workedDates = new Set(totals.filter(day => day.sessions.length > 0).map(day => day.day));
+    const minutes = totals.reduce((sum, day) => sum + day.netMinutes, 0);
     const days = attendanceDays(m.id, from, to, data?.schedules ?? [], data?.absences ?? [], workedDates);
     return { member: m, days, minutes, counts: Object.fromEntries(kinds.map(k => [k, days.filter(d => d.status === k).length])) };
   });
@@ -94,10 +99,10 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   function exportCsv() {
     const rows = [[t("attendance.employee"), t("attendance.actualHours"), ...kinds.map(k => t(`attendance.${k}`))]];
     report.forEach(r => rows.push([name(r.member.user_id), (r.minutes / 60).toFixed(2), ...kinds.map(k => String(r.counts[k]))]));
-    rows.push([], [t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.sessions"), t("attendance.breakMinutes"), t("attendance.netMinutes"), t("clock.needsReview")]);
+    rows.push([], [t("attendance.employee"), t("attendance.date"), t("attendance.status"), t("attendance.sessions"), t("attendance.breakMinutes"), t("attendance.netMinutes"), t("clock.needsReview"), t("attendance.ongoingMinutes")]);
     report.forEach(r => {
       const ids = new Set(data?.cleaners.filter(c => c.user_id === r.member.user_id).map(c => c.id));
-      rows.push(...attendanceExportDays(name(r.member.user_id), r.days, data?.entries.filter(e => ids.has(e.cleaner_id)) ?? [], key => key === "review" ? t("clock.needsReview") : key === "active" ? t("timeTracking.active") : t(`attendance.${key}`), Date.now()));
+      rows.push(...attendanceExportDays(name(r.member.user_id), r.days, data?.entries.filter(e => ids.has(e.cleaner_id)) ?? [], key => key === "review" ? t("clock.needsReview") : key === "active" ? t("timeTracking.active") : t(`attendance.${key}`), Date.now(), data?.breaks ?? []));
     });
     const csv = csvText(rows);
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -105,9 +110,10 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   }
   if (q.isError) return <p className="text-sm text-destructive">{t("attendance.loadFailed")}</p>;
   const memberSchedules = data?.schedules.filter(s => s.member_id === member?.id).sort((a,b) => b.effective_from.localeCompare(a.effective_from)) ?? [];
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = businessDate();
   const activeSchedule = memberSchedules.find(s => s.effective_from <= today) ?? memberSchedules[0];
   return <section className="space-y-4">
+    {(roles.includes("owner") || roles.includes("admin")) && <AttendanceReviewControls />}
     {q.isPending ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : <>
       {!members.length && <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}
       {!userId && <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-accent text-left"><tr><th className="p-2">{t("attendance.employee")}</th><th className="p-2">{t("attendance.actualHours")}</th>{kinds.map(k => <th className="p-2" key={k}>{t(`attendance.${k}`)}</th>)}</tr></thead><tbody>{report.map(r => <tr key={r.member.id} className="border-b border-border"><td className="p-2"><Button variant="link" className="h-auto p-0" onClick={() => { setSelectedMember(r.member.id); setWorkdays([]); }}>{name(r.member.user_id)}</Button></td><td className="p-2 tabular-nums">{(r.minutes / 60).toFixed(2)}</td>{kinds.map(k => <td className="p-2 tabular-nums" key={k}>{r.counts[k]}</td>)}</tr>)}</tbody></table></div>}

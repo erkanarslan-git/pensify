@@ -11,6 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 import { OpenIssuesList, ReportIssueDialog } from "@/components/room-issues";
 import { canChangeCleaningAssignment, taskAssignmentOptions } from "@/lib/assignment";
+import { cleaningNeedsReview, validCleaningReason, type InspectionState } from "@/lib/cleaning-inspection";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
   head: () => ({ meta: [{ title: "Reinigung — Pensify" }, { name: "description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:title", content: "Reinigung — Pensify" }, { property: "og:description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -24,7 +27,7 @@ const statusMeta: Record<CleaningStatus, { tone: "warning" | "info" | "success" 
   completed: { tone: "success" }, problem: { tone: "destructive" },
 };
 
-type View = "open" | "problem" | "done" | "all";
+type View = "open" | "problem" | "review" | "done" | "all";
 
 interface Task {
   id: string;
@@ -35,6 +38,9 @@ interface Task {
   status: CleaningStatus;
   photos_count: number;
   notes: string | null;
+  inspection_state: InspectionState;
+  inspected_at: string | null;
+  inspection_note: string | null;
 }
 interface Room { id: string; number: string; floor: number | null }
 interface Property { id: string; name: string }
@@ -48,6 +54,9 @@ function CleaningPage() {
   const [view, setView] = useState<View>("open");
   const [prop, setProp] = useState("all");
   const [reporting, setReporting] = useState<{ taskId: string; roomId: string } | null>(null);
+  const [reviewing, setReviewing] = useState<{ id: string; action: "approve" | "reject" | "reopen"; to?: CleaningStatus } | null>(null);
+  const [reason, setReason] = useState("");
+  const [savingReview, setSavingReview] = useState(false);
 
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["cleaning-page"],
@@ -55,7 +64,7 @@ function CleaningPage() {
       const [userRes, ts, rm, pr, cl, options] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cleaning_tasks")
-          .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes")
+          .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes,inspection_state,inspected_at,inspection_note")
           .order("due_at", { ascending: true }),
         supabase.from("rooms").select("id,number,floor"),
         supabase.from("properties").select("id,name").order("name"),
@@ -108,6 +117,9 @@ function CleaningPage() {
   };
 
   const update = async (id: string, status: CleaningStatus) => {
+    if (tasks.find((task) => task.id === id)?.status === "completed") {
+      setReason(""); setReviewing({ id, action: "reopen", to: status }); return;
+    }
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     await refreshCleaningQueries(queryClient);
@@ -115,6 +127,22 @@ function CleaningPage() {
     if (status === "in_progress" && myCleanerId && tasks.find((x) => x.id === id)?.cleaner_id === myCleanerId) {
       void autoClockIn(id);
     }
+  };
+
+  const saveReview = async () => {
+    if (!reviewing) return;
+    if (reviewing.action !== "approve" && !validCleaningReason(reason)) {
+      toast.error(t("cleaningInspection.reasonRequired")); return;
+    }
+    setSavingReview(true);
+    const result = reviewing.action === "reopen"
+      ? await supabase.rpc("reopen_cleaning_task", { _task_id: reviewing.id, _to: reviewing.to === "pending" ? "pending" : "in_progress", _reason: reason.trim() })
+      : await supabase.rpc("review_cleaning_task", { _task_id: reviewing.id, _approved: reviewing.action === "approve", _reason: reason.trim() });
+    setSavingReview(false);
+    if (result.error) { toast.error(t("cleaning.actionFailed")); return; }
+    await refreshCleaningQueries(queryClient);
+    setReviewing(null); setReason("");
+    toast.success(t(reviewing.action === "approve" ? "cleaningInspection.approved" : reviewing.action === "reject" ? "cleaningInspection.rejected" : "cleaningInspection.reopen"));
   };
 
   const reassign = async (taskId: string, cleanerId: string) => {
@@ -128,7 +156,8 @@ function CleaningPage() {
   const counts = {
     open: tasks.filter((x) => isOpen(x.status)).length,
     problem: tasks.filter((x) => x.status === "problem").length,
-    done: tasks.filter((x) => x.status === "completed").length,
+    review: tasks.filter(cleaningNeedsReview).length,
+    done: tasks.filter((x) => x.status === "completed" && !cleaningNeedsReview(x)).length,
     unassigned: tasks.filter((x) => !x.cleaner_id && x.status !== "completed").length,
   };
 
@@ -136,7 +165,8 @@ function CleaningPage() {
     if (prop !== "all" && x.property_id !== prop) return false;
     if (view === "open") return isOpen(x.status);
     if (view === "problem") return x.status === "problem";
-    if (view === "done") return x.status === "completed";
+    if (view === "review") return cleaningNeedsReview(x);
+    if (view === "done") return x.status === "completed" && !cleaningNeedsReview(x);
     return true;
   });
 
@@ -147,6 +177,7 @@ function CleaningPage() {
   const views: { id: View; label: string; n: number }[] = [
     { id: "open", label: t("cleaning.toDo"), n: counts.open },
     { id: "problem", label: t("cleaning.problems"), n: counts.problem },
+    { id: "review", label: t("cleaningInspection.review"), n: counts.review },
     { id: "done", label: t("cleaning.done"), n: counts.done },
     { id: "all", label: t("common.all"), n: tasks.length },
   ];
@@ -230,7 +261,7 @@ function CleaningPage() {
                         <div className="w-28 text-muted-foreground tabular-nums">
                           {due.toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </div>
-                        <div className="w-28"><Badge tone={meta.tone}>{t(`status.${task.status}`)}</Badge></div>
+                        <div className="w-28"><Badge tone={cleaningNeedsReview(task) ? "warning" : meta.tone}>{cleaningNeedsReview(task) ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge></div>
                         <div className="flex-1 min-w-[160px]">
                           {options.length > 0 && canChangeCleaningAssignment(task.status) ? (
                             <select
@@ -249,9 +280,14 @@ function CleaningPage() {
                             <span className={unassigned ? "text-warning italic" : ""}>{name ?? t("cleaning.notAssigned")}</span>
                           )}
                           {task.notes && <div className="text-xs text-muted-foreground italic mt-0.5">"{task.notes}"</div>}
+                          {task.inspected_at && <div className="text-xs text-muted-foreground mt-1">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(undefined, { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
                         </div>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
                         <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:gap-1.5">
+                          {cleaningNeedsReview(task) && canAssign && <>
+                            <ActionBtn icon={<Check className="w-4 h-4" />} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "approve" }); }}>{t("cleaningInspection.approve")}</ActionBtn>
+                            <SecBtn tone="warning" icon={<RotateCcw className="w-4 h-4" />} label={t("cleaningInspection.reject")} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "reject" }); }} />
+                          </>}
                           {task.status === "pending" && (
                             <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.accept")}</ActionBtn>
                           )}
@@ -261,7 +297,7 @@ function CleaningPage() {
                           {task.status === "in_progress" && (
                             <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.finish")}</ActionBtn>
                           )}
-                          {task.status !== "pending" && (
+                          {task.status !== "pending" && (task.status !== "completed" || canAssign) && (
                             <SecBtn onClick={() => update(task.id, task.status === "accepted" ? "pending" : task.status === "completed" ? "in_progress" : "accepted")}
                               icon={<Undo2 className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.undo")} />
                           )}
@@ -285,24 +321,33 @@ function CleaningPage() {
           })}
         </div>
       )}
+      <Dialog open={reviewing !== null} onOpenChange={(open) => { if (!open && !savingReview) setReviewing(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{t(reviewing?.action === "approve" ? "cleaningInspection.approve" : reviewing?.action === "reject" ? "cleaningInspection.reject" : "cleaningInspection.reopen")}</DialogTitle></DialogHeader>
+          <label className="space-y-2 text-sm">{t(reviewing?.action === "approve" ? "cleaningInspection.note" : "cleaningInspection.reason")}
+            <textarea aria-label={t(reviewing?.action === "approve" ? "cleaningInspection.note" : "cleaningInspection.reason")} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} className="w-full rounded-md border border-input bg-card p-3" rows={3} />
+          </label>
+          <DialogFooter><Button variant="outline" disabled={savingReview} onClick={() => setReviewing(null)}>{t("common.cancel")}</Button><Button disabled={savingReview} onClick={saveReview}>{t("common.save")}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
 
 function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="col-span-2 text-base font-medium py-3.5 sm:col-span-1 sm:text-xs sm:font-normal px-2.5 sm:py-1.5 rounded-xl sm:rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 sm:gap-1">
+    <Button onClick={onClick} className="h-auto col-span-2 text-base font-medium py-3.5 sm:col-span-1 sm:text-xs sm:font-normal px-2.5 sm:py-1.5 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 sm:gap-1 whitespace-normal">
       {icon} {children}
-    </button>
+    </Button>
   );
 }
 
 function SecBtn({ onClick, icon, label, tone }: { onClick: () => void; icon: React.ReactNode; label: string; tone?: "destructive" | "warning" }) {
   const c = tone === "destructive" ? "border-destructive/40 text-destructive hover:bg-destructive/5" : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/5" : "border-input bg-card hover:bg-accent";
   return (
-    <button onClick={onClick} title={label} className={`inline-flex items-center justify-center gap-2 py-3 px-3 text-sm sm:py-1.5 sm:px-2 sm:text-xs rounded-xl sm:rounded-lg border ${c}`}>
+    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`h-auto inline-flex items-center justify-center gap-2 py-3 px-3 text-sm sm:py-1.5 sm:px-2 sm:text-xs rounded-xl sm:rounded-lg border ${c}`}>
       {icon}<span className="sm:hidden">{label}</span>
-    </button>
+    </Button>
   );
 }
 
