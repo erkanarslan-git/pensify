@@ -188,7 +188,7 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
     const payload={_reservation:sched.reservation_id,_amount:a,_date:date,_method:method,_note:note.trim(),_kind:sched.kind === "deposit" ? "deposit" : "rent",_allocations:chosen};
     const key=`pensify-payment-retry:${sched.reservation_id}`;
     const previous=sessionStorage.getItem(key); let requestId:string=crypto.randomUUID();
-    if(previous){try{const saved=JSON.parse(previous) as {id:string;payload:string};if(saved.payload!==JSON.stringify(payload)){setBusy(false);return toast.error(t("paymentExtra.retrySame"));}requestId=saved.id;}catch{/* invalid local retry state is ignored */}}
+    if(previous){try{const saved=JSON.parse(previous) as {id:string;payload:string};if(saved.payload!==JSON.stringify(payload)){setBusy(false);return toast.error(t("paymentExtra.retrySame"));}requestId=saved.id;}catch{setBusy(false);return toast.error(t("paymentExtra.retrySame"));}}
     sessionStorage.setItem(key,JSON.stringify({id:requestId,payload:JSON.stringify(payload)}));
     const { error } = await supabase.rpc("collect_payment_receipt", { _request_id:requestId,...payload });
     if(!error)sessionStorage.removeItem(key);
