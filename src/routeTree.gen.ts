@@ -41,6 +41,7 @@ import { Route as AuthenticatedPaymentsBankRouteImport } from './routes/_authent
 import { Route as AuthenticatedPaymentsTransactionsRouteImport } from './routes/_authenticated/payments.transactions'
 import { Route as AuthenticatedPropertiesIndexRouteImport } from './routes/_authenticated/properties.index'
 import { Route as AuthenticatedSettingsImportRouteImport } from './routes/_authenticated/settings.import'
+import { Route as AuthenticatedSettingsIntegrationsRouteImport } from './routes/_authenticated/settings.integrations'
 import { Route as AuthenticatedSettingsLogsRouteImport } from './routes/_authenticated/settings.logs'
 import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authenticated/properties.$id.qr'
 import { Route as AuthenticatedPropertiesIdRoomsRouteImport } from './routes/_authenticated/properties.$id.rooms'
@@ -222,6 +223,12 @@ const AuthenticatedSettingsImportRoute =
     path: '/import',
     getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
+const AuthenticatedSettingsIntegrationsRoute =
+  AuthenticatedSettingsIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedSettingsLogsRoute =
   AuthenticatedSettingsLogsRouteImport.update({
     id: '/logs',
@@ -311,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/payments/bank': typeof AuthenticatedPaymentsBankRoute
   '/payments/transactions': typeof AuthenticatedPaymentsTransactionsRoute
   '/settings/import': typeof AuthenticatedSettingsImportRoute
+  '/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/properties/': typeof AuthenticatedPropertiesIndexRoute
@@ -354,6 +362,7 @@ export interface FileRoutesByTo {
   '/payments/bank': typeof AuthenticatedPaymentsBankRoute
   '/payments/transactions': typeof AuthenticatedPaymentsTransactionsRoute
   '/settings/import': typeof AuthenticatedSettingsImportRoute
+  '/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/properties': typeof AuthenticatedPropertiesIndexRoute
@@ -399,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/payments/bank': typeof AuthenticatedPaymentsBankRoute
   '/_authenticated/payments/transactions': typeof AuthenticatedPaymentsTransactionsRoute
   '/_authenticated/settings/import': typeof AuthenticatedSettingsImportRoute
+  '/_authenticated/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/_authenticated/settings/logs': typeof AuthenticatedSettingsLogsRoute
   '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/properties/': typeof AuthenticatedPropertiesIndexRoute
@@ -444,6 +454,7 @@ export interface FileRouteTypes {
     | '/payments/bank'
     | '/payments/transactions'
     | '/settings/import'
+    | '/settings/integrations'
     | '/settings/logs'
     | '/payments/'
     | '/properties/'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/payments/bank'
     | '/payments/transactions'
     | '/settings/import'
+    | '/settings/integrations'
     | '/settings/logs'
     | '/payments'
     | '/properties'
@@ -531,6 +543,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments/bank'
     | '/_authenticated/payments/transactions'
     | '/_authenticated/settings/import'
+    | '/_authenticated/settings/integrations'
     | '/_authenticated/settings/logs'
     | '/_authenticated/payments/'
     | '/_authenticated/properties/'
@@ -786,6 +799,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsImportRouteImport
       parentRoute: typeof AuthenticatedSettingsRoute
     }
+    '/_authenticated/settings/integrations': {
+      id: '/_authenticated/settings/integrations'
+      path: '/integrations'
+      fullPath: '/settings/integrations'
+      preLoaderRoute: typeof AuthenticatedSettingsIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/settings/logs': {
       id: '/_authenticated/settings/logs'
       path: '/logs'
@@ -861,11 +881,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsImportRoute: typeof AuthenticatedSettingsImportRoute
+  AuthenticatedSettingsIntegrationsRoute: typeof AuthenticatedSettingsIntegrationsRoute
   AuthenticatedSettingsLogsRoute: typeof AuthenticatedSettingsLogsRoute
 }
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
   AuthenticatedSettingsImportRoute: AuthenticatedSettingsImportRoute,
+  AuthenticatedSettingsIntegrationsRoute:
+    AuthenticatedSettingsIntegrationsRoute,
   AuthenticatedSettingsLogsRoute: AuthenticatedSettingsLogsRoute,
 }
 
