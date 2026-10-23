@@ -638,8 +638,8 @@ function CalendarPage() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-[240px] text-xs">
-                              <div className="font-semibold mb-0.5">Problem gemeldet</div>
-                              <div className="opacity-90 whitespace-pre-wrap break-words">{r.issue || "Keine Details angegeben"}</div>
+                              <div className="font-semibold mb-0.5">{t("calendarExtra.problem")}</div>
+                              <div className="opacity-90 whitespace-pre-wrap break-words">{r.issue || t("calendarExtra.noDetails")}</div>
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -725,7 +725,7 @@ function CalendarPage() {
                               tryOpenNew({ date: dIso, propertyId: p.id, roomNumber: r.number });
                             }}
                             className="absolute inset-0 opacity-30 hover:opacity-100 transition-opacity hover:bg-primary/15 grid place-items-center text-muted-foreground hover:text-primary"
-                            title={past ? `Vergangene Buchung anlegen · #${r.number} · ${dIso}` : `Neue Buchung · #${r.number} · ${dIso}`}
+                            title={`${t(past?"calendarExtra.past":"calendarExtra.create")} · #${r.number} · ${dIso}`}
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -748,7 +748,7 @@ function CalendarPage() {
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
             <kbd className="px-1.5 py-0.5 rounded border border-border bg-card text-[10px]">?</kbd> {t("calendar.shortcuts")}
           </button>
-          <Link to="/reservations" className="ml-auto text-primary text-xs underline">Alle Buchungen →</Link>
+          <Link to="/reservations" className="ml-auto text-primary text-xs underline">{t("calendarExtra.all")} →</Link>
         </div>
       </Section>
       </div>
@@ -757,7 +757,7 @@ function CalendarPage() {
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-lg shadow-xl px-4 py-3 flex flex-wrap items-center gap-3 max-w-[95vw]">
           <div className="text-sm">
             <span className="font-medium">{pendingMove.res.guestName}</span>
-            <span className="text-muted-foreground"> · {pendingMove.res.checkIn} → {pendingMove.res.checkOut} wird zu </span>
+            <span className="text-muted-foreground"> · {pendingMove.res.checkIn} → {pendingMove.res.checkOut} {t("calendarExtra.becomes")} </span>
             <span className="font-medium">{pendingMove.checkIn} → {pendingMove.checkOut}</span>
             {moveConflict && <span className="block text-destructive text-xs mt-0.5">{t("calendar.conflictLine")}</span>}
           </div>
@@ -809,12 +809,12 @@ function CalendarPage() {
                 <Keyboard className="w-4 h-4" />
                 <h3 className="font-semibold">{t("calendar.shortcuts")}</h3>
               </div>
-              <button onClick={() => setShowHelp(false)} className="p-1 rounded hover:bg-accent" title="Schließen">
+              <button onClick={() => setShowHelp(false)} className="p-1 rounded hover:bg-accent" title={t("common.close")}>
                 <X className="w-4 h-4" />
               </button>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              Klicke zuerst in den Kalender, damit die Kürzel aktiv sind.
+              {t("calendarExtra.activate")}
             </p>
             <div className="space-y-2 text-sm">
               {[
@@ -837,12 +837,12 @@ function CalendarPage() {
               ))}
             </div>
             <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">
-              <div className="font-medium mb-1.5 text-foreground">Maus</div>
+              <div className="font-medium mb-1.5 text-foreground">{t("calendarExtra.mouse")}</div>
               <ul className="space-y-1 list-disc list-inside">
-                <li>Klick auf Zelle: auswählen</li>
-                <li>Klick auf <Plus className="inline w-3 h-3" />: neue Buchung</li>
-                 <li>Buchung ziehen: verschieben — dann mit <Check className="inline w-3 h-3" /> bestätigen oder <X className="inline w-3 h-3" /> verwerfen</li>
-                 <li>Ziehen im Leerraum: horizontal scrollen</li>
+                <li>{t("calendarExtra.select")}</li>
+                <li>{t("calendarExtra.create")}</li>
+                 <li>{t("calendarExtra.move")}</li>
+                 <li>{t("calendarExtra.scroll")}</li>
               </ul>
             </div>
           </div>
@@ -854,18 +854,18 @@ function CalendarPage() {
           <div onClick={(e) => e.stopPropagation()} className="bg-card border border-border rounded-lg shadow-xl w-full max-w-sm p-5">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-5 h-5 text-warning" />
-              <h3 className="font-semibold">Vergangene Buchung anlegen?</h3>
+              <h3 className="font-semibold">{t("calendarExtra.past")}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Du legst eine Buchung für ein vergangenes Datum an ({pendingPast.date}). Das betrifft Berichte und Abrechnungen. Bitte nur, wenn es ein nachgetragener Eintrag ist.
+              {t("calendarExtra.pastNote",{date:pendingPast.date})}
             </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setPendingPast(null)} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">Abbrechen</button>
+              <button onClick={() => setPendingPast(null)} className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{t("common.cancel")}</button>
               <button
                 onClick={() => { const p = pendingPast; setPendingPast(null); setNewRes(p); }}
                 className="px-3 py-2 rounded-md bg-warning text-warning-foreground text-sm font-medium hover:opacity-90"
               >
-                Trotzdem anlegen
+                {t("calendarExtra.confirm")}
               </button>
             </div>
           </div>
@@ -876,6 +876,7 @@ function CalendarPage() {
 }
 
 function ScrollableGrid({ children }: { children: React.ReactNode }) {
+  const {t}=useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -935,7 +936,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
           type="button"
           onClick={() => scrollBy(-step())}
           className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-card/95 border border-border shadow-md grid place-items-center hover:bg-accent transition-colors"
-          aria-label="Nach links scrollen"
+          aria-label={t("calendarExtra.left")}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -945,7 +946,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
           type="button"
           onClick={() => scrollBy(step())}
           className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-card/95 border border-border shadow-md grid place-items-center hover:bg-accent transition-colors"
-          aria-label="Nach rechts scrollen"
+          aria-label={t("calendarExtra.right")}
         >
           <ChevronRight className="w-5 h-5" />
         </button>
