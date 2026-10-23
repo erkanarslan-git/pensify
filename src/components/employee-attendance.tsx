@@ -30,7 +30,7 @@ const dayTones: Record<string, string> = {
   excused: "border-info/40 bg-info/10 text-info-foreground dark:text-info",
 };
 
-export function EmployeeAttendance({ userId, daily = false }: { userId?: string; daily?: boolean }) {
+export function EmployeeAttendance({ userId, daily = false, actionOnly, fromDate, toDate }: { userId?: string; daily?: boolean; actionOnly?: 'absence'|'workdays'; fromDate?: string; toDate?: string }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { can, roles } = usePermissions();
@@ -45,10 +45,10 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   const [note, setNote] = useState("");
   const [correction, setCorrection] = useState("");
   const [cancelling, setCancelling] = useState<string | null>(null);
-  const from = `${month}-01`;
-  const to = month ? format(endOfMonth(parseISO(from)), "yyyy-MM-dd") : "";
+  const from = fromDate ?? `${month}-01`;
+  const to = toDate ?? (month ? format(endOfMonth(parseISO(from)), "yyyy-MM-dd") : "");
   const q = useQuery({
-    queryKey: ["employee-attendance", month, userId ?? null],
+    queryKey: ["employee-attendance", from, to, userId ?? null],
     enabled: !!month,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("employee_attendance_board", { _from: from, _to: to, ...(userId ? { _user_id: userId } : {}) });
@@ -79,7 +79,7 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   const current = report.find(r => r.member.id === member?.id);
   const mutation = useMutation({
     mutationFn: async (action: "schedule" | "absence" | "cancel") => {
-      if (!member || !data || !canManage) throw new Error("permission_required");
+      if (!member || !data || (action !== 'schedule' && !canManage)) throw new Error("permission_required");
       if (action === "schedule") {
         if (!canSchedule) throw new Error("permission_required");
         const result = await supabase.from("employee_work_schedules").upsert({ organization_id: data.org, member_id: member.id, effective_from: effective, weekdays: workdays }, { onConflict: "member_id,effective_from" });
@@ -113,16 +113,16 @@ export function EmployeeAttendance({ userId, daily = false }: { userId?: string;
   const today = businessDate();
   const activeSchedule = memberSchedules.find(s => s.effective_from <= today) ?? memberSchedules[0];
   return <section className="space-y-4">
-    {(roles.includes("owner") || roles.includes("admin")) && <AttendanceReviewControls />}
+    {!actionOnly && (roles.includes("owner") || roles.includes("admin")) && <AttendanceReviewControls />}
     {q.isPending ? <p className="text-sm text-muted-foreground">{t("common.loading")}</p> : <>
       {!members.length && <p className="text-sm text-muted-foreground">{t("attendance.noMember")}</p>}
-      {!userId && <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-accent text-left"><tr><th className="p-2">{t("attendance.employee")}</th><th className="p-2">{t("attendance.actualHours")}</th>{kinds.map(k => <th className="p-2" key={k}>{t(`attendance.${k}`)}</th>)}</tr></thead><tbody>{report.map(r => <tr key={r.member.id} className="border-b border-border"><td className="p-2"><Button variant="link" className="h-auto p-0" onClick={() => { setSelectedMember(r.member.id); setWorkdays([]); }}>{name(r.member.user_id)}</Button></td><td className="p-2 tabular-nums">{(r.minutes / 60).toFixed(2)}</td>{kinds.map(k => <td className="p-2 tabular-nums" key={k}>{r.counts[k]}</td>)}</tr>)}</tbody></table></div>}
-      {member && <Tabs key={member.id} defaultValue={daily ? "month" : canManage ? (activeSchedule || !canSchedule ? "absence" : "workdays") : "month"}>
-        <TabsList className="grid w-full grid-cols-3">
+      {!userId && !actionOnly && <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-accent text-left"><tr><th className="p-2">{t("attendance.employee")}</th><th className="p-2">{t("attendance.actualHours")}</th>{kinds.map(k => <th className="p-2" key={k}>{t(`attendance.${k}`)}</th>)}</tr></thead><tbody>{report.map(r => <tr key={r.member.id} className="border-b border-border"><td className="p-2"><Button variant="link" className="h-auto p-0" onClick={() => { setSelectedMember(r.member.id); setWorkdays([]); }}>{name(r.member.user_id)}</Button></td><td className="p-2 tabular-nums">{(r.minutes / 60).toFixed(2)}</td>{kinds.map(k => <td className="p-2 tabular-nums" key={k}>{r.counts[k]}</td>)}</tr>)}</tbody></table></div>}
+      {member && <Tabs key={member.id} defaultValue={actionOnly ?? (daily ? "month" : canManage ? (activeSchedule || !canSchedule ? "absence" : "workdays") : "month")}>
+        {!actionOnly && <TabsList className="grid w-full grid-cols-3">
           {canManage && <TabsTrigger value="absence">{t("attendance.tabAbsence")}</TabsTrigger>}
           {canSchedule && <TabsTrigger value="workdays">{t("attendance.workdays")}</TabsTrigger>}
           <TabsTrigger value="month">{t("attendance.tabMonth")}</TabsTrigger>
-        </TabsList>
+        </TabsList>}
 
         {canManage && <TabsContent value="absence" className="space-y-4 pt-2">
           <p className="text-sm text-muted-foreground">{t("attendance.absenceHint")}</p>
