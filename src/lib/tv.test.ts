@@ -45,7 +45,7 @@ describe("Approved TV invariants",()=>{
  it("last verified increase is +3",()=>{expect(tvUpdate(snapshot,later).deltas.created).toBe(3);});
  it("decrease uses signed delta",()=>{expect(tvUpdate(later,{...later,at:"2026-10-23T00:00:20Z",metrics:{...later.metrics,cleaned:18}}).deltas.cleaned).toBe(-1);});
  it("delta expires at 8 seconds",()=>{expect(TV_DELTA_MS).toBe(8000);});
- it("celebration expires at 5 seconds",()=>{expect(TV_CELEBRATION_MS).toBe(5000);});
+ it("celebration expires at 7 seconds",()=>{expect(TV_CELEBRATION_MS).toBe(7000);});
  it("rotation wraps last to first",()=>{expect(nextTvPage(1,2)).toBe(0);});
  it("single-page rotation stays put",()=>{expect(nextTvPage(0,1)).toBe(0);});
  it("only approved intervals are valid",()=>{for(const rotationSeconds of [5,10,15,20])expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds}).success).toBe(true);expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds:3}).success).toBe(false);});
@@ -74,4 +74,10 @@ describe("TV count reconciliation",()=>{
  it("accepts three payment periods split paid partial and open",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:1}}).success).toBe(true);});
  it("rejects missing payment state for a due period",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:0}}).success).toBe(false);});
  it("priority details never contain room or guest identities",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,priorityDetails:[{location:"Bünde",arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0,guest_name:"private"}]}).success).toBe(false);});
+});
+
+import { tvAccumulate } from "./tv";
+describe("daily delta badges", () => {
+ it("two new reservations on the same day show +2", () => { const a = tvAccumulate(null, "2026-10-23", { created: 1 }); expect(tvAccumulate(a, "2026-10-23", { created: 1 }).values.created).toBe(2); });
+ it("a new day starts from zero", () => { const a = tvAccumulate(null, "2026-10-23", { created: 3 }); expect(tvAccumulate(a, "2026-10-24", {}).values.created).toBeUndefined(); });
 });

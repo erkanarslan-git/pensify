@@ -28,7 +28,7 @@ export function tvDeltas(previous: TvSnapshot["totals"] | null, current: TvSnaps
   return Object.fromEntries(Object.entries(current).map(([key, value]) => [key, previous ? value - previous[key as keyof typeof previous] : 0])) as Record<keyof TvSnapshot["totals"], number>;
 }
 export const TV_DELTA_MS = 8000;
-export const TV_CELEBRATION_MS = 5000;
+export const TV_CELEBRATION_MS = 7000;
 export function tvMetricValues(s: TvSnapshot) {
  return { created: s.metrics.created, cleaned: s.metrics.cleaned, maintenanceDone: s.metrics.maintenanceDone, occupied: s.totals.occupied, arrivals: s.totals.arrivals, departures: s.totals.departures, dueToday: s.dues.dueToday, ready: s.totals.ready };
 }
@@ -47,4 +47,12 @@ export function nextTvPage(page: number, pages: number) { return pages > 1 ? (pa
 export function tvLocationLayout(total: number, capacity: number) {
  const pages = total > Math.max(1, capacity) ? 2 : 1;
  return { pages, slots: Math.max(1, Math.ceil(total / pages)) };
+}
+
+export type TvDailyDeltas = { day: string; values: Record<string, number> };
+/** Badges add up during the Berlin business day and start from zero on a new day. */
+export function tvAccumulate(previous: TvDailyDeltas | null, day: string, deltas: Record<string, number>): TvDailyDeltas {
+ const base = previous && previous.day === day ? { ...previous.values } : {};
+ for (const [key, value] of Object.entries(deltas)) if (value) base[key] = (base[key] ?? 0) + value;
+ return { day, values: base };
 }
