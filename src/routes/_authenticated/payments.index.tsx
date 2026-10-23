@@ -18,8 +18,8 @@ export const Route = createFileRoute("/_authenticated/payments/")({
 });
 
 interface Res { id: string; guest_name: string; room_id: string; check_in: string; check_out: string; revenue: number; payer_ibans: string[] }
-interface Sched { id: string; reservation_id: string; due_date: string; amount: number; payment_reference: string; hasPayments: boolean }
-interface Pay { id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null; source: string; bank_transaction_id: string | null }
+interface Sched { kind: string; paid: number; id: string; reservation_id: string; due_date: string; amount: number; payment_reference: string; hasPayments: boolean }
+interface Pay { kind: string; reversed_at: string | null; id: string; schedule_id: string | null; reservation_id: string; amount: number; paid_on: string; method: string; note: string | null; recorded_by: string | null; source: string; bank_transaction_id: string | null }
 type Filter = "unpaid" | "overdue" | "all";
 
 const eur = (n: number) => n.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
@@ -41,43 +41,27 @@ function PaymentsPage() {
   const { data } = useQuery({
     queryKey: ["payments-page"],
     queryFn: async () => {
-      const [s, p, r, rm, pr] = await Promise.all([
-        supabase.from("payment_schedules").select("id,reservation_id,due_date,amount,payment_reference,payments(id)").order("due_date").limit(5000),
-        supabase.from("payments").select("id,schedule_id,reservation_id,amount,paid_on,method,note,recorded_by,source,bank_transaction_id").is("reversed_at", null).order("paid_on", { ascending: false }).limit(5000),
-        supabase.from("reservations").select("id,guest_name,room_id,check_in,check_out,revenue,status,payer_ibans").is("deleted_at", null).not("status", "in", "(cancelled,no_show)").limit(5000),
+      const [result, rm, pr] = await Promise.all([
+        supabase.rpc("finance_dashboard", { _today: today }),
         supabase.from("rooms").select("id,number"),
         supabase.from("profiles").select("id,full_name"),
       ]);
-      const err = s.error ?? p.error ?? r.error;
-      if (err) throw err;
-      return {
-        schedules: (s.data ?? []).map((x) => ({ ...x, amount: Number(x.amount), hasPayments: x.payments.length > 0 })) as Sched[],
-        payments: (p.data ?? []).map((x) => ({ ...x, amount: Number(x.amount) })) as Pay[],
-        reservations: (r.data ?? []).map((x) => ({ ...x, revenue: Number(x.revenue) })) as Res[],
-        rooms: new Map((rm.data ?? []).map((x) => [x.id, x.number])),
-        names: new Map((pr.data ?? []).map((x) => [x.id, x.full_name ?? ""])),
-      };
+      if (result.error) throw result.error;
+      const value = result.data as unknown as { schedules: Sched[]; payments: Pay[]; reservations: Res[]; stats: { due: number; unpaid: number; overdue: number; collected: number; unallocated: number; deposit: number } };
+      return { ...value, reservations: value.reservations.map(r => ({ ...r, payer_ibans: r.payer_ibans ?? [] })), rooms: new Map((rm.data ?? []).map(x => [x.id,x.number])), names: new Map((pr.data ?? []).map(x => [x.id,x.full_name ?? ""])) };
     },
   });
   const refresh = () => qc.invalidateQueries({ queryKey: ["payments-page"] });
 
   const resMap = useMemo(() => new Map((data?.reservations ?? []).map((r) => [r.id, r])), [data]);
   const rows = useMemo(() => {
-    const paidBy = new Map<string, number>();
-    for (const p of data?.payments ?? []) if (p.schedule_id) paidBy.set(p.schedule_id, (paidBy.get(p.schedule_id) ?? 0) + p.amount);
-    return (data?.schedules ?? []).filter((s) => resMap.has(s.reservation_id)).map((s) => {
-      const paid = paidBy.get(s.id) ?? 0;
-      return { ...s, paid, remaining: Math.max(0, s.amount - paid), state: installmentState(s.amount, paid, s.due_date, today), res: resMap.get(s.reservation_id)! };
+    return (data?.schedules ?? []).flatMap(s => {
+      const res = resMap.get(s.reservation_id); if (!res) return [];
+      const paid = Number(s.paid); return [{ ...s, amount: Number(s.amount), paid, remaining: Math.max(0,Number(s.amount)-paid), state: installmentState(Number(s.amount),paid,s.due_date,today),res }];
     });
   }, [data, resMap, today]);
 
-  const thisMonth = rows.filter((r) => r.due_date.slice(0, 7) === month);
-  const stats = {
-    due: thisMonth.reduce((a, r) => a + r.amount, 0),
-    unpaid: thisMonth.filter((r) => r.state !== "paid").length,
-    overdue: rows.filter((r) => r.state === "overdue").reduce((a, r) => a + r.remaining, 0),
-    collected: (data?.payments ?? []).filter((p) => p.paid_on.slice(0, 7) === month).reduce((a, p) => a + p.amount, 0),
-  };
+  const stats = data?.stats ?? { due: 0, unpaid: 0, overdue: 0, collected: 0, unallocated: 0, deposit: 0 };
   const shown = rows.filter((r) =>
     filter === "all" ? true : filter === "overdue" ? r.state === "overdue" : r.state !== "paid" && r.due_date.slice(0, 7) <= month,
   );
@@ -91,6 +75,7 @@ function PaymentsPage() {
         <Stat cls="tile-success" label={t("payments.collectedThisMonth")} value={eur(stats.collected)} />
       </div>
 
+      <div className="flex gap-5 mb-4 text-sm"><span>{t("paymentExtra.unallocated")}: {eur(stats.unallocated)}</span><span>{t("paymentExtra.deposit")}: {eur(stats.deposit)}</span></div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="inline-flex gap-1 p-1 rounded-xl bg-muted">
           {(["unpaid", "overdue", "all"] as Filter[]).map((f) => (
@@ -179,6 +164,7 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
   const [busy, setBusy] = useState(false);
   const [reversing, setReversing] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [requestId] = useState(() => crypto.randomUUID());
   const reverse = async () => {
     if (!reversing || busy || !perm.can("correct_payments") || reason.trim().length < 3) return;
     setBusy(true);
@@ -192,7 +178,7 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
     const a = Number(amount.replace(",", "."));
     if (!(a > 0) || !date) return toast.error(t("payments.invalid"));
     setBusy(true);
-    const { error } = await supabase.from("payments").insert({ reservation_id: sched.reservation_id, schedule_id: sched.id, amount: a, paid_on: date, method, note: note.trim() || null } as never);
+    const { error } = await supabase.rpc("collect_payment_receipt", { _request_id: requestId, _reservation: sched.reservation_id, _amount: a, _date: date, _method: method, _note: note.trim(), _kind: sched.kind === "deposit" ? "deposit" : "rent", _allocations: [{ schedule_id: sched.id, amount: Math.min(a,remaining) }] });
     setBusy(false);
     if (error) return toast.error(t("payments.saveErr"));
     toast.success(t("payments.saved")); onDone(); onClose();
@@ -219,9 +205,9 @@ function PayDialog({ sched, guest, remaining, history, names, onClose, onDone }:
           <div className="font-medium mb-1">{t("payments.history")}</div>
           {history.map((p) => (
             <div key={p.id} className="flex justify-between py-1 border-t border-border/60">
-              <span>{formatDateDE(p.paid_on)} · {t(`payments.methods.${p.method}`)}{p.note ? ` · ${p.note}` : ""}</span>
+              <span>{p.reversed_at ? `${t("paymentExtra.reversed")} · ` : ""}{formatDateDE(p.paid_on)} · {t(`payments.methods.${p.method}`)}{p.note ? ` · ${p.note}` : ""}</span>
               <span>{eur(p.amount)} · {t("payments.recordedBy")}: {p.recorded_by ? names.get(p.recorded_by) || "—" : "—"}</span>
-              {perm.can("correct_payments") && p.source === "manual" && !p.bank_transaction_id && <Button variant="ghost" size="sm" onClick={() => { setReversing(p.id); setReason(""); }}>{t("payments.reverse")}</Button>}
+              {perm.can("correct_payments") && p.source === "manual" && !p.bank_transaction_id && !p.reversed_at && <Button variant="ghost" size="sm" onClick={() => { setReversing(p.id); setReason(""); }}>{t("payments.reverse")}</Button>}
             </div>
           ))}
         </div>
@@ -263,22 +249,8 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
     if (busy || !res) return;
     if (!validReplacementSchedule(rows, retained)) return toast.error(t("payments.invalid"));
     setBusy(true);
-    const current = await supabase.from("payment_schedules").select("id,due_date,amount,payments(id)").eq("reservation_id", res.id);
-    if (current.error) { setBusy(false); return toast.error(t("payments.saveErr")); }
-    const protectedRows = current.data.filter((s) => s.payments.length > 0);
-    if (!validReplacementSchedule(rows, protectedRows.map((s) => ({ due_date: s.due_date, amount: Number(s.amount) }))) ||
-      protectedRows.length !== retained.length || protectedRows.some((s) => !retained.some((r) => r.id === s.id && r.due_date === s.due_date && r.amount === Number(s.amount)))) {
-      setBusy(false); onDone(); return toast.error(t("payments.invalid"));
-    }
-    const removable = current.data.filter((s) => s.payments.length === 0).map((s) => s.id);
-    const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
-    const { error: payerError } = await supabase.rpc("save_reservation_payer_ibans", { _reservation: res.id, _ibans: ibanList });
-    if (payerError) { setBusy(false); return toast.error(t("payments.saveErr")); }
-    if (removable.length) {
-      const { error } = await supabase.from("payment_schedules").delete().in("id", removable);
-      if (error) { setBusy(false); return toast.error(t("payments.saveErr")); }
-    }
-    const { error } = rows.length ? await supabase.from("payment_schedules").insert(rows.map((r) => ({ reservation_id: res.id, due_date: r.due_date, amount: r.amount })) as never) : { error: null };
+    const ibanList = ibans.split(/[,;\n]/).map(x => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
+    const { error } = await supabase.rpc("replace_payment_plan", { _reservation: res.id, _rows: rows.map(r => ({ due_date:r.due_date,amount:r.amount })), _retained: retained.map(r => ({ id:r.id,due_date:r.due_date,amount:r.amount })), _ibans: ibanList });
     setBusy(false);
     if (error) return toast.error(t("payments.saveErr"));
     toast.success(t("payments.planSaved")); onDone(); onClose();
