@@ -11,6 +11,8 @@
 - **Öncelikler:** Bugünkü beklenen girişlerin hazır olmayan odaları, bu odaların açık temizlik işleri, bugün ödenmemiş dönemler ve satışa kapalı bu odaların açık bakım işleri. Lokasyon adları ve adetleri açıklamada gösterilir; misafir/oda/personel kimliği yoktur. Ayrı kritik bakım derecesi olmadığı için yapay önem derecesi üretilmez.
 
 ## Doğrulananlar
+- 23.10 04:11 Berlin tekrar kontrolü: 32 TV testi; yeni gerçek girişsiz bağlantıda günlük temizlik/bakım, köken/ödeme alt sayıları ve dört lokasyonlu öncelik alanı okundu. Ses onayı/aç-kapat/%55, otomatik/manuel dönüş, duraklama, çevrimdışı/sessiz yeniden bağlanma ve iptal geçti. Beş ekran boyutunda kart içeriği taşmadı; tarayıcı hatası yok.
+- Ortak yazı ölçeği, eksik 700 yazı ağırlığı, kart/pencere başlıkları ve form etiketlerinin satır aralıkları düzeltildi. Gerçek oturumla panel, odalar, rezervasyonlar, temizlik, bakım, tahsilat, mesai, Mesaim ve TV yönetimi aynı aile/başlık ölçüleriyle kontrol edildi; telefon ve rezervasyon penceresinde yatay taşma yok.
 - 23.10 son tur: 32 test geçti; 10 lokasyonun 5+5 olarak en fazla iki sayfaya bölünmesi, 8 lokasyonun 4+4 dağılımı, tek sayılı listelerin korunması ve ödeme/köken toplam uyuşması ayrıca test edildi.
 - Gerçek girişsiz TV bağlantısıyla 938×607, 1366×768, Full HD, 4K ve telefon; taşmasız tablo, otomatik/manuel dönüş ve duraklama, ses aç/kapat, %55 seviye, çevrimdışı/sessiz yeniden bağlantı ve iptal doğrulandı; tarayıcı hatası yok. Yeni anonim v3 özet başarıyla okundu. Geçici bağlantılar iptal edildi.
 - 24 yardımcı test: ilk yükleme, gün dönüşü, eski/tekrar veri, bağlantı dönüşü, içe aktarım/güncelleme bastırma, tekilleştirme, artış/azalış, 8 saniye delta, 5 saniye bildirim, 5/10/15/20 saniye dönüş sınırları.
