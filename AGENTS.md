@@ -40,3 +40,4 @@
 - Cleaning inspection is a separate task state with property opt-in; atomic review/reopen/report RPCs retain reasons and maintenance blocks. Why: problems are not inspections.
 
 - Legacy UI copy uses shared three-language catalogs and active-locale display formatting; theme-specific calendar guest contrast lives in CSS tokens. Why: language/theme switching must not leave stale labels or unreadable booking bars.
+- Reservation trash: 168h from deleted_at, hourly pg_cron purge via shared purge step; finance/task-linked stays are kept, restore rechecks overlap under room lock. Why: no orphan or lost finance history.
