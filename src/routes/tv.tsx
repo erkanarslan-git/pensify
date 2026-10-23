@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Maximize, Volume2, VolumeX, Wifi, WifiOff, CalendarPlus, BedDouble, DoorOpen, LogIn, LogOut, Brush, Wrench, Coins, ChevronLeft, ChevronRight, Pause, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTvSnapshot } from "@/lib/tv.functions";
-import { tvUpdate, nextTvPage, TV_DELTA_MS, TV_CELEBRATION_MS, tvTokenSchema, type TvSnapshot } from "@/lib/tv";
+import { tvUpdate, nextTvPage, tvLocationLayout, TV_DELTA_MS, TV_CELEBRATION_MS, tvTokenSchema, type TvSnapshot } from "@/lib/tv";
 import { BUSINESS_TIME_ZONE, businessDate, businessTime } from "@/lib/business-time";
 import { normalizeChannel } from "@/lib/guest-color";
 
@@ -59,7 +59,7 @@ function TvPage() {
   return snapshot && previous.current && Date.parse(snapshot.at)<Date.parse(previous.current.at)?previous.current:snapshot;
  },refetchInterval:10000,refetchIntervalInBackground:true,retry:1,staleTime:0});
  const data=query.data;
- const pages=Math.max(1,Math.ceil((data?.properties.length??0)/pageSize));
+ const {pages,slots}=tvLocationLayout(data?.properties.length??0,pageSize);
  const currentPage=Math.min(locationPage,pages-1);
  useEffect(()=>{if(query.isError)reconnecting.current=true;},[query.isError]);
  useEffect(()=>{
@@ -102,7 +102,7 @@ function TvPage() {
  },[pages,currentPage,paused,interacting,data?.rotationSeconds]);
  async function toggleSound(){if(sound){setSound(false);return;}try{audio.current??=new AudioContext();await audio.current.resume();setSound(true);setActivated(true);}catch{setSound(false);}}
  function changeVolume(value:number){setVolume(value);try{localStorage.setItem("pensify.tv.volume",String(value));}catch{/* Optional. */}}
- if(!loaded||(token&&query.isPending))return <main lang="de" className="tv-empty grid min-h-screen place-items-center">{t("tv.loading")}</main>;
+ if(!loaded||(token&&query.isPending))return <main lang="de" className="tv-empty grid min-h-screen place-items-center"><div role="status" className="tv-loading"><CalendarPlus/><strong>Pensify</strong><span>{t("tv.loading")}</span></div></main>;
  if(!token||data===null||(!data&&query.isError))return <main lang="de" className="tv-empty flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center"><h1 className="text-3xl font-bold">Pensify</h1><p>{t(query.isError?"tv.unavailable":"tv.invalid")}</p>{query.isError&&<Button onClick={()=>query.refetch()}>{t("tv.retry")}</Button>}</main>;
  if(!data)return null;
  const disconnected=!online||query.isError||now-Date.parse(data.at)>90000;
@@ -118,7 +118,7 @@ function TvPage() {
   {key:"dueToday",value:data.dues.dueToday,icon:Coins,tone:"dues",detail:t("tv.paymentDetail",data.dues)},
   {key:"ready",value:data.totals.ready,icon:DoorOpen,tone:"ready",detail:t("tv.readyDetail")},
  ];
- const properties=data.properties.slice(currentPage*pageSize,(currentPage+1)*pageSize);
+ const properties=data.properties.slice(currentPage*slots,(currentPage+1)*slots);
  const max=Math.max(1,...data.weekly.flatMap(d=>[d.arrivals,d.departures]));
  const priorities=[{key:"arrivalNotReady",tone:"arrival"},{key:"cleaningPriority",tone:"cleaning"},{key:"dueOpen",tone:"payment"},{key:"maintenanceBlocking",tone:"maintenance"}] as const;
  const celebrationFirst=celebration[0];const multipleLocations=new Set(celebration.map(e=>e.location)).size>1;
