@@ -71,7 +71,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
   const load = useCallback(async () => {
     setLoading(true);
     const [pr, rt, rp, rm, cl, live, av] = await Promise.all([
-      supabase.from("properties").select("id,name,city_id,organization_id,cleaning_inspection_required").eq("id", propertyId).maybeSingle(),
+      supabase.from("properties").select("id,name,address,city_id,organization_id,cleaning_inspection_required").eq("id", propertyId).maybeSingle(),
       supabase.from("room_types").select("id,name,code,capacity,base_occupancy,description,active,property_id").eq("property_id", propertyId).order("capacity").order("name"),
       supabase.from("rate_plans").select("id,room_type_id,name,base_price,guest_prices,created_at").eq("property_id", propertyId).eq("active", true).order("created_at"),
       supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id").eq("property_id", propertyId).order("number"),

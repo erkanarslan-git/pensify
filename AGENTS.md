@@ -13,7 +13,7 @@
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
 - WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
-- Room access codes stay masked by default and are revealed only on explicit user action. Why: codes are operational secrets visible in shared workspaces.
+- Access codes live in locked operational_access_secrets; scoped reveal/edit RPCs audit metadata only; lists never fetch values, legacy key_code stays NULL. Why: shared workspace privacy.
 - Membership/department triggers enable time profiles for cleaners/workers; breaks use time eligibility, not cleaning-active. Why: one identity, no cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
 - Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
@@ -22,7 +22,7 @@
 - WuBook pilot: one real account per property; explicit property/room mappings, admin-confirmed new_room, sync_enabled=false. Why: auditable stepwise go-live.
 
 - Property cards use natural-height CSS columns. Why: no truncated names.
-- Channel sync separates overview, pilot, diagnostics and history; keep authorization/outbound safeguards. Dispatch expands all daily tasks without changing assignment/sending. Why: clear daily status.
+- Integrations reuse bank/channel screens with truthful status, no automatic outbound activation. Why: safe shared entry.
 - Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
 - Read subdirectory AGENTS.md before edits there.
