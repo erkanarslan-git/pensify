@@ -3484,6 +3484,10 @@ export type Database = {
         }
         Returns: number
       }
+      _purge_trashed_reservation: {
+        Args: { _cutoff: string; _id: string }
+        Returns: string
+      }
       _require_room_manager: { Args: { _property_id: string }; Returns: string }
       access_secret_authorized: {
         Args: { _edit: boolean; _property: string; _room: string }
@@ -3811,6 +3815,16 @@ export type Database = {
           qr_token: string
         }[]
       }
+      list_reservation_trash: {
+        Args: {
+          _from?: string
+          _limit?: number
+          _offset?: number
+          _search?: string
+          _to?: string
+        }
+        Returns: Json
+      }
       list_team_cleaners: {
         Args: never
         Returns: {
@@ -3851,6 +3865,10 @@ export type Database = {
       }
       personnel_overtime: {
         Args: { _from: string; _to: string; _user_id: string }
+        Returns: Json
+      }
+      purge_expired_reservation_trash: {
+        Args: { _now?: string }
         Returns: Json
       }
       purge_reservation: { Args: { _id: string }; Returns: undefined }
@@ -3902,6 +3920,7 @@ export type Database = {
         }
         Returns: string
       }
+      reservation_trash_blocker: { Args: { _id: string }; Returns: string }
       reserve_todo_attachment: {
         Args: {
           _file_name: string
