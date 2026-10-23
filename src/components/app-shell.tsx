@@ -55,6 +55,7 @@ const navGroups: NavGroup[] = [
       { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, exact: true },
       { to: "/todos", labelKey: "nav.todos", icon: ListTodo },
       { to: "/notifications", labelKey: "nav.actionCenter", icon: Bell },
+      { to: "/me", labelKey: "shift.menu", icon: Clock },
     ],
   },
   {
