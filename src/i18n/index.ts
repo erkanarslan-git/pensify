@@ -24,6 +24,7 @@ import { guestDirectoryTranslations } from "./guest-directory";
 import { paymentExtraTranslations } from "./payment-extra";
 import { calendarExtraTranslations } from "./calendar-extra";
 import { fallbackTranslations } from "./fallback";
+import { legacyUiTranslations } from "./legacy-ui";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -71,6 +72,9 @@ for (const lng of SUPPORTED_LANGS) {
     paymentExtra: paymentExtraTranslations[lng],
     calendarExtra: calendarExtraTranslations[lng],
     fallback: fallbackTranslations[lng],
+    legacyUi: legacyUiTranslations[lng],
+    common: { close: legacyUiTranslations[lng].close },
+    dashboard: { properties: legacyUiTranslations[lng].properties },
   }, true, true);
 }
 
