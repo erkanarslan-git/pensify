@@ -73,3 +73,30 @@ Eski roadmap tamamlandı işaretleri kanıt kabul edilmedi. Üretim rezervasyon/
 - 9: kodlar dar metadata/reveal/edit RPC, değer içermeyen audit ve ham tablo SELECT reddiyle korunuyor. Yabancı reveal reddi geçti; kodlar test çıktısına yazılmadı.
 - 10: TV görünümü değişmedi; 32 test tekrar geçti. Gerçek yeni olay kutlaması dış sağlayıcı/uygun olay bekliyor.
 - 11: altı ekran DE/EN/TR, üç telefon ekranı taşma kontrolü, misafir/plan detayları ve görev yazma akışında tarayıcı hatası yok. Takvim ve hata ekranı metinleri çevrildi. Son birleşik koşuda 12 dosyada 89 test geçti. tenant_isolation.sql tablo sahipliği izninde durdu; başarılı sayılmadı. Fiziksel QR/GPS, A/B firma/şef hesapları, eşzamanlı tahsilat, gerçek olay ve sağlayıcı bağlantısı açık engellerdir.
+
+## Madde bazlı yeniden kabul incelemesi — 23.10.2026 06:49 UTC
+
+Bu bölüm önceki başlangıç/sonuç notlarının güncel durumudur; önceki [x] işaretleri kanıt yerine kullanılmadı.
+
+- Bütün mevcut Vitest paketi yeniden çalıştı: **34 dosya, 212 test geçti**. Bunlar canlı PostgreSQL izolasyon/eşzamanlılık testlerinin yerine geçmez.
+- Gerçek sahip oturumuyla 14 ekran açıldı: rapor, rezervasyon, takvim, mesai, temizlik, bakım, görev, misafir, tahsilat, entegrasyon, tesis, oda, TV bağlantı yönetimi, Mesaim. Sayfa hatası/masaüstü yatay taşma yok. Beş telefon ekranında yatay taşma yok. Bu kontroller işlemlerin yazma akışını kanıtlamaz.
+- Misafir iletişim kaydı RPC bağlantısı reddedildiğinde düğme kilitleniyordu: try/catch/finally ve busy guard eklendi. Tarayıcıda iki RPC isteği ağa çıkmadan engellendi; hata ve yeniden denemede Kaydet etkin kaldı, işletme kaydı değişmedi.
+- Gerçek saatlik zamanlayıcı doğrulandı: `pensify-review-stale-shifts`, `0 * * * *`, active=true. 03:00, 04:00, 05:00 ve 06:00 UTC çalışmaları success; son başarı 08:00 Berlin. Önceki “kurulumu doğrulanmadı” engeli kaldırıldı; gerçek unutulmuş çıkış senaryosu ayrı açık kalır.
+- Ham erişim sırları için anon/authenticated SELECT=false; anonim TV kimlik okuma, oluşturma ve iptal yetkileri=false. Bunlar dar grant kontrolleridir, bütün RLS/RPC senaryolarını kanıtlamaz.
+- SQL test rolü `supabase_read_only_user`, organization_members sahibi `postgres`: tablo sahipliği gerektiren tenant_isolation.sql tam testi bu oturumda çalıştırılamaz. Güvenlik gevşetilmedi.
+
+| Madde | Bu tur doğrulanan | Kalan kabul/engel |
+|---|---|---|
+| 1 Yetkiler | 25 rapor/erişim/finans kural testi, sahip ekranı | Sahip dışı gerçek roller, A/B firma, doğrudan RPC/export kapsamı; yetkili ayrı test ortamı |
+| 2 Rezervasyon | 9 filtre/sayfa/export testi; liste/takvim/telefon | Gerçek çok sayfalı büyük veri, eşzamanlı rezervasyon ve A/B kapsamı |
+| 3 Mesai | 41 zaman/erişim testi; saatlik job ve 4 başarılı gerçek çalışma | Fiziksel QR/GPS, gerçek şef/düzeltme/fazla mesai, eksik çıkış senaryosu ve SQL kapsam |
+| 4 Temizlik | 6 kontrol/yenileme testi; temizlik/bakım ekranı | Yetkili çalışan/şefle sorun→bakım, temizlik→kontrol→hazır oda yazma akışı |
+| 5 Görev | 6 görev/ek testi; liste/telefon | Gerçek hatırlatma planlama ve teslimatı: kanal/sağlayıcı bağlı değil; rol/dosya A/B SQL testi |
+| 6 Misafir | 3 kimlik testi; liste/telefon; ağ hatası sonrası iki güvenli yeniden deneme | Gerçek yetkili iletişim kaydını kaydet/yeniden oku; finans izinsiz yanıtı ayrı rolle doğrula |
+| 7 Tahsilat | 12 para/plan testi; sahip ekranı/telefon | Aynı anda iki ödeme, tekrar/ters kayıt/planın canlı uçtan uca denemesi; uygun ayrı kayıt/oturum |
+| 8 Entegrasyon | 3 durum testi; WuBook hazırlık, banka yapılandırılmadı görünümü | Sparkasse sözleşme/sağlayıcı erişimi; WuBook hesap/eşleştirme/Hotel-ID ve ayrı canlı geçiş onayı |
+| 9 Erişim kodu | 2 kural testi; ham değer SELECT kapalı | Gerçek role/lokasyona göre reveal/edit, geçerlilik/audit, A/B SQL kapsam testi |
+| 10 TV | 32 DTO/sayaç/delta testi; aktif bağlantı listesi boş/iptaller görünmüyor | Ayrı ortamda sıfırdan farklı günlük kayıt ve gerçek yeni rezervasyon konfeti/ses; bu tur yeni TV bağlantısı oluşturulmadı |
+| 11 Dil/güvenlik | 3 dil JSON anahtar eşitliği; 14 sahip ekranı ve 5 telefon; 212 test | Bütün eski metin/aria/export çevirisi, üç dil açık/koyu tam tarama; A/B/rol/SQL/eşzamanlılık ve gerçek tam operasyon akışı |
+
+İşletme verileri ve TV tasarımı korundu; dış gönderim açılmadı. Tam canlı kabul yapılmış değildir.
