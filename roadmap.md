@@ -116,3 +116,9 @@
 - [ ] Aşama 3 güvenlik doğrulaması: Gerçek şef/İK hesabıyla kapsam testi bekliyor; attendance_scope.sql ve tenant_isolation.sql tablo sahipliği izninde durdu, işlemler geri alındı.
 - [x] Aşama 4: Çıkışta kaydın lokasyonuna göre sunucuda konum kontrolü; yöneticinin konumsuz lokasyon izni korunur. 16 saati aşan unutulan çıkışları sıfır süreyle kontrole ayıran saatlik kontrol aktif (günde 24 çalıştırma; kullanıcı isteğiyle seyrekleştirildi); DE/EN/TR uzun mesai uyarısı, 24 test ve oturumlu Mesaim ekranı kontrolü geçti, derleme temiz.
 - [ ] Aşama 4 gerçek çıkış/zamanlayıcı doğrulaması: test çalışanının firmasında koordinatlı lokasyon yok; unutulmuş açık mesai yok; tenant_isolation.sql salt okunur test erişimi nedeniyle çalışmadı. Gerçek lokasyonda QR/GPS çıkışı ve ayrıcalıklı güvenlik testi bekliyor.
+
+## Kullanıcı akışı testleri (2026-10-23)
+- [x] Açık listedeki hatalar: bağlantı hatası uyarısı (Panel, Görevler), geçici yetki hatası erişim isteme sayfasına atmıyor, AI isim gizleme kapalı-güvenli, AI bakımdaki/silinmiş kayıtları önermiyor, tahsilat tekrar denemesi güvenli düzeltme, girişten sonra istenen sayfaya dönüş
+- [x] 8 test kullanıcısı (temizlik x2 + şef, bakım x2, büro x2, İK), bölümler ve işler
+- [x] Bakım çalışanı kendisine atanan arızayı görüp çözebiliyor; personel kendi lokasyon adlarını görebiliyor
+- [ ] Gerçek lokasyonda QR/GPS mesai: fiziksel cihaz gerekiyor
