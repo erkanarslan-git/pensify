@@ -206,7 +206,7 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
             {ACTIVE_CHANNELS.map((ch) => (
               <div key={ch} className="flex items-center gap-3 px-3 py-2 rounded-lg border border-border">
                 <span className="inline-block w-4 h-4 rounded" style={{ background: channelColors[ch] }} />
-                <span className="text-sm flex-1">{sourceLabel(ch)}</span>
+                <span className="text-sm flex-1">{sourceLabel(ch, key => t(key))}</span>
                 <input
                   type="color"
                   value={channelColors[ch]}

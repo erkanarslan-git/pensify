@@ -87,7 +87,7 @@ export function WuBookStatus() {
           <dd className="flex items-center gap-1">
             {lastResult ? (
               lastResult.connected ? (
-                <><ShieldCheck className="h-3.5 w-3.5 text-success" /> Verbunden</>
+                <><ShieldCheck className="h-3.5 w-3.5 text-success" /> {legacyText("Verbunden")}</>
               ) : (
                 <><AlertTriangle className="h-3.5 w-3.5 text-destructive" /> {lastResult.errorMessage ?? legacyText('Fehler')}</>
               )
