@@ -547,6 +547,13 @@
       "when": 1792724842130,
       "tag": "0077_finance_pagination_and_guest_contact_edit",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1792724933788,
+      "tag": "0078_lock_secret_tables_and_safe_guest_grouping",
+      "breakpoints": true
     }
   ]
 }
