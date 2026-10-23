@@ -3352,6 +3352,10 @@ export type Database = {
         }
         Returns: number
       }
+      save_reservation_payer_ibans: {
+        Args: { _ibans: string[]; _reservation: string }
+        Returns: undefined
+      }
       save_room_type_full: {
         Args: {
           _base_occupancy: number
