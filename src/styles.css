@@ -254,6 +254,7 @@
 .tv-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); grid-template-rows: repeat(2,minmax(0,1fr)); gap: 9px; min-height: 0; }
 .tv-summary-card { position: relative; display: flex; align-items: center; padding: 10px 18px; border-radius: var(--radius); min-width: 0; overflow: hidden; border: 1px solid var(--tv-panel-border); background: var(--card); }
 .tv-summary-card:not(.brand-tile) { background: var(--gradient-soft); }
+.tv-summary-card.brand-tile { background: var(--gradient-brand-tile); color: var(--primary-foreground); }
 .tv-card-icon { position: absolute; width: 20px; height: 20px; top: 13px; right: 13px; color: var(--tv-tone); opacity: .8; }
 .tv-summary-card.brand-tile .tv-card-icon { color: inherit; }
 .tv-card-label { padding-right: 25px; font-size: 13px; font-weight: 600; line-height: 1.3; }

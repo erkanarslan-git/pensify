@@ -65,6 +65,9 @@ function TvPage() {
     };
     const observer = new ResizeObserver(resize);
     observer.observe(section);
+    const row = section.querySelector("tbody tr");
+    if (row) observer.observe(row);
+    void document.fonts.ready.then(resize);
     resize();
     return () => observer.disconnect();
   }, [query.data?.properties.length, loaded]);
