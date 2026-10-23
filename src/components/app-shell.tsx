@@ -25,6 +25,7 @@ import {
   ListTodo,
   Wallet,
   Wrench,
+  Monitor,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
@@ -97,6 +98,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
       { to: "/channel-sync", labelKey: "nav.channelSync", icon: RefreshCw },
+      { to: "/displays", labelKey: "tv.displays", icon: Monitor },
     ],
   },
 ];
