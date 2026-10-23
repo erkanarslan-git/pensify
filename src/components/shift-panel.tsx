@@ -146,7 +146,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
   );
 }
 
-function Elapsed({ entry }: { entry: { clock_in_at: string; break_minutes: number; break_started_at: string | null } }) {
+function Elapsed({ entry }: { entry: { clock_in_at: string; break_minutes: number; break_started_at: string | null; warning_after_minutes?: number } }) {
   const { t } = useTranslation();
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -162,7 +162,7 @@ function Elapsed({ entry }: { entry: { clock_in_at: string; break_minutes: numbe
       <div className="text-xs text-muted-foreground mt-1">
         {t("shift.since", { time: fmt(entry.clock_in_at) })}{br > 0 && <> · {t("shift.breakTotal", { m: br })}</>}
       </div>
-      {shiftNeedsWarning(entry.clock_in_at, now) && <p role="alert" className="mt-3 text-sm text-warning">{t("shift.longShiftWarning")}</p>}
+      {shiftNeedsWarning(entry.clock_in_at, now, entry.warning_after_minutes ?? 720) && <p role="alert" className="mt-3 text-sm text-warning">{t("shift.longShiftWarning")}</p>}
     </div>
   );
 }

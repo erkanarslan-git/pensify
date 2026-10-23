@@ -23,8 +23,8 @@
 
 - Property cards use natural-height CSS columns. Why: no truncated names.
 - Channel sync separates overview, pilot, diagnostics and history; keep authorization/outbound safeguards. Dispatch expands all daily tasks without changing assignment/sending. Why: clear daily status.
-- Business time uses shared Berlin helpers; UTC stored, daily shifts grouped by start date. Why: consistent daylight-saving and overnight reporting.
-- Time: server clock, own-open-only, idempotent; checkout DB geofence; 16h stale exits zero/review via org-scoped SQL cron; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
+- Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
+- Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
 - Read subdirectory AGENTS.md before edits there.
 - Payments: reservation-derived org/property; explicit view/collect/correct/plan/bank permissions via can_finance_action; reasoned reversals retain history. Why: scoped, auditable finance.
 - Work reports use owner-only department_work_report in the active organization; task/time powers stay separate. Why: prevent report delegation and tenant leaks.
