@@ -59,3 +59,9 @@
 - [x] Zaman Takibi + Analitik mavi özet kartları
 - [x] Ayarlar, Bildirimler, AI Asistan, Profil mavi tasarım
 - [x] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
+
+## Mesai (QR) akışı
+- [x] Aşama 1: Sade çalışan ekranı (QR + Mesaim), ayrı mola aralıkları, tekrar basmaya dayanıklı mola/devam, girişten sonra QR'a dönüş
+- [ ] Aşama 2: Mesai Takibi'nde personelin bütün günleri (gün durumu, oturum/mola/net, gün detayı)
+- [ ] Aşama 3: Şef/İK kapsamlı erişim (sunucu tarafı) + export
+- [ ] Aşama 4: Bitirirken konum kontrolü, unutulan çıkış zamanlayıcısı ve uyarı eşikleri
