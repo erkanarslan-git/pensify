@@ -3063,6 +3063,10 @@ export type Database = {
         Args: { _org: string; _property: string }
         Returns: boolean
       }
+      can_read_employee_time: {
+        Args: { _org: string; _property?: string; _user: string }
+        Returns: boolean
+      }
       cleaner_user: { Args: { _cleaner: string }; Returns: string }
       cleaning_assignment_options: {
         Args: never
@@ -3125,6 +3129,10 @@ export type Database = {
       default_organization_id: { Args: never; Returns: string }
       department_work_report: {
         Args: { _from: string; _property?: string; _to: string }
+        Returns: Json
+      }
+      employee_attendance_board: {
+        Args: { _from: string; _to: string; _user_id?: string }
         Returns: Json
       }
       exclude_bank_transaction: {
