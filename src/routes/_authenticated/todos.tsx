@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { LoadError } from "@/components/load-error";
 import { ChevronLeft, ChevronRight, Plus, Trash2, AlertTriangle, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
@@ -51,7 +52,7 @@ function TodosPage() {
     return { rooms: rooms.data ?? [], reservations: reservations.data ?? [] };
   } });
 
-  const { data: todos = [] } = useQuery({
+  const { data: todos = [], isError: todosError, refetch: refetchTodos } = useQuery({
     queryKey: ["todos"],
     queryFn: async () => {
       const rows: Todo[] = [];
@@ -158,7 +159,9 @@ function TodosPage() {
         )}
       </div>
 
-      {view === "list" ? (
+      {todosError ? (
+        <LoadError onRetry={() => refetchTodos()} />
+      ) : view === "list" ? (
         shown.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">{t("todos.empty")}</div>
         ) : (

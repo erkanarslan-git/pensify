@@ -46,7 +46,9 @@ export const Route = createFileRoute("/api/chat")({
         if (!Array.isArray(body.messages)) return new Response("Messages required", { status: 400 });
 
         // ---------- Privacy layer ----------
-        const privacy = await buildPrivacyMap(supabase);
+        let privacy;
+        try { privacy = await buildPrivacyMap(supabase); }
+        catch { return new Response("Privacy check unavailable, please retry", { status: 503 }); }
 
         // Wrap tools: deanonymize inputs before running, anonymize outputs.
         const rawTools = buildAiTools(supabase);

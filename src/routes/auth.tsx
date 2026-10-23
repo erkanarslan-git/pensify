@@ -50,7 +50,11 @@ function AuthPage() {
     if (error) return toast.error(c.err);
     const token = sessionStorage.getItem("pensify.clockToken");
     sessionStorage.removeItem("pensify.clockToken");
+    const back = sessionStorage.getItem("pensify.returnTo");
+    sessionStorage.removeItem("pensify.returnTo");
     if (token && /^[A-Za-z0-9_-]{1,128}$/.test(token)) navigate({ to: "/clock/$token", params: { token } });
+    // Only same-app paths (no "//" or scheme) to avoid external redirects.
+    else if (back && /^\/(?!\/)[A-Za-z0-9/_\-.?=&%]*$/.test(back) && back !== "/auth") navigate({ href: back });
     else navigate({ to: "/" });
   }
 

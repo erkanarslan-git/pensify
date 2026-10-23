@@ -22,11 +22,16 @@ function overlapNights(
 }
 
 async function fetchRooms(supabase: SupabaseClient, propertyId?: string) {
-  let q = supabase.from("rooms").select("id, number, capacity, property_id, properties:property_id(name)");
+  let q = supabase.from("rooms").select("id, number, capacity, property_id, active, status, properties:property_id(name)");
   if (propertyId) q = q.eq("property_id", propertyId);
   const { data, error } = await q;
   if (error) throw new Error(`Odalar okunamadı: ${error.message}`);
   return data ?? [];
+}
+
+// Maintenance or inactive rooms are never offered as free.
+function isSellable(r: any) {
+  return r?.active !== false && r?.status !== "maintenance";
 }
 
 async function fetchReservations(
@@ -39,7 +44,8 @@ async function fetchReservations(
   let q = supabase
     .from("reservations")
     .select("id, room_id, property_id, check_in, check_out, revenue, channel, status, guest_name")
-    .neq("status", "cancelled")
+    .is("deleted_at", null)
+    .not("status", "in", "(cancelled,no_show)")
     .lt("check_in", to)
     .gt("check_out", from);
   if (propertyId) q = q.eq("property_id", propertyId);
@@ -113,7 +119,8 @@ export function buildAiTools(supabase: SupabaseClient) {
             roomId: r.id,
             number: r.number,
             property: (r as any).properties?.name,
-            available: conflicts.length === 0,
+            available: conflicts.length === 0 && isSellable(r),
+            blockedReason: isSellable(r) ? null : "Oda bakımda veya satışa kapalı",
             conflictingReservations: conflicts.map((c: any) => ({
               check_in: c.check_in,
               check_out: c.check_out,
@@ -137,7 +144,7 @@ export function buildAiTools(supabase: SupabaseClient) {
         const rooms = await fetchRooms(supabase, propertyId ?? undefined);
         const res = await fetchReservations(supabase, from, to, propertyId ?? undefined);
         const busy = new Set(res.map((r: any) => r.room_id));
-        const free = rooms.filter((r: any) => !busy.has(r.id));
+        const free = rooms.filter((r: any) => isSellable(r) && !busy.has(r.id));
         return {
           from,
           to,
@@ -382,6 +389,7 @@ export function buildAiTools(supabase: SupabaseClient) {
             "id, guest_name, check_in, check_out, channel, status, rooms:room_id(number), properties:property_id(name)",
           )
           .neq("status", "cancelled")
+          .is("deleted_at", null)
           .ilike("guest_name", `%${term}%`)
           .lte("check_in", day)
           .gt("check_out", day);
@@ -394,6 +402,7 @@ export function buildAiTools(supabase: SupabaseClient) {
               "id, guest_name, check_in, check_out, channel, status, rooms:room_id(number), properties:property_id(name)",
             )
             .neq("status", "cancelled")
+            .is("deleted_at", null)
             .ilike("guest_name", `%${term}%`)
             .gt("check_in", day)
             .order("check_in", { ascending: true })

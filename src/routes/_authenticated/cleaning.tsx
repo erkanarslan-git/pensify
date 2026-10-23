@@ -171,9 +171,13 @@ function CleaningPage() {
     return true;
   });
 
-  const groups = properties
-    .map((p) => ({ ...p, items: filtered.filter((x) => x.property_id === p.id) }))
-    .filter((g) => g.items.length > 0);
+  // Never hide a visible task just because its location name is not readable.
+  const known = new Set(properties.map((p) => p.id));
+  const orphanItems = filtered.filter((x) => !known.has(x.property_id));
+  const groups = [
+    ...properties.map((p) => ({ ...p, items: filtered.filter((x) => x.property_id === p.id) })),
+    ...(orphanItems.length ? [{ id: "unknown", name: "—", items: orphanItems }] : []),
+  ].filter((g) => g.items.length > 0);
 
   const views: { id: View; label: string; n: number }[] = [
     { id: "open", label: t("cleaning.toDo"), n: counts.open },

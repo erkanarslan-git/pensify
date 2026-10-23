@@ -101,8 +101,7 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
   const resolve = async () => {
     if (!confirming) return;
     setBusy(true);
-    const { error } = await supabase.from("room_issues")
-      .update({ status: "resolved", resolution_note: note.trim() || null }).eq("id", confirming.id);
+    const { error } = await supabase.rpc("resolve_room_issue", { _issue_id: confirming.id, _note: note.trim() || undefined });
     setBusy(false);
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
     toast.success(t("issues.resolved"));
@@ -135,7 +134,7 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
               </select> : <span className="text-sm">{i.assignee || t("cleaning.notAssigned")}</span>}
               {i.assigned_at && <div className="text-xs text-muted-foreground">{t("departments.assignedBy", { name: i.assigner || t("departments.unnamed") })} · {new Date(i.assigned_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div>}
             </div>
-            {canResolve && (
+            {(canResolve || (i as any).can_resolve) && (
               <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="text-sm px-3 py-2 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1">
                 <Check className="w-4 h-4" />{t("issues.markResolved")}
               </button>
