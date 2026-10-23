@@ -645,6 +645,13 @@
       "when": 1792765029571,
       "tag": "0091_reservation_trash_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "7",
+      "when": 1792765829355,
+      "tag": "0092_overlap_ignores_trashed_reservations",
+      "breakpoints": true
     }
   ]
 }
