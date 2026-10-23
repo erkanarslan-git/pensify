@@ -350,7 +350,7 @@ function TeamPage() {
                     </tr>
                     {PERMISSIONS.filter((p) => p.group === g).map((p) => (
                       <tr key={p.key} className="border-t border-border">
-                        <td className="p-3">{p.label}</td>
+                        <td className="p-3">{t(`payments.permissions.${p.key}`, { defaultValue: p.label })}</td>
                         {ALL_ROLES.map((r) => {
                           const on = rolePerm(r, p.key);
                           const isOwner = r === "owner";
@@ -734,7 +734,7 @@ function UserPermsDialog({ userId, userName, roles, userPerms, rolePerm, onChang
             return (
               <div key={p.key} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border">
                 <div className="min-w-0">
-                  <div className="text-sm">{p.label}</div>
+                  <div className="text-sm">{t(`payments.permissions.${p.key}`, { defaultValue: p.label })}</div>
                   <div className="text-xs text-muted-foreground">{p.group} · Standard aus Rolle: {effective(p.key) ? "Erlaubt" : "Verweigert"}</div>
                 </div>
                 <div className="flex gap-1">
