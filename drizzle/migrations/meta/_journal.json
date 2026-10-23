@@ -617,6 +617,13 @@
       "when": 1792744329390,
       "tag": "0087_customer_link_guards_and_attendance_projection",
       "breakpoints": true
+    },
+    {
+      "idx": 88,
+      "version": "7",
+      "when": 1792744426689,
+      "tag": "0088_atomic_customer_creation_and_explicit_scope",
+      "breakpoints": true
     }
   ]
 }
