@@ -71,7 +71,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/cleaning", labelKey: "nav.cleaning", icon: Sparkles },
       { to: "/maintenance", labelKey: "departments.maintenance", icon: Wrench },
-      { to: "/cleaners", labelKey: "nav.cleaners", icon: Users },
+      { to: "/cleaners", labelKey: "departments.personnel", icon: Users },
     ],
   },
   {
@@ -350,13 +350,6 @@ export function AppShell({ title, subtitle, actions, children }: {
             {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
           </div>
           <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2 justify-self-end">
-            {canAccessRoute("/me", perms.roles) && (
-              <Button asChild variant="outline" size="sm" className="shrink-0">
-                <Link to="/me" aria-label={t("shift.menu")} title={t("shift.menu")}>
-                  <Clock /> <span>{t("shift.menu")}</span>
-                </Link>
-              </Button>
-            )}
             {actions}
             <button
               onClick={lock}

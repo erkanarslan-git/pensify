@@ -61,6 +61,7 @@
 - [x] Uçtan uca kullanım akışı testi (rezervasyon → takvim → temizlik)
 
 ## Mesai (QR) akışı
+- [x] Personel: Temizlik/Bakım/Büro sekmeleri; üst Mesaim kısayolu kaldırıldı; DE/EN/TR metinler, 8 test, oturumlu sekme/telefon kontrolü ve derleme geçti. Bakım/Büro boş; gerçek bölüm personeliyle isim doğrulaması henüz yapılamadı.
 - [x] Mesaim: ortak menü ve üç dilde geri bağlantısı; oturumlu masaüstü menü, /cleaners geri dönüşü ve telefon menüsü doğrulandı; 8 test ve derleme geçti.
 - [ ] Mesai personel bağlantısı: bölüm çalışanı ataması sahip/bakım/büro için mesai profili oluşturmuyor; ana rolü değiştirmeden bölüm temelli profil otomasyonu ayrı uygulama bekliyor.
 - [x] Mesaim menüsü: üstte doğrudan bağlantı, dar/geniş ekranda erişim ve DE/EN/TR çevirileri; üç dilde bağlantı açıldı.
