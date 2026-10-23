@@ -13,7 +13,7 @@ export function TodoAttachments({ id }: { id:string }) {
   const upload=async(file:File)=>{if(!validTodoAttachment(file))return toast.error(t("todoDetails.invalidFile"));setBusy(true);try{
     const reserved=await supabase.rpc("reserve_todo_attachment",{_todo:id,_file_name:file.name,_size:file.size,_type:file.type});if(reserved.error)throw reserved.error;
     const entry=reserved.data as {id:string;path:string};const result=await supabase.storage.from("todo-attachments").upload(entry.path,file,{contentType:file.type,upsert:false});
-    if(result.error){await supabase.rpc("remove_todo_attachment",{_id:entry.id});throw result.error;}await refresh();
+    if(result.error){await supabase.storage.from("todo-attachments").remove([entry.path]);await supabase.rpc("remove_todo_attachment",{_id:entry.id});throw result.error;}await refresh();
   }catch{toast.error(t("todos.saveErr"));}finally{setBusy(false);}};
   const download=async(path:string)=>{const result=await supabase.storage.from("todo-attachments").createSignedUrl(path,60,{download:true});if(result.error)return toast.error(t("todos.saveErr"));window.open(result.data.signedUrl,"_blank","noopener,noreferrer");};
   const remove=async(entry:{id:string;object_path:string})=>{setBusy(true);try{const result=await supabase.storage.from("todo-attachments").remove([entry.object_path]);if(result.error)throw result.error;const removed=await supabase.rpc("remove_todo_attachment",{_id:entry.id});if(removed.error)throw removed.error;await refresh();}catch{toast.error(t("todos.saveErr"));}finally{setBusy(false);}};

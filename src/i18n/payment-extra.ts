@@ -1,5 +1,5 @@
 export const paymentExtraTranslations = {
-  tr: { unallocated: "Dağıtılmamış avans", deposit: "Depozito", reversed: "Ters kayıt", excess: "Fazla tutar avans olarak tutulur", allocations: "Taksit dağılımı", receipt: "Ödeme kaydı" },
-  de: { unallocated: "Nicht zugeordneter Vorschuss", deposit: "Kaution", reversed: "Storniert", excess: "Mehrbetrag bleibt als Vorschuss erhalten", allocations: "Ratenzuordnung", receipt: "Zahlung erfassen" },
-  en: { unallocated: "Unallocated advance", deposit: "Deposit", reversed: "Reversed", excess: "Excess amount is retained as an advance", allocations: "Installment allocation", receipt: "Record payment" },
+  tr: { retrySame:"Önceki ödemenin sonucu belirsiz; aynı tutar ve dağılımla tekrar deneyin.", unallocated: "Dağıtılmamış avans", deposit: "Depozito", reversed: "Ters kayıt", excess: "Fazla tutar avans olarak tutulur", allocations: "Taksit dağılımı", receipt: "Ödeme kaydı" },
+  de: { retrySame:"Ergebnis der letzten Zahlung unklar; mit identischem Betrag und identischer Zuordnung erneut versuchen.", unallocated: "Nicht zugeordneter Vorschuss", deposit: "Kaution", reversed: "Storniert", excess: "Mehrbetrag bleibt als Vorschuss erhalten", allocations: "Ratenzuordnung", receipt: "Zahlung erfassen" },
+  en: { retrySame:"Previous payment outcome is uncertain; retry with the same amount and allocation.", unallocated: "Unallocated advance", deposit: "Deposit", reversed: "Reversed", excess: "Excess amount is retained as an advance", allocations: "Installment allocation", receipt: "Record payment" },
 };
