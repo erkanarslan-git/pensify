@@ -143,17 +143,19 @@ function TimeTrackingPage() {
   };
 
   const summary = useMemo(() => {
-    const byCleaner = new Map<string, { name: string; minutes: number; rate: number; entries: number; amount: number }>();
+    const byCleaner = new Map<string, { name: string; minutes: number; rate: number; entries: number; amount: number; overtimeMinutes: number; overtimeAmount: number }>();
     let totalMin = 0;
     for (const e of entries) {
       if (!e.clock_out_at || e.needs_review) continue;
       const min = Math.max(0, Math.round((new Date(e.clock_out_at).getTime() - new Date(e.clock_in_at).getTime()) / 60000) - (e.break_minutes ?? 0));
       totalMin += min;
       const rate = e.cleaners?.hourly_rate ?? 0;
-      const cur = byCleaner.get(e.cleaner_id) ?? { name: e.cleaners?.full_name ?? "?", minutes: 0, rate, entries: 0, amount: 0 };
+      const cur = byCleaner.get(e.cleaner_id) ?? { name: e.cleaners?.full_name ?? "?", minutes: 0, rate, entries: 0, amount: 0, overtimeMinutes: 0, overtimeAmount: 0 };
       cur.minutes += min;
       cur.entries += 1;
       cur.amount += payFor(e, min).amount;
+      cur.overtimeMinutes += payFor(e, min).overtimeMinutes;
+      cur.overtimeAmount += payFor(e, min).overtimeAmount;
       byCleaner.set(e.cleaner_id, cur);
     }
     return { totalMin, byCleaner: Array.from(byCleaner.entries()) };
@@ -337,6 +339,8 @@ function TimeTrackingPage() {
                     <th className="px-5 py-2 font-medium">{t("timeTracking.shifts")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.hours")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.rate")}</th>
+                    <th className="px-5 py-2 font-medium">{t("overtime.overtime")}</th>
+                    <th className="px-5 py-2 font-medium">{t("overtime.amount")}</th>
                     <th className="px-5 py-2 font-medium">{t("timeTracking.amount")}</th>
                   </tr>
                 </thead>
@@ -347,6 +351,8 @@ function TimeTrackingPage() {
                       <td className="px-5 py-2">{s.entries}</td>
                       <td className="px-5 py-2">{Math.floor(s.minutes / 60)}h {s.minutes % 60}m</td>
                       <td className="px-5 py-2">{s.rate ? `€${s.rate.toFixed(2)}/h` : "—"}</td>
+                      <td className="px-5 py-2">{s.overtimeMinutes} min</td>
+                      <td className="px-5 py-2">€{s.overtimeAmount.toFixed(2)}</td>
                       <td className="px-5 py-2 font-semibold">{s.rate ? `€${s.amount.toFixed(2)}` : "—"}</td>
                     </tr>
                   ))}

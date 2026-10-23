@@ -25,7 +25,7 @@
 - Channel synchronization uses an overview-first tab layout; pilot setup, diagnostics and transfer history stay separate with existing authorization and outbound safeguards unchanged. Why: daily status should not expose every technical action at once.
 - Dispatch shows all daily tasks in expandable employee rows; sending/assignment logic unchanged. Why: no hidden tasks or outbound actions.
 - Business time formatting and dispatch day boundaries use the shared business-time helpers; persist UTC instants and respect daylight-saving transitions. Why: display and scheduling must agree independently of browser and legacy settings.
-- Time entries: clock ops server-side, idempotent, one open session; employees see only their open shift; supervisors correct with mandatory reason, logged in time_entry_corrections; forgotten clock-outs close at zero with needs_review; cleaning never closes shifts. Why: accountable, tamper-proof hours.
+- Time: server clock, idempotent single shift; own-open-only employees; reasoned logged corrections; forgotten exits zero/review; cleaning never closes shifts. Overtime RPC scopes approval, snapshots personal rates, subtracts overtime from regular minutes; server computes pay. Why: accountable hours, no double pay.
 - Read subdirectory AGENTS.md before edits there.
 - Payments: reservation-derived org/property, can_manage_payments access; rebuilds retain payment-history months and subtract their obligations. Why: auditable collections without duplicate debt.
 - Work reports use caller-scoped department_work_report: owner/admin all, explicitly granted HR all, enabled leads granted departments/accessed properties; source policies unchanged, reporter/resolver distinct. Why: scoped reports, opt-in delegation.
