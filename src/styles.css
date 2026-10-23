@@ -53,6 +53,8 @@
   --shadow-soft: 0 1px 2px oklch(0.2 0 0 / 0.05);
   --shadow-elevated: 0 8px 24px -12px oklch(0.2 0 0 / 0.18);
   --gradient-soft: linear-gradient(180deg, var(--card), var(--background));
+  --color-tv-arrival: var(--tv-arrival);
+  --color-tv-departure: var(--tv-departure);
 }
 
 /* Paper & Ink — restrained editorial surfaces with semantic operational states */
@@ -109,6 +111,8 @@
   --sidebar-accent-foreground: oklch(0.36 0.1 258);
   --sidebar-border: oklch(0.86 0.006 250);
   --sidebar-ring: oklch(0.285 0 0);
+  --tv-arrival: oklch(0.58 0.11 190);
+  --tv-departure: oklch(0.56 0.15 300);
 }
 
 .dark {
@@ -150,6 +154,8 @@
   --sidebar-accent-foreground: oklch(0.8 0.1 255);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.74 0.13 255);
+  --tv-arrival: oklch(0.77 0.12 190);
+  --tv-departure: oklch(0.77 0.13 300);
 }
 
 @layer base {
@@ -226,5 +232,25 @@
 }
 
 @keyframes tv-arrival { from { background-color: var(--accent); } to { background-color: var(--card); } }
+.tv-screen { --tv-tint: 7%; }
+.dark .tv-screen { --tv-tint: 15%; }
+.tv-tone-occupied, .tv-tone-location, .tv-tone-flow { --tv-tone: var(--primary); }
+.tv-tone-ready { --tv-tone: var(--success); }
+.tv-tone-arrivals, .tv-tone-week { --tv-tone: var(--tv-arrival); }
+.tv-tone-departures, .tv-tone-dues { --tv-tone: var(--tv-departure); }
+.tv-tone-cleaning { --tv-tone: var(--success); }
+.tv-tone-maintenance, .tv-tone-priorities { --tv-tone: var(--warning); }
+.tv-kpi {
+  border: 1px solid color-mix(in oklab, var(--tv-tone) 22%, var(--border));
+  border-top: 4px solid var(--tv-tone);
+  background: color-mix(in oklab, var(--tv-tone) var(--tv-tint), var(--card));
+}
+.tv-kpi .tv-number, .tv-section-title { color: var(--tv-tone); }
+.tv-section-title { border-bottom: 2px solid color-mix(in oklab, var(--tv-tone) 45%, var(--border)); padding-bottom: 0.65rem; }
+.tv-stat-row { background: color-mix(in oklab, var(--tv-tone) var(--tv-tint), var(--card)); border-left: 3px solid var(--tv-tone); padding: 0.75rem; border-radius: var(--radius); }
+.tv-stat-row dd { color: var(--tv-tone); font-weight: 600; }
+.tv-table thead { background: color-mix(in oklab, var(--primary) 7%, var(--card)); }
+.tv-table tbody tr:nth-child(even) { background: color-mix(in oklab, var(--primary) 3%, var(--card)); }
+.tv-table td[data-tone] { background: color-mix(in oklab, var(--tv-tone) var(--tv-tint), var(--card)); color: var(--tv-tone); }
 .tv-event-new { animation: tv-arrival 2s ease-out; }
 @media (prefers-reduced-motion: reduce) { .tv-event-new { animation: none; } }
