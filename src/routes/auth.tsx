@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
 import { LoginFlow } from "@/components/login-flow";
+import { Button } from "@/components/ui/button";
 import logo from "@/assets/pension-highway-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
@@ -61,12 +62,12 @@ function AuthPage() {
   return (
     <div className="relative min-h-screen overflow-hidden text-[color:var(--brand-cream)]" style={{ background: "var(--gradient-brand-night)" }}>
 
-      <div className="absolute right-4 top-4 z-10 flex gap-1">
+      <div className="absolute right-4 top-4 z-20 flex gap-1">
         {(["de", "en", "tr"] as const).map((l) => (
-          <button key={l} onClick={() => i18n.changeLanguage(l)}
+          <Button key={l} type="button" variant="ghost" size="sm" aria-pressed={lang === l} onClick={() => i18n.changeLanguage(l)}
             className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${lang === l ? "bg-[color:var(--brand-cream)] text-[color:var(--brand-navy-deep)]" : "text-[color:var(--brand-cream)]/70 hover:bg-[color:var(--brand-cream)]/10"}`}>
             {l.toUpperCase()}
-          </button>
+          </Button>
         ))}
       </div>
 
