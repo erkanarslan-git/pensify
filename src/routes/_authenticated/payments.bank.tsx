@@ -35,7 +35,7 @@ function BankSettingsPage() {
     queryKey: ["bank-settings"],
     queryFn: async () => {
       const [org, s, c, a] = await Promise.all([
-        supabase.rpc("default_organization_id"),
+        supabase.rpc("active_organization_id"),
         supabase.from("bank_settings").select("organization_id,auto_match_enabled,check_times").maybeSingle(),
         supabase.from("bank_connections").select("id,provider,bank_name,status,consent_expires_at,last_attempt_at,last_success_at,next_check_at").order("created_at"),
         supabase.from("bank_accounts").select("id,connection_id,iban,owner_name,currency,active"),

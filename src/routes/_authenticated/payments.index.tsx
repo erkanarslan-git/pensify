@@ -271,12 +271,13 @@ function PlanDialog({ reservations, rooms, schedules, onClose, onDone }: {
       setBusy(false); onDone(); return toast.error(t("payments.invalid"));
     }
     const removable = current.data.filter((s) => s.payments.length === 0).map((s) => s.id);
+    const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
+    const { error: payerError } = await supabase.rpc("save_reservation_payer_ibans", { _reservation: res.id, _ibans: ibanList });
+    if (payerError) { setBusy(false); return toast.error(t("payments.saveErr")); }
     if (removable.length) {
       const { error } = await supabase.from("payment_schedules").delete().in("id", removable);
       if (error) { setBusy(false); return toast.error(t("payments.saveErr")); }
     }
-    const ibanList = ibans.split(/[,;\n]/).map((x) => x.replace(/\s+/g, "").toUpperCase()).filter(Boolean);
-    await supabase.from("reservations").update({ payer_ibans: ibanList } as never).eq("id", res.id);
     const { error } = rows.length ? await supabase.from("payment_schedules").insert(rows.map((r) => ({ reservation_id: res.id, due_date: r.due_date, amount: r.amount })) as never) : { error: null };
     setBusy(false);
     if (error) return toast.error(t("payments.saveErr"));
