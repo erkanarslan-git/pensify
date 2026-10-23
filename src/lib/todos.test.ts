@@ -2,6 +2,10 @@ import { describe, it, expect } from "vitest";
 import { isOverdue, sortTodos } from "./todos";
 
 describe("todos", () => {
+  it("a timed task becomes overdue during its due day", () => {
+    expect(isOverdue({ due_date: "2026-10-23", due_at: "2026-10-23T08:00:00Z", done: false, priority: "normal" }, "2026-10-23", Date.parse("2026-10-23T09:00:00Z"))).toBe(true);
+    expect(isOverdue({ due_date: "2026-10-23", due_at: "2026-10-23T10:00:00Z", done: false, priority: "normal" }, "2026-10-23", Date.parse("2026-10-23T09:00:00Z"))).toBe(false);
+  });
   it("open task with past due date is overdue", () => {
     expect(isOverdue({ due_date: "2026-10-21", done: false, priority: "normal" }, "2026-10-22")).toBe(true);
   });

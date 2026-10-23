@@ -61,13 +61,7 @@ function TodosPage() {
       return rows;
     },
   });
-  const { data: names = {} } = useQuery({
-    queryKey: ["todo-users"],
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("id,full_name");
-      return Object.fromEntries((data ?? []).map((p) => [p.id, p.full_name ?? ""])) as Record<string, string>;
-    },
-  });
+  const names = Object.fromEntries((options?.users ?? []).map(user => [user.id, user.name]));
   const refresh = () => qc.invalidateQueries({ queryKey: ["todos"] });
 
   const add = async () => {
