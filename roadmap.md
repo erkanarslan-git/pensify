@@ -1,5 +1,12 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Kalan işleri tamamlama (23.10.2026)
+- [x] Mesai, yetki, ödeme ve Berlin saati: 15 dosyada 76 test geçti.
+- [ ] Anonim TV: firma kapsamlı iptal edilebilir bağlantı, kişisel veri içermeyen özet, lokasyonlar, olaylar ve 7 günlük grafik; üç dil ve testler.
+- [ ] Son ekran/dil kontrolü ve gerçek hesapla TV bağlantısı oluşturma–açma–iptal testi.
+- [ ] Fiziksel QR/GPS ve gerçek şef/fazla mesai/ödeme kayıtlarıyla deneme: fiziksel cihaz ve uygun kayıtlar bekliyor; gerçek işletme verileri test amacıyla değiştirilmeyecek.
+- [ ] Sparkasse ve WuBook: dış sağlayıcı erişimi ve Booking.com otel kimliği/canlı geçiş onayı bekliyor; gönderim kapalı tutulacak.
+
 ## Kapsam belgesi (22.10.2026) — 8 aşama
 - [x] Yapılan İşler Yönetim'e taşındı; varsayılan sahip/admin, şef/İK için rapor yetkisi kapalı başlar ve ayrıca açılır. 18 test geçti; sahip ekranı ve uygulanan yetki kuralı doğrulandı. Diğer hesaplarla canlı/SQL güvenlik kontrolü mevcut ayrıcalık engelini bekliyor.
 - [x] Ödeme planını yeniden oluşturma: ödeme geçmişi olan aylar korunur, kalan toplam yeniden bölünür; 22 ödeme/banka testi geçti, oturumlu pencere kontrol edildi.
