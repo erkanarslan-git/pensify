@@ -3247,6 +3247,7 @@ export type Database = {
         }[]
       }
       restore_reservation: { Args: { _id: string }; Returns: undefined }
+      review_stale_shifts: { Args: never; Returns: number }
       room_capacity: { Args: { _room_id: string }; Returns: number }
       room_type_availability: {
         Args: { _date: string; _property: string }

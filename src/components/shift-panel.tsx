@@ -11,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { canStartShift, type ShiftContext } from "@/lib/shift-context";
 import { ClockQrScanner } from "@/components/clock-qr-scanner";
+import { shiftNeedsWarning } from "@/lib/shift-warning";
 
 type Prop = { id: string; name: string; address?: string | null; latitude?: number | null; longitude?: number | null } | null;
 
@@ -58,7 +59,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
         if (error) throw error;
         return a;
       }
-      const pos = await readPositionOnce().catch(() => null);
+      const pos = open.requires_exit_location === false ? null : await readPositionOnce();
       const { error } = await supabase.rpc("clock_stop", {
         _entry_id: open.id,
         _lat: (pos?.lat ?? null) as unknown as number,
@@ -138,7 +139,7 @@ export function ShiftPanel({ property, token }: { property: Prop; token: string 
             </Button>
           ))}
         </div>
-        {busy && act.variables === "start" && <p className="text-xs text-center text-muted-foreground">{t("shift.gettingLocation")}</p>}
+        {busy && (act.variables === "start" || act.variables === "finish") && <p className="text-xs text-center text-muted-foreground">{t("shift.gettingLocation")}</p>}
         {confirm && !busy && <p className="text-sm text-center text-success inline-flex w-full justify-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> {confirm}</p>}
       </div>
     </div>
@@ -161,6 +162,7 @@ function Elapsed({ entry }: { entry: { clock_in_at: string; break_minutes: numbe
       <div className="text-xs text-muted-foreground mt-1">
         {t("shift.since", { time: fmt(entry.clock_in_at) })}{br > 0 && <> · {t("shift.breakTotal", { m: br })}</>}
       </div>
+      {shiftNeedsWarning(entry.clock_in_at, now) && <p role="alert" className="mt-3 text-sm text-warning">{t("shift.longShiftWarning")}</p>}
     </div>
   );
 }

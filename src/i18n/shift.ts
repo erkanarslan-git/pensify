@@ -1,5 +1,6 @@
 export const shiftTranslations = {
   de: {
+    longShiftWarning: "Diese Arbeitszeit ist seit über 16 Stunden offen. Bitte die Führungskraft zur Prüfung kontaktieren.",
     title: "Meine Arbeitszeit", hello: "Hallo", state: { idle: "Nicht gestartet", working: "Arbeitet", on_break: "In Pause", elsewhere: "An anderem Standort aktiv" },
     start: "Arbeit beginnen", break: "Pause", resume: "Weiter", finish: "Arbeit beenden",
     started: "Arbeit begonnen um {{time}}", breakStarted: "Pause begonnen um {{time}}", resumed: "Weiter um {{time}}", finished: "Arbeit beendet um {{time}}",
@@ -15,6 +16,7 @@ export const shiftTranslations = {
     back: "Zurück", openMenu: "Menü öffnen", expandMenu: "Menü ausklappen", collapseMenu: "Menü einklappen",
   },
   en: {
+    longShiftWarning: "This shift has been open for over 16 hours. Contact your supervisor for review.",
     title: "My work time", hello: "Hello", state: { idle: "Not started", working: "Working", on_break: "On break", elsewhere: "Active at another location" },
     start: "Start work", break: "Break", resume: "Resume", finish: "Finish work",
     started: "Started at {{time}}", breakStarted: "Break started at {{time}}", resumed: "Resumed at {{time}}", finished: "Finished at {{time}}",
@@ -30,6 +32,7 @@ export const shiftTranslations = {
     back: "Back", openMenu: "Open menu", expandMenu: "Expand menu", collapseMenu: "Collapse menu",
   },
   tr: {
+    longShiftWarning: "Mesainiz 16 saati aşmış. Kaydın kontrolü için şefinizle iletişime geçin.",
     title: "Mesaim", hello: "Merhaba", state: { idle: "Başlamadı", working: "Çalışıyor", on_break: "Molada", elsewhere: "Başka lokasyonda açık" },
     start: "İşe başla", break: "Ara ver", resume: "Devam et", finish: "Çalışmayı bitir",
     started: "{{time}} itibarıyla başladınız", breakStarted: "Mola {{time}} başladı", resumed: "{{time}} devam ettiniz", finished: "{{time}} çalışma bitti",
