@@ -1,3 +1,7 @@
+import i18n from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { legacyText } from "@/i18n/legacy-text";
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Badge } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,27 +23,28 @@ export const Route = createFileRoute("/_authenticated/channel-sync")({
 });
 
 const HOW: Record<ActiveChannel, string> = {
-  booking: "Über WuBook",
-  airbnb: "Über WuBook",
-  expedia: "Über WuBook",
-  check24: "Über WuBook",
-  website: "Buchungsformular der Website",
-  direct: "Manuell (Telefon, E-Mail, vor Ort)",
+  booking: 'Über WuBook',
+  airbnb: 'Über WuBook',
+  expedia: 'Über WuBook',
+  check24: 'Über WuBook',
+  website: 'Buchungsformular der Website',
+  direct: 'Manuell (Telefon, E-Mail, vor Ort'),
 };
 
 import { CHANNEL_SETTINGS_KEY as SETTINGS_KEY } from "@/lib/channels";
 
 function ago(iso: string | null | undefined) {
-  if (!iso) return "noch nie";
+  if (!iso) return legacyText('noch nie');
   const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 1) return "gerade eben";
-  if (m < 60) return `vor ${m} Min.`;
+  if (m < 1) return legacyText('gerade eben');
+  if (m < 60) return i18n.t("legacyUi.minutesAgo", { count: m });
   const h = Math.round(m / 60);
-  if (h < 48) return `vor ${h} Std.`;
-  return new Date(iso).toLocaleDateString("de-DE");
+  if (h < 48) return i18n.t("legacyUi.hoursAgo", { count: h });
+  return new Date(iso).toLocaleDateString(displayLocale());
 }
 
 function ChannelSyncPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { isAdmin } = usePermissions();
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -78,14 +83,14 @@ function ChannelSyncPage() {
 
   async function toggle(ch: ActiveChannel, on: boolean) {
     const { data: org } = await supabase.rpc("active_organization_id");
-    if (!org) return toast.error("Keine aktive Organisation");
+    if (!org) return toast.error(legacyText('Keine aktive Organisation'));
     const value = { ...(data?.enabled ?? {}), [ch]: on };
     const { error } = await supabase.from("app_settings").upsert(
       { organization_id: org, key: SETTINGS_KEY, value, updated_at: new Date().toISOString() },
       { onConflict: "organization_id,key" },
     );
     if (error) return toast.error(error.message);
-    toast.success(on ? "Kanal aktiviert" : "Kanal deaktiviert");
+    toast.success(on ? legacyText('Kanal aktiviert') : legacyText('Kanal deaktiviert'));
     qc.invalidateQueries({ queryKey: ["channels-page"] });
     qc.invalidateQueries({ queryKey: ["channels-enabled"] });
   }
@@ -96,34 +101,34 @@ function ChannelSyncPage() {
   }
 
   return (
-    <AppShell title="Kanal-Synchronisierung" subtitle="Buchungskanäle & Verbindungsstatus">
+    <AppShell title={legacyText('Kanal-Synchronisierung')} subtitle={legacyText('Buchungskanäle & Verbindungsstatus')}>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <Stat icon={ArrowDownToLine} label="Letzte Buchung" value={ago(lastIn)} highlight />
-        <Stat icon={ArrowUpFromLine} label="Letzter Versand" value={ago(lastSent)} />
-        <Stat icon={Clock} label="Warteschlange" value={String(pending)} />
-        <Stat icon={AlertTriangle} label="Fehlgeschlagen" value={String(failed)} tone={failed ? "destructive" : undefined} />
+        <Stat icon={ArrowDownToLine} label={legacyText('Letzte Buchung')} value={ago(lastIn)} highlight />
+        <Stat icon={ArrowUpFromLine} label={legacyText('Letzter Versand')} value={ago(lastSent)} />
+        <Stat icon={Clock} label={legacyText('Warteschlange')} value={String(pending)} />
+        <Stat icon={AlertTriangle} label={legacyText('Fehlgeschlagen')} value={String(failed)} tone={failed ? "destructive" : undefined} />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 mb-5">
         <div className="flex items-center gap-3 min-w-0">
           <LockKeyhole className="h-5 w-5 shrink-0 text-primary" />
           <div>
-            <p className="font-medium text-sm text-primary">Live-Versand deaktiviert</p>
-            <p className="text-xs text-muted-foreground">Keine Preise oder Verfügbarkeiten werden an Buchungsportale gesendet.</p>
+            <p className="font-medium text-sm text-primary">{legacyText('Live-Versand deaktiviert')}</p>
+            <p className="text-xs text-muted-foreground">{legacyText('Keine Preise oder Verfügbarkeiten werden an Buchungsportale gesendet.')}</p>
           </div>
         </div>
-        <Badge tone="muted">Pilotbetrieb</Badge>
+        <Badge tone="muted">{legacyText('Pilotbetrieb')}</Badge>
       </div>
 
       <Tabs defaultValue="overview">
-        <TabsList aria-label="Kanalbereiche" className="grid h-auto w-full grid-cols-2 sm:grid-cols-4 gap-1 bg-primary/5 p-1 mb-5">
+        <TabsList aria-label={legacyText('Kanalbereiche')} className="grid h-auto w-full grid-cols-2 sm:grid-cols-4 gap-1 bg-primary/5 p-1 mb-5">
           {[
-            { value: "overview", label: "Übersicht", icon: LayoutDashboard },
+            { value: "overview", label: legacyText('Übersicht'), icon: LayoutDashboard },
             ...(isAdmin ? [
-              { value: "connection", label: "Verbindung", icon: PlugZap },
-              { value: "tests", label: "Diagnose", icon: FlaskConical },
+              { value: "connection", label: legacyText('Verbindung'), icon: PlugZap },
+              { value: "tests", label: legacyText('Diagnose'), icon: FlaskConical },
             ] : []),
-            { value: "history", label: "Verlauf", icon: History },
+            { value: "history", label: legacyText('Verlauf'), icon: History },
           ].map(({ value, label, icon: Icon }) => (
             <TabsTrigger key={value} value={value} className="gap-2 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Icon className="h-4 w-4" />{label}
@@ -135,14 +140,14 @@ function ChannelSyncPage() {
 
       {(data?.conflicts.length ?? 0) > 0 && (
         <div className="mt-4">
-          <Section title={`Überschneidungen (${data?.conflicts.length ?? 0})`} action={<Badge tone="destructive">Aktion nötig</Badge>}>
+          <Section title={t("legacyUi.conflicts", { count: data?.conflicts.length ?? 0 })} action={<Badge tone="destructive">{legacyText('Aktion nötig')}</Badge>}>
             <div className="space-y-2">
               {data?.conflicts.map((c) => (
                 <div key={c.id} className="flex flex-wrap gap-3 items-center justify-between p-3 rounded-md border border-destructive/40 bg-destructive/5 text-sm">
-                  <div>{sourceLabel(c.incoming_channel)} · {c.check_in} → {c.check_out}</div>
+                  <div>{sourceLabel(c.incoming_channel, key => t(key))} · {c.check_in} → {c.check_out}</div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => resolveConflict(c.id, "ignored")}>Ignorieren</Button>
-                    <Button size="sm" onClick={() => resolveConflict(c.id, "resolved")}>Erledigt</Button>
+                    <Button size="sm" variant="outline" onClick={() => resolveConflict(c.id, "ignored")}>{legacyText('Ignorieren')}</Button>
+                    <Button size="sm" onClick={() => resolveConflict(c.id, "resolved")}>{legacyText('Erledigt')}</Button>
                   </div>
                 </div>
               ))}
@@ -152,7 +157,7 @@ function ChannelSyncPage() {
       )}
 
       <div className="mt-4">
-        <Section title="Buchungskanäle">
+        <Section title={legacyText('Buchungskanäle')}>
           <div className="divide-y divide-border -m-5">
             {ACTIVE_CHANNELS.map((ch) => {
               const s = stats.get(ch);
@@ -161,19 +166,19 @@ function ChannelSyncPage() {
                 <div key={ch} className="flex items-center gap-4 px-5 py-3">
                   <span className="w-3 h-3 rounded-full shrink-0" style={{ background: sourceColor(ch) }} />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">{sourceLabel(ch)}</div>
-                    <div className="text-xs text-muted-foreground">{HOW[ch]}</div>
+                    <div className="text-sm font-medium">{sourceLabel(ch, key => t(key))}</div>
+                    <div className="text-xs text-muted-foreground">{legacyText(HOW[ch])}</div>
                   </div>
                   <div className="text-xs text-muted-foreground text-right hidden sm:block">
-                    <div>{s?.count ?? 0} Buchungen (30 Tage)</div>
-                    <div>Letzte: {ago(s?.last)}</div>
+                    <div>{t("legacyUi.channelBookings", { count: s?.count ?? 0 })}</div>
+                    <div>{t("legacyUi.last", { time: ago(s?.last) })}</div>
                   </div>
-                  <Switch aria-label={`${sourceLabel(ch)} bei manuellen Buchungen anbieten`} checked={on} disabled={!isAdmin} onCheckedChange={(v) => toggle(ch, v)} />
+                  <Switch aria-label={t("legacyUi.offerChannel", { channel: sourceLabel(ch, key => t(key)) })} checked={on} disabled={!isAdmin} onCheckedChange={(v) => toggle(ch, v)} />
                 </div>
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground mt-6">Manuelle Buchungsauswahl · Eingehende WuBook-Buchungen bleiben unverändert.</p>
+          <p className="text-xs text-muted-foreground mt-6">{legacyText('Manuelle Buchungsauswahl · Eingehende WuBook-Buchungen bleiben unverändert.')}</p>
         </Section>
       </div>
 
@@ -185,7 +190,7 @@ function ChannelSyncPage() {
           <WuBookTestPanel />
         </TabsContent>}
         <TabsContent value="history">
-        <Section title="Letzte Übertragungen">
+        <Section title={legacyText('Letzte Übertragungen')}>
           <div className="divide-y divide-border -m-5">
             {outbox.map((o) => (
               <div key={o.id} className="flex items-center justify-between px-5 py-2.5 text-sm">
@@ -199,7 +204,7 @@ function ChannelSyncPage() {
                 </div>
               </div>
             ))}
-            {outbox.length === 0 && <div className="px-5 py-6 text-sm text-muted-foreground">Noch keine Übertragungen</div>}
+            {outbox.length === 0 && <div className="px-5 py-6 text-sm text-muted-foreground">{legacyText('Noch keine Übertragungen')}</div>}
           </div>
         </Section>
         </TabsContent>
@@ -211,7 +216,7 @@ function ChannelSyncPage() {
 function Stat({ icon: Icon, label, value, tone, highlight }: { icon: LucideIcon; label: string; value: string; tone?: "destructive"; highlight?: boolean }) {
   return (
     <div className={`rounded-2xl p-4 min-w-0 ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
-      <div className={`flex items-center gap-2 text-xs ${highlight ? "text-primary-foreground/80" : "text-muted-foreground"}`}><Icon className="w-4 h-4 shrink-0" />{label}</div>
+      <div className={`flex items-center gap-2 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}><Icon className="w-4 h-4 shrink-0" />{label}</div>
       <div className={`text-xl font-semibold mt-2 break-words ${tone === "destructive" ? "text-destructive" : ""}`}>{value}</div>
     </div>
   );

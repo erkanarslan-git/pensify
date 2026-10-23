@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { legacyText } from "@/i18n/legacy-text";
+import { displayLocale } from "@/i18n/legacy-ui";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -20,6 +23,7 @@ function splitAddress(a: string) {
 }
 
 export function WuBookPilotPanel() {
+  const { t } = useTranslation();
   const { isAdmin } = usePermissions();
   const qc = useQueryClient();
   const list = useServerFn(listWuBookPilotProperties);
@@ -71,7 +75,7 @@ export function WuBookPilotPanel() {
     <div className="rounded-xl border bg-card p-4 space-y-4 mb-4">
       <div className="flex items-center gap-2">
         <Building2 className="h-4 w-4 text-muted-foreground" />
-        <h3 className="font-semibold">Echte Unterkunft bei WuBook anlegen (Pilot)</h3>
+        <h3 className="font-semibold">{legacyText('Echte Unterkunft bei WuBook anlegen (Pilot)')}</h3>
       </div>
 
       {linked.length > 0 && (
@@ -80,7 +84,7 @@ export function WuBookPilotPanel() {
             <li key={l.id} className="flex flex-wrap gap-x-3 items-center">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <span className="font-medium">{propName(l.propertyId)}</span>
-              <span className="text-muted-foreground">WuBook-Code {l.lcode} · Konto {l.acode ?? "—"} · Verkauf {l.enabled ? "aktiv" : "noch aus"}</span>
+              <span className="text-muted-foreground">{t("legacyUi.pilotLinked", { code: l.lcode, account: l.acode ?? "—", state: l.enabled ? t("common.active") : t("common.inactive") })}</span>
               <PilotRooms propertyId={l.propertyId} />
             </li>
           ))}
@@ -89,9 +93,9 @@ export function WuBookPilotPanel() {
 
       {password && (
         <div className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm space-y-1">
-          <p className="font-medium">WuBook-Passwort (wird nur jetzt angezeigt – bitte sicher notieren):</p>
+          <p className="font-medium">{legacyText('WuBook-Passwort (wird nur jetzt angezeigt – bitte sicher notieren):')}</p>
           <code className="break-all">{password}</code>
-          <Button size="sm" variant="ghost" onClick={() => setPassword(null)}>Ausblenden</Button>
+          <Button size="sm" variant="ghost" onClick={() => setPassword(null)}>{legacyText('Ausblenden')}</Button>
         </div>
       )}
 
@@ -100,14 +104,14 @@ export function WuBookPilotPanel() {
       </p>
 
       <div className="space-y-1 max-w-md">
-        <Label htmlFor="pilot-prop">Pension</Label>
+        <Label htmlFor="pilot-prop">{legacyText('Pension')}</Label>
         <select id="pilot-prop" value={propertyId} onChange={(e) => pick(e.target.value)} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
           {props.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </div>
 
       {alreadyLinked ? (
-        <p className="text-sm text-success">Diese Pension ist bereits mit WuBook verbunden (Code {alreadyLinked.lcode}).</p>
+        <p className="text-sm text-success">{t("legacyUi.alreadyLinked", { code: alreadyLinked.lcode })}</p>
       ) : !reviewing ? (
         <>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -116,7 +120,7 @@ export function WuBookPilotPanel() {
               const ok = touched[k] && !err;
               return (
                 <div key={k} className="space-y-1">
-                  <Label htmlFor={`pl-${k}`}>{label}</Label>
+                  <Label htmlFor={`pl-${k}`}>{legacyText(label)}</Label>
                   <Input id={`pl-${k}`} value={form[k]} maxLength={200} aria-invalid={!!err}
                     className={err ? "border-destructive" : ok ? "border-success" : ""}
                     onChange={(e) => setForm({ ...form, [k]: e.target.value })}
@@ -130,24 +134,24 @@ export function WuBookPilotPanel() {
             <Button size="sm" onClick={() => {
               setTouched(Object.fromEntries(FIELDS.map(([k]) => [k, true])));
               if (!validate(form)) setReviewing(true);
-            }}>Weiter zur Prüfung…</Button>
-            {invalid > 0 && <span className="text-xs text-muted-foreground">{invalid} Feld(er) noch unvollständig oder fehlerhaft</span>}
+            }}>{legacyText('Weiter zur Prüfung…')}</Button>
+            {invalid > 0 && <span className="text-xs text-muted-foreground">{t("legacyUi.invalidFields", { count: invalid })}</span>}
           </div>
         </>
       ) : (
         <div className="space-y-3 rounded-lg border border-warning/40 bg-warning/10 p-3">
-          <p className="text-sm font-medium">Für „{propName(propertyId)}" werden diese Daten an WuBook gesendet:</p>
+          <p className="text-sm font-medium">{t("legacyUi.pilotReview", { name: propName(propertyId) })}</p>
           <dl className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-sm">
             {FIELDS.map(([k, label]) => (
-              <div key={k} className="flex gap-2"><dt className="text-muted-foreground">{label}:</dt><dd className="break-all">{form[k]}</dd></div>
+              <div key={k} className="flex gap-2"><dt className="text-muted-foreground">{legacyText(label)}:</dt><dd className="break-all">{form[k]}</dd></div>
             ))}
           </dl>
-          <p className="text-xs">Dies erstellt ein echtes WuBook-Konto für diese Pension. Das Passwort wird nur einmal angezeigt.</p>
+          <p className="text-xs">{legacyText('Dies erstellt ein echtes WuBook-Konto für diese Pension. Das Passwort wird nur einmal angezeigt.')}</p>
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} /> Ich bestätige das Anlegen bei WuBook.
           </label>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => { setReviewing(false); setConfirmed(false); }}>Zurück</Button>
+            <Button size="sm" variant="outline" onClick={() => { setReviewing(false); setConfirmed(false); }}>{legacyText('Zurück')}</Button>
             <Button size="sm" disabled={!confirmed || busy} onClick={async () => {
               setBusy(true);
               try {
@@ -155,14 +159,14 @@ export function WuBookPilotPanel() {
                 if (!r.ok) { toast.error(r.errorMessage); return; }
                 setPassword(r.password ?? null);
                 setReviewing(false);
-                toast.success("Unterkunft bei WuBook angelegt");
+                toast.success(legacyText('Unterkunft bei WuBook angelegt'));
               } catch (e) {
-                toast.error(e instanceof Error ? e.message.slice(0, 160) : "Unbekannter Fehler");
+                toast.error(e instanceof Error ? e.message.slice(0, 160) : legacyText('Unbekannter Fehler'));
               } finally {
                 setBusy(false);
                 qc.invalidateQueries({ queryKey: ["wubook-pilots"] });
               }
-            }}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Jetzt anlegen"}</Button>
+            }}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : legacyText('Jetzt anlegen')}</Button>
           </div>
         </div>
       )}
@@ -170,7 +174,8 @@ export function WuBookPilotPanel() {
   );
 }
 
-function PilotRooms({ propertyId }: { propertyId: string }) {
+function PilotRooms({ propertyId }: { propertyId: string }) {  const { t } = useTranslation();
+
   const createRoom = useServerFn(createWuBookPilotRoom);
   const check = useServerFn(checkWuBookPilotRooms);
   const [busy, setBusy] = useState<string | null>(null);
@@ -193,12 +198,12 @@ function PilotRooms({ propertyId }: { propertyId: string }) {
   };
   return (
     <div className="w-full mt-2 ml-6 rounded-lg border p-3 space-y-2">
-      <p className="font-medium text-sm">Zimmer bei WuBook</p>
+      <p className="font-medium text-sm">{legacyText('Zimmer bei WuBook')}</p>
       <div className="flex flex-wrap items-center gap-2">
-        <select aria-label="Zimmertyp" value={selected} onChange={(e) => setTypeId(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
-          {types.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.capacity} Pers.)</option>)}
+        <select aria-label={legacyText('Zimmertyp')} value={selected} onChange={(e) => setTypeId(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
+          {types.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.capacity} {legacyText("Mitarbeitende")})</option>)}
         </select>
-        <span className="text-xs text-muted-foreground">Anzahl: 1 · Preis: aktueller Pensify-Preis</span>
+        <span className="text-xs text-muted-foreground">{legacyText('Anzahl: 1 · Preis: aktueller Pensify-Preis')}</span>
       </div>
       <label className="flex items-center gap-2 text-sm">
         <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(v === true)} /> Ich bestätige: dieser Zimmertyp wird mit Anzahl 1 bei WuBook angelegt.
@@ -208,23 +213,23 @@ function PilotRooms({ propertyId }: { propertyId: string }) {
           setBusy("create");
           try {
             const r = await createRoom({ data: { property_id: propertyId, room_type_id: selected, avail: 1 } });
-            if (!r.ok) toast.error(r.errorMessage); else { toast.success(`Angelegt: WuBook-Zimmer ${r.rid} · €${r.price}`); await doCheck(); }
-          } catch (e) { toast.error(e instanceof Error ? e.message.slice(0, 160) : "Fehler"); } finally { setBusy(null); setConfirm(false); }
-        }}>{busy === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Bei WuBook anlegen"}</Button>
+            if (!r.ok) toast.error(r.errorMessage); else { toast.success(t("legacyUi.roomCreated", { id: r.rid, price: r.price })); await doCheck(); }
+          } catch (e) { toast.error(e instanceof Error ? e.message.slice(0, 160) : legacyText('Fehler')); } finally { setBusy(null); setConfirm(false); }
+        }}>{busy === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : legacyText('Bei WuBook anlegen')}</Button>
         <Button size="sm" variant="outline" disabled={busy !== null} onClick={async () => { setBusy("check"); try { await doCheck(); } finally { setBusy(null); } }}>
-          {busy === "check" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verbindung prüfen"}
+          {busy === "check" ? <Loader2 className="h-4 w-4 animate-spin" /> : legacyText('Verbindung prüfen')}
         </Button>
       </div>
       {result?.ok && (
         <div className="text-sm space-y-1">
-          {result.mappings.length === 0 && <p className="text-muted-foreground">Noch kein Zimmer verbunden.</p>}
+          {result.mappings.length === 0 && <p className="text-muted-foreground">{legacyText('Noch kein Zimmer verbunden.')}</p>}
           {result.mappings.map((m) => (
             <p key={m.rid ?? m.roomType} className={m.found ? "text-success" : "text-destructive"}>
-              {m.found ? "✓" : "✗"} {m.roomType} ↔ WuBook-Zimmer {m.rid} {m.found ? "gefunden" : "bei WuBook nicht gefunden"}
+              {m.found ? "✓" : "✗"} {m.roomType} ↔ WuBook {m.rid} {m.found ? legacyText('gefunden') : legacyText('bei WuBook nicht gefunden')}
             </p>
           ))}
           {result.wubookRooms.map((r) => (
-            <p key={r.id} className="text-xs text-muted-foreground">WuBook: {r.name} ({r.shortname}) · {r.occupancy} Pers. · €{r.price} · ID {r.id}</p>
+            <p key={r.id} className="text-xs text-muted-foreground">WuBook: {r.name} ({r.shortname}) · {t("legacyUi.people", { count: r.occupancy })} · €{r.price} · ID {r.id}</p>
           ))}
         </div>
       )}

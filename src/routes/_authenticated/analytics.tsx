@@ -1,3 +1,5 @@
+import { legacyText } from "@/i18n/legacy-text";
+import { displayLocale } from "@/i18n/legacy-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Section, Kpi } from "@/components/app-shell";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
@@ -14,14 +16,14 @@ export const Route = createFileRoute("/_authenticated/analytics")({
 
 type RangeKey = "7" | "30" | "90" | "365";
 const RANGES: { key: RangeKey; label: string; days: number; bucket: "day" | "week" | "month" }[] = [
-  { key: "7", label: "7 Tage", days: 7, bucket: "day" },
-  { key: "30", label: "30 Tage", days: 30, bucket: "day" },
-  { key: "90", label: "90 Tage", days: 90, bucket: "week" },
-  { key: "365", label: "12 Monate", days: 365, bucket: "month" },
+  { key: "7", label: '7 Tage', days: 7, bucket: "day" },
+  { key: "30", label: '30 Tage', days: 30, bucket: "day" },
+  { key: "90", label: '90 Tage', days: 90, bucket: "week" },
+  { key: "365", label: '12 Monate', days: 365, bucket: "month" },
 ];
 
 function AnalyticsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [rangeKey, setRangeKey] = useState<RangeKey>("30");
   const range = RANGES.find((r) => r.key === rangeKey)!;
 
@@ -70,21 +72,21 @@ function AnalyticsPage() {
       for (let i = range.days - 1; i >= 0; i--) {
         const d = new Date(now); d.setDate(d.getDate() - i);
         const end = new Date(d); end.setDate(end.getDate() + 1);
-        buckets.push({ key: d.toISOString().slice(0, 10), label: range.days <= 7 ? d.toLocaleDateString(undefined, { weekday: "short" }) : d.toLocaleDateString(undefined, { day: "2-digit", month: "short" }), start: d, end });
+        buckets.push({ key: d.toISOString().slice(0, 10), label: range.days <= 7 ? d.toLocaleDateString(displayLocale(), { weekday: "short" }) : d.toLocaleDateString(displayLocale(), { day: "2-digit", month: "short" }), start: d, end });
       }
     } else if (range.bucket === "week") {
       const weeks = Math.ceil(range.days / 7);
       for (let i = weeks - 1; i >= 0; i--) {
         const end = new Date(now); end.setDate(end.getDate() - i * 7 + 1);
         const start = new Date(end); start.setDate(start.getDate() - 7);
-        buckets.push({ key: start.toISOString().slice(0, 10), label: start.toLocaleDateString(undefined, { day: "2-digit", month: "short" }), start, end });
+        buckets.push({ key: start.toISOString().slice(0, 10), label: start.toLocaleDateString(displayLocale(), { day: "2-digit", month: "short" }), start, end });
       }
     } else {
       const months = Math.ceil(range.days / 30);
       for (let i = months - 1; i >= 0; i--) {
         const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-        buckets.push({ key: start.toISOString().slice(0, 7), label: start.toLocaleDateString(undefined, { month: "short", year: "2-digit" }), start, end });
+        buckets.push({ key: start.toISOString().slice(0, 7), label: start.toLocaleDateString(displayLocale(), { month: "short", year: "2-digit" }), start, end });
       }
     }
     return buckets.map((b) => {
@@ -96,68 +98,68 @@ function AnalyticsPage() {
         .reduce((s, r) => s + Number(r.revenue ?? 0), 0);
       return { day: b.label, occupancy: Math.round((occ / Math.max(rooms.length, 1)) * 100), revenue: rev };
     });
-  }, [range, reservations, rooms.length]);
+  }, [range, reservations, rooms.length, i18n.resolvedLanguage]);
 
   return (
     <AppShell
       title={t("pages.analytics.title")}
-      subtitle="Betriebsübersicht"
+      subtitle={legacyText('Betriebsübersicht')}
       actions={
         <div className="inline-flex rounded-md border border-input bg-card overflow-hidden">
           {RANGES.map((r) => (
             <button key={r.key} onClick={() => setRangeKey(r.key)}
               className={`px-3 py-2 text-sm ${rangeKey === r.key ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/50"}`}>
-              {r.label}
+              {legacyText(r.label)}
             </button>
           ))}
         </div>
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi label="Auslastung" value={`${occupancyRate}%`} accent="primary" />
-        <Kpi label="Reinigung erledigt" value={`${completion}%`} accent="success" />
-        <Kpi label="Buchungen" value={reservations.length} accent="info" />
-        <Kpi label="Umsatz" value={`€${revenue.toLocaleString()}`} accent="warning" />
+        <Kpi label={legacyText('Auslastung')} value={`${occupancyRate}%`} accent="primary" />
+        <Kpi label={legacyText('Reinigung erledigt')} value={`${completion}%`} accent="success" />
+        <Kpi label={legacyText('Buchungen')} value={reservations.length} accent="info" />
+        <Kpi label={legacyText('Umsatz')} value={`€${revenue.toLocaleString(displayLocale())}`} accent="warning" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4 mt-6">
-        <Section title={`Belegung — ${range.label}`}>
+        <Section title={`${legacyText("Belegung")} — ${legacyText(range.label)}`}>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} unit="%" />
               <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-              <Line type="monotone" dataKey="occupancy" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="occupancy" name={legacyText("Auslastung")} stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </Section>
 
-        <Section title="Buchungen nach Kanal">
+        <Section title={legacyText('Buchungen nach Kanal')}>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie data={bySource} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={50} paddingAngle={2}>
                 {bySource.map((s) => (<Cell key={s.name} fill={sourceColor(s.name)} />))}
               </Pie>
-              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => sourceLabel(String(v))} />
-              <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} formatter={(v, n) => [v as any, sourceLabel(String(n))]} />
+              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => sourceLabel(String(v), key => t(key))} />
+              <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} formatter={(v, n) => [v as any, sourceLabel(String(n), key => t(key))]} />
             </PieChart>
           </ResponsiveContainer>
         </Section>
 
-        <Section title={`Umsatz — ${range.label}`}>
+        <Section title={`${legacyText("Umsatz")} — ${legacyText(range.label)}`}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--muted-foreground)" fontSize={12} />
               <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="revenue" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="revenue" name={legacyText("Umsatz")} fill="var(--primary)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Section>
 
-        <Section title="Reinigung im Zeitraum">
+        <Section title={legacyText('Reinigung im Zeitraum')}>
           <div className="flex items-center gap-6">
             <div className="relative w-36 h-36">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
@@ -168,10 +170,10 @@ function AnalyticsPage() {
               <div className="absolute inset-0 grid place-items-center text-2xl font-semibold">{completion}%</div>
             </div>
             <div className="space-y-1.5 text-sm">
-              <div className="flex justify-between gap-6"><span className="text-muted-foreground">Gesamt</span><span className="font-medium">{tasks.length}</span></div>
-              <div className="flex justify-between gap-6"><span className="text-muted-foreground">Erledigt</span><span className="font-medium text-success">{tasks.filter((t: any) => t.status === "completed").length}</span></div>
-              <div className="flex justify-between gap-6"><span className="text-muted-foreground">Läuft</span><span className="font-medium text-primary">{tasks.filter((t: any) => t.status === "in_progress").length}</span></div>
-              <div className="flex justify-between gap-6"><span className="text-muted-foreground">Offen</span><span className="font-medium text-warning">{tasks.filter((t: any) => t.status === "pending").length}</span></div>
+              <div className="flex justify-between gap-6"><span className="text-muted-foreground">{legacyText('Gesamt')}</span><span className="font-medium">{tasks.length}</span></div>
+              <div className="flex justify-between gap-6"><span className="text-muted-foreground">{legacyText('Erledigt')}</span><span className="font-medium text-success">{tasks.filter((t: any) => t.status === "completed").length}</span></div>
+              <div className="flex justify-between gap-6"><span className="text-muted-foreground">{legacyText('Läuft')}</span><span className="font-medium text-primary">{tasks.filter((t: any) => t.status === "in_progress").length}</span></div>
+              <div className="flex justify-between gap-6"><span className="text-muted-foreground">{legacyText('Offen')}</span><span className="font-medium text-warning">{tasks.filter((t: any) => t.status === "pending").length}</span></div>
             </div>
           </div>
         </Section>

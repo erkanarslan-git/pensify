@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { legacyText } from "@/i18n/legacy-text";
+import { displayLocale } from "@/i18n/legacy-ui";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,6 +13,7 @@ import { getWuBookConfigStatus, testWuBookConnection } from "@/lib/wubook.functi
 import { usePermissions } from "@/hooks/use-permissions";
 
 export function WuBookStatus() {
+  const { t } = useTranslation();
   const { isAdmin } = usePermissions();
   const queryClient = useQueryClient();
   const fetchStatus = useServerFn(getWuBookConfigStatus);
@@ -36,12 +40,12 @@ export function WuBookStatus() {
     try {
       const res = await runTest();
       if (!res.ok) {
-        toast.error(res.error === "rate_limited" ? "Zu viele Tests — bitte kurz warten." : "Test fehlgeschlagen");
+        toast.error(res.error === "rate_limited" ? legacyText('Zu viele Tests — bitte kurz warten.') : legacyText('Test fehlgeschlagen'));
         return;
       }
       setLastResult(res.result);
-      if (res.result.connected) toast.success("WuBook-Verbindung OK");
-      else toast.error(res.result.errorMessage ?? "Verbindung fehlgeschlagen");
+      if (res.result.connected) toast.success(legacyText('WuBook-Verbindung OK'));
+      else toast.error(res.result.errorMessage ?? legacyText('Verbindung fehlgeschlagen'));
       queryClient.invalidateQueries({ queryKey: ["wubook-config-status"] });
     } finally {
       setTesting(false);
@@ -54,56 +58,56 @@ export function WuBookStatus() {
         <div className="flex items-center gap-2">
           <PlugZap className="h-4 w-4 text-muted-foreground" />
           <h3 className="font-semibold">WuBook Wired</h3>
-          <Badge tone="warning">Shadow / Nur lesen</Badge>
+          <Badge tone="warning">{legacyText('Shadow / Nur lesen')}</Badge>
         </div>
         <Button size="sm" variant="outline" onClick={onTest} disabled={testing || status?.configured === false}>
-          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verbindung testen"}
+          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : legacyText('Verbindung testen')}
         </Button>
       </div>
 
       <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
         <div>
-          <dt className="text-muted-foreground">Anbieter</dt>
+          <dt className="text-muted-foreground">{legacyText('Anbieter')}</dt>
           <dd>WuBook Wired</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Corporate-Konto</dt>
+          <dt className="text-muted-foreground">{legacyText('Corporate-Konto')}</dt>
           <dd>{status?.corporateCode ?? "—"}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Server-Schlüssel</dt>
-          <dd>{status ? (status.configured ? "Konfiguriert" : `Fehlt: ${status.missing.join(", ")}`) : "…"}</dd>
+          <dt className="text-muted-foreground">{legacyText('Server-Schlüssel')}</dt>
+          <dd>{status ? (status.configured ? legacyText('Konfiguriert') : t("legacyUi.missingConfig", { fields: status.missing.join(", ") })) : "…"}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Ausgehende Updates</dt>
-          <dd>Deaktiviert</dd>
+          <dt className="text-muted-foreground">{legacyText('Ausgehende Updates')}</dt>
+          <dd>{legacyText('Deaktiviert')}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Status</dt>
+          <dt className="text-muted-foreground">{legacyText('Status')}</dt>
           <dd className="flex items-center gap-1">
             {lastResult ? (
               lastResult.connected ? (
-                <><ShieldCheck className="h-3.5 w-3.5 text-green-600" /> Verbunden</>
+                <><ShieldCheck className="h-3.5 w-3.5 text-success" /> Verbunden</>
               ) : (
-                <><AlertTriangle className="h-3.5 w-3.5 text-destructive" /> {lastResult.errorMessage ?? "Fehler"}</>
+                <><AlertTriangle className="h-3.5 w-3.5 text-destructive" /> {lastResult.errorMessage ?? legacyText('Fehler')}</>
               )
             ) : (
-              "Noch nicht getestet"
+              legacyText('Noch nicht getestet')
             )}
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Zuletzt getestet</dt>
-          <dd>{lastResult ? new Date(lastResult.testedAt).toLocaleString("de-DE", { timeZone: BUSINESS_TIME_ZONE }) : "—"}</dd>
+          <dt className="text-muted-foreground">{legacyText('Zuletzt getestet')}</dt>
+          <dd>{lastResult ? new Date(lastResult.testedAt).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE }) : "—"}</dd>
         </div>
         {lastResult?.connected && (
           <>
             <div>
-              <dt className="text-muted-foreground">Unterkonten</dt>
+              <dt className="text-muted-foreground">{legacyText('Unterkonten')}</dt>
               <dd>{lastResult.subaccounts ?? "—"}</dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Properties</dt>
+              <dt className="text-muted-foreground">{legacyText('Properties')}</dt>
               <dd>{lastResult.properties ?? "—"}</dd>
             </div>
           </>
