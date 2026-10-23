@@ -1,4 +1,5 @@
 const tr = {
+  personnel: "Personel", emptyTeam: "Bu bölümde henüz personel yok.",
   title: "Bölümler ve şeflik",
   hint: "Kişi birden fazla bölümde olabilir. Şef aynı zamanda çalışan olabilir veya yalnız şef olabilir.",
   cleaning: "Temizlik", maintenance: "Bakım", office: "Büro", hr: "İnsan Kaynakları",
@@ -24,6 +25,7 @@ const tr = {
 };
 type T = typeof tr;
 const en: T = {
+  personnel: "Staff", emptyTeam: "No staff in this department yet.",
   title: "Departments and leads",
   hint: "A person can be in several departments. A lead can also be a worker, or lead only.",
   cleaning: "Cleaning", maintenance: "Maintenance", office: "Office", hr: "Human resources",
@@ -48,6 +50,7 @@ const en: T = {
   },
 };
 const de: T = {
+  personnel: "Personal", emptyTeam: "Noch kein Personal in dieser Abteilung.",
   title: "Abteilungen und Leitung",
   hint: "Eine Person kann in mehreren Abteilungen sein. Leitung kann zugleich mitarbeiten oder nur leiten.",
   cleaning: "Reinigung", maintenance: "Wartung", office: "Büro", hr: "Personalwesen",
