@@ -24,6 +24,8 @@ export const PERMISSIONS: Permission[] = [
   { key: "create_past_reservation", label: "Abgelaufene Buchungen bearbeiten / löschen", group: "Buchungen", defaultRoles: ["owner", "admin"] },
   { key: "delete_reservation", label: "Buchungen löschen", group: "Buchungen", defaultRoles: ["owner", "admin"] },
   { key: "manage_rooms", label: "Zimmer & Pensionen verwalten", group: "Stammdaten", defaultRoles: ["owner", "admin"] },
+  { key: "view_access_codes", label: "Zugangscodes anzeigen", group: "Stammdaten", defaultRoles: ["owner"] },
+  { key: "edit_access_codes", label: "Zugangscodes bearbeiten", group: "Stammdaten", defaultRoles: ["owner"] },
   { key: "assign_cleaning", label: "Reinigung zuweisen", group: "Reinigung", defaultRoles: ["owner", "admin", "manager"] },
   { key: "do_cleaning", label: "Eigene Reinigungsaufträge bearbeiten", group: "Reinigung", defaultRoles: ["owner", "admin", "manager", "cleaner"] },
   { key: "view_finance", label: "Umsatz & Abrechnung ansehen", group: "Finanzen", defaultRoles: ["owner"] },

@@ -18,6 +18,7 @@ import { tvTranslations } from "./tv";
 import { reservationListTranslations } from "./reservation-list";
 import { cleaningInspectionTranslations } from "./cleaning-inspection";
 import { integrationTranslations } from "./integrations";
+import { accessCodeTranslations } from "./access-codes";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -59,6 +60,7 @@ for (const lng of SUPPORTED_LANGS) {
     reservationList: reservationListTranslations[lng],
     cleaningInspection: cleaningInspectionTranslations[lng],
     integrations: integrationTranslations[lng],
+    accessCodes: accessCodeTranslations[lng],
   }, true, true);
 }
 
