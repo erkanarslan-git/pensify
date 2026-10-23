@@ -393,7 +393,7 @@ function CalendarPage() {
             onClick={goToday}
             className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
           >
-            <CalendarIcon className="w-3.5 h-3.5" /> {t("calendar.today")}
+            <CalendarIcon className="w-3.5 h-3.5" /> {t("common.today")}
           </button>
           <button onClick={() => shift(-range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
             <ChevronLeft className="w-4 h-4" />
