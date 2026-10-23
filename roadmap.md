@@ -72,5 +72,5 @@
 - [x] Aşama 1: Sade çalışan ekranı (QR + Mesaim), ayrı mola aralıkları, tekrar basmaya dayanıklı mola/devam, girişten sonra QR'a dönüş
 - [x] Aşama 2: Mesai Takibi ilk görünümünde aylık günlük liste; gün durumu/oturum/mola/net, açılır lokasyon ve mola aralıkları. İnceleme kayıtları net toplamdan çıkarıldı; bakım/büro mola RPC'leri mesai uygunluğuna bağlandı. 30 test geçti; gerçek hesapta aylık liste ve telefon kamera durumu doğrulandı.
 - [ ] Gün detayı gerçek oturum/mola ve fiziksel QR testi: mevcut dönemde mesai kaydı yok; test ortamında fiziksel kamera yok. Şef/İK kapsamı Aşama 3'te devam edecek.
-- [ ] Aşama 3: Şef/İK kapsamlı erişim (sunucu tarafı) + export
+- [ ] Aşama 3 (aktif): Şef/İK için sunucuda çalışan, lokasyon ve izin kapsamı; aylık/günlük CSV aynı kapsam; üç dil ve testler.
 - [ ] Aşama 4: Bitirirken konum kontrolü, unutulan çıkış zamanlayıcısı ve uyarı eşikleri
