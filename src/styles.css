@@ -306,7 +306,7 @@
   .tv-table th { font-size: 14px; }
   .tv-table th, .tv-table td { padding: 10px; }
   .tv-event, .tv-important dt { font-size: 15px; }
-  .tv-activity-list { max-height: 330px; }
+  .tv-activity-list { max-height: 230px; }
   .tv-bars { height: 110px; }
 }
 @media (max-width: 899px) {
