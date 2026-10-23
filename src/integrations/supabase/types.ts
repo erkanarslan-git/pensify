@@ -3562,6 +3562,16 @@ export type Database = {
         Returns: undefined
       }
       finance_dashboard: { Args: { _today: string }; Returns: Json }
+      finance_installment_page: {
+        Args: {
+          _filter?: string
+          _page?: number
+          _search?: string
+          _size?: number
+          _today: string
+        }
+        Returns: Json
+      }
       general_todo_action: {
         Args: { _action: string; _id: string; _note?: string }
         Returns: undefined
@@ -3653,6 +3663,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       overtime_board: { Args: { _from: string; _to: string }; Returns: Json }
+      payment_reservation_context: {
+        Args: { _reservation: string }
+        Returns: Json
+      }
       purge_reservation: { Args: { _id: string }; Returns: undefined }
       quote_room_price:
         | {
@@ -3851,6 +3865,18 @@ export type Database = {
       tv_snapshot_v3: { Args: { _token: string }; Returns: Json }
       unmatch_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
+        Returns: undefined
+      }
+      update_guest_contact: {
+        Args: {
+          _address: string
+          _company: string
+          _contact: string
+          _email: string
+          _phone: string
+          _reservation: string
+          _vat: string
+        }
         Returns: undefined
       }
       verify_cron_secret: {
