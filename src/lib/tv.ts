@@ -48,3 +48,11 @@ export function tvLocationLayout(total: number, capacity: number) {
  const pages = total > Math.max(1, capacity) ? 2 : 1;
  return { pages, slots: Math.max(1, Math.ceil(total / pages)) };
 }
+
+export type TvDailyDeltas = { day: string; values: Record<string, number> };
+/** Badges add up during the Berlin business day and start from zero on a new day. */
+export function tvAccumulate(previous: TvDailyDeltas | null, day: string, deltas: Record<string, number>): TvDailyDeltas {
+ const base = previous && previous.day === day ? { ...previous.values } : {};
+ for (const [key, value] of Object.entries(deltas)) if (value) base[key] = (base[key] ?? 0) + value;
+ return { day, values: base };
+}

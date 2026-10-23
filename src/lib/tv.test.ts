@@ -75,3 +75,9 @@ describe("TV count reconciliation",()=>{
  it("rejects missing payment state for a due period",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,dues:{...snapshot.dues,dueToday:3,paid:1,partial:1,open:0}}).success).toBe(false);});
  it("priority details never contain room or guest identities",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,priorityDetails:[{location:"Bünde",arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0,guest_name:"private"}]}).success).toBe(false);});
 });
+
+import { tvAccumulate } from "./tv";
+describe("daily delta badges", () => {
+ it("two new reservations on the same day show +2", () => { const a = tvAccumulate(null, "2026-10-23", { created: 1 }); expect(tvAccumulate(a, "2026-10-23", { created: 1 }).values.created).toBe(2); });
+ it("a new day starts from zero", () => { const a = tvAccumulate(null, "2026-10-23", { created: 3 }); expect(tvAccumulate(a, "2026-10-24", {}).values.created).toBeUndefined(); });
+});
