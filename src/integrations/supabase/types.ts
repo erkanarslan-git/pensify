@@ -3459,6 +3459,7 @@ export type Database = {
         Returns: undefined
       }
       attach_audit: { Args: { target: unknown }; Returns: undefined }
+      attendance_personnel: { Args: never; Returns: Json }
       attendance_review_controls: { Args: never; Returns: Json }
       can_access_property: { Args: { _property: string }; Returns: boolean }
       can_finance_action: {
@@ -3674,6 +3675,10 @@ export type Database = {
       overtime_board: { Args: { _from: string; _to: string }; Returns: Json }
       payment_reservation_context: {
         Args: { _reservation: string }
+        Returns: Json
+      }
+      personnel_overtime: {
+        Args: { _from: string; _to: string; _user_id: string }
         Returns: Json
       }
       purge_reservation: { Args: { _id: string }; Returns: undefined }
