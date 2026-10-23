@@ -15,6 +15,7 @@ import { teamSafetyTranslations } from "./team-safety";
 import { bookingAvailabilityTranslations } from "./booking-availability";
 import { departmentTranslations } from "./departments";
 import { tvTranslations } from "./tv";
+import { reservationListTranslations } from "./reservation-list";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -53,6 +54,7 @@ for (const lng of SUPPORTED_LANGS) {
     bank: bankTranslations[lng], teamSafety: teamSafetyTranslations[lng],
     bookingAvailability: bookingAvailabilityTranslations[lng], departments: departmentTranslations[lng],
     tv: tvTranslations[lng],
+    reservationList: reservationListTranslations[lng],
   }, true, true);
 }
 

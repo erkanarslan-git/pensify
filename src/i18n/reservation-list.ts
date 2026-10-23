@@ -1,0 +1,5 @@
+export const reservationListTranslations = {
+  tr: { pageSize: "Sayfadaki kayıt", sort: "Sıralama", arrivalAsc: "Giriş: önce en eski", arrivalDesc: "Giriş: önce en yeni", createdDesc: "Oluşturulma: en yeni", from: "Giriş başlangıcı", to: "Giriş bitişi", export: "CSV indir", previous: "Önceki sayfa", next: "Sonraki sayfa", filteredScope: "Seçili filtrelere göre", days: "{{count}} gün" },
+  de: { pageSize: "Einträge pro Seite", sort: "Sortierung", arrivalAsc: "Anreise: älteste zuerst", arrivalDesc: "Anreise: neueste zuerst", createdDesc: "Erstellt: neueste zuerst", from: "Anreise ab", to: "Anreise bis", export: "CSV herunterladen", previous: "Vorherige Seite", next: "Nächste Seite", filteredScope: "Nach ausgewählten Filtern", days: "{{count}} Tage" },
+  en: { pageSize: "Entries per page", sort: "Sort order", arrivalAsc: "Arrival: oldest first", arrivalDesc: "Arrival: newest first", createdDesc: "Created: newest first", from: "Arrival from", to: "Arrival to", export: "Download CSV", previous: "Previous page", next: "Next page", filteredScope: "Selected filters", days: "{{count}} days" },
+};
