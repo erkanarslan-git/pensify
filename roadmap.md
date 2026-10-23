@@ -74,4 +74,4 @@
 - [ ] Gün detayı gerçek oturum/mola ve fiziksel QR testi: mevcut dönemde mesai kaydı yok; test ortamında fiziksel kamera yok. Şef/İK kapsamı Aşama 3'te devam edecek.
 - [x] Aşama 3: Sunucuda kapsamlı mesai listesi; sahip/admin tümü, İK firma geneli, mesai yetkili şef kendi çalışanları ve erişilen lokasyon oturumları. CSV aynı verilerden günlük oturum/mola/net süre içerir; DE/EN/TR. 21 test, sahip hesabında 31 günlük liste ve CSV indirme geçti.
 - [ ] Aşama 3 güvenlik doğrulaması: Gerçek şef/İK hesabıyla kapsam testi bekliyor; attendance_scope.sql ve tenant_isolation.sql tablo sahipliği izninde durdu, işlemler geri alındı.
-- [ ] Aşama 4: Bitirirken konum kontrolü, unutulan çıkış zamanlayıcısı ve uyarı eşikleri
+- [ ] Aşama 4: Bitirirken sunucuda konum kontrolü, unutulan çıkış zamanlayıcısı ve mevcut 16 saat eşiği için üç dilde uyarı; uygulama ve test kontrolü devam ediyor.
