@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] 23.10 02:37 talebi: 11 aşamayı soru sormadan sırayla uygula, her aşamada ilgili test/tarayıcı kontrolü; çalışan özellikler/TV korunur, dış bağlantılar kendiliğinden açılmaz. Gerçek engeller tamamlandı sayılmaz.
 - [x] Öncelik TV listesi: iptal edilmiş geçici bağlantılar veritabanı sorgusunda dışlanıyor; iptal sonrası anında/diğer oturumda 30sn yenilenir. İptal geçmişi ve TV görünümü korundu. 1 kural testi, gerçek sahip hesabında geçici başlığın yokluğu ve aktif filtre isteği doğrulandı.
 - [x] Yeni 11 aşamalı belge güncel e449004 kod/migration kanıtıyla yeniden karşılaştırıldı: docs/remaining-scope-review.md. Eski tamamlandı işaretleri tek başına kanıt sayılmadı; 3–11 kısmi/eksik işleri aşağıda korunuyor.
 - [x] Yeni kalan kapsam 1 uygulama: Yapılan İşler firma sahibine özel; finans görüntüleme/tahsilat/düzeltme/plan/banka izinleri ayrı, menü ve sunucu firma/lokasyon kapsamlı. Gerekçeli ters kayıt geçmişi silmez; plan editörü IBAN'ı dar yetkili yoldan kaydeder. 28 kural testi ve 10 salt-okunur DB güvenlik doğrulaması geçti; gerçek sahip hesabıyla rapor/tahsilat/plan penceresi/banka/ekip ekranları açıldı, hata yok. TV değişmedi.
