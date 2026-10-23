@@ -1,6 +1,10 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [x] TV: önceki durum tonlarında canlı renkler, 2×4 kart, kompakt tablo/sayfalama ve tam genişlikte alt grafik; 938×607, Full HD/4K, üç dil, açık/koyu ve anonim bağlantı kontrolü.
+- [ ] TV belgesinin eksikleri: günlük tekil tamamlanan temizlik/bakım, manuel/otomatik rezervasyon ve iptal ayrımı, giriş/çıkış alt durumları, ödeme ödenen/kısmi/açık adetleri; mevcut snapshot bunları sağlamıyor. Oda durumu sayıları günlük tamamlanma gibi etiketlenmedi.
+- [ ] TV: güvenilir yeni rezervasyon olayıyla kaynak/lokasyon, gruplu kutlama/konfeti, ayrı ses/seviye/kalıcı tercih; öncelikli giriş/temizlik/kritik bakım/geciken görevler; oturumlu filtreli detay bağlantıları ve gerçek zamanlı veri desteği. Ayrı kapsam uygulaması gerekli, bu turda yalnız görünüm ve belge kontrolü istendi.
+- [ ] TV kabul testleri: günlük KPI/import/retry/DST/tenant izolasyonu ve uzun süreli çalıştırma; mevcut 5 yardımcı test ve anonim tarayıcı kontrolleri tam belge onayı değildir.
 - [x] Mesai, yetki, ödeme ve Berlin saati: 15 dosyada 76 test geçti.
 - [x] Anonim TV: firma kapsamlı iptal edilebilir bağlantı, kişisel verisiz özet, lokasyonlar, anonim olaylar, 7 günlük grafik/vade sayıları; 30 saniyede sunucu görünümüyle yenileme, tekilleştirme/ses/reduced-motion, DE/EN/TR.
 - [x] 111 test geçti; gerçek sahip hesabıyla geçici bağlantı oluşturma–girişsiz açma–iptal kontrolü, 10 lokasyon/84 oda, üç dil, telefon taşma, çevrimdışı uyarı ve yeniden bağlanma doğrulandı. Ham display kayıtları/izinsiz oluşturma/geçersiz token engelli; TV kimliği Mesai Takibi'ne giriş sağlamıyor. Deneme bağlantıları iptal edildi.
