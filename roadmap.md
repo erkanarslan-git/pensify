@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Kalan işleri tamamlama (23.10.2026)
+- [ ] TV son görsel düzenleme: mevcut marka/temizlik/bakım gradientleri, kesilmeyen tipografi, kalıcı Live kartı, sakin açılış/sayfa geçişi ve kibar ses; ekran kontrolleri.
 - [x] Onaylı TV belgesi: güçlü dalgalı kartlar ve %84/%16 üst yerleşim, Almanca açık ekran; Full HD/4K/küçük ekran doğrulandı.
 - [x] TV: günlük KPI/alt sayılar, tekil rezervasyonlar, fiziksel doluluk ve kaynak/lokasyonlu güvenli olaylar, gerçek öncelikler.
 - [x] TV: otomatik lokasyon sayfaları/5–20sn ayar, güvenilir 8sn delta, 5sn kutlama/konfeti ve seviye kontrollü ses; 24 test geçti.
