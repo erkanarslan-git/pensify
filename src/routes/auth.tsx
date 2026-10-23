@@ -48,7 +48,10 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
     if (error) return toast.error(c.err);
-    navigate({ to: "/" });
+    const token = sessionStorage.getItem("pensify.clockToken");
+    sessionStorage.removeItem("pensify.clockToken");
+    if (token && /^[A-Za-z0-9_-]{1,128}$/.test(token)) navigate({ to: "/clock/$token", params: { token } });
+    else navigate({ to: "/" });
   }
 
   return (

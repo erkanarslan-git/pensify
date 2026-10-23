@@ -2564,6 +2564,48 @@ export type Database = {
           },
         ]
       }
+      time_entry_breaks: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          organization_id: string
+          started_at: string
+          time_entry_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          organization_id: string
+          started_at?: string
+          time_entry_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          organization_id?: string
+          started_at?: string
+          time_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entry_breaks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entry_breaks_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       time_entry_corrections: {
         Row: {
           changed_at: string
@@ -2939,6 +2981,8 @@ export type Database = {
           property_id: string
         }[]
       }
+      clock_break_end: { Args: { _entry_id: string }; Returns: string }
+      clock_break_start: { Args: { _entry_id: string }; Returns: string }
       clock_start: {
         Args: {
           _accuracy: number

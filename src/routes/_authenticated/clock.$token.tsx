@@ -1,252 +1,41 @@
-import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Section, Badge } from "@/components/app-shell";
-import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Play, Pause, Square, MapPin, AlertTriangle, Loader2, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
-import { clockErrorKey } from "@/i18n/clock";
-import i18n from "@/i18n";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ShiftPanel } from "@/components/shift-panel";
 
 export const Route = createFileRoute("/_authenticated/clock/$token")({
   head: () => ({ meta: [{ title: "Zeiterfassung — Pensify" }, { name: "description", content: "Arbeitszeiten am Pensify Standort erfassen." }, { property: "og:title", content: "Zeiterfassung — Pensify" }, { property: "og:description", content: "Arbeitszeiten am Pensify Standort erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ClockPage,
 });
 
-// Haversine distance in meters
-function distanceM(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const R = 6371000;
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(a));
-}
-
-const MAX_GEOFENCE_ACCURACY_M = 200;
-
-function useGeolocation() {
-  const [coords, setCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(true);
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported");
-      setPending(false);
-      return;
-    }
-    const id = navigator.geolocation.watchPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
-        setPending(false);
-      },
-      (err) => {
-        setError(err.message);
-        setPending(false);
-      },
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 },
-    );
-    return () => navigator.geolocation.clearWatch(id);
-  }, []);
-  return { coords, error, pending };
-}
-
+// QR landing: simple mobile clock screen, no dashboard. Scanning never starts work by itself.
 function ClockPage() {
   const { t } = useTranslation();
   const { token } = Route.useParams();
-  const qc = useQueryClient();
-  const geo = useGeolocation();
-
-  const { data: ctx, isLoading } = useQuery({
-    queryKey: ["clock-ctx", token],
+  const { data: property, isLoading } = useQuery({
+    queryKey: ["clock-property", token],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error("Not authenticated");
-      const { data: propRows, error: pe } = await supabase
-        .rpc("resolve_clock_property", { _token: token });
-      if (pe) throw pe;
-      const prop = Array.isArray(propRows) ? propRows[0] : propRows;
-      if (!prop) throw new Error(t("timeTracking.unknownQr"));
-      const { data: cleaner } = await supabase
-        .from("cleaners")
-        .select("id, full_name, active")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-      const { data: open } = await supabase
-        .from("time_entries")
-        .select("id, property_id, clock_in_at, break_minutes, break_started_at, status")
-        .eq("cleaner_id", cleaner?.id ?? "00000000-0000-0000-0000-000000000000")
-        .is("clock_out_at", null)
-        .maybeSingle();
-      return { property: prop, cleaner, openShift: open };
-    },
-  });
-
-  const hasPropCoords =
-    ctx?.property?.latitude != null && ctx.property?.longitude != null;
-  const distance =
-    hasPropCoords && geo.coords
-      ? distanceM(geo.coords.lat, geo.coords.lng, ctx!.property.latitude!, ctx!.property.longitude!)
-      : null;
-  const radius = ctx?.property?.geofence_radius_m ?? 150;
-  // Account for GPS/Wi-Fi accuracy: allow if the uncertainty circle overlaps the geofence.
-  const accuracy = geo.coords?.accuracy ?? 0;
-  const accuracyTooLow = accuracy > MAX_GEOFENCE_ACCURACY_M;
-  // If property has no coords configured, can't enforce — allow.
-  // If property has coords, require a fresh location AND effective distance within radius.
-  const withinGeofence = !hasPropCoords
-    ? true
-    : geo.coords != null && distance != null && distance <= radius + accuracy && !accuracyTooLow;
-
-  const start = useMutation({
-    mutationFn: async () => {
-      if (!ctx?.cleaner) throw new Error(t("timeTracking.noCleanerLink"));
-      if (hasPropCoords) {
-        if (geo.pending || !geo.coords) throw new Error(t("timeTracking.gettingLocation"));
-        if (!withinGeofence) throw new Error(t("timeTracking.outOfGeofence"));
-      }
-      // Server verifies QR, membership and distance; closes any other open shift.
-      const { error } = await supabase.rpc("clock_start", {
-        _property_id: ctx.property.id,
-        _token: token,
-        _lat: (geo.coords?.lat ?? null) as unknown as number,
-        _lng: (geo.coords?.lng ?? null) as unknown as number,
-        _accuracy: (geo.coords?.accuracy ?? null) as unknown as number,
-        _source: "qr",
-      });
+      const { data, error } = await supabase.rpc("resolve_clock_property", { _token: token });
       if (error) throw error;
+      return (Array.isArray(data) ? data[0] : data) ?? null;
     },
-    onSuccess: () => {
-      toast.success(t("timeTracking.started"));
-      qc.invalidateQueries({ queryKey: ["clock-ctx", token] });
-    },
-    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
   });
-
-  const toggleBreak = useMutation({
-    mutationFn: async () => {
-      if (!ctx?.openShift) return;
-      const { error } = await supabase.rpc("clock_toggle_break", { _entry_id: ctx.openShift.id });
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["clock-ctx", token] }),
-    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
-  });
-
-  const stop = useMutation({
-    mutationFn: async () => {
-      if (!ctx?.openShift) return;
-      const { error } = await supabase.rpc("clock_stop", {
-        _entry_id: ctx.openShift.id,
-        _lat: (geo.coords?.lat ?? null) as unknown as number,
-        _lng: (geo.coords?.lng ?? null) as unknown as number,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success(t("timeTracking.ended"));
-      qc.invalidateQueries({ queryKey: ["clock-ctx", token] });
-    },
-    onError: (e: unknown) => toast.error(t(clockErrorKey(e))),
-  });
-
-  if (isLoading) {
-    return <AppShell title={t("timeTracking.clockTitle")}>{t("common.loading")}</AppShell>;
-  }
-  if (!ctx) return null;
-
-  const sameProperty = ctx.openShift?.property_id === ctx.property.id;
-
   return (
-    <AppShell title={ctx.property.name} subtitle={t("timeTracking.clockSubtitle")}>
-      <div className="max-w-md mx-auto space-y-4">
-        <Section title={t("timeTracking.location")}>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="w-4 h-4" /> {ctx.property.address}
-          </div>
-          <div className="mt-3 text-sm">
-            {geo.pending ? (
-              <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("timeTracking.gettingLocation")}</span>
-            ) : geo.error ? (
-              <span className="text-destructive text-xs">{geo.error}</span>
-            ) : !hasPropCoords ? (
-              <Badge tone="muted">{t("timeTracking.noPropertyCoords")}</Badge>
-            ) : distance == null ? (
-              <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("timeTracking.gettingLocation")}</span>
-            ) : withinGeofence ? (
-              <Badge tone="success"><CheckCircle2 className="w-3 h-3" /> ~{Math.round(distance)} m · izin {radius} m · doğruluk ±{Math.round(geo.coords!.accuracy)} m</Badge>
-            ) : (
-              <Badge tone="destructive"><AlertTriangle className="w-3 h-3" /> ~{Math.round(distance)} m · izin {radius} m · doğruluk ±{Math.round(geo.coords!.accuracy)} m</Badge>
-            )}
-          </div>
-        </Section>
-
-        {!ctx.cleaner ? (
-          <Section title={t("timeTracking.noCleanerLinkTitle")}>
-            <p className="text-sm text-muted-foreground">{t("timeTracking.noCleanerLink")}</p>
-          </Section>
-        ) : ctx.openShift && sameProperty ? (
-          <Section title={t("timeTracking.activeShift")}>
-            <ShiftLive entry={ctx.openShift} />
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              <button
-                onClick={() => toggleBreak.mutate()}
-                className="px-3 py-3 rounded-md border border-border text-sm font-medium hover:bg-accent flex items-center justify-center gap-1.5"
-              >
-                <Pause className="w-4 h-4" />
-                {ctx.openShift.break_started_at ? t("timeTracking.resume") : t("timeTracking.break")}
-              </button>
-              <button
-                onClick={() => stop.mutate()}
-                disabled={stop.isPending}
-                className="px-3 py-3 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 flex items-center justify-center gap-1.5"
-              >
-                <Square className="w-4 h-4" /> {t("timeTracking.end")}
-              </button>
-            </div>
-          </Section>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <header className="h-14 flex items-center px-4 border-b border-border bg-background/80 backdrop-blur sticky top-0">
+        <Link to="/me" className="font-semibold tracking-tight">{t("shift.title")}</Link>
+      </header>
+      <main className="max-w-md mx-auto p-4">
+        {isLoading ? (
+          <div className="py-10 grid place-items-center text-muted-foreground"><Loader2 className="w-5 h-5 animate-spin" /></div>
+        ) : !property ? (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm">{t("clock.errors.unknown_location")}</div>
         ) : (
-          <Section title={t("timeTracking.readyToStart")}>
-            {ctx.openShift && !sameProperty && (
-              <p className="text-xs text-warning mb-3">{t("timeTracking.willAutoClose")}</p>
-            )}
-            <button
-              onClick={() => start.mutate()}
-              disabled={start.isPending || (hasPropCoords && (geo.pending || !geo.coords || !withinGeofence))}
-              className="w-full px-3 py-4 rounded-md bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <Play className="w-5 h-5" /> {t("timeTracking.start")}
-            </button>
-          </Section>
+          <ShiftPanel property={property} token={token} />
         )}
-      </div>
-    </AppShell>
-  );
-}
-
-function ShiftLive({ entry }: { entry: { clock_in_at: string; break_minutes: number; break_started_at: string | null } }) {
-  const { t } = useTranslation();
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const startedAt = new Date(entry.clock_in_at).getTime();
-  const breakOngoing = entry.break_started_at ? Math.round((now - new Date(entry.break_started_at).getTime()) / 60000) : 0;
-  const breakTotal = entry.break_minutes + breakOngoing;
-  const elapsedMin = Math.max(0, Math.round((now - startedAt) / 60000) - breakTotal);
-  const h = Math.floor(elapsedMin / 60);
-  const m = elapsedMin % 60;
-  return (
-    <div className="text-center">
-      <div className="text-5xl font-mono font-semibold tabular-nums">{h}h {m.toString().padStart(2, "0")}m</div>
-      <div className="text-xs text-muted-foreground mt-1">
-        {t("timeTracking.startedAt")} {new Date(entry.clock_in_at).toLocaleTimeString("de-DE", { timeZone: BUSINESS_TIME_ZONE })}
-        {breakTotal > 0 && <> · {t("timeTracking.breakMin", { m: breakTotal })}</>}
-        {entry.break_started_at && <> · <span className="text-warning">{t("timeTracking.onBreak")}</span></>}
-      </div>
+      </main>
     </div>
   );
 }
