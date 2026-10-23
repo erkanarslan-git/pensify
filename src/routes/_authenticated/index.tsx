@@ -6,6 +6,7 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { LoadError } from "@/components/load-error";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -35,7 +36,7 @@ function Dashboard() {
   const [newOpen, setNewOpen] = useState(false);
   const today = businessDate();
 
-  const { data, refetch } = useQuery({
+  const { data, refetch, isError } = useQuery({
     queryKey: ["dashboard"],
     staleTime: 0,
     refetchOnMount: "always",
@@ -129,6 +130,8 @@ function Dashboard() {
           {new Date().toLocaleDateString(i18n.language, { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
         </p>
       </div>
+
+      {isError && <div className="mb-4"><LoadError onRetry={() => refetch()} /></div>}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link to="/reservations" className="brand-tile group relative overflow-hidden rounded-2xl p-5 shadow-elevated transition hover:brightness-110">
