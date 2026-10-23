@@ -1221,6 +1221,45 @@ export type Database = {
           },
         ]
       }
+      employee_overtime_rates: {
+        Row: {
+          cleaner_id: string
+          hourly_rate: number
+          organization_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cleaner_id: string
+          hourly_rate: number
+          organization_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cleaner_id?: string
+          hourly_rate?: number
+          organization_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_overtime_rates_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: true
+            referencedRelation: "cleaners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_overtime_rates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_work_schedules: {
         Row: {
           created_at: string
@@ -2666,6 +2705,51 @@ export type Database = {
           },
         ]
       }
+      time_entry_overtime: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          hourly_rate: number
+          minutes: number
+          organization_id: string
+          reason: string
+          time_entry_id: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          hourly_rate: number
+          minutes: number
+          organization_id: string
+          reason: string
+          time_entry_id: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          hourly_rate?: number
+          minutes?: number
+          organization_id?: string
+          reason?: string
+          time_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entry_overtime_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entry_overtime_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: true
+            referencedRelation: "time_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           created_at: string
@@ -2958,6 +3042,10 @@ export type Database = {
         }
         Returns: number
       }
+      approve_time_entry_overtime: {
+        Args: { _entry_id: string; _minutes: number; _reason: string }
+        Returns: undefined
+      }
       assign_cleaning_task: {
         Args: { _cleaner_id?: string; _task_id: string }
         Returns: undefined
@@ -3107,10 +3195,12 @@ export type Database = {
         Returns: Database["public"]["Enums"]["org_role"]
       }
       my_report_teams: { Args: never; Returns: string[] }
+      my_time_management_access: { Args: never; Returns: boolean }
       org_to_app_role: {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      overtime_board: { Args: { _from: string; _to: string }; Returns: Json }
       purge_reservation: { Args: { _id: string }; Returns: undefined }
       quote_room_price:
         | {
@@ -3190,6 +3280,10 @@ export type Database = {
           _room_type_id: string
         }
         Returns: string
+      }
+      set_employee_overtime_rate: {
+        Args: { _cleaner_id: string; _rate: number }
+        Returns: undefined
       }
       set_room_type_active: {
         Args: { _active: boolean; _room_type_id: string }
