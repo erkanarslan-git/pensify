@@ -3745,6 +3745,10 @@ export type Database = {
           name: string
         }[]
       }
+      resolve_room_issue: {
+        Args: { _issue_id: string; _note?: string }
+        Returns: undefined
+      }
       restore_reservation: { Args: { _id: string }; Returns: undefined }
       reveal_access_secret: {
         Args: { _kind: string; _property: string; _room: string }
