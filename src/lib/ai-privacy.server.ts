@@ -31,7 +31,7 @@ export async function buildPrivacyMap(supabase: SupabaseClient): Promise<Privacy
     supabase.from("properties").select("name"),
     supabase.from("cities").select("name"),
     supabase.from("cleaners").select("full_name"),
-    supabase.from("reservations").select("guest_name").not("guest_name", "is", null),
+    supabase.from("reservations").select("guest_name").is("deleted_at", null).not("guest_name", "is", null),
   ]);
   // Fail closed: without the full name list we cannot guarantee masking.
   for (const r of [propsRes, citiesRes, cleanersRes, resvRes]) {
