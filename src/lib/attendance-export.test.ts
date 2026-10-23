@@ -14,6 +14,6 @@ describe('attendance CSV', () => {
     expect(attendanceExportDays('Worker', [{ date: '2026-10-22', status: 'worked', worked: true }], [entry], k => k, 0)[0].slice(3, 6)).toEqual(['1', '30', '450']);
   });
   it('keeps review entry visible with zero confirmed net minutes', () => {
-    expect(attendanceExportDays('Worker', [{ date: '2026-10-22', status: 'worked', worked: true }], [{ ...entry, needs_review: true }], k => k, 0)[0].slice(3)).toEqual(['1', '30', '0', 'review']);
+    expect(attendanceExportDays('Worker', [{ date: '2026-10-22', status: 'worked', worked: true }], [{ ...entry, needs_review: true }], k => k, 0)[0].slice(3)).toEqual(['1', '30', '0', 'review', '0']);
   });
 });
