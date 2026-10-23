@@ -20,6 +20,14 @@ async function assertTargetInOrg(admin: any, orgId: string, userId: string) {
   if (!m && !r) throw new Error("Forbidden");
 }
 
+// Account-level changes (ban, password) require real membership, not just an access request.
+async function assertTargetMember(admin: any, orgId: string, userId: string) {
+  const { data: m } = await admin.from("organization_members").select("id").eq("organization_id", orgId).eq("user_id", userId).maybeSingle();
+  if (!m) throw new Error("Forbidden");
+  const { count } = await admin.from("organization_members").select("id", { count: "exact", head: true }).eq("user_id", userId).neq("organization_id", orgId);
+  if ((count ?? 0) > 0) throw new Error("Forbidden");
+}
+
 async function orgOwners(admin: any, orgId: string): Promise<string[]> {
   const { data } = await admin.from("organization_members").select("user_id").eq("organization_id", orgId).eq("role", "owner").eq("active", true);
   return (data ?? []).map((r: any) => r.user_id);
@@ -126,7 +134,7 @@ export const adminSetUserBanned = createServerFn({ method: "POST" })
     const { orgId } = await assertAdmin(context);
     if (data.userId === context.userId) throw new Error("Du kannst dich nicht selbst sperren.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await assertTargetInOrg(supabaseAdmin, orgId, data.userId);
+    await assertTargetMember(supabaseAdmin, orgId, data.userId);
     if (data.banned) {
       const owners = await orgOwners(supabaseAdmin, orgId);
       const isOwner = owners.includes(data.userId);
@@ -147,7 +155,7 @@ export const adminResetUserPassword = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { orgId } = await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await assertTargetInOrg(supabaseAdmin, orgId, data.userId);
+    await assertTargetMember(supabaseAdmin, orgId, data.userId);
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, { password: data.password });
     if (error) throw new Error(error.message);
     return { ok: true };
