@@ -435,6 +435,13 @@
       "when": 1792719639017,
       "tag": "0061_tv_approved_metrics_and_rotation",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1792721189965,
+      "tag": "0062_tv_verified_origin_and_priority_details",
+      "breakpoints": true
     }
   ]
 }
