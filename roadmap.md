@@ -1,5 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Panel ve Eylem Merkezi mobil taşma (24.10.2026)
+- [ ] Uzun lokasyon adlarıyla gerçek hesapta sağa taşma yeniden üretildi; tek sütunda sıfır tabanlı genişlik ve mobilde alt alta kayıt/durum düzeni uygulandı. Tam lokasyon adları korunarak okunabilir satırlara bölündü; telefon/bilgisayar doğrulaması bekliyor.
+
 ## Hostinger paket uyarıları (23.10.2026)
 - [x] Görseldeki aktif Zod/esbuild uyarıları giderildi: Zod 4.6.6, doğrudan Standard Schema ve esbuild 0.25.12; 225 test, derleme, esbuild dönüşüm/drizzle sürüm kontrolü ve sahip oturumuyla rapor (hatalı filtre dahil)/TV yönetimi açılışı geçti. Yeniden taramada Zod bulgusu yok. GHSA-gv7w-rqvm-qjhr 17.06.2026 tarihinde geri çekilmiş; başka paket bulguları bu tur kapsam dışı.
 - [ ] Hostinger doğrulaması: güncel sürümün yeniden yüklenmesi ve Hostinger taramasının yenilenmesi kullanıcı erişimi gerektiriyor; geri çekilmiş iki esbuild uyarısı tarayıcıda hâlâ listelenebilir.

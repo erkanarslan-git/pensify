@@ -38,6 +38,7 @@
 - TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages; management lists active links only. Why: privacy, no replay/clutter.
 - Reservations: org/property-scoped server filters, exact counts and stable ID ordering shared by pages/export. Why: no truncation or scope drift.
 - Typography: shared scale, real weights, no vertical offsets. Why: aligned text.
+- Dashboard and Action Center use zero-minimum grid tracks and stacked mobile record metadata with wrapping location names. Why: long names must not widen the screen or hide the identifying location/room details.
 - Cleaning inspection is a separate task state with property opt-in; atomic review/reopen/report RPCs retain reasons and maintenance blocks. Why: problems are not inspections.
 
 - Legacy UI copy uses shared three-language catalogs and active-locale display formatting; theme-specific calendar guest contrast lives in CSS tokens. Why: language/theme switching must not leave stale labels or unreadable booking bars.

@@ -186,14 +186,16 @@ function Dashboard() {
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")}>
           <div className="space-y-3">
             {tasks.filter((t) => t.status !== "completed").slice(0, 6).map((task) => (
-              <div key={task.id} className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{task.property?.name} · {t("resv.thRoom")} {task.room?.number}</div>
-                  <div className="text-xs text-muted-foreground">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
+              <div key={task.id} className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium [overflow-wrap:anywhere]" title={task.property?.name}>
+                    {task.property?.name}<span className="block sm:inline"> · {t("resv.thRoom")} {task.room?.number}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
                 </div>
                 <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{t(`status.${task.status}`)}</Badge>
               </div>
@@ -223,7 +225,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4 [&>*]:min-w-0">
         <Section title={t("dashboard.channelMix")}>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -241,21 +243,23 @@ function Dashboard() {
         <div className="lg:col-span-2">
           <Section
             title={t("dashboard.upcomingCheckouts")}
-            action={<Link to="/reservations" className="text-xs text-primary hover:underline inline-flex items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}
+            action={<Link to="/reservations" className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}
           >
             <div className="divide-y divide-border -my-2">
               {upcoming.map((r) => (
-                <div key={r.id} className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div key={r.id} className="flex min-w-0 flex-col items-start gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold shrink-0">
                       {(r.guest_name ?? "").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{r.guest_name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{r.property?.name} · {t("resv.thRoom")} {r.room?.number} · {sourceLabel(r.channel, (k) => t(k))}</div>
+                      <div className="text-sm font-medium [overflow-wrap:anywhere]">{r.guest_name}</div>
+                      <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]" title={r.property?.name}>
+                        {r.property?.name}<span className="block sm:inline"> · {t("resv.thRoom")} {r.room?.number} · {sourceLabel(r.channel, (k) => t(k))}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="pl-12 sm:pl-0 sm:shrink-0 sm:text-right">
                     <div className="text-sm font-medium">{formatDateDE(r.check_out)}</div>
                     <div className="text-xs text-muted-foreground">{r.guests_count} {t("common.guests")}</div>
                   </div>
