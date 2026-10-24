@@ -81,10 +81,10 @@ function NotificationsPage() {
   };
 
   const Item = ({ title, sub, badge }: { title: string; sub: string; badge?: React.ReactNode }) => (
-    <div className="flex min-w-0 flex-col items-start gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+    <div className="flex min-w-0 flex-col items-start gap-3 px-5 py-5 even:bg-muted/20 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium [overflow-wrap:anywhere]">{title}</div>
-        <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{sub}</div>
+        <div className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">{sub}</div>
       </div>
       {badge && <div className="max-w-full shrink-0 [&>span]:whitespace-normal [&>span]:[overflow-wrap:anywhere]">{badge}</div>}
     </div>
