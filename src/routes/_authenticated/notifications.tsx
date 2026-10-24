@@ -68,12 +68,12 @@ function NotificationsPage() {
 
   const Group = ({ title, icon: Icon, tone, children }: { title: string; icon: any; tone: "warning" | "destructive" | "muted"; children: React.ReactNode }) => {
     return (
-      <div className="rounded-xl border border-border bg-card shadow-soft">
+      <div className="min-w-0 rounded-xl border border-border bg-card shadow-soft">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border">
-          <span className={`w-7 h-7 rounded-md grid place-items-center brand-tile shadow-sm`}>
+          <span className={`w-7 h-7 shrink-0 rounded-md grid place-items-center brand-tile shadow-sm`}>
             <Icon className="w-4 h-4" />
           </span>
-          <h2 className="text-sm font-semibold">{title}</h2>
+          <h2 className="min-w-0 text-sm font-semibold [overflow-wrap:anywhere]">{title}</h2>
         </div>
         <div className="divide-y divide-border">{children}</div>
       </div>
@@ -81,12 +81,12 @@ function NotificationsPage() {
   };
 
   const Item = ({ title, sub, badge }: { title: string; sub: string; badge?: React.ReactNode }) => (
-    <div className="flex items-center justify-between px-5 py-3">
-      <div className="min-w-0">
-        <div className="text-sm font-medium truncate">{title}</div>
-        <div className="text-xs text-muted-foreground truncate">{sub}</div>
+    <div className="flex min-w-0 flex-col items-start gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium [overflow-wrap:anywhere]">{title}</div>
+        <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{sub}</div>
       </div>
-      {badge}
+      {badge && <div className="max-w-full shrink-0 [&>span]:whitespace-normal [&>span]:[overflow-wrap:anywhere]">{badge}</div>}
     </div>
   );
 
@@ -102,7 +102,7 @@ function NotificationsPage() {
           <ScrollText className="w-4 h-4" /> {t("pages.notifications.viewLogs")}
         </Link>
       ) : null}>
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Group title={t("pages.notifications.upcomingCheckouts")} icon={LogOut} tone="warning">
           {(data?.checkouts ?? []).map((r) => (
             <Item key={r.id} title={`${r.guest_name} — ${t("pages.notifications.room")} ${r.room?.number ?? "?"}`}
