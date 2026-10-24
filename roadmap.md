@@ -1,6 +1,7 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Panel ve Eylem Merkezi mobil taşma (24.10.2026)
+- [ ] Kayıt ayrımı: Panel ve Eylem Merkezi listelerinde ayırıcı çizgi, kayıt boşluğu ve oda vurgusunu telefon/açık-koyu görünümde doğrula.
 - [x] Uzun lokasyon adlarıyla gerçek hesapta sağa taşma yeniden üretildi ve giderildi; tek sütunda sıfır tabanlı genişlik ve mobilde alt alta kayıt/durum düzeni uygulandı. Tam lokasyon adları okunabilir satırlara bölündü, kayıtlar değişmedi. TR/DE/EN ve 320/390/430/768/1280px ile 30 oturumlu ekran kontrolünde taşma/yatay kaydırma ve çalışma hatası yok; ekran görüntüleri ve derleme doğrulandı.
 
 ## Hostinger paket uyarıları (23.10.2026)

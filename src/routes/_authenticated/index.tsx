@@ -188,14 +188,15 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")}>
-          <div className="space-y-3">
+          <div className="divide-y divide-border">
             {tasks.filter((t) => t.status !== "completed").slice(0, 6).map((task) => (
-              <div key={task.id} className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <div key={task.id} className="flex min-w-0 flex-col items-start gap-3 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium [overflow-wrap:anywhere]" title={task.property?.name}>
-                    {task.property?.name}<span className="block sm:inline"> · {t("resv.thRoom")} {task.room?.number}</span>
+                    {task.property?.name}
                   </div>
-                  <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
+                  <div className="mt-1 text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
+                  <div className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
                 </div>
                 <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{t(`status.${task.status}`)}</Badge>
               </div>
@@ -247,7 +248,7 @@ function Dashboard() {
           >
             <div className="divide-y divide-border -my-2">
               {upcoming.map((r) => (
-                <div key={r.id} className="flex min-w-0 flex-col items-start gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div key={r.id} className="flex min-w-0 flex-col items-start gap-3 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold shrink-0">
                       {(r.guest_name ?? "").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
