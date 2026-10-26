@@ -188,7 +188,7 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")}>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border lg:h-64 lg:overflow-y-auto lg:pr-2">
             {tasks.filter((t) => t.status !== "completed").slice(0, 6).map((task) => (
               <div key={task.id} className="flex min-w-0 flex-col items-start gap-3 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
