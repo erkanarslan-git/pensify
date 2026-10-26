@@ -58,7 +58,9 @@ function CalendarPage() {
     d.setDate(d.getDate() - 3);
     return d;
   });
-  const [propertyId, setPropertyId] = useState<string>("all");
+  const [propertyId, setPropertyIdState] = useState<string>("first");
+  const setPropertyId = (id: string) => { setPropertyIdState(id); try { localStorage.setItem("pensify.calendar.property", id); } catch { /* optional */ } };
+  useEffect(() => { try { const saved = localStorage.getItem("pensify.calendar.property"); if (saved) setPropertyIdState(saved); } catch { /* optional */ } }, []);
   const [roomQ, setRoomQ] = useState("");
   const [guestQ, setGuestQ] = useState("");
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -200,6 +202,9 @@ function CalendarPage() {
       const { properties: props, rooms: rms, reservations: res, tasks } = result;
       setTodayRoomIds(new Set(result.todayReservations.map(r => r.room_id)));
       setRealProperties((props ?? []) as UnifiedProperty[]);
+      const list = (props ?? []) as UnifiedProperty[];
+      if (propertyId === "first" && list[0]) setPropertyIdState(list[0].id);
+      else if (propertyId !== "all" && propertyId !== "first" && !list.some((p) => p.id === propertyId)) { setPropertyIdState("first"); return; }
       const cleaningByRoom = new Map<string, { needsCleaning: boolean; issue: string | null }>();
       for (const ct of (tasks ?? []) as { room_id: string; status: string; notes: string | null }[]) {
         const entry = cleaningByRoom.get(ct.room_id) ?? { needsCleaning: false, issue: null };
