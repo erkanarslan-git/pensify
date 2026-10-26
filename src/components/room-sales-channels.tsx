@@ -22,6 +22,7 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
   const [prop, setProp] = useState(propertyId ?? "");
+  const [channel, setChannel] = useState<SalesChannel | "">("");
   const [sel, setSel] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
@@ -37,8 +38,8 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
   }, [propertyId]);
   useEffect(() => { load(); }, [load]);
 
-  const visible = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && r.number.toLowerCase().includes(q.trim().toLowerCase()))
-    .sort((a, b) => (props.find((p) => p.id === a.property_id)?.name ?? "").localeCompare(props.find((p) => p.id === b.property_id)?.name ?? "", "de") || a.number.localeCompare(b.number, "de", { numeric: true })), [rows, props, prop, q]);
+  const visible = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && (!channel || r.sales_channels.includes(channel)) && r.number.toLowerCase().includes(q.trim().toLowerCase()))
+    .sort((a, b) => (props.find((p) => p.id === a.property_id)?.name ?? "").localeCompare(props.find((p) => p.id === b.property_id)?.name ?? "", "de") || a.number.localeCompare(b.number, "de", { numeric: true })), [rows, props, prop, q, channel]);
   const sum = summarizeDistribution(visible);
   const propName = (id: string) => props.find((p) => p.id === id)?.name ?? "";
 
@@ -93,6 +94,16 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
             {props.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
+        {SALES_CHANNELS.map((c: SalesChannel) => {
+          const on = channel === c;
+          return (
+            <button key={c} aria-pressed={on} onClick={() => setChannel(on ? "" : c)}
+              className={`rounded-full border px-2.5 py-1.5 text-xs transition-colors ${on ? "font-semibold text-[var(--channel-fg)] border-transparent bg-[var(--channel-bg)]" : "border-border text-muted-foreground hover:bg-accent"}`}
+              style={{ "--channel-bg": `var(--channel-${c})`, "--channel-fg": `var(--channel-${c}-foreground)` } as React.CSSProperties}>
+              {t(`salesChannels.${c}`)} · {sum.perChannel[c]}
+            </button>
+          );
+        })}
       </div>
 
       {canManage && selIds.length > 0 && (
@@ -106,6 +117,13 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
               <button disabled={busy} className={btn} onClick={() => save(selIds, null, (r) => r.sales_channels.filter((x) => x !== c))}>− {t(`salesChannels.${c}`)}</button>
             </span>
           ))}
+        </div>
+      )}
+
+      {visible.length > 0 && (
+        <div className="text-xs text-muted-foreground">
+          {t("salesChannels.count", { n: visible.length })}
+          {channel ? ` · ${t(`salesChannels.${channel}`)}` : ""}
         </div>
       )}
 
