@@ -230,12 +230,12 @@
   --card: oklch(1 0 0);
   --card-foreground: var(--brand-navy-deep);
   --muted-foreground: oklch(0.46 0.04 258);
-  --primary: var(--brand-accent-orange);
+  --primary: oklch(0.5 0.19 260); /* blue accent; AA-safe with white label */
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.95 0.015 250);
   --accent-foreground: var(--brand-navy-deep);
   --border: oklch(0.91 0.025 255);
-  --ring: var(--brand-accent-orange);
+  --ring: var(--brand-orange); /* bright blue, same family as the hero animation */
   --destructive: oklch(0.5 0.19 25);
   box-shadow: 0 24px 60px -24px oklch(0.15 0.05 260 / 0.55), 0 2px 6px -2px oklch(0.2 0.06 260 / 0.25);
 }
@@ -245,7 +245,7 @@
   inset: 0 0 auto 0;
   height: 3px;
   border-radius: 1rem 1rem 0 0;
-  background: linear-gradient(90deg, var(--brand-navy-deep), oklch(0.6 0.19 260), var(--brand-accent-orange));
+  background: linear-gradient(90deg, var(--brand-navy-deep), oklch(0.6 0.19 260), oklch(0.72 0.14 250));
 }
 @utility brand-card {
   background:
