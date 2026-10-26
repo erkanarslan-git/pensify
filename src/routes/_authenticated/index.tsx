@@ -261,18 +261,15 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")}>
-          <div className="divide-y divide-border lg:h-64 lg:overflow-y-auto lg:pr-2">
+          <div className="divide-y divide-border">
             {tasks.filter((t) => t.status !== "completed").slice(0, 6).map((task) => (
-              <div key={task.id} className="flex min-w-0 flex-col items-start gap-3 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <Link key={task.id} to="/cleaning" className="flex min-w-0 flex-col items-start gap-3 py-4 first:pt-0 last:pb-0 transition hover:bg-accent/50 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium [overflow-wrap:anywhere]" title={task.property?.name}>
-                    {task.property?.name}
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
+                  <div className="text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
                   <div className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
                 </div>
                 <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{t(`status.${task.status}`)}</Badge>
-              </div>
+              </Link>
             ))}
             {tasks.filter((t) => t.status !== "completed").length === 0 && (
               <div className="text-sm text-muted-foreground">{t("dashboard.noActiveTasks")}</div>
