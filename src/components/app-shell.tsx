@@ -460,7 +460,7 @@ export function AppShell({ title, subtitle, actions, children }: {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-sm hidden md:flex flex-col transition-[width] duration-200`}>
+      <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0 border-r border-sidebar-border ${v2 ? "bg-sidebar" : "bg-sidebar/80 backdrop-blur-sm"} hidden md:flex flex-col transition-[width] duration-200`}>
         <SidebarContent mini={collapsed} />
       </aside>
 
