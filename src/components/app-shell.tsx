@@ -358,6 +358,7 @@ export function AppShell({ title, subtitle, actions, children }: {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      )}
     </>
   );
 
