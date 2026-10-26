@@ -569,12 +569,12 @@ export function Badge({ tone, children }: {
 
 export function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-card shadow-soft">
+    <section className="flex h-full flex-col rounded-2xl border border-border bg-card shadow-soft">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
         {action}
       </div>
-      <div className="p-5">{children}</div>
+      <div className="flex-1 p-5">{children}</div>
     </section>
   );
 }
