@@ -140,3 +140,6 @@
 - [x] 8 test kullanıcısı (temizlik x2 + şef, bakım x2, büro x2, İK), bölümler ve işler
 - [x] Bakım çalışanı kendisine atanan arızayı görüp çözebiliyor; personel kendi lokasyon adlarını görebiliyor
 - [ ] Gerçek lokasyonda QR/GPS mesai: fiziksel cihaz gerekiyor
+
+- [x] Firma oda listesi (207 oda, 20 lokasyon, 89 anahtar kutusu kodu) yüklendi; eski test kayıtları silindi, demo kayıtları eklendi
+- [x] Oda bazında satış kanalları (Booking/Airbnb/Expedia/Web sitesi) ve otomatik/elle takip ayarı

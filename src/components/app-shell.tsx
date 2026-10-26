@@ -26,6 +26,7 @@ import {
   Wallet,
   Wrench,
   Monitor,
+  Store,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
@@ -89,6 +90,7 @@ const navGroups: NavGroup[] = [
       { to: "/work-report", labelKey: "nav.workReport", icon: BarChart3 },
       { to: "/properties", labelKey: "nav.properties", icon: Building2 },
       { to: "/rooms", labelKey: "nav.rooms", icon: BedDouble },
+      { to: "/sales-channels", labelKey: "salesChannels.title", icon: Store },
       { to: "/team", labelKey: "nav.team", icon: Shield },
       { to: "/time-tracking", labelKey: "nav.timeTracking", icon: Clock },
       { to: "/settings", labelKey: "nav.settings", icon: SettingsIcon },
