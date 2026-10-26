@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { roomTypeVisual } from "@/lib/room-type-visuals";
 import { AccessCodePanel } from "@/components/access-code-panel";
+import { RoomSalesChannels } from "@/components/room-sales-channels";
 import {
   RoomDialog, statusMeta, floorLabel,
   type Room, type RoomStatus, type Cleaner, type Property, type RoomType,
@@ -325,7 +326,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
         </TabsContent>
 
         <TabsContent value="channels">
-          <div className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">{t("propertyRooms.channelsSoon")}</div>
+          <RoomSalesChannels propertyId={propertyId} />
         </TabsContent>
       </Tabs>
       </TooltipProvider>

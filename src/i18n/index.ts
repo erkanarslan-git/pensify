@@ -27,6 +27,7 @@ import { fallbackTranslations } from "./fallback";
 import { legacyUiTranslations } from "./legacy-ui";
 import { legacyTextTranslations } from "./legacy-text";
 import { simpleRecordsTranslations } from "./simple-records";
+import { salesChannelTranslations } from "./sales-channels";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -72,6 +73,7 @@ for (const lng of SUPPORTED_LANGS) {
     todoDetails: todoDetailTranslations[lng],
     guests: guestDirectoryTranslations[lng],
     records: simpleRecordsTranslations[lng],
+    salesChannels: salesChannelTranslations[lng],
     paymentExtra: paymentExtraTranslations[lng],
     calendarExtra: calendarExtraTranslations[lng],
     fallback: fallbackTranslations[lng],
