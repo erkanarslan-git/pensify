@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -27,6 +27,8 @@ import {
   Wrench,
   Monitor,
   Store,
+  Palette,
+  Search,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
