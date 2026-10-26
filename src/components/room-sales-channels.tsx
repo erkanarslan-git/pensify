@@ -8,6 +8,9 @@ import { SALES_CHANNELS, summarizeDistribution, toggleChannel, type SalesChannel
 
 interface Row { id: string; number: string; property_id: string; active: boolean; channel_sync_mode: SyncMode; sales_channels: string[] }
 interface Prop { id: string; name: string }
+type Filter = "" | "total" | "api" | "manual" | "notListed" | SalesChannel;
+// Card filters use exactly the same rule as summarizeDistribution, so a card number always equals the list length.
+const matches = (r: Row, f: Filter) => !f || (r.active && (f === "total" || (f === "api" ? r.channel_sync_mode === "api" : f === "manual" ? r.channel_sync_mode !== "api" : f === "notListed" ? r.sales_channels.length === 0 : r.sales_channels.includes(f))));
 
 const btn = "inline-flex items-center px-2.5 py-1.5 rounded-md border border-border text-xs hover:bg-accent disabled:opacity-50";
 
@@ -22,7 +25,7 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
   const [prop, setProp] = useState(propertyId ?? "");
-  const [channel, setChannel] = useState<SalesChannel | "">("");
+  const [channel, setChannel] = useState<Filter>("");
   const [sel, setSel] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
@@ -38,11 +41,10 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
   }, [propertyId]);
   useEffect(() => { load(); }, [load]);
 
-  const visible = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && (!channel || r.sales_channels.includes(channel)) && r.number.toLowerCase().includes(q.trim().toLowerCase()))
-    .sort((a, b) => (props.find((p) => p.id === a.property_id)?.name ?? "").localeCompare(props.find((p) => p.id === b.property_id)?.name ?? "", "de") || a.number.localeCompare(b.number, "de", { numeric: true })), [rows, props, prop, q, channel]);
-  const sum = summarizeDistribution(visible);
-  // Chip counts include inactive rooms so the number always matches the filtered list below.
-  const chipCount = (c: SalesChannel) => rows.filter((r) => r.sales_channels.includes(c)).length;
+  const base = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && r.number.toLowerCase().includes(q.trim().toLowerCase())), [rows, prop, q]);
+  const visible = useMemo(() => base.filter((r) => matches(r, channel))
+    .sort((a, b) => (props.find((p) => p.id === a.property_id)?.name ?? "").localeCompare(props.find((p) => p.id === b.property_id)?.name ?? "", "de") || a.number.localeCompare(b.number, "de", { numeric: true })), [base, props, channel]);
+  const sum = summarizeDistribution(base);
   const propName = (id: string) => props.find((p) => p.id === id)?.name ?? "";
 
   const save = async (ids: string[], mode: SyncMode | null, channels: (r: Row) => string[] | null) => {
@@ -80,12 +82,18 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground">{t("salesChannels.hint")}</p>
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 [&>*]:min-w-0">
-        {[["total", sum.total], ["api", sum.api], ["manual", sum.manual], ["notListed", sum.notListed], ...SALES_CHANNELS.map((c) => [c, sum.perChannel[c]])].map(([k, v]) => (
-          <div key={k} className="rounded-lg border border-border bg-card px-3 py-2">
-            <div className="text-[11px] text-muted-foreground truncate">{t(`salesChannels.${k}`)}</div>
-            <div className="text-lg font-semibold">{v}</div>
-          </div>
-        ))}
+        {([["total", sum.total], ["api", sum.api], ["manual", sum.manual], ["notListed", sum.notListed], ...SALES_CHANNELS.map((c) => [c, sum.perChannel[c]])] as [Exclude<Filter, "">, number][]).map(([k, v]) => {
+          const on = channel === k;
+          const isCh = (SALES_CHANNELS as readonly string[]).includes(k);
+          return (
+            <button key={k} type="button" aria-pressed={on} onClick={() => setChannel(on ? "" : k)}
+              className={`rounded-lg border px-3 py-2 text-left transition-colors ${on ? (isCh ? "border-transparent bg-[var(--channel-bg)] text-[var(--channel-fg)]" : "border-primary bg-primary text-primary-foreground") : "border-border bg-card hover:bg-accent"}`}
+              style={isCh ? ({ "--channel-bg": `var(--channel-${k})`, "--channel-fg": `var(--channel-${k}-foreground)` } as React.CSSProperties) : undefined}>
+              <div className={`text-[11px] truncate ${on ? "" : "text-muted-foreground"}`}>{t(`salesChannels.${k}`)}</div>
+              <div className="text-lg font-semibold">{v}</div>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -96,16 +104,6 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
             {props.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
-        {SALES_CHANNELS.map((c: SalesChannel) => {
-          const on = channel === c;
-          return (
-            <button key={c} aria-pressed={on} onClick={() => setChannel(on ? "" : c)}
-              className={`rounded-full border px-2.5 py-1.5 text-xs transition-colors ${on ? "font-semibold text-[var(--channel-fg)] border-transparent bg-[var(--channel-bg)]" : "border-border text-muted-foreground hover:bg-accent"}`}
-              style={{ "--channel-bg": `var(--channel-${c})`, "--channel-fg": `var(--channel-${c}-foreground)` } as React.CSSProperties}>
-              {t(`salesChannels.${c}`)} · {chipCount(c)}
-            </button>
-          );
-        })}
       </div>
 
       {canManage && selIds.length > 0 && (
