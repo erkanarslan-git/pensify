@@ -134,6 +134,27 @@ function Dashboard() {
     (weekRes ?? []).reduce<Record<string, number>>((acc, r: any) => { acc[r.channel] = (acc[r.channel] ?? 0) + 1; return acc; }, {})
   ).map(([name, value]) => ({ name, value })), [weekRes]);
 
+  // 7-day trend series for the v2 tile sparklines (real counts where history exists).
+  const dayIsos = useMemo(() => {
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, k) => {
+      const d = new Date(now); d.setDate(d.getDate() - (6 - k));
+      return d.toISOString().slice(0, 10);
+    });
+  }, []);
+  const occSeries = useMemo(() => dayIsos.map((iso) => {
+    const end = new Date(iso); end.setDate(end.getDate() + 1);
+    const endIso = end.toISOString().slice(0, 10);
+    return (weekRes ?? []).filter((r: any) => r.check_in < endIso && r.check_out > iso).length;
+  }), [dayIsos, weekRes]);
+  const tileSeries = {
+    occupied: occSeries,
+    available: occSeries.map((o) => Math.max(totalRooms - o, 0)),
+    cleaning: dayIsos.map((iso) => tasks.filter((task) => (task.due_at ?? "").slice(0, 10) === iso && task.status !== "completed").length),
+    maintenance: dayIsos.map(() => maintenance),
+    checkouts: dayIsos.map((iso) => (weekRes ?? []).filter((r: any) => r.check_out === iso).length),
+  };
+
   const tooltipStyle = { background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12, boxShadow: "var(--shadow-soft)" } as const;
 
   return (
