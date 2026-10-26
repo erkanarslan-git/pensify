@@ -1,8 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Program adı ve güvenlik araştırması (26.10.2026)
-- [ ] Görünen program adını Pension Highway olarak güncelle; mevcut adresler, kayıtlar ve tarayıcı tercihleri korunsun. Animasyon eklenmesin.
-- [ ] Cloudflare güvenlik inceleme seçeneğinin kapsamını ve uygulanabilirliğini resmi kaynaklardan doğrula; yapılan taramayla öneriyi ayır.
+- [x] Görünen adlar, sayfa başlıkları, üç dildeki metinler, TV başlığı ve rapor dosya adları Pension Highway oldu; adresler, kayıtlar ve tarayıcı tercihleri korundu. Animasyon eklenmedi. Oturumlu panel/rezervasyon ve girişsiz TV açılışı doğrulandı; 74 mevcut test geçti.
+- [x] Cloudflare resmi kaynakları incelendi: VibeSDK/Code Mode genel kod denetleyicisi değil; API Shield Vulnerability Scanner farklı kapsamda. Bu tur Cloudflare taraması yapılmadı; Lovable hızlı/derin taraması ve ayrı sızma testi seçenekleri açıklandı.
 
 ## Panel ve Eylem Merkezi mobil taşma (24.10.2026)
 - [x] Kayıt ayrımı: Panel ve Eylem Merkezi listelerine belirgin ayırıcı çizgiler ve kayıt boşluğu; Panel görevlerinde ayrı mavi oda satırı, Eylem Merkezi'nde dönüşümlü hafif satır tonu eklendi. Gerçek sahip hesabında 390px telefon açık/koyu görünümü doğrulandı; altı görev görünür, yatay taşma ve çalışma hatası yok, derleme geçti. Veriler değişmedi.
