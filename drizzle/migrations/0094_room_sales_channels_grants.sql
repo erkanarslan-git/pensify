@@ -1,0 +1,1 @@
+GRANT SELECT (channel_sync_mode, sales_channels) ON public.rooms TO authenticated;
