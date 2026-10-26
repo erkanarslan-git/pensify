@@ -320,6 +320,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         ))}
       </nav>
 
+      {!v2 && (
       <div className={`border-t border-sidebar-border ${mini ? "p-2" : "p-3"}`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
