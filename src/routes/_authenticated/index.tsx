@@ -55,6 +55,7 @@ export const Route = createFileRoute("/_authenticated/")({
 function Dashboard() {
   const { t, i18n } = useTranslation();
   const [newOpen, setNewOpen] = useState(false);
+  const v2 = useV2Theme();
   const today = businessDate();
 
   const { data, refetch, isError } = useQuery({
