@@ -29,6 +29,7 @@ import {
   Store,
   Palette,
   Search,
+  ChevronDown,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
@@ -203,6 +204,7 @@ export function AppShell({ title, subtitle, actions, children }: {
   useEffect(() => {
     document.documentElement.classList.toggle("theme-v2", v2);
     localStorage.setItem("pensify.themeV2", v2 ? "1" : "0");
+    window.dispatchEvent(new Event("pensify-theme-v2"));
   }, [v2]);
   const lang = (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr";
   const v2Label = (v2
