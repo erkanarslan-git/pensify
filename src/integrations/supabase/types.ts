@@ -2616,6 +2616,7 @@ export type Database = {
         Row: {
           active: boolean
           capacity: number
+          channel_sync_mode: string
           created_at: string
           default_cleaner_id: string | null
           external_source_id: string | null
@@ -2630,6 +2631,7 @@ export type Database = {
           organization_id: string
           property_id: string
           room_type_id: string | null
+          sales_channels: string[]
           source_system: string | null
           source_title: string | null
           source_url: string | null
@@ -2641,6 +2643,7 @@ export type Database = {
         Insert: {
           active?: boolean
           capacity?: number
+          channel_sync_mode?: string
           created_at?: string
           default_cleaner_id?: string | null
           external_source_id?: string | null
@@ -2655,6 +2658,7 @@ export type Database = {
           organization_id?: string
           property_id: string
           room_type_id?: string | null
+          sales_channels?: string[]
           source_system?: string | null
           source_title?: string | null
           source_url?: string | null
@@ -2666,6 +2670,7 @@ export type Database = {
         Update: {
           active?: boolean
           capacity?: number
+          channel_sync_mode?: string
           created_at?: string
           default_cleaner_id?: string | null
           external_source_id?: string | null
@@ -2680,6 +2685,7 @@ export type Database = {
           organization_id?: string
           property_id?: string
           room_type_id?: string | null
+          sales_channels?: string[]
           source_system?: string | null
           source_title?: string | null
           source_url?: string | null
@@ -4039,6 +4045,10 @@ export type Database = {
       set_room_type_active: {
         Args: { _active: boolean; _room_type_id: string }
         Returns: undefined
+      }
+      set_rooms_distribution: {
+        Args: { _channels: string[]; _mode: string; _room_ids: string[] }
+        Returns: number
       }
       set_rooms_status: {
         Args: {
