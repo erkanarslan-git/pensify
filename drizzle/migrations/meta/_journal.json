@@ -652,6 +652,13 @@
       "when": 1792765829355,
       "tag": "0092_overlap_ignores_trashed_reservations",
       "breakpoints": true
+    },
+    {
+      "idx": 93,
+      "version": "7",
+      "when": 1793016223306,
+      "tag": "0093_room_sales_channels",
+      "breakpoints": true
     }
   ]
 }
