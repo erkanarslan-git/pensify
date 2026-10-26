@@ -41,6 +41,8 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
   const visible = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && (!channel || r.sales_channels.includes(channel)) && r.number.toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => (props.find((p) => p.id === a.property_id)?.name ?? "").localeCompare(props.find((p) => p.id === b.property_id)?.name ?? "", "de") || a.number.localeCompare(b.number, "de", { numeric: true })), [rows, props, prop, q, channel]);
   const sum = summarizeDistribution(visible);
+  // Chip counts include inactive rooms so the number always matches the filtered list below.
+  const chipCount = (c: SalesChannel) => rows.filter((r) => r.sales_channels.includes(c)).length;
   const propName = (id: string) => props.find((p) => p.id === id)?.name ?? "";
 
   const save = async (ids: string[], mode: SyncMode | null, channels: (r: Row) => string[] | null) => {
