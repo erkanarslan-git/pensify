@@ -262,6 +262,22 @@
     linear-gradient(140deg, color-mix(in oklab, var(--destructive) 88%, black), color-mix(in oklab, var(--destructive) 72%, white));
   color: oklch(0.99 0.005 25);
 }
+@utility tile-sky {
+  background:
+    radial-gradient(90% 90% at 100% 0%, oklch(0.88 0.09 235 / 0.55), transparent 60%),
+    linear-gradient(140deg, oklch(0.6 0.12 252), oklch(0.72 0.11 244));
+  color: oklch(0.99 0.005 250);
+}
+@utility tile-ocean {
+  background:
+    radial-gradient(90% 90% at 100% 0%, oklch(0.8 0.12 240 / 0.55), transparent 60%),
+    linear-gradient(140deg, oklch(0.5 0.14 255), oklch(0.62 0.15 250));
+  color: oklch(0.99 0.005 250);
+}
+@utility btn-action {
+  background: var(--brand-accent-orange);
+  color: oklch(0.99 0.01 80);
+}
 
 /* v2 preview theme (toggleable): navy sidebar + fully colored dashboard tiles */
 .theme-v2 {
