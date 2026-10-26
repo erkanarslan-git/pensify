@@ -102,7 +102,7 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
             <button key={c} aria-pressed={on} onClick={() => setChannel(on ? "" : c)}
               className={`rounded-full border px-2.5 py-1.5 text-xs transition-colors ${on ? "font-semibold text-[var(--channel-fg)] border-transparent bg-[var(--channel-bg)]" : "border-border text-muted-foreground hover:bg-accent"}`}
               style={{ "--channel-bg": `var(--channel-${c})`, "--channel-fg": `var(--channel-${c}-foreground)` } as React.CSSProperties}>
-              {t(`salesChannels.${c}`)} · {sum.perChannel[c]}
+              {t(`salesChannels.${c}`)} · {chipCount(c)}
             </button>
           );
         })}
