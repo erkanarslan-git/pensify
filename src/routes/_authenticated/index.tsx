@@ -260,9 +260,9 @@ function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
-        <Section title={t("dashboard.activeCleaningTasks")}>
+        <Section title={t("dashboard.activeCleaningTasks")} action={<Link to="/cleaning" className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}>
           <div className="divide-y divide-border">
-            {tasks.filter((t) => t.status !== "completed").slice(0, 6).map((task) => (
+            {tasks.filter((t) => t.status !== "completed").slice(0, 4).map((task) => (
               <Link key={task.id} to="/cleaning" className="flex min-w-0 flex-col items-start gap-3 py-4 first:pt-0 last:pb-0 transition hover:bg-accent/50 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
@@ -275,40 +275,6 @@ function Dashboard() {
             {tasks.filter((t) => t.status !== "completed").length === 0 && (
               <div className="text-sm text-muted-foreground">{t("dashboard.noActiveTasks")}</div>
             )}
-          </div>
-        </Section>
-
-        <div className="lg:col-span-2">
-          <Section title={t("dashboard.weeklyOccupancy")}>
-            <div className="h-full min-h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weekly} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                  <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} unit="%" />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
-                  <Bar dataKey="rate" radius={[8, 8, 8, 8]} maxBarSize={56}>
-                    {weekly.map((_, i) => (<Cell key={i} fill={i === weekly.length - 1 ? "var(--color-chart-2)" : "var(--color-chart-1)"} />))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Section>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4 [&>*]:min-w-0">
-        <Section title={t("dashboard.channelMix")}>
-          <div className="h-full min-h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={channelData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4} strokeWidth={0}>
-                  {channelData.map((c, i) => (<Cell key={i} fill={sourceColor(c.name)} />))}
-                </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v as any, sourceLabel(String(n), (k) => t(k))]} />
-                <Legend verticalAlign="bottom" height={36} iconSize={8} formatter={(v) => sourceLabel(String(v), (k) => t(k))} wrapperStyle={{ fontSize: 11, color: "var(--color-muted-foreground)" }} />
-              </PieChart>
-            </ResponsiveContainer>
           </div>
         </Section>
 
@@ -343,6 +309,40 @@ function Dashboard() {
             </div>
           </Section>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4 [&>*]:min-w-0">
+        <div className="lg:col-span-2">
+          <Section title={t("dashboard.weeklyOccupancy")}>
+            <div className="h-full min-h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weekly} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} unit="%" />
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
+                  <Bar dataKey="rate" radius={[8, 8, 8, 8]} maxBarSize={56}>
+                    {weekly.map((_, i) => (<Cell key={i} fill={i === weekly.length - 1 ? "var(--color-chart-2)" : "var(--color-chart-1)"} />))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Section>
+        </div>
+
+        <Section title={t("dashboard.channelMix")}>
+          <div className="h-full min-h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={channelData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4} strokeWidth={0}>
+                  {channelData.map((c, i) => (<Cell key={i} fill={sourceColor(c.name)} />))}
+                </Pie>
+                <Tooltip contentStyle={tooltipStyle} formatter={(v, n) => [v as any, sourceLabel(String(n), (k) => t(k))]} />
+                <Legend verticalAlign="bottom" height={36} iconSize={8} formatter={(v) => sourceLabel(String(v), (k) => t(k))} wrapperStyle={{ fontSize: 11, color: "var(--color-muted-foreground)" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Section>
       </div>
 
       <NewReservationDialog open={newOpen} onOpenChange={(o) => { setNewOpen(o); if (!o) refetch(); }} />
