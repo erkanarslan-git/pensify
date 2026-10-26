@@ -262,7 +262,7 @@ function CleaningPage() {
                     const options = taskAssignmentOptions(data?.assignmentOptions ?? [], task.property_id);
                     return (
                       <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 sm:py-2.5 text-sm hover:bg-accent/40 transition-colors">
-                        <div className="w-20 font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
+                        <div className="min-w-20 whitespace-nowrap font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
                         <div className="w-28 text-muted-foreground tabular-nums">
                           {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                         </div>
