@@ -546,7 +546,15 @@ export function AppShell({ title, subtitle, actions, children }: {
             </div>
           </header>
         )}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</div>
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+          {v2 && pathname !== "/" && title && (
+            <div className="mb-5 min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight break-words">{title}</h1>
+              {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+            </div>
+          )}
+          {children}
+        </div>
       </main>
       {locked && <div className="fixed inset-0 z-[100] bg-background" aria-hidden="true" />}
     </div>
