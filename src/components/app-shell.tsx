@@ -147,6 +147,8 @@ export function AppShell({ title, subtitle, actions, children }: {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
+  const [v2, setV2] = useState(false);
+  const navigate = useNavigate();
   const { data: profile } = useProfile();
   const perms = usePermissions();
   const timeAccess = useQuery({ queryKey: ["time-management-access", perms.userId], enabled: !!perms.userId, queryFn: async () => {
@@ -194,6 +196,20 @@ export function AppShell({ title, subtitle, actions, children }: {
     }
   }, [dark]);
 
+  // v2 preview theme: navy sidebar + colored dashboard tiles; reversible via header toggle.
+  useEffect(() => {
+    if (localStorage.getItem("pensify.themeV2") === "1") setV2(true);
+  }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle("theme-v2", v2);
+    localStorage.setItem("pensify.themeV2", v2 ? "1" : "0");
+  }, [v2]);
+  const lang = (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr";
+  const v2Label = (v2
+    ? { de: "Klassisches Design", en: "Classic look", tr: "Eski görünüm" }
+    : { de: "Neues Design", en: "New look", tr: "Yeni görünüm" })[lang] ?? "Neues Design";
+  const searchLabel = { de: "Seite suchen…", en: "Search pages…", tr: "Sayfa ara…" }[lang] ?? "Seite suchen…";
+
   // Cover the panel at once, end the session, then replace the page with login
   // (full replace: no panel flash, cached data gone, Back cannot return).
   const [locked, setLocked] = useState(false);
@@ -240,7 +256,7 @@ export function AppShell({ title, subtitle, actions, children }: {
             <Hotel className="w-4 h-4" />
           </div>
         ) : (
-          <div className="rounded-lg bg-[color:var(--brand-cream)] px-2 py-1.5 shadow-soft">
+          <div className="sidebar-logo rounded-lg bg-[color:var(--brand-cream)] px-2 py-1.5 shadow-soft">
             <img src={brandLogo} alt="Pension Highway" className="h-8 w-auto" />
           </div>
         )}
@@ -250,7 +266,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         {visibleGroups.map((group, gi) => (
           <div key={group.labelKey} className="space-y-0.5">
             {!mini ? (
-              <div className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+              <div className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-sidebar-foreground/60 font-semibold">
                 {t(group.labelKey)}
               </div>
             ) : gi > 0 ? (
@@ -292,7 +308,7 @@ export function AppShell({ title, subtitle, actions, children }: {
               {!mini && (
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
-                  <div className="text-xs text-muted-foreground truncate">{primaryRole ? roleLabel(primaryRole, t) : "—"}</div>
+                  <div className="text-xs text-sidebar-foreground/60 truncate">{primaryRole ? roleLabel(primaryRole, t) : "—"}</div>
                 </div>
               )}
             </button>
