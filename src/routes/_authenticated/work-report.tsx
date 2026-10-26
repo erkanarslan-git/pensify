@@ -37,7 +37,7 @@ const search = z.object({
 
 export const Route = createFileRoute("/_authenticated/work-report")({
   validateSearch: search,
-  head: () => ({ meta: [{ title: "Yapılan İşler — Pensify" }, { name: "description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:title", content: "Yapılan İşler — Pensify" }, { property: "og:description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Yapılan İşler — Pension Highway" }, { name: "description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:title", content: "Yapılan İşler — Pension Highway" }, { property: "og:description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: WorkReportPage,
 });
 
@@ -227,7 +227,7 @@ function DetailList({ c, items, filtered, s, set, fmt, topics, hasMaintenance, o
     const esc = (v: string | null) => { let x = v ?? ""; if (/^[=+\-@\t\r]/.test(x)) x = "'" + x; return `"${x.replaceAll('"', '""')}"`; };
     const body = filtered.map((i) => [c.topics[i.topic], fmt(i.at), i.propertyName, i.room, i.title, i.staff, i.reporter ?? null, i.resolver ?? null, i.status, i.source, i.note].map(esc).join(";"));
     const blob = new Blob(["\ufeff" + [head.map(esc).join(";"), ...body].join("\n")], { type: "text/csv;charset=utf-8" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `pensify-work-report.csv`; a.click(); URL.revokeObjectURL(a.href);
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `pension-highway-work-report.csv`; a.click(); URL.revokeObjectURL(a.href);
   };
   return <Section title={`${c.detail}${s.topic ? ` · ${c.topics[s.topic as Topic] ?? ""}` : ""} (${filtered.length})`} action={<Button size="sm" variant="outline" onClick={exportCsv}><Download className="h-4 w-4 mr-1" />{c.export}</Button>}>
     <div className="flex flex-wrap gap-2 px-4 py-3 border-b border-border">

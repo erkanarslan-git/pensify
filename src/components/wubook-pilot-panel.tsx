@@ -200,7 +200,7 @@ function PilotRooms({ propertyId }: { propertyId: string }) {  const { t } = use
         <select aria-label={legacyText('Zimmertyp')} value={selected} onChange={(e) => setTypeId(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-card text-sm">
           {types.map((roomType) => <option key={roomType.id} value={roomType.id}>{roomType.name} ({t("legacyUi.people", { count: roomType.capacity })})</option>)}
         </select>
-        <span className="text-xs text-muted-foreground">{legacyText('Anzahl: 1 · Preis: aktueller Pensify-Preis')}</span>
+        <span className="text-xs text-muted-foreground">{legacyText('Anzahl: 1 · Preis: aktueller Pension Highway-Preis')}</span>
       </div>
       <label className="flex items-center gap-2 text-sm">
         <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(v === true)} />{legacyText('Ich bestätige: dieser Zimmertyp wird mit Anzahl 1 bei WuBook angelegt.')}</label>

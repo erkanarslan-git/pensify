@@ -6,9 +6,9 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/maintenance")({
   head: () => ({ meta: [
-    { title: "Wartungsarbeiten — Pensify" },
-    { name: "description", content: "Offene Wartungsarbeiten und berechtigte Mitarbeiterzuweisung in Pensify." },
-    { property: "og:title", content: "Wartungsarbeiten — Pensify" },
+    { title: "Wartungsarbeiten — Pension Highway" },
+    { name: "description", content: "Offene Wartungsarbeiten und berechtigte Mitarbeiterzuweisung in Pension Highway." },
+    { property: "og:title", content: "Wartungsarbeiten — Pension Highway" },
     { property: "og:description", content: "Wartungsarbeiten und verantwortliche Mitarbeiter verwalten." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),

@@ -12,7 +12,7 @@ import { formatDateDE } from "@/lib/date-de";
 import { maskIban, normalizeIban, extractReferences } from "@/lib/bank/matching";
 
 export const Route = createFileRoute("/_authenticated/payments/transactions")({
-  head: () => ({ meta: [{ title: "Banka hareketleri — Pensify" }, { name: "description", content: "Gelen havaleleri kontrol edin, borçlarla eşleştirin veya hariç tutun." }, { property: "og:title", content: "Banka hareketleri — Pensify" }, { property: "og:description", content: "Gelen havaleleri kontrol edin, borçlarla eşleştirin veya hariç tutun." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Banka hareketleri — Pension Highway" }, { name: "description", content: "Gelen havaleleri kontrol edin, borçlarla eşleştirin veya hariç tutun." }, { property: "og:title", content: "Banka hareketleri — Pension Highway" }, { property: "og:description", content: "Gelen havaleleri kontrol edin, borçlarla eşleştirin veya hariç tutun." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: BankTransactionsPage,
 });
 

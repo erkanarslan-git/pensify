@@ -6,7 +6,7 @@ import { getIntegrationOverview } from "@/lib/integration-status.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/app-shell";
 export const Route = createFileRoute("/_authenticated/settings/integrations")({
-  head: () => ({ meta: [{ title: "Entegrasyonlar — Pensify" }, { name: "description", content: "WuBook ve banka bağlantılarının gerçek hazırlık durumunu inceleyin." }, { property: "og:title", content: "Entegrasyonlar — Pensify" }, { property: "og:description", content: "WuBook ve banka bağlantılarının gerçek hazırlık durumunu inceleyin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Entegrasyonlar — Pension Highway" }, { name: "description", content: "WuBook ve banka bağlantılarının gerçek hazırlık durumunu inceleyin." }, { property: "og:title", content: "Entegrasyonlar — Pension Highway" }, { property: "og:description", content: "WuBook ve banka bağlantılarının gerçek hazırlık durumunu inceleyin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: IntegrationPage,
 });
 function IntegrationPage() {

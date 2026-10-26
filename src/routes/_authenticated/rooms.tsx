@@ -24,9 +24,9 @@ export const Route = createFileRoute("/_authenticated/rooms")({
   validateSearch: (s: Record<string, unknown>): { status?: string } =>
     typeof s.status === "string" && ROOM_STATUSES.includes(s.status) ? { status: s.status } : {},
   head: () => ({ meta: [
-    { title: "Zimmerübersicht — Pensify" },
+    { title: "Zimmerübersicht — Pension Highway" },
     { name: "description", content: "Zimmer nach Pension, Typ und Status verwalten." },
-    { property: "og:title", content: "Zimmerübersicht — Pensify" },
+    { property: "og:title", content: "Zimmerübersicht — Pension Highway" },
     { property: "og:description", content: "Zimmer nach Pension, Typ und Status verwalten." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },

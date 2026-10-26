@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Ayarlar — Pensify" }, { name: "description", content: "Pensify ayarlarını ve şirket bilgilerini yönetin." }, { property: "og:title", content: "Ayarlar — Pensify" }, { property: "og:description", content: "Pensify ayarlarını ve şirket bilgilerini yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Ayarlar — Pension Highway" }, { name: "description", content: "Pension Highway ayarlarını ve şirket bilgilerini yönetin." }, { property: "og:title", content: "Ayarlar — Pension Highway" }, { property: "og:description", content: "Pension Highway ayarlarını ve şirket bilgilerini yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsLayout,
 });
 

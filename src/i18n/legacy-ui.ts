@@ -64,7 +64,7 @@ const entries = {
   minChars: ["Mindestens {{count}} Zeichen", "At least {{count}} characters", "En az {{count}} karakter"],
   invalidFields: ["{{count}} Felder unvollständig oder fehlerhaft", "{{count}} fields incomplete or invalid", "{{count}} alan eksik veya hatalı"],
   actionFailed: ["Aktion fehlgeschlagen: {{error}}", "Action failed: {{error}}", "İşlem başarısız: {{error}}"],
-  reached: ["Webhook hat Pensify erreicht {{time}}", "Webhook reached Pensify {{time}}", "Bildirim Pensify'a ulaştı {{time}}"],
+  reached: ["Webhook hat Pension Highway erreicht {{time}}", "Webhook reached Pension Highway {{time}}", "Bildirim Pension Highway’e ulaştı {{time}}"],
   readSuccess: ["API-Zugriff erfolgreich · Testunterkunft: {{code}} · Offene Buchungen: {{count}} · Keine Daten geändert", "API access successful · Test property: {{code}} · Open bookings: {{count}} · No data changed", "API erişimi başarılı · Deneme lokasyonu: {{code}} · Açık rezervasyon: {{count}} · Veriler değişmedi"],
   pilotLinked: ["WuBook-Code {{code}} · Konto {{account}} · Verkauf {{state}}", "WuBook code {{code}} · Account {{account}} · Sales {{state}}", "WuBook kodu {{code}} · Hesap {{account}} · Satış {{state}}"],
   alreadyLinked: ["Diese Pension ist bereits mit WuBook verbunden (Code {{code}}).", "This property is already linked to WuBook (code {{code}}).", "Bu lokasyon zaten WuBook'a bağlı (kod {{code}})."],

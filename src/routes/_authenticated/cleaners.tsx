@@ -30,9 +30,9 @@ import {
 
 export const Route = createFileRoute("/_authenticated/cleaners")({
   head: () => ({ meta: [
-    { title: "Personal — Pensify" },
+    { title: "Personal — Pension Highway" },
     { name: "description", content: "Personal für Reinigung, Wartung und Büro im Überblick." },
-    { property: "og:title", content: "Personal — Pensify" },
+    { property: "og:title", content: "Personal — Pension Highway" },
     { property: "og:description", content: "Personal für Reinigung, Wartung und Büro im Überblick." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },

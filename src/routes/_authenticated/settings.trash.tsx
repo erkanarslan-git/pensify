@@ -6,7 +6,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { ReservationTrash } from "@/components/reservation-trash";
 
 export const Route = createFileRoute("/_authenticated/settings/trash")({
-  head: () => ({ meta: [{ title: "Çöp kutusu — Pensify" }, { name: "description", content: "Silinen rezervasyonları geri alın veya kalıcı silin." }, { property: "og:title", content: "Çöp kutusu — Pensify" }, { property: "og:description", content: "Silinen rezervasyonları geri alın veya kalıcı silin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Çöp kutusu — Pension Highway" }, { name: "description", content: "Silinen rezervasyonları geri alın veya kalıcı silin." }, { property: "og:title", content: "Çöp kutusu — Pension Highway" }, { property: "og:description", content: "Silinen rezervasyonları geri alın veya kalıcı silin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TrashPage,
 });
 

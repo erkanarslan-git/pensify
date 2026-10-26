@@ -8,7 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/properties/$id/qr")({
-  head: () => ({ meta: [{ title: "Standort QR — Pensify" }, { name: "description", content: "Standortbezogene QR Karten für Pensify Arbeitszeiten." }, { property: "og:title", content: "Standort QR — Pensify" }, { property: "og:description", content: "Standortbezogene QR Karten für Pensify Arbeitszeiten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Standort QR — Pension Highway" }, { name: "description", content: "Standortbezogene QR Karten für Pension Highway Arbeitszeiten." }, { property: "og:title", content: "Standort QR — Pension Highway" }, { property: "og:description", content: "Standortbezogene QR Karten für Pension Highway Arbeitszeiten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: QrCardPage,
 });
 

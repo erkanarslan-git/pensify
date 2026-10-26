@@ -25,10 +25,10 @@ import i18n from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/properties/")({
   head: () => ({ meta: [
-    { title: `${i18n.t("nav.properties")} — Pensify` },
-    { name: "description", content: "Pensify tesislerini ve oda dağılımlarını yönetin." },
-    { property: "og:title", content: `${i18n.t("nav.properties")} — Pensify` },
-    { property: "og:description", content: "Pensify tesislerini ve oda dağılımlarını yönetin." },
+    { title: `${i18n.t("nav.properties")} — Pension Highway` },
+    { name: "description", content: "Pension Highway tesislerini ve oda dağılımlarını yönetin." },
+    { property: "og:title", content: `${i18n.t("nav.properties")} — Pension Highway` },
+    { property: "og:description", content: "Pension Highway tesislerini ve oda dağılımlarını yönetin." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),

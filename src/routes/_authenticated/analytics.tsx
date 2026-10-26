@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sourceColor, sourceLabel } from "@/lib/guest-color";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
-  head: () => ({ meta: [{ title: "Analytics — Pensify" }, { name: "description", content: "Belegung und Geschäftsentwicklung in Pensify auswerten." }, { property: "og:title", content: "Analytics — Pensify" }, { property: "og:description", content: "Belegung und Geschäftsentwicklung in Pensify auswerten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Analytics — Pension Highway" }, { name: "description", content: "Belegung und Geschäftsentwicklung in Pension Highway auswerten." }, { property: "og:title", content: "Analytics — Pension Highway" }, { property: "og:description", content: "Belegung und Geschäftsentwicklung in Pension Highway auswerten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AnalyticsPage,
 });
 

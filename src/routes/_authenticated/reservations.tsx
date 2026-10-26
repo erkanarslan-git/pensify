@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/reservations")({
     if (typeof s.created === "string" && s.created) out.created = s.created;
     return out;
   },
-  head: () => ({ meta: [{ title: "Rezervasyonlar — Pensify" }, { name: "description", content: "Pensify'da rezervasyonları ve girişleri yönetin." }, { property: "og:title", content: "Rezervasyonlar — Pensify" }, { property: "og:description", content: "Pensify'da rezervasyonları ve girişleri yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Rezervasyonlar — Pension Highway" }, { name: "description", content: "Pension Highway'da rezervasyonları ve girişleri yönetin." }, { property: "og:title", content: "Rezervasyonlar — Pension Highway" }, { property: "og:description", content: "Pension Highway'da rezervasyonları ve girişleri yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ReservationsPage,
 });
 
@@ -108,7 +108,7 @@ function ReservationsPage() {
       const headings = [t("resv.thGuest"), t("resv.companyTag"), t("calendar.allPensions"), t("resv.thRoom"), t("resv.thPeriod"), t("resv.thStatus"), t("common.allSources"), t("resv.thAmount")];
       const lines = [headings, ...rows.map(r => [r.guest_name, r.company_name, r.property?.name, r.room?.number, `${r.check_in} → ${r.check_out}`, t(`resStatus.${r.status}`), sourceLabel(r.channel, k => t(k)), r.revenue])];
       const url = URL.createObjectURL(new Blob(["\ufeff" + lines.map(line => line.map(reservationCsvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }));
-      const anchor = document.createElement("a"); anchor.href = url; anchor.download = `Pensify-${today}.csv`; anchor.click();
+      const anchor = document.createElement("a"); anchor.href = url; anchor.download = `Pension Highway-${today}.csv`; anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch { toast.error(t("resv.loadError")); } finally { setExportBusy(false); }
   }

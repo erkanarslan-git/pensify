@@ -90,7 +90,7 @@ export function WuBookTestPanel() {
 
   const [form, setForm] = useState<Record<FormKey, string>>(() => {
     const f = Object.fromEntries(FIELDS.map(([k]) => [k, ""])) as Record<FormKey, string>;
-    f.name = "Pensify API Test";
+    f.name = "Pension Highway API Test";
     return f;
   });
   const [reviewing, setReviewing] = useState(false);
@@ -242,13 +242,13 @@ export function WuBookTestPanel() {
             <ul className="space-y-1">
               <Step ok={wt ? true : null} label={`${legacyText("Test gestartet")} ${wt ? fmt(wt["started_at"]) : ""}`} />
               <Step ok={accepted} label={wt?.["error"] ? `WuBook: ${String(wt["error"])}` : legacyText('WuBook hat den Aufruf angenommen')} />
-              <Step ok={reached} label={reached === false ? legacyText('Webhook hat Pensify nicht erreicht (keine Antwort innerhalb von 30 Sekunden)') : t("legacyUi.reached", { time: receivedAt ? fmt(receivedAt) : "" })} />
+              <Step ok={reached} label={reached === false ? legacyText('Webhook hat Pension Highway nicht erreicht (keine Antwort innerhalb von 30 Sekunden)') : t("legacyUi.reached", { time: receivedAt ? fmt(receivedAt) : "" })} />
               <Step ok={reached} label={legacyText('HTTP 200 zurückgegeben (Test: lcode 1000 / rcode 2000)')} />
             </ul>
             {(accepted === false || reached === false) && (
               <p className="text-sm text-destructive">{legacyText('Test fehlgeschlagen. Bitte erneut testen; bleibt es rot, Webhook-Adresse prüfen.')}</p>
             )}
-            {reached && <p className="text-sm text-success">{legacyText('Test erfolgreich – WuBook erreicht Pensify.')}</p>}
+            {reached && <p className="text-sm text-success">{legacyText('Test erfolgreich – WuBook erreicht Pension Highway.')}</p>}
           </section>
 
           <section className="space-y-2">

@@ -16,7 +16,7 @@ export function buildICal(opts: { calName: string; events: ICalEvent[] }) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Pensify//Channel Sync//EN",
+    "PRODID:-//Pension Highway//Channel Sync//EN",
     "CALSCALE:GREGORIAN",
     `X-WR-CALNAME:${opts.calName}`,
   ];

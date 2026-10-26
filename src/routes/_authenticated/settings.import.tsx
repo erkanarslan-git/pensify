@@ -14,9 +14,9 @@ import {
 export const Route = createFileRoute("/_authenticated/settings/import")({
   head: () => ({
     meta: [
-      { title: "Datenimport — Pensify" },
+      { title: "Datenimport — Pension Highway" },
       { name: "description", content: "Pensionen, Zimmertypen und Zimmer aus WordPress-Exporten prüfen und importieren." },
-      { property: "og:title", content: "Datenimport — Pensify" },
+      { property: "og:title", content: "Datenimport — Pension Highway" },
       { property: "og:description", content: "Pensionen, Zimmertypen und Zimmer aus WordPress-Exporten prüfen und importieren." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

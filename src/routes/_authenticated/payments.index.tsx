@@ -14,7 +14,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/payments/")({
-  head: () => ({ meta: [{ title: "Tahsilat — Pensify" }, { name: "description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:title", content: "Tahsilat — Pensify" }, { property: "og:description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Tahsilat — Pension Highway" }, { name: "description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:title", content: "Tahsilat — Pension Highway" }, { property: "og:description", content: "Uzun süreli konaklamalar için aylık ödeme planları ve ödemeyenler listesi." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: PaymentsPage,
 });
 

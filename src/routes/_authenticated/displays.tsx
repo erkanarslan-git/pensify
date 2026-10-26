@@ -14,7 +14,7 @@ import { loadChannelColors } from "@/lib/channel-colors";
 import { loadActiveTvDisplays } from "@/lib/tv-displays";
 
 export const Route = createFileRoute("/_authenticated/displays")({
-  head: () => ({ meta: [{ title: "TV Ekranları — Pensify" }, { name: "description", content: "Pensify anonim operasyon ekranlarının bağlantılarını yönetin." }, { property: "og:title", content: "TV Ekranları — Pensify" }, { property: "og:description", content: "Firma kapsamlı, iptal edilebilir operasyon ekranları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "TV Ekranları — Pension Highway" }, { name: "description", content: "Pension Highway anonim operasyon ekranlarının bağlantılarını yönetin." }, { property: "og:title", content: "TV Ekranları — Pension Highway" }, { property: "og:description", content: "Firma kapsamlı, iptal edilebilir operasyon ekranları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DisplaysPage,
 });
 

@@ -41,9 +41,9 @@ function Spark({ data, stroke }: { data: number[]; stroke: string }) {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Panel — Pensify" },
+      { title: "Panel — Pension Highway" },
       { name: "description", content: "Pansiyonlar, odalar ve temizlik için günlük genel bakış." },
-      { property: "og:title", content: "Panel — Pensify" },
+      { property: "og:title", content: "Panel — Pension Highway" },
       { property: "og:description", content: "Pansiyonlar, odalar ve temizlik için günlük genel bakış." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

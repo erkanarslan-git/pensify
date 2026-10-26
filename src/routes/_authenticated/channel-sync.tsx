@@ -18,7 +18,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { ACTIVE_CHANNELS, type ActiveChannel, normalizeChannel, sourceColor, sourceLabel } from "@/lib/guest-color";
 
 export const Route = createFileRoute("/_authenticated/channel-sync")({
-  head: () => ({ meta: [{ title: "Kanäle — Pensify" }, { name: "description", content: "Kanalverbindungen und Übertragungen in Pensify prüfen." }, { property: "og:title", content: "Kanäle — Pensify" }, { property: "og:description", content: "Kanalverbindungen und Übertragungen in Pensify prüfen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Kanäle — Pension Highway" }, { name: "description", content: "Kanalverbindungen und Übertragungen in Pension Highway prüfen." }, { property: "og:title", content: "Kanäle — Pension Highway" }, { property: "og:description", content: "Kanalverbindungen und Übertragungen in Pension Highway prüfen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ChannelSyncPage,
 });
 

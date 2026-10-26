@@ -17,7 +17,7 @@ import { loadCalendarData } from "@/lib/calendar-data.functions";
 import { businessDate } from "@/lib/business-time";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  head: () => ({ meta: [{ title: "Takvim — Pensify" }, { name: "description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pensify" }, { property: "og:description", content: "Pensify takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Takvim — Pension Highway" }, { name: "description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pension Highway" }, { property: "og:description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CalendarPage,
 });
 
