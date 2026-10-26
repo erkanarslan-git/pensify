@@ -258,7 +258,7 @@ function ReservationsPage() {
                           </div>
                         </div>
                         <span className="md:hidden text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
-                        <span className="hidden md:block text-muted-foreground tabular-nums whitespace-nowrap">{r.room?.number ?? "—"}</span>
+                        <span className="hidden md:block text-muted-foreground tabular-nums truncate pr-2">{r.room?.number ?? "—"}</span>
                         <span className="text-xs md:text-sm tabular-nums text-muted-foreground md:text-foreground">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
                         <span className="md:block text-right md:text-left"><Badge tone={st.tone}>{st.label}</Badge></span>
                         <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
