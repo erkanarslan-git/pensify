@@ -30,7 +30,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
