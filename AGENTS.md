@@ -32,7 +32,7 @@
 - Read subdirectory AGENTS.md before edits there.
 - Payments: scoped atomic receipts/plans, persistent retry IDs, relational pagination; separate finance powers; history blocks deletion. Why: no duplicate payment or loss.
 - Work reports use owner-only department_work_report in the active organization; task/time powers stay separate. Why: prevent report delegation and tenant leaks.
-- Sidebar: six groups; /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
+- Sidebar: grouped navigation (channels have their own group); /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
 - TV: hashed revocable org tokens, strict anonymous DTO, daily dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages; management lists active links only. Why: privacy, no replay/clutter.

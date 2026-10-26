@@ -1,9 +1,9 @@
+import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
-import { Switch } from "@/components/ui/switch";
 import { SALES_CHANNELS, summarizeDistribution, toggleChannel, type SalesChannel, type SyncMode } from "@/lib/sales-channels";
 
 interface Row { id: string; number: string; property_id: string; active: boolean; channel_sync_mode: SyncMode; sales_channels: string[] }
@@ -126,18 +126,26 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
                 {!propertyId && <div className="text-[11px] text-muted-foreground [overflow-wrap:anywhere]">{propName(r.property_id)}</div>}
               </div>
             </div>
-            <label className="flex items-center gap-2 text-xs sm:w-48">
-              <Switch disabled={!canManage || busy} checked={r.channel_sync_mode === "api"}
-                onCheckedChange={(on) => save([r.id], on ? "api" : "manual", () => null)} aria-label={t("salesChannels.api")} />
-              {r.channel_sync_mode === "api" ? t("salesChannels.api") : t("salesChannels.manual")}
-            </label>
+            <div role="radiogroup" aria-label={t("salesChannels.mode")} className="inline-flex shrink-0 overflow-hidden rounded-full border border-border text-xs sm:w-auto">
+              {(["manual", "api"] as const).map((m) => {
+                const on = r.channel_sync_mode === m;
+                return (
+                  <button key={m} role="radio" aria-checked={on} disabled={!canManage || busy || on}
+                    onClick={() => save([r.id], m, () => null)}
+                    className={`px-3 py-1 transition-colors disabled:cursor-default ${on ? (m === "manual" ? "bg-warning text-warning-foreground font-semibold" : "bg-success text-success-foreground font-semibold") : "text-muted-foreground hover:bg-accent"}`}>
+                    {t(m === "manual" ? "salesChannels.manual" : "salesChannels.api")}
+                  </button>
+                );
+              })}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {SALES_CHANNELS.map((c: SalesChannel) => {
                 const on = r.sales_channels.includes(c);
                 return (
                   <button key={c} disabled={!canManage || busy} aria-pressed={on}
                     onClick={() => save([r.id], null, () => toggleChannel(r.sales_channels, c))}
-                    className={`rounded-full border px-2.5 py-1 text-xs transition-colors disabled:cursor-default ${on ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:bg-accent"}`}>
+                    className={`rounded-full border px-2.5 py-1 text-xs transition-colors disabled:cursor-default ${on ? "font-semibold text-[var(--channel-fg)] border-transparent bg-[var(--channel-bg)]" : "border-border text-muted-foreground hover:bg-accent"}`}
+                    style={{ "--channel-bg": `var(--channel-${c})`, "--channel-fg": `var(--channel-${c}-foreground)` } as React.CSSProperties}>
                     {t(`salesChannels.${c}`)}
                   </button>
                 );

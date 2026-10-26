@@ -23,6 +23,7 @@
     "todos": "To-dos",
     "aiAssistant": "AI Assistant",
     "groups": {
+      "channels": "Channels",
       "daily": "Daily Work",
       "stay": "Stays",
       "operations": "Operations",
