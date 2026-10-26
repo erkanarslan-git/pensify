@@ -10,7 +10,7 @@ import { LoadError } from "@/components/load-error";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo, useId } from "react";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
-import { sourceColor, sourceLabel } from "@/lib/guest-color";
+import { normalizeChannel, sourceColor, sourceLabel } from "@/lib/guest-color";
 import { formatDateDE } from "@/lib/date-de";
 import {
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -66,7 +66,7 @@ function Dashboard() {
       const [rooms, tasks, res, props, live] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
-        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(6),
+        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(3),
         supabase.from("properties").select("id"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
@@ -131,7 +131,7 @@ function Dashboard() {
   }, [weekRes, totalRooms, i18n.language]);
 
   const channelData = useMemo(() => Object.entries(
-    (weekRes ?? []).reduce<Record<string, number>>((acc, r: any) => { acc[r.channel] = (acc[r.channel] ?? 0) + 1; return acc; }, {})
+    (weekRes ?? []).reduce<Record<string, number>>((acc, r: any) => { const ch = normalizeChannel(r.channel); acc[ch] = (acc[ch] ?? 0) + 1; return acc; }, {})
   ).map(([name, value]) => ({ name, value })), [weekRes]);
 
   // 7-day trend series for the v2 tile sparklines (real counts where history exists).
@@ -319,7 +319,7 @@ function Dashboard() {
           >
             <div className="divide-y divide-border -my-2">
               {upcoming.map((r) => (
-                <div key={r.id} className="flex min-w-0 flex-col items-start gap-3 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <div key={r.id} className="flex min-w-0 flex-col items-start gap-3 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold shrink-0">
                       {(r.guest_name ?? "").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
