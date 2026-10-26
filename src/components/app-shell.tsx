@@ -143,7 +143,6 @@ export function AppShell({ title, subtitle, actions, children }: {
 }) {
   const { t, i18n } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();

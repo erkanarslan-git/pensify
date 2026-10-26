@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { legacyText } from "@/i18n/legacy-text";
 import { displayLocale } from "@/i18n/legacy-ui";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -15,7 +15,6 @@ export const Route = createFileRoute("/_authenticated/request-access")({
 
 function RequestAccessPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [role, setRole] = useState<AppRole>("reception");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
