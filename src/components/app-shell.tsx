@@ -26,6 +26,7 @@ import {
   Wallet,
   Wrench,
   Monitor,
+  Store,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { LockScreen } from "@/components/lock-screen";
