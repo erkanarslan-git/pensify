@@ -30,6 +30,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
+import { Route as AuthenticatedSalesChannelsRouteImport } from './routes/_authenticated/sales-channels'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
@@ -164,6 +165,12 @@ const AuthenticatedRoomsRoute = AuthenticatedRoomsRouteImport.update({
   path: '/rooms',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSalesChannelsRoute =
+  AuthenticatedSalesChannelsRouteImport.update({
+    id: '/sales-channels',
+    path: '/sales-channels',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -322,6 +329,7 @@ export interface FileRoutesByFullPath {
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
+  '/sales-channels': typeof AuthenticatedSalesChannelsRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
@@ -367,6 +375,7 @@ export interface FileRoutesByTo {
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
+  '/sales-channels': typeof AuthenticatedSalesChannelsRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
@@ -415,6 +424,7 @@ export interface FileRoutesById {
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
+  '/_authenticated/sales-channels': typeof AuthenticatedSalesChannelsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/request-access'
     | '/reservations'
     | '/rooms'
+    | '/sales-channels'
     | '/settings'
     | '/team'
     | '/time-tracking'
@@ -509,6 +520,7 @@ export interface FileRouteTypes {
     | '/request-access'
     | '/reservations'
     | '/rooms'
+    | '/sales-channels'
     | '/settings'
     | '/team'
     | '/time-tracking'
@@ -556,6 +568,7 @@ export interface FileRouteTypes {
     | '/_authenticated/request-access'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
+    | '/_authenticated/sales-channels'
     | '/_authenticated/settings'
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
@@ -745,6 +758,13 @@ declare module '@tanstack/react-router' {
       path: '/rooms'
       fullPath: '/rooms'
       preLoaderRoute: typeof AuthenticatedRoomsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sales-channels': {
+      id: '/_authenticated/sales-channels'
+      path: '/sales-channels'
+      fullPath: '/sales-channels'
+      preLoaderRoute: typeof AuthenticatedSalesChannelsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -955,6 +975,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
+  AuthenticatedSalesChannelsRoute: typeof AuthenticatedSalesChannelsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
@@ -987,6 +1008,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,
+  AuthenticatedSalesChannelsRoute: AuthenticatedSalesChannelsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
