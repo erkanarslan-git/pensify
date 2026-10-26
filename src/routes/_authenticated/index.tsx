@@ -66,7 +66,7 @@ function Dashboard() {
       const [rooms, tasks, res, props, live] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
-        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(3),
+        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(4),
         supabase.from("properties").select("id"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
