@@ -360,6 +360,102 @@ export function AppShell({ title, subtitle, actions, children }: {
     </>
   );
 
+  const searchBox = (wide: boolean) => (
+    <div className={`relative ${wide ? "w-full" : "hidden lg:block"}`}>
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <input
+        value={pageQuery}
+        onChange={(e) => setPageQuery(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && pageMatches[0]) goToPage(pageMatches[0].to);
+          if (e.key === "Escape") setPageQuery("");
+        }}
+        onBlur={() => setTimeout(() => setPageQuery(""), 150)}
+        placeholder={searchLabel}
+        className={`h-10 rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/25 ${wide ? "w-full" : "w-52 rounded-xl"}`}
+      />
+      {pageMatches.length > 0 && (
+        <div className="absolute left-0 top-11 z-20 w-64 overflow-hidden rounded-xl border border-border bg-popover shadow-elevated">
+          {pageMatches.map((item) => (
+            <button
+              key={item.to}
+              onMouseDown={(e) => { e.preventDefault(); goToPage(item.to); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+            >
+              <item.icon className="h-4 w-4 text-muted-foreground" /> {t(item.labelKey)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const headerButtons = (
+    <>
+      {canSeeNotifications && (
+        <Link
+          to="/notifications"
+          className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+          aria-label={t("nav.actionCenter")}
+          title={t("nav.actionCenter")}
+        >
+          <Bell className="w-4 h-4" />
+        </Link>
+      )}
+      <button
+        onClick={() => setV2((v) => !v)}
+        className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+        aria-label={v2Label}
+        title={v2Label}
+      >
+        <Palette className="w-4 h-4" />
+      </button>
+      {actions}
+      <button
+        onClick={lock}
+        className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+        aria-label={lockLabel}
+        title={lockLabel}
+      >
+        <Lock className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => setDark((d) => !d)}
+        className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+        aria-label={t("common.theme")}
+      >
+        {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      </button>
+    </>
+  );
+
+  const menuButtons = (
+    <div className="flex items-center gap-2">
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon"
+            className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
+            aria-label={t("shift.openMenu")}
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
+          <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
+           <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
+        </SheetContent>
+      </Sheet>
+      <Button variant="outline" size="icon"
+        onClick={toggleCollapsed}
+        className="hidden md:grid w-10 h-10 rounded-xl border border-border place-items-center hover:bg-accent transition-colors"
+        aria-label={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
+        title={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
+      >
+        {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0 border-r border-sidebar-border bg-sidebar/80 backdrop-blur-sm hidden md:flex flex-col transition-[width] duration-200`}>
@@ -367,99 +463,56 @@ export function AppShell({ title, subtitle, actions, children }: {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="min-h-14 md:min-h-16 border-b border-border grid grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 md:px-6 py-2 sticky top-0 bg-background/80 backdrop-blur-md z-10">
-          <div className="flex items-center gap-2">
-            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon"
-                  className="md:hidden w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors"
-                  aria-label={t("shift.openMenu")}
-                >
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72 flex flex-col bg-sidebar">
-                <SheetTitle className="sr-only">{t("app.name")}</SheetTitle>
-                <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
-              </SheetContent>
-            </Sheet>
-            <Button variant="outline" size="icon"
-              onClick={toggleCollapsed}
-              className="hidden md:grid w-10 h-10 rounded-xl border border-border place-items-center hover:bg-accent transition-colors"
-              aria-label={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
-              title={t(collapsed ? "shift.expandMenu" : "shift.collapseMenu")}
-            >
-              {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-            </Button>
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-base md:text-lg font-semibold tracking-tight truncate">{title}</h1>
-            {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
-          </div>
-          <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2 justify-self-end">
-            <div className="relative hidden lg:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={pageQuery}
-                onChange={(e) => setPageQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && pageMatches[0]) goToPage(pageMatches[0].to);
-                  if (e.key === "Escape") setPageQuery("");
-                }}
-                onBlur={() => setTimeout(() => setPageQuery(""), 150)}
-                placeholder={searchLabel}
-                className="h-10 w-52 rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/25"
-              />
-              {pageMatches.length > 0 && (
-                <div className="absolute right-0 top-11 z-20 w-64 overflow-hidden rounded-xl border border-border bg-popover shadow-elevated">
-                  {pageMatches.map((item) => (
-                    <button
-                      key={item.to}
-                      onMouseDown={(e) => { e.preventDefault(); goToPage(item.to); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+        {v2 ? (
+          <header className="min-h-14 md:min-h-16 border-b border-border flex items-center gap-2 md:gap-3 px-3 md:px-6 py-2 sticky top-0 bg-background/80 backdrop-blur-md z-10">
+            {menuButtons}
+            <div className="flex-1 max-w-xl hidden sm:block">{searchBox(true)}</div>
+            <div className="flex flex-wrap items-center gap-2 ml-auto">
+              {headerButtons}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full border border-border py-1 pl-1 pr-2 hover:bg-accent transition-colors shrink-0">
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">{initials}</span>
+                    <span className="hidden max-w-32 truncate text-sm font-medium lg:block">{profile?.full_name || profile?.email || "—"}</span>
+                    <ChevronDown className="hidden h-4 w-4 text-muted-foreground lg:block" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="truncate">{profile?.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5" /> {t("common.language")}
+                  </DropdownMenuLabel>
+                  {LANGS.map((l) => (
+                    <DropdownMenuItem
+                      key={l.code}
+                      onClick={() => i18n.changeLanguage(l.code)}
+                      className={i18n.resolvedLanguage === l.code ? "bg-accent" : ""}
                     >
-                      <item.icon className="h-4 w-4 text-muted-foreground" /> {t(item.labelKey)}
-                    </button>
+                      {l.label}
+                    </DropdownMenuItem>
                   ))}
-                </div>
-              )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" /> {t("common.signOut")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            {canSeeNotifications && (
-              <Link
-                to="/notifications"
-                className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
-                aria-label={t("nav.actionCenter")}
-                title={t("nav.actionCenter")}
-              >
-                <Bell className="w-4 h-4" />
-              </Link>
-            )}
-            <button
-              onClick={() => setV2((v) => !v)}
-              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
-              aria-label={v2Label}
-              title={v2Label}
-            >
-              <Palette className="w-4 h-4" />
-            </button>
-            {actions}
-            <button
-              onClick={lock}
-              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
-              aria-label={lockLabel}
-              title={lockLabel}
-            >
-              <Lock className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setDark((d) => !d)}
-              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
-              aria-label={t("common.theme")}
-            >
-              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-          </div>
-        </header>
+          </header>
+        ) : (
+          <header className="min-h-14 md:min-h-16 border-b border-border grid grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 md:px-6 py-2 sticky top-0 bg-background/80 backdrop-blur-md z-10">
+            {menuButtons}
+            <div className="min-w-0">
+              <h1 className="text-base md:text-lg font-semibold tracking-tight truncate">{title}</h1>
+              {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
+            </div>
+            <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2 justify-self-end">
+              {searchBox(false)}
+              {headerButtons}
+            </div>
+          </header>
+        )}
         <div className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</div>
       </main>
       {locked && <div className="fixed inset-0 z-[100] bg-background" aria-hidden="true" />}
