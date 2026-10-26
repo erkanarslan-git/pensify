@@ -279,7 +279,7 @@ function Dashboard() {
 
         <div className="lg:col-span-2">
           <Section title={t("dashboard.weeklyOccupancy")}>
-            <div className="h-64">
+            <div className="h-full min-h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weekly} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
@@ -298,7 +298,7 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4 [&>*]:min-w-0">
         <Section title={t("dashboard.channelMix")}>
-          <div className="h-64">
+          <div className="h-full min-h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={channelData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4} strokeWidth={0}>
