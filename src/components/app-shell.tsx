@@ -235,6 +235,15 @@ export function AppShell({ title, subtitle, actions, children }: {
     (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr"
   ] ?? "Bildschirm sperren";
 
+  // Quick page search in the top bar (filters the visible menu, jumps on pick).
+  const [pageQuery, setPageQuery] = useState("");
+  const allNavItems = visibleGroups.flatMap((g) => g.items);
+  const pageMatches = pageQuery.trim()
+    ? allNavItems.filter((i) => t(i.labelKey).toLowerCase().includes(pageQuery.trim().toLowerCase())).slice(0, 6)
+    : [];
+  const canSeeNotifications = allNavItems.some((i) => i.to === "/notifications");
+  const goToPage = (to: string) => { setPageQuery(""); navigate({ to: to as never }); };
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -375,6 +384,51 @@ export function AppShell({ title, subtitle, actions, children }: {
             {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
           </div>
           <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2 justify-self-end">
+            <div className="relative hidden lg:block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={pageQuery}
+                onChange={(e) => setPageQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && pageMatches[0]) goToPage(pageMatches[0].to);
+                  if (e.key === "Escape") setPageQuery("");
+                }}
+                onBlur={() => setTimeout(() => setPageQuery(""), 150)}
+                placeholder={searchLabel}
+                className="h-10 w-52 rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/25"
+              />
+              {pageMatches.length > 0 && (
+                <div className="absolute right-0 top-11 z-20 w-64 overflow-hidden rounded-xl border border-border bg-popover shadow-elevated">
+                  {pageMatches.map((item) => (
+                    <button
+                      key={item.to}
+                      onMouseDown={(e) => { e.preventDefault(); goToPage(item.to); }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+                    >
+                      <item.icon className="h-4 w-4 text-muted-foreground" /> {t(item.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {canSeeNotifications && (
+              <Link
+                to="/notifications"
+                className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+                aria-label={t("nav.actionCenter")}
+                title={t("nav.actionCenter")}
+              >
+                <Bell className="w-4 h-4" />
+              </Link>
+            )}
+            <button
+              onClick={() => setV2((v) => !v)}
+              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+              aria-label={v2Label}
+              title={v2Label}
+            >
+              <Palette className="w-4 h-4" />
+            </button>
             {actions}
             <button
               onClick={lock}
