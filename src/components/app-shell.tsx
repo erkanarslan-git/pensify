@@ -27,7 +27,6 @@ import {
   Wrench,
   Monitor,
   Store,
-  Palette,
   Search,
   ChevronDown,
 } from "lucide-react";
