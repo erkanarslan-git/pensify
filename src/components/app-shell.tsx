@@ -30,7 +30,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -235,14 +235,39 @@ export function AppShell({ title, subtitle, actions, children }: {
     (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr"
   ] ?? "Bildschirm sperren";
 
-  // Quick page search in the top bar (filters the visible menu, jumps on pick).
+  // Quick page search: on focus shows frequent pages + all menu groups; typing filters.
   const [pageQuery, setPageQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
   const allNavItems = visibleGroups.flatMap((g) => g.items);
-  const pageMatches = pageQuery.trim()
-    ? allNavItems.filter((i) => t(i.labelKey).toLowerCase().includes(pageQuery.trim().toLowerCase())).slice(0, 6)
+  const frequentPaths = ["/calendar", "/reservations", "/cleaning", "/maintenance", "/todos", "/"];
+  const frequentItems = frequentPaths
+    .map((p) => allNavItems.find((i) => i.to === p))
+    .filter((i): i is NavItem => !!i);
+  const q = pageQuery.trim().toLocaleLowerCase();
+  const pageMatches = q
+    ? allNavItems.filter((i) => t(i.labelKey).toLocaleLowerCase().includes(q))
     : [];
+  const searchSections: { label: string; items: NavItem[] }[] = q
+    ? [{ label: "", items: pageMatches }]
+    : [
+        { label: ({ de: "Häufig genutzt", en: "Frequently used", tr: "Sık kullanılanlar" } as Record<string, string>)[lang] ?? "Häufig genutzt", items: frequentItems },
+        ...visibleGroups.map((g) => ({ label: t(g.labelKey), items: g.items.filter((i) => !frequentPaths.includes(i.to)) })).filter((s) => s.items.length > 0),
+      ];
+  const flatResults = searchSections.flatMap((s) => s.items);
   const canSeeNotifications = allNavItems.some((i) => i.to === "/notifications");
-  const goToPage = (to: string) => { setPageQuery(""); navigate({ to: to as never }); };
+  const goToPage = (to: string) => { setPageQuery(""); setSearchOpen(false); navigate({ to: to as never }); };
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -349,35 +374,62 @@ export function AppShell({ title, subtitle, actions, children }: {
     </>
   );
 
-  const searchBox = (wide: boolean) => (
+  const searchBox = (wide: boolean) => {
+    let idx = -1;
+    return (
     <div className={`relative ${wide ? "w-full" : "hidden lg:block"}`}>
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <input
+        ref={wide ? searchInputRef : undefined}
         value={pageQuery}
-        onChange={(e) => setPageQuery(e.target.value)}
+        onChange={(e) => { setPageQuery(e.target.value); setActiveIdx(0); setSearchOpen(true); }}
+        onFocus={() => { setSearchOpen(true); setActiveIdx(0); }}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && pageMatches[0]) goToPage(pageMatches[0].to);
-          if (e.key === "Escape") setPageQuery("");
+          if (e.key === "ArrowDown") { e.preventDefault(); setActiveIdx((i) => Math.min(i + 1, flatResults.length - 1)); }
+          if (e.key === "ArrowUp") { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, 0)); }
+          if (e.key === "Enter" && flatResults[activeIdx]) goToPage(flatResults[activeIdx].to);
+          if (e.key === "Escape") { setPageQuery(""); setSearchOpen(false); (e.target as HTMLInputElement).blur(); }
         }}
-        onBlur={() => setTimeout(() => setPageQuery(""), 150)}
+        onBlur={() => setTimeout(() => { setPageQuery(""); setSearchOpen(false); }, 150)}
         placeholder={searchLabel}
-        className={`h-10 rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/25 ${wide ? "w-full" : "w-52 rounded-xl"}`}
+        className={`h-10 rounded-full border border-border bg-background pl-9 pr-14 text-sm outline-none focus:ring-2 focus:ring-ring/25 ${wide ? "w-full" : "w-52 rounded-xl"}`}
       />
-      {pageMatches.length > 0 && (
-        <div className="absolute left-0 top-11 z-20 w-64 overflow-hidden rounded-xl border border-border bg-popover shadow-elevated">
-          {pageMatches.map((item) => (
-            <button
-              key={item.to}
-              onMouseDown={(e) => { e.preventDefault(); goToPage(item.to); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
-            >
-              <item.icon className="h-4 w-4 text-muted-foreground" /> {t(item.labelKey)}
-            </button>
+      {wide && (
+        <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground md:block">Ctrl K</kbd>
+      )}
+      {searchOpen && (
+        <div className="absolute left-0 top-12 z-30 max-h-[70vh] w-full min-w-72 overflow-y-auto rounded-2xl border border-border bg-popover p-1.5 shadow-elevated">
+          {flatResults.length === 0 && (
+            <p className="px-3 py-3 text-sm text-muted-foreground">
+              {({ de: "Keine Seite gefunden", en: "No page found", tr: "Sayfa bulunamadı" } as Record<string, string>)[lang] ?? "Keine Seite gefunden"}
+            </p>
+          )}
+          {searchSections.map((section) => (
+            <div key={section.label || "results"} className="py-1">
+              {section.label && (
+                <p className="px-3 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{section.label}</p>
+              )}
+              {section.items.map((item) => {
+                idx += 1;
+                const my = idx;
+                return (
+                  <button
+                    key={section.label + item.to}
+                    onMouseDown={(e) => { e.preventDefault(); goToPage(item.to); }}
+                    onMouseEnter={() => setActiveIdx(my)}
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm ${activeIdx === my ? "bg-accent text-accent-foreground" : ""}`}
+                  >
+                    <item.icon className="h-4 w-4 text-muted-foreground" /> {t(item.labelKey)}
+                  </button>
+                );
+              })}
+            </div>
           ))}
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   const headerButtons = (
     <>
@@ -494,7 +546,15 @@ export function AppShell({ title, subtitle, actions, children }: {
             </div>
           </header>
         )}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</div>
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+          {v2 && pathname !== "/" && title && (
+            <div className="mb-5 min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight break-words">{title}</h1>
+              {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+            </div>
+          )}
+          {children}
+        </div>
       </main>
       {locked && <div className="fixed inset-0 z-[100] bg-background" aria-hidden="true" />}
     </div>

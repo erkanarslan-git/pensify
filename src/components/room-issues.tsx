@@ -117,7 +117,8 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
       <div className="flex items-center gap-2 font-semibold text-sm mb-2"><Wrench className="w-4 h-4 text-destructive" />{t("issues.openTitle", { count: data.length })}</div>
       <div className="divide-y divide-border/60">
         {data.map((i) => (
-          <div key={i.id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
+          <div key={i.id} className="flex flex-col gap-3 py-3 text-sm lg:flex-row lg:items-center">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
             <div className="min-w-24"><span className="font-semibold">#{roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id)}</span><div className="text-xs text-muted-foreground">{i.property_name}</div></div>
             <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">{t(`issues.categories.${i.category}`)}</span>
             <span className="flex-1 min-w-[160px]">{i.description}</span>
@@ -125,6 +126,8 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
               {i.reporter && `${i.reporter} · `}
               {new Date(i.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
             </span>
+            </div>
+            <div className="flex flex-wrap items-start gap-2 lg:shrink-0">
             <div className="w-full sm:w-auto space-y-1">
               {i.can_assign ? <select aria-label={t("departments.maintenanceAssign")} value={i.assigned_to ?? ""} disabled={assigning === i.id}
                 onChange={(e) => void assign(i.id, e.target.value)} className="w-full sm:w-48 min-h-11 rounded-md border border-input bg-card px-2 text-sm">
@@ -135,10 +138,11 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
               {i.assigned_at && <div className="text-xs text-muted-foreground">{t("departments.assignedBy", { name: i.assigner || t("departments.unnamed") })} · {new Date(i.assigned_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div>}
             </div>
             {(canResolve || (i as any).can_resolve) && (
-              <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="text-sm px-3 py-2 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1">
+              <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="min-h-11 text-sm px-3 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1 whitespace-nowrap">
                 <Check className="w-4 h-4" />{t("issues.markResolved")}
               </button>
             )}
+          </div>
           </div>
         ))}
       </div>

@@ -136,7 +136,7 @@ function ReservationsPage() {
       actions={
         <button
           onClick={() => setNewOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 btn-action rounded-xl text-sm font-semibold hover:brightness-105"
         >
           <Plus className="w-4 h-4" /> {t("common.newReservation")}
         </button>
@@ -258,7 +258,7 @@ function ReservationsPage() {
                           </div>
                         </div>
                         <span className="md:hidden text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
-                        <span className="hidden md:block text-muted-foreground tabular-nums">{r.room?.number ?? "—"}</span>
+                        <span className="hidden md:block text-muted-foreground tabular-nums break-words pr-2">{r.room?.number ?? "—"}</span>
                         <span className="text-xs md:text-sm tabular-nums text-muted-foreground md:text-foreground">{fmt(r.check_in)} → {fmt(r.check_out)}</span>
                         <span className="md:block text-right md:text-left"><Badge tone={st.tone}>{st.label}</Badge></span>
                         <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
