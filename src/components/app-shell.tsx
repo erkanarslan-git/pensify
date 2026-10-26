@@ -398,7 +398,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground md:block">Ctrl K</kbd>
       )}
       {searchOpen && (
-        <div className="absolute left-0 top-12 z-30 max-h-[70vh] w-full min-w-72 overflow-y-auto rounded-2xl border border-border bg-popover p-1.5 shadow-elevated">
+        <div className="absolute left-0 top-12 z-30 max-h-72 w-full overflow-y-auto rounded-2xl border border-border bg-popover p-1.5 shadow-elevated">
           {flatResults.length === 0 && (
             <p className="px-3 py-3 text-sm text-muted-foreground">
               {({ de: "Keine Seite gefunden", en: "No page found", tr: "Sayfa bulunamadı" } as Record<string, string>)[lang] ?? "Keine Seite gefunden"}
