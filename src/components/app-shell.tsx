@@ -1,4 +1,4 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -29,7 +29,6 @@ import {
   Store,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { LockScreen } from "@/components/lock-screen";
 import brandLogo from "@/assets/pension-highway-logo.png";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -144,7 +143,6 @@ export function AppShell({ title, subtitle, actions, children }: {
 }) {
   const { t, i18n } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
   const { data: profile } = useProfile();
@@ -194,12 +192,16 @@ export function AppShell({ title, subtitle, actions, children }: {
     }
   }, [dark]);
 
+  // Cover the panel at once, end the session, then replace the page with login
+  // (full replace: no panel flash, cached data gone, Back cannot return).
+  const [locked, setLocked] = useState(false);
   async function handleSignOut() {
+    setLocked(true);
+    localStorage.removeItem("pensify.locked");
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
-    toast.success(t("auth.signOutSuccess"));
-    navigate({ to: "/auth", replace: true });
+    try { await supabase.auth.signOut(); } catch { await supabase.auth.signOut({ scope: "local" }); }
+    window.location.replace("/auth");
   }
 
   const initials = (profile?.full_name || profile?.email || "U")
@@ -210,12 +212,7 @@ export function AppShell({ title, subtitle, actions, children }: {
     .join("")
     .toUpperCase();
 
-  const [locked, setLocked] = useState(false);
-  useEffect(() => {
-    if (localStorage.getItem("pensify.locked") === "1") setLocked(true);
-  }, []);
-  const lock = () => { localStorage.setItem("pensify.locked", "1"); setLocked(true); };
-  const unlock = () => { localStorage.removeItem("pensify.locked"); setLocked(false); };
+  const lock = () => { void handleSignOut(); };
   const lockLabel = { de: "Bildschirm sperren", en: "Lock screen", tr: "Ekranı kilitle" }[
     (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr"
   ] ?? "Bildschirm sperren";
@@ -380,14 +377,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         </header>
         <div className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</div>
       </main>
-      {locked && profile?.email && (
-        <LockScreen
-          name={(profile.full_name || profile.email).split(" ")[0]}
-          email={profile.email}
-          onUnlock={unlock}
-          onSignOut={() => { unlock(); handleSignOut(); }}
-        />
-      )}
+      {locked && <div className="fixed inset-0 z-[100] bg-background" aria-hidden="true" />}
     </div>
   );
 }
