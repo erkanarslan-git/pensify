@@ -1,21 +1,42 @@
 import { BUSINESS_TIME_ZONE, businessDate, businessDayBounds } from "@/lib/business-time";
 import { summarizeRooms } from "@/lib/room-summary";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AppShell, Section, Badge } from "@/components/app-shell";
+import { AppShell, Section, Badge, useV2Theme } from "@/components/app-shell";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { LoadError } from "@/components/load-error";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useId } from "react";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { sourceColor, sourceLabel } from "@/lib/guest-color";
 import { formatDateDE } from "@/lib/date-de";
 import {
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from "recharts";
+
+// Mini trend line inside the colored v2 tiles (white on the tile color).
+function Spark({ data }: { data: number[] }) {
+  const gid = useId();
+  const points = data.map((v, i) => ({ i, v }));
+  return (
+    <div className="mt-3 h-10">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={points} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fff" stopOpacity={0.45} />
+              <stop offset="100%" stopColor="#fff" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <Area type="monotone" dataKey="v" stroke="rgba(255,255,255,0.9)" strokeWidth={2} fill={`url(#${gid})`} isAnimationActive={false} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
