@@ -263,6 +263,25 @@
   color: oklch(0.99 0.005 25);
 }
 
+/* v2 preview theme (toggleable): navy sidebar + fully colored dashboard tiles */
+.theme-v2 {
+  --sidebar: oklch(0.27 0.065 262); /* #132B50 family */
+  --sidebar-foreground: oklch(0.93 0.02 255);
+  --sidebar-accent: oklch(0.37 0.09 260);
+  --sidebar-accent-foreground: oklch(0.98 0.01 250);
+  --sidebar-border: oklch(1 0 0 / 10%);
+}
+.theme-v2 .sidebar-logo { background: oklch(1 0 0); }
+.theme-v2 .v2-checkout {
+  background:
+    radial-gradient(90% 90% at 100% 0%, oklch(0.8 0.12 240 / 0.55), transparent 60%),
+    linear-gradient(140deg, oklch(0.5 0.14 255), oklch(0.62 0.15 250));
+  color: oklch(0.99 0.005 250);
+  border-color: transparent;
+}
+.theme-v2 .v2-checkout .text-foreground,
+.theme-v2 .v2-checkout .text-muted-foreground { color: inherit; }
+
 @media print {
   body:has(.attendance-print-report) * { visibility: hidden; }
   body:has(.attendance-print-report) .attendance-print-report,

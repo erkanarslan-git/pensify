@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -27,6 +27,8 @@ import {
   Wrench,
   Monitor,
   Store,
+  Palette,
+  Search,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
@@ -145,6 +147,8 @@ export function AppShell({ title, subtitle, actions, children }: {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
+  const [v2, setV2] = useState(false);
+  const navigate = useNavigate();
   const { data: profile } = useProfile();
   const perms = usePermissions();
   const timeAccess = useQuery({ queryKey: ["time-management-access", perms.userId], enabled: !!perms.userId, queryFn: async () => {
@@ -192,6 +196,20 @@ export function AppShell({ title, subtitle, actions, children }: {
     }
   }, [dark]);
 
+  // v2 preview theme: navy sidebar + colored dashboard tiles; reversible via header toggle.
+  useEffect(() => {
+    if (localStorage.getItem("pensify.themeV2") === "1") setV2(true);
+  }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle("theme-v2", v2);
+    localStorage.setItem("pensify.themeV2", v2 ? "1" : "0");
+  }, [v2]);
+  const lang = (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr";
+  const v2Label = (v2
+    ? { de: "Klassisches Design", en: "Classic look", tr: "Eski görünüm" }
+    : { de: "Neues Design", en: "New look", tr: "Yeni görünüm" })[lang] ?? "Neues Design";
+  const searchLabel = { de: "Seite suchen…", en: "Search pages…", tr: "Sayfa ara…" }[lang] ?? "Seite suchen…";
+
   // Cover the panel at once, end the session, then replace the page with login
   // (full replace: no panel flash, cached data gone, Back cannot return).
   const [locked, setLocked] = useState(false);
@@ -217,6 +235,15 @@ export function AppShell({ title, subtitle, actions, children }: {
     (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr"
   ] ?? "Bildschirm sperren";
 
+  // Quick page search in the top bar (filters the visible menu, jumps on pick).
+  const [pageQuery, setPageQuery] = useState("");
+  const allNavItems = visibleGroups.flatMap((g) => g.items);
+  const pageMatches = pageQuery.trim()
+    ? allNavItems.filter((i) => t(i.labelKey).toLowerCase().includes(pageQuery.trim().toLowerCase())).slice(0, 6)
+    : [];
+  const canSeeNotifications = allNavItems.some((i) => i.to === "/notifications");
+  const goToPage = (to: string) => { setPageQuery(""); navigate({ to: to as never }); };
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -238,7 +265,7 @@ export function AppShell({ title, subtitle, actions, children }: {
             <Hotel className="w-4 h-4" />
           </div>
         ) : (
-          <div className="rounded-lg bg-[color:var(--brand-cream)] px-2 py-1.5 shadow-soft">
+          <div className="sidebar-logo rounded-lg bg-[color:var(--brand-cream)] px-2 py-1.5 shadow-soft">
             <img src={brandLogo} alt="Pension Highway" className="h-8 w-auto" />
           </div>
         )}
@@ -248,7 +275,7 @@ export function AppShell({ title, subtitle, actions, children }: {
         {visibleGroups.map((group, gi) => (
           <div key={group.labelKey} className="space-y-0.5">
             {!mini ? (
-              <div className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+              <div className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-sidebar-foreground/60 font-semibold">
                 {t(group.labelKey)}
               </div>
             ) : gi > 0 ? (
@@ -290,7 +317,7 @@ export function AppShell({ title, subtitle, actions, children }: {
               {!mini && (
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-medium truncate">{profile?.full_name || profile?.email || "—"}</div>
-                  <div className="text-xs text-muted-foreground truncate">{primaryRole ? roleLabel(primaryRole, t) : "—"}</div>
+                  <div className="text-xs text-sidebar-foreground/60 truncate">{primaryRole ? roleLabel(primaryRole, t) : "—"}</div>
                 </div>
               )}
             </button>
@@ -357,6 +384,51 @@ export function AppShell({ title, subtitle, actions, children }: {
             {subtitle && <p className="text-xs text-muted-foreground truncate hidden sm:block">{subtitle}</p>}
           </div>
           <div className="col-span-2 md:col-span-1 flex flex-wrap items-center gap-2 justify-self-end">
+            <div className="relative hidden lg:block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={pageQuery}
+                onChange={(e) => setPageQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && pageMatches[0]) goToPage(pageMatches[0].to);
+                  if (e.key === "Escape") setPageQuery("");
+                }}
+                onBlur={() => setTimeout(() => setPageQuery(""), 150)}
+                placeholder={searchLabel}
+                className="h-10 w-52 rounded-xl border border-border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/25"
+              />
+              {pageMatches.length > 0 && (
+                <div className="absolute right-0 top-11 z-20 w-64 overflow-hidden rounded-xl border border-border bg-popover shadow-elevated">
+                  {pageMatches.map((item) => (
+                    <button
+                      key={item.to}
+                      onMouseDown={(e) => { e.preventDefault(); goToPage(item.to); }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent"
+                    >
+                      <item.icon className="h-4 w-4 text-muted-foreground" /> {t(item.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {canSeeNotifications && (
+              <Link
+                to="/notifications"
+                className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+                aria-label={t("nav.actionCenter")}
+                title={t("nav.actionCenter")}
+              >
+                <Bell className="w-4 h-4" />
+              </Link>
+            )}
+            <button
+              onClick={() => setV2((v) => !v)}
+              className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+              aria-label={v2Label}
+              title={v2Label}
+            >
+              <Palette className="w-4 h-4" />
+            </button>
             {actions}
             <button
               onClick={lock}

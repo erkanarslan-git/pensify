@@ -145,7 +145,7 @@ function Dashboard() {
         {[
           { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, tile: "tile-success" },
           "split",
-          { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {} },
+          { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {}, marker: "v2-checkout" },
         ].map((k) => typeof k === "string" ? (
           <div key="split" className="grid grid-cols-2 gap-3">
             {[
@@ -162,7 +162,7 @@ function Dashboard() {
           </div>
         ) : (
           <Link key={k.label} to={k.to as any} search={k.search as any}
-            className={`group rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${k.tile ?? "border border-border bg-card"}`}>
+            className={`group rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${(k as any).marker ?? ""} ${k.tile ?? "border border-border bg-card"}`}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{k.label}</span>
               <span className={`grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition ${k.tile ? "border border-current/40 text-current group-hover:bg-card group-hover:text-card-foreground" : "border border-border group-hover:bg-primary group-hover:text-primary-foreground"}`}><ArrowUpRight className="h-4 w-4" /></span>
