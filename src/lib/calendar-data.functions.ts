@@ -7,7 +7,7 @@ import { calendarWindow, collectReservationExport } from "./reservation-list";
 
 export const loadCalendarData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), days: z.union([z.literal(7), z.literal(14), z.literal(30)]), propertyId: z.union([z.literal("all"), z.string().uuid()]) }).parse(data))
+  .inputValidator((data: unknown) => z.object({ start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), days: z.union([z.literal(7), z.literal(14), z.literal(30)]), propertyId: z.union([z.literal("all"), z.literal("first"), z.string().uuid()]) }).parse(data))
   .handler(async ({ data, context }) => {
     const { orgId } = await resolveActiveOrg(context.supabase);
     const { data: props, error } = await context.supabase.from("properties").select("id,name").eq("organization_id", orgId).order("name");
@@ -18,7 +18,8 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       return result.data === true ? p : null;
     }));
     const properties = checked.filter((p): p is { id: string; name: string } => p !== null);
-    const ids = properties.filter(p => data.propertyId === "all" || p.id === data.propertyId).map(p => p.id);
+    // "first" keeps the initial calendar load to a single property.
+    const ids = data.propertyId === "first" ? properties.slice(0, 1).map(p => p.id) : properties.filter(p => data.propertyId === "all" || p.id === data.propertyId).map(p => p.id);
     if (!ids.length) return { properties, rooms: [], reservations: [], tasks: [], todayReservations: [] };
     const window = calendarWindow(data.start, data.days);
     const today = businessDate();
