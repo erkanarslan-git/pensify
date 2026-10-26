@@ -66,7 +66,7 @@ function Dashboard() {
       const [rooms, tasks, res, props, live] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
-        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(4),
+        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(5),
         supabase.from("properties").select("id"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
@@ -262,7 +262,7 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")} action={<Link to="/cleaning" className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}>
           <div className="divide-y divide-border">
-            {tasks.filter((t) => t.status !== "completed").slice(0, 4).map((task) => (
+            {tasks.filter((t) => t.status !== "completed").slice(0, 3).map((task) => (
               <Link key={task.id} to="/cleaning" className="flex min-w-0 flex-col items-start gap-3 py-4 first:pt-0 last:pb-0 transition hover:bg-accent/50 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
