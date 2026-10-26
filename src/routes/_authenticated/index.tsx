@@ -65,7 +65,7 @@ function Dashboard() {
     queryFn: async () => {
       const [rooms, tasks, res, props, live] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
-        supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name)"),
+        supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
         supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(6),
         supabase.from("properties").select("id"),
         supabase.from("room_operational_status").select("room_id,status"),
@@ -266,6 +266,7 @@ function Dashboard() {
               <Link key={task.id} to="/cleaning" className="flex min-w-0 flex-col items-start gap-3 py-4 first:pt-0 last:pb-0 transition hover:bg-accent/50 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
+                  <div className="mt-1 text-xs text-foreground [overflow-wrap:anywhere]">{task.property?.address || task.property?.name || "—"}</div>
                   <div className="mt-1 text-xs text-muted-foreground [overflow-wrap:anywhere]">{t("common.due")} {task.due_at ? new Date(task.due_at).toLocaleString(i18n.language, { timeZone: BUSINESS_TIME_ZONE }) : "—"}</div>
                 </div>
                 <Badge tone={task.status === "problem" ? "destructive" : task.status === "in_progress" ? "primary" : "warning"}>{t(`status.${task.status}`)}</Badge>
