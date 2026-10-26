@@ -161,21 +161,50 @@ function Dashboard() {
     <AppShell
       title={t("dashboard.title")}
       subtitle={t("dashboard.subtitle")}
-      actions={
+      actions={v2 ? undefined : (
         <Button onClick={() => setNewOpen(true)} size="sm">
           <Plus className="w-4 h-4" /> {t("common.newReservation")}
         </Button>
-      }
+      )}
     >
-      <div className="mb-5">
-        <h2 className="text-3xl font-semibold tracking-tight">{t("dashboard.title")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {new Date().toLocaleDateString(i18n.language, { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
-        </p>
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-3xl font-semibold tracking-tight">{t("dashboard.title")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {new Date().toLocaleDateString(i18n.language, { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "Europe/Berlin" })}
+          </p>
+        </div>
+        {v2 && (
+          <button
+            onClick={() => setNewOpen(true)}
+            className="btn-action inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-soft transition hover:brightness-105"
+          >
+            <Plus className="w-4 h-4" /> {t("common.newReservation")}
+          </button>
+        )}
       </div>
 
       {isError && <div className="mb-4"><LoadError onRetry={() => refetch()} /></div>}
 
+      {v2 ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+          {[
+            { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), to: "/reservations", search: {}, cls: "brand-tile", series: tileSeries.occupied },
+            { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, cls: "tile-sky", series: tileSeries.available },
+            { label: t("nav.cleaning"), value: cleaning, hint: t("nav.rooms"), to: "/cleaning", search: {}, cls: "tile-warning", series: tileSeries.cleaning },
+            { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, cls: "tile-destructive", series: tileSeries.maintenance },
+            { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {}, cls: "tile-ocean", series: tileSeries.checkouts },
+          ].map((k) => (
+            <Link key={k.label} to={k.to as any} search={k.search as any}
+              className={`group flex min-w-0 flex-col rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${k.cls}`}>
+              <span className="text-sm font-medium opacity-95">{k.label}</span>
+              <div className="mt-3 text-4xl font-semibold tabular-nums">{k.value}</div>
+              <div className="mt-1 truncate text-xs opacity-85">{k.hint}</div>
+              <Spark data={k.series} />
+            </Link>
+          ))}
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link to="/reservations" className="brand-tile group relative overflow-hidden rounded-2xl p-5 shadow-elevated transition hover:brightness-110">
           <div className="flex items-center justify-between">
