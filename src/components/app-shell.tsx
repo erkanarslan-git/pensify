@@ -138,6 +138,17 @@ function useProfile() {
   });
 }
 
+// Reactive read of the v2 preview theme so pages can match the shell layout.
+export function useV2Theme() {
+  const [v2, setV2] = useState(() => typeof window !== "undefined" && localStorage.getItem("pensify.themeV2") === "1");
+  useEffect(() => {
+    const on = () => setV2(localStorage.getItem("pensify.themeV2") === "1");
+    window.addEventListener("pensify-theme-v2", on);
+    return () => window.removeEventListener("pensify-theme-v2", on);
+  }, []);
+  return v2;
+}
+
 export function AppShell({ title, subtitle, actions, children }: {
   title: string;
   subtitle?: string;
