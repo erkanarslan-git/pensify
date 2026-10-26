@@ -23,6 +23,7 @@
     "todos": "Yapılacaklar",
     "aiAssistant": "AI Asistan",
     "groups": {
+      "channels": "Kanallar",
       "daily": "Günlük İşler",
       "stay": "Konaklama",
       "operations": "Operasyon",

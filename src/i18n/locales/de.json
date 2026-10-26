@@ -23,6 +23,7 @@
     "todos": "Aufgaben",
     "aiAssistant": "KI-Assistent",
     "groups": {
+      "channels": "Kanäle",
       "daily": "Tagesgeschäft",
       "stay": "Belegung",
       "operations": "Betrieb",
