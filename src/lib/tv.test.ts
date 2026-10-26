@@ -81,3 +81,11 @@ describe("daily delta badges", () => {
  it("two new reservations on the same day show +2", () => { const a = tvAccumulate(null, "2026-10-23", { created: 1 }); expect(tvAccumulate(a, "2026-10-23", { created: 1 }).values.created).toBe(2); });
  it("a new day starts from zero", () => { const a = tvAccumulate(null, "2026-10-23", { created: 3 }); expect(tvAccumulate(a, "2026-10-24", {}).values.created).toBeUndefined(); });
 });
+
+import { tvLocationLabel as label } from "./tv";
+import { test as t2, expect as e2 } from "vitest";
+t2("TV location shows address only", () => {
+  e2(label("Pension Bünde — Borriesstr. 39")).toBe("Borriesstr. 39");
+  e2(label("Pension Bielefeld — Paderbornerstr. 290")).toBe("Paderbornerstr. 290");
+  e2(label("Haus Mitte")).toBe("Haus Mitte");
+});
