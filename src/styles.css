@@ -84,7 +84,7 @@
   --brand-navy: oklch(0.33 0.09 258);
   --brand-navy-deep: oklch(0.2 0.06 260);
   --brand-orange: oklch(0.6 0.19 260); /* accent = bright blue (no orange per brand rule) */
-  --brand-accent-orange: oklch(0.705 0.213 47.6); /* approved orange for primary action buttons */
+  --brand-accent-orange: #c85820; /* logo orange, approved for primary action buttons */
   --brand-sky: oklch(0.78 0.1 250);
   --brand-cream: oklch(0.98 0.01 80);
   --gradient-brand-night:
@@ -281,9 +281,9 @@
 
 /* v2 preview theme (toggleable): navy sidebar + fully colored dashboard tiles */
 .theme-v2 {
-  --sidebar: oklch(0.27 0.065 262); /* #132B50 family */
+  --sidebar: #132b50; /* approved design navy */
   --sidebar-foreground: oklch(0.93 0.02 255);
-  --sidebar-accent: oklch(0.37 0.09 260);
+  --sidebar-accent: #1e3d6b;
   --sidebar-accent-foreground: oklch(0.98 0.01 250);
   --sidebar-border: oklch(1 0 0 / 10%);
 }
