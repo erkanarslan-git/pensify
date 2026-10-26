@@ -37,7 +37,8 @@ export function RoomSalesChannels({ propertyId }: { propertyId?: string }) {
   }, [propertyId]);
   useEffect(() => { load(); }, [load]);
 
-  const visible = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && r.number.toLowerCase().includes(q.trim().toLowerCase())), [rows, prop, q]);
+  const visible = useMemo(() => rows.filter((r) => (!prop || r.property_id === prop) && r.number.toLowerCase().includes(q.trim().toLowerCase()))
+    .sort((a, b) => (props.find((p) => p.id === a.property_id)?.name ?? "").localeCompare(props.find((p) => p.id === b.property_id)?.name ?? "", "de") || a.number.localeCompare(b.number, "de", { numeric: true })), [rows, props, prop, q]);
   const sum = summarizeDistribution(visible);
   const propName = (id: string) => props.find((p) => p.id === id)?.name ?? "";
 
