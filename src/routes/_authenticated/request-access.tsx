@@ -34,8 +34,8 @@ function RequestAccessPage() {
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    try { await supabase.auth.signOut(); } catch { await supabase.auth.signOut({ scope: "local" }); }
+    window.location.replace("/auth");
   }
 
   return (

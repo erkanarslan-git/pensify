@@ -29,7 +29,6 @@ import {
   Store,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { LockScreen } from "@/components/lock-screen";
 import brandLogo from "@/assets/pension-highway-logo.png";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
