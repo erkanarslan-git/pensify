@@ -84,12 +84,13 @@
   --brand-navy: oklch(0.33 0.09 258);
   --brand-navy-deep: oklch(0.2 0.06 260);
   --brand-orange: oklch(0.6 0.19 260); /* accent = bright blue (no orange per brand rule) */
+  --brand-accent-orange: oklch(0.705 0.213 47.6); /* approved orange for primary action buttons */
   --brand-sky: oklch(0.78 0.1 250);
   --brand-cream: oklch(0.98 0.01 80);
   --gradient-brand-night:
-    radial-gradient(70% 60% at 85% 10%, oklch(0.55 0.18 258 / 0.55), transparent 70%),
-    radial-gradient(60% 60% at 0% 100%, oklch(0.42 0.14 255 / 0.6), transparent 70%),
-    linear-gradient(150deg, oklch(0.24 0.08 262), oklch(0.33 0.12 260) 55%, oklch(0.28 0.1 258));
+    radial-gradient(70% 60% at 85% 10%, oklch(0.55 0.18 258 / 0.5), transparent 70%),
+    radial-gradient(60% 60% at 0% 100%, oklch(0.42 0.14 255 / 0.55), transparent 70%),
+    linear-gradient(150deg, oklch(0.26 0.06 260), oklch(0.3 0.075 260) 55%, oklch(0.27 0.065 260));
   --gradient-brand-tile:
     radial-gradient(90% 90% at 100% 0%, oklch(0.62 0.18 258 / 0.7), transparent 60%),
     linear-gradient(140deg, oklch(0.36 0.13 262), oklch(0.48 0.17 258));
@@ -229,13 +230,22 @@
   --card: oklch(1 0 0);
   --card-foreground: var(--brand-navy-deep);
   --muted-foreground: oklch(0.46 0.04 258);
-  --primary: var(--brand-orange);
+  --primary: var(--brand-accent-orange);
   --primary-foreground: oklch(1 0 0);
   --accent: oklch(0.95 0.015 250);
   --accent-foreground: var(--brand-navy-deep);
-  --border: oklch(0.89 0.025 250);
-  --ring: var(--brand-orange);
+  --border: oklch(0.91 0.025 255);
+  --ring: var(--brand-accent-orange);
   --destructive: oklch(0.5 0.19 25);
+  box-shadow: 0 24px 60px -24px oklch(0.15 0.05 260 / 0.55), 0 2px 6px -2px oklch(0.2 0.06 260 / 0.25);
+}
+.login-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  border-radius: 1rem 1rem 0 0;
+  background: linear-gradient(90deg, var(--brand-navy-deep), oklch(0.6 0.19 260), var(--brand-accent-orange));
 }
 @utility brand-card {
   background:

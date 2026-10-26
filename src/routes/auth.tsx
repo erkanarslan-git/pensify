@@ -106,7 +106,7 @@ function AuthPage() {
         </section>
         <div className="grid min-w-0 place-items-center">
         <div className="w-full max-w-md">
-          <div className="login-surface rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-2xl sm:p-8">
+          <div className="login-surface relative overflow-hidden rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-2xl sm:p-8">
             <img src={logo} alt="Pension Highway – Stay here!" className="mx-auto h-auto w-64 max-w-full" />
             <div className="mt-6 text-center">
               <h1 className="text-xl font-semibold">{c.title}</h1>
