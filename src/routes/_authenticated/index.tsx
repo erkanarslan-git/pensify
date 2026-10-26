@@ -17,8 +17,8 @@ import {
   PieChart, Pie, Cell, Legend, AreaChart, Area,
 } from "recharts";
 
-// Mini trend line inside the colored v2 tiles (white on the tile color).
-function Spark({ data }: { data: number[] }) {
+// Mini trend line inside the colored v2 tiles (contrasting shade of the tile color).
+function Spark({ data, stroke }: { data: number[]; stroke: string }) {
   const gid = useId();
   const points = data.map((v, i) => ({ i, v }));
   return (
@@ -27,11 +27,11 @@ function Spark({ data }: { data: number[] }) {
         <AreaChart data={points} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#fff" stopOpacity={0.45} />
-              <stop offset="100%" stopColor="#fff" stopOpacity={0.05} />
+              <stop offset="0%" stopColor={stroke} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={stroke} stopOpacity={0.04} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="v" stroke="rgba(255,255,255,0.9)" strokeWidth={2} fill={`url(#${gid})`} isAnimationActive={false} />
+          <Area type="monotone" dataKey="v" stroke={stroke} strokeWidth={2} fill={`url(#${gid})`} isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -189,18 +189,18 @@ function Dashboard() {
       {v2 ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
           {[
-            { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), to: "/reservations", search: {}, cls: "brand-tile", series: tileSeries.occupied },
-            { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, cls: "tile-sky", series: tileSeries.available },
-            { label: t("nav.cleaning"), value: cleaning, hint: t("nav.rooms"), to: "/cleaning", search: {}, cls: "tile-warning", series: tileSeries.cleaning },
-            { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, cls: "tile-destructive", series: tileSeries.maintenance },
-            { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {}, cls: "tile-ocean", series: tileSeries.checkouts },
+            { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), to: "/reservations", search: {}, cls: "brand-tile", series: tileSeries.occupied, stroke: "#a8c6fa" },
+            { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, cls: "tile-success", series: tileSeries.available, stroke: "#14532d" },
+            { label: t("nav.cleaning"), value: cleaning, hint: t("nav.rooms"), to: "/cleaning", search: {}, cls: "tile-warning", series: tileSeries.cleaning, stroke: "#7c4a03" },
+            { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, cls: "tile-destructive", series: tileSeries.maintenance, stroke: "#7f1d1d" },
+            { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {}, cls: "tile-ocean", series: tileSeries.checkouts, stroke: "#132b50" },
           ].map((k) => (
             <Link key={k.label} to={k.to as any} search={k.search as any}
               className={`group flex min-w-0 flex-col rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${k.cls}`}>
               <span className="text-sm font-medium opacity-95">{k.label}</span>
               <div className="mt-3 text-4xl font-semibold tabular-nums">{k.value}</div>
               <div className="mt-1 truncate text-xs opacity-85">{k.hint}</div>
-              <Spark data={k.series} />
+              <Spark data={k.series} stroke={k.stroke} />
             </Link>
           ))}
         </div>
