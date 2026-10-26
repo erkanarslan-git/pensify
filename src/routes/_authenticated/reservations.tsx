@@ -136,7 +136,7 @@ function ReservationsPage() {
       actions={
         <button
           onClick={() => setNewOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
+          className="inline-flex items-center gap-1.5 px-3 py-2 btn-action rounded-xl text-sm font-semibold hover:brightness-105"
         >
           <Plus className="w-4 h-4" /> {t("common.newReservation")}
         </button>
