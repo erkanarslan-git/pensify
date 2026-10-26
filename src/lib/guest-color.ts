@@ -57,7 +57,7 @@ const SOURCE_LABEL: Record<ActiveChannel, string> = {
   expedia: "Expedia",
   check24: "Check24",
   website: "Website",
-  direct: "Privat (Telefon/E-Mail)",
+  direct: "Privat",
 };
 export function sourceLabel(src: string, t?: (key: string) => string): string {
   const ch = normalizeChannel(src);

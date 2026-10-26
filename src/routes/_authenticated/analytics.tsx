@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { sourceColor, sourceLabel } from "@/lib/guest-color";
+import { normalizeChannel, sourceColor, sourceLabel } from "@/lib/guest-color";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({ meta: [{ title: "Analytics — Pension Highway" }, { name: "description", content: "Belegung und Geschäftsentwicklung in Pension Highway auswerten." }, { property: "og:title", content: "Analytics — Pension Highway" }, { property: "og:description", content: "Belegung und Geschäftsentwicklung in Pension Highway auswerten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -60,7 +60,7 @@ function AnalyticsPage() {
 
   const bySource = Object.entries(
     reservations.reduce<Record<string, number>>((acc, r) => {
-      acc[r.channel] = (acc[r.channel] ?? 0) + 1;
+      acc[normalizeChannel(r.channel)] = (acc[normalizeChannel(r.channel)] ?? 0) + 1;
       return acc;
     }, {}),
   ).map(([name, value]) => ({ name, value }));
