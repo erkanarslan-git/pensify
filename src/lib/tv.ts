@@ -13,6 +13,7 @@ export const tvSnapshotSchema = z.object({
   weekly: z.array(z.object({ day: z.string(), arrivals: count, departures: count }).strict()),
   events: z.array(z.object({ id: z.string(), at: z.string(), kind: z.enum(["reservation_created", "reservation_removed", "reservation_updated", "cleaning_updated", "maintenance_updated", "task_updated"]), source: z.string(), location: z.string(), eligible: z.boolean() }).strict()),
   dues: z.object({ overdue: count, dueToday: count, dueWeek: count, paid: count, partial: count, open: count }).strict(),
+  today: z.object({cleaningTotal:count,cleaningDone:count,todosTotal:count,todosDone:count,issuesOpen:count,issuesResolved:count}).strict().default({cleaningTotal:0,cleaningDone:0,todosTotal:0,todosDone:0,issuesOpen:0,issuesResolved:0}),
   colors: z.record(z.string(), z.string().regex(/^#[0-9a-fA-F]{6}$/)),
 }).strict().refine(s=>s.metrics.created===s.metrics.manual+s.metrics.automatic+s.metrics.unknownOrigin, "Reservation origin counts must reconcile").refine(s=>s.dues.dueToday===s.dues.paid+s.dues.partial+s.dues.open, "Payment states must reconcile");
 export type TvSnapshot = z.infer<typeof tvSnapshotSchema>;
@@ -56,3 +57,6 @@ export function tvAccumulate(previous: TvDailyDeltas | null, day: string, deltas
  for (const [key, value] of Object.entries(deltas)) if (value) base[key] = (base[key] ?? 0) + value;
  return { day, values: base };
 }
+
+/** TV shows the address part only: "Pension Bünde — Borriesstr. 39" becomes "Borriesstr. 39". */
+export function tvLocationLabel(name: string) { return name.replace(/^Pension\s+.+?\s+[—–-]\s+/, "").trim() || name; }

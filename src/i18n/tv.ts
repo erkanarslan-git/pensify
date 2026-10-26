@@ -11,3 +11,4 @@ const approved = {
 Object.assign(tvTranslations.de, approved);
 Object.assign(tvTranslations.tr, {rotation: "Sayfa değişimi", rotationSeconds: "{{count}} saniye"});
 Object.assign(tvTranslations.en, {rotation: "Page rotation", rotationSeconds: "{{count}} seconds"});
+Object.assign(tvTranslations.de, { todayTasks: "Heute zu erledigen", todayCleaning: "Reinigungen heute", todayTodos: "Aufgaben heute", todayIssues: "Offene Wartungen", todayIssuesDone: "{{count}} heute behoben", todayProgress: "{{done}} von {{total}} erledigt", noTodayTasks: "Für heute ist nichts geplant" });
