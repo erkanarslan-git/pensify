@@ -138,15 +138,9 @@ function useProfile() {
   });
 }
 
-// Reactive read of the v2 preview theme so pages can match the shell layout.
+// The v2 design is permanent; kept as a hook so pages keep their call sites.
 export function useV2Theme() {
-  const [v2, setV2] = useState(() => typeof window !== "undefined" && localStorage.getItem("pensify.themeV2") === "1");
-  useEffect(() => {
-    const on = () => setV2(localStorage.getItem("pensify.themeV2") === "1");
-    window.addEventListener("pensify-theme-v2", on);
-    return () => window.removeEventListener("pensify-theme-v2", on);
-  }, []);
-  return v2;
+  return true;
 }
 
 export function AppShell({ title, subtitle, actions, children }: {
@@ -159,7 +153,7 @@ export function AppShell({ title, subtitle, actions, children }: {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const queryClient = useQueryClient();
   const [dark, setDark] = useState(false);
-  const [v2, setV2] = useState(false);
+  const v2 = true;
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const perms = usePermissions();
@@ -208,19 +202,13 @@ export function AppShell({ title, subtitle, actions, children }: {
     }
   }, [dark]);
 
-  // v2 preview theme: navy sidebar + colored dashboard tiles; reversible via header toggle.
+  // v2 is now the permanent design.
   useEffect(() => {
-    if (localStorage.getItem("pensify.themeV2") === "1") setV2(true);
-  }, []);
-  useEffect(() => {
-    document.documentElement.classList.toggle("theme-v2", v2);
-    localStorage.setItem("pensify.themeV2", v2 ? "1" : "0");
+    document.documentElement.classList.add("theme-v2");
+    localStorage.setItem("pensify.themeV2", "1");
     window.dispatchEvent(new Event("pensify-theme-v2"));
-  }, [v2]);
+  }, []);
   const lang = (i18n.resolvedLanguage ?? "de") as "de" | "en" | "tr";
-  const v2Label = (v2
-    ? { de: "Klassisches Design", en: "Classic look", tr: "Eski görünüm" }
-    : { de: "Neues Design", en: "New look", tr: "Yeni görünüm" })[lang] ?? "Neues Design";
   const searchLabel = { de: "Seite suchen…", en: "Search pages…", tr: "Sayfa ara…" }[lang] ?? "Seite suchen…";
 
   // Cover the panel at once, end the session, then replace the page with login
@@ -404,14 +392,6 @@ export function AppShell({ title, subtitle, actions, children }: {
           <Bell className="w-4 h-4" />
         </Link>
       )}
-      <button
-        onClick={() => setV2((v) => !v)}
-        className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
-        aria-label={v2Label}
-        title={v2Label}
-      >
-        <Palette className="w-4 h-4" />
-      </button>
       {actions}
       <button
         onClick={lock}

@@ -295,6 +295,14 @@
   --shadow-soft: 0 1px 2px oklch(0.3 0.04 260 / 0.04), 0 4px 16px -8px oklch(0.3 0.05 260 / 0.08);
   --shadow-elevated: 0 12px 32px -12px oklch(0.3 0.06 260 / 0.18);
 }
+.dark.theme-v2 {
+  --background: oklch(0.17 0.035 260);
+  --card: oklch(0.21 0.04 260);
+  --border: oklch(1 0 0 / 8%);
+  --sidebar: oklch(0.15 0.035 260);
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3);
+  --shadow-elevated: 0 12px 32px -12px oklch(0 0 0 / 0.5);
+}
 .theme-v2 body { letter-spacing: -0.005em; }
 .theme-v2 h1, .theme-v2 h2, .theme-v2 h3 { letter-spacing: -0.02em; }
 .theme-v2 .sidebar-logo { background: oklch(1 0 0); }
