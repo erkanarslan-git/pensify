@@ -27,7 +27,7 @@ import { deletionNameMatches } from "@/lib/team-safety";
 import { MemberDepartments, RoleGuide } from "@/components/member-departments";
 
 export const Route = createFileRoute("/_authenticated/team")({
-  head: () => ({ meta: [{ title: "Team — Pensify" }, { name: "description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:title", content: "Team — Pensify" }, { property: "og:description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Team — Pension Highway" }, { name: "description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:title", content: "Team — Pension Highway" }, { property: "og:description", content: "Team, Rollen und Anwesenheit verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TeamPage,
 });
 

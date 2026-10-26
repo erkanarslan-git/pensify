@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Pensify",
+    "name": "Pension Highway",
     "tagline": "Pension Operations"
   },
   "nav": {
@@ -264,7 +264,7 @@
     "noActiveTasks": "No active tasks"
   },
   "auth": {
-    "welcomeTitle": "Welcome to Pensify",
+    "welcomeTitle": "Welcome to Pension Highway",
     "welcomeSubtitle": "Manage your locations with ease",
     "signInTab": "Sign in",
     "signUpTab": "Create account",

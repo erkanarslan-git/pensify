@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShiftPanel } from "@/components/shift-panel";
 
 export const Route = createFileRoute("/_authenticated/clock/$token")({
-  head: () => ({ meta: [{ title: "Zeiterfassung — Pensify" }, { name: "description", content: "Arbeitszeiten am Pensify Standort erfassen." }, { property: "og:title", content: "Zeiterfassung — Pensify" }, { property: "og:description", content: "Arbeitszeiten am Pensify Standort erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Zeiterfassung — Pension Highway" }, { name: "description", content: "Arbeitszeiten am Pension Highway Standort erfassen." }, { property: "og:title", content: "Zeiterfassung — Pension Highway" }, { property: "og:description", content: "Arbeitszeiten am Pension Highway Standort erfassen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ClockPage,
 });
 

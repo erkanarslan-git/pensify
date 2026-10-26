@@ -14,7 +14,7 @@ import { maskIban } from "@/lib/bank/matching";
 import { checkBankNow, disconnectBank } from "@/lib/bank.functions";
 
 export const Route = createFileRoute("/_authenticated/payments/bank")({
-  head: () => ({ meta: [{ title: "Banka bağlantısı — Pensify" }, { name: "description", content: "Sparkasse hesap hareketlerinden tahsilat eşleştirme ayarları." }, { property: "og:title", content: "Banka bağlantısı — Pensify" }, { property: "og:description", content: "Sparkasse hesap hareketlerinden tahsilat eşleştirme ayarları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Banka bağlantısı — Pension Highway" }, { name: "description", content: "Sparkasse hesap hareketlerinden tahsilat eşleştirme ayarları." }, { property: "og:title", content: "Banka bağlantısı — Pension Highway" }, { property: "og:description", content: "Sparkasse hesap hareketlerinden tahsilat eşleştirme ayarları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: BankSettingsPage,
 });
 

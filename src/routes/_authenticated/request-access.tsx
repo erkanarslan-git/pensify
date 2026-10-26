@@ -9,7 +9,7 @@ import { ALL_ROLES, type AppRole } from "@/lib/permissions";
 import { Hotel, LogOut, Send } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/request-access")({
-  head: () => ({ meta: [{ title: "Zugriff anfragen — Pensify" }, { name: "description", content: "Zugriff auf Pensify beim Administrator anfragen." }, { property: "og:title", content: "Zugriff anfragen — Pensify" }, { property: "og:description", content: "Zugriff auf Pensify beim Administrator anfragen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Zugriff anfragen — Pension Highway" }, { name: "description", content: "Zugriff auf Pension Highway beim Administrator anfragen." }, { property: "og:title", content: "Zugriff anfragen — Pension Highway" }, { property: "og:description", content: "Zugriff auf Pension Highway beim Administrator anfragen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: RequestAccessPage,
 });
 
@@ -45,7 +45,7 @@ function RequestAccessPage() {
             <Hotel className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-semibold">Pensify</div>
+            <div className="font-semibold">Pension Highway</div>
             <div className="text-xs text-muted-foreground">{legacyText('Zugriff anfragen')}</div>
           </div>
           <button onClick={signOut} className="ml-auto text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">

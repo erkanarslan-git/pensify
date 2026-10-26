@@ -37,7 +37,7 @@ const search = z.object({
 
 export const Route = createFileRoute("/_authenticated/work-report")({
   validateSearch: search,
-  head: () => ({ meta: [{ title: "Yapılan İşler — Pensify" }, { name: "description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:title", content: "Yapılan İşler — Pensify" }, { property: "og:description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Yapılan İşler — Pension Highway" }, { name: "description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:title", content: "Yapılan İşler — Pension Highway" }, { property: "og:description", content: "Rezervasyon, temizlik, bakım ve görevlerin dönemsel operasyon özeti." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: WorkReportPage,
 });
 

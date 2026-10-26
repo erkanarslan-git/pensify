@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { berlinLocalToIso } from "@/lib/business-time";
 
 export const Route = createFileRoute("/_authenticated/todos")({
-  head: () => ({ meta: [{ title: "Yapılacaklar — Pensify" }, { name: "description", content: "Pensify'da genel işleri öncelik, tarih ve gecikme takibiyle yönetin." }, { property: "og:title", content: "Yapılacaklar — Pensify" }, { property: "og:description", content: "Pensify'da genel işleri öncelik, tarih ve gecikme takibiyle yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Yapılacaklar — Pension Highway" }, { name: "description", content: "Pension Highway'da genel işleri öncelik, tarih ve gecikme takibiyle yönetin." }, { property: "og:title", content: "Yapılacaklar — Pension Highway" }, { property: "og:description", content: "Pension Highway'da genel işleri öncelik, tarih ve gecikme takibiyle yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TodosPage,
 });
 

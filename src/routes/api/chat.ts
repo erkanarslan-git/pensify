@@ -86,7 +86,7 @@ export const Route = createFileRoute("/api/chat")({
           : createOpenAICompatible({ name: "openai", baseURL: "https://api.openai.com/v1", apiKey: openaiKey })(process.env.OPENAI_MODEL || "gpt-4.1-mini");
 
         const today = new Date().toISOString().slice(0, 10);
-        const system = `Sen Pensify pansiyon işletme sisteminin dahili AI asistanısın.
+        const system = `Sen Pension Highway pansiyon işletme sisteminin dahili AI asistanısın.
 Kullanıcının rolü: yönetici (owner/admin/manager).
 Bugünün tarihi: ${today}.
 

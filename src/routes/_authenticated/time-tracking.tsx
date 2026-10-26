@@ -13,7 +13,7 @@ import { PersonnelAttendance } from '@/components/personnel-attendance';
 import { PersonnelOvertime } from '@/components/personnel-overtime';
 import { supabase } from '@/integrations/supabase/client';
 import { businessDate } from '@/lib/business-time';
-export const Route=createFileRoute('/_authenticated/time-tracking')({head:()=>({meta:[{title:'Zaman Takibi — Pensify'},{name:'description',content:'Kişi ve dönem bazlı çalışma, izin ve fazla mesai takibi.'},{property:'og:title',content:'Zaman Takibi — Pensify'},{property:'og:description',content:'Sade personel çalışma ve devam kayıtları.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),component:TimeTrackingPage});
+export const Route=createFileRoute('/_authenticated/time-tracking')({head:()=>({meta:[{title:'Zaman Takibi — Pension Highway'},{name:'description',content:'Kişi ve dönem bazlı çalışma, izin ve fazla mesai takibi.'},{property:'og:title',content:'Zaman Takibi — Pension Highway'},{property:'og:description',content:'Sade personel çalışma ve devam kayıtları.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),component:TimeTrackingPage});
 function monthRange(month:string){const [y,m]=month.split('-').map(Number);return [`${month}-01`,new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)];}
 function TimeTrackingPage(){
  const {t}=useTranslation();const [person,setPerson]=useState('');const [month,setMonth]=useState(businessDate().slice(0,7));const [custom,setCustom]=useState(false);const [range,setRange]=useState(monthRange(month));const [mode,setMode]=useState('normal');const [from,to]=custom?range:monthRange(month);

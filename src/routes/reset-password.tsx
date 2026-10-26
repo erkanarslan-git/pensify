@@ -9,10 +9,10 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Reset password — Pensify" },
-      { name: "description", content: "Set a new password for your Pensify account." },
-      { property: "og:title", content: "Reset password — Pensify" },
-      { property: "og:description", content: "Set a new password for your Pensify account." },
+      { title: "Reset password — Pension Highway" },
+      { name: "description", content: "Set a new password for your Pension Highway account." },
+      { property: "og:title", content: "Reset password — Pension Highway" },
+      { property: "og:description", content: "Set a new password for your Pension Highway account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

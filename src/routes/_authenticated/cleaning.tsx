@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/cleaning")({
-  head: () => ({ meta: [{ title: "Reinigung — Pensify" }, { name: "description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:title", content: "Reinigung — Pensify" }, { property: "og:description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Reinigung — Pension Highway" }, { name: "description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:title", content: "Reinigung — Pension Highway" }, { property: "og:description", content: "Reinigungsaufgaben und Zimmerbereitschaft verwalten." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CleaningPage,
 });
 

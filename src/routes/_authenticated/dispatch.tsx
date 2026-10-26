@@ -12,7 +12,7 @@ import { dispatchTranslations } from "@/i18n/dispatch";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
-  head: () => ({ meta: [{ title: "Aufgabenverteilung — Pensify" }, { name: "description", content: "Tägliche Reinigungsaufgaben in Pensify verteilen." }, { property: "og:title", content: "Aufgabenverteilung — Pensify" }, { property: "og:description", content: "Tägliche Reinigungsaufgaben in Pensify verteilen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Aufgabenverteilung — Pension Highway" }, { name: "description", content: "Tägliche Reinigungsaufgaben in Pension Highway verteilen." }, { property: "og:title", content: "Aufgabenverteilung — Pension Highway" }, { property: "og:description", content: "Tägliche Reinigungsaufgaben in Pension Highway verteilen." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DispatchPage,
 });
 

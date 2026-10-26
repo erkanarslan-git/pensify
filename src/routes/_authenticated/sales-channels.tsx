@@ -5,9 +5,9 @@ import { RoomSalesChannels } from "@/components/room-sales-channels";
 
 export const Route = createFileRoute("/_authenticated/sales-channels")({
   head: () => ({ meta: [
-    { title: "Vertriebskanäle — Pensify" },
+    { title: "Vertriebskanäle — Pension Highway" },
     { name: "description", content: "Welche Zimmer bei Booking.com, Airbnb, Expedia und auf der Webseite verkauft werden." },
-    { property: "og:title", content: "Vertriebskanäle — Pensify" },
+    { property: "og:title", content: "Vertriebskanäle — Pension Highway" },
     { property: "og:description", content: "Welche Zimmer bei Booking.com, Airbnb, Expedia und auf der Webseite verkauft werden." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },

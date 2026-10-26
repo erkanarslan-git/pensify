@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Pensify",
+    "name": "Pension Highway",
     "tagline": "Pansiyon Yönetimi"
   },
   "nav": {
@@ -264,7 +264,7 @@
     "noActiveTasks": "Aktif görev yok"
   },
   "auth": {
-    "welcomeTitle": "Pensify'a hoş geldiniz",
+    "welcomeTitle": "Pension Highway’e hoş geldiniz",
     "welcomeSubtitle": "Lokasyonlarınızı tek panelden yönetin",
     "signInTab": "Giriş",
     "signUpTab": "Kayıt ol",

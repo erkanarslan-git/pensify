@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
-  head: () => ({ meta: [{ title: "Eylem Merkezi — Pensify" }, { name: "description", content: "Pensify'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:title", content: "Eylem Merkezi — Pensify" }, { property: "og:description", content: "Pensify'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => ({ meta: [{ title: "Eylem Merkezi — Pension Highway" }, { name: "description", content: "Pension Highway'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:title", content: "Eylem Merkezi — Pension Highway" }, { property: "og:description", content: "Pension Highway'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: NotificationsPage,
 });
 
