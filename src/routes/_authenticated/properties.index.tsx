@@ -81,7 +81,7 @@ function PropertiesPage() {
     queryKey: ["property-room-stats"],
     queryFn: async () => {
       const [roomsResult, typesResult] = await Promise.all([
-        supabase.from("rooms").select("property_id,status,room_type_id"),
+        supabase.from("rooms").select("property_id,status,room_type_id").eq("active", true),
         supabase.from("room_types").select("id,property_id,name,code"),
       ]);
       if (roomsResult.error) throw roomsResult.error;
