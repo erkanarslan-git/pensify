@@ -1,0 +1,1 @@
+GRANT SELECT (cleaning_inspection_required) ON public.properties TO authenticated;
