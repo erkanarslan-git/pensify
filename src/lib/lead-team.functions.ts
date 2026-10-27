@@ -12,7 +12,8 @@ export const listResettableMembers = createServerFn({ method: "GET" })
       .filter((d) => d.is_lead).flatMap((d) => d.members ?? []))].filter((id) => id !== context.userId);
     const allowed: string[] = [];
     for (const id of ids) {
-      const { data } = await (context.supabase as any).rpc("can_reset_member_password", { _target: id });
+      const { data, error: e } = await (context.supabase as any).rpc("can_reset_member_password", { _target: id });
+      if (e) console.error("[lead-reset] check failed", e.code, e.message);
       if (data === true) allowed.push(id);
     }
     if (!allowed.length) return [];
