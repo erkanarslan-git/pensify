@@ -7,6 +7,7 @@ export const listResettableMembers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: depts, error } = await (context.supabase as any).rpc("my_todo_departments");
+    console.error("[lead-reset] depts", JSON.stringify(depts), error?.message);
     if (error) throw new Error("unavailable");
     const ids = [...new Set(((depts ?? []) as { is_lead: boolean; members: string[] | null }[])
       .filter((d) => d.is_lead).flatMap((d) => d.members ?? []))].filter((id) => id !== context.userId);
