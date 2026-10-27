@@ -820,5 +820,27 @@
     "room_history": "Dieses Zimmer hat Buchungen, Reinigungen oder Störungen. Es kann nicht gelöscht werden – bitte stattdessen deaktivieren.",
     "warning": "Wenn Sie diesen Standort löschen, wird er endgültig entfernt. Ein Standort mit Zimmern, Zimmertypen oder Verlauf kann nicht gelöscht werden – löschen Sie zuerst die Zimmer.",
     "typeToConfirm": "Zur Bestätigung den Namen genau eintippen:"
+  },
+  "deptTodos": {
+    "department": "Abteilung",
+    "none": "Allgemein (ohne Abteilung)",
+    "all": "Alle Abteilungen",
+    "office": "Büro",
+    "cleaning": "Reinigung",
+    "maintenance": "Wartung",
+    "onlyMe": "Mir selbst",
+    "unassigned": "Niemand zugewiesen",
+    "stDone": "Erledigt",
+    "stLate": "Überfällig",
+    "stSoon": "Bald fällig",
+    "stOpen": "Offen",
+    "stNoDate": "Ohne Datum",
+    "pwTitle": "Passwort eines Mitarbeiters zurücksetzen",
+    "pwHint": "Geben Sie einem Mitarbeiter Ihrer Abteilung ein neues vorläufiges Passwort und teilen Sie es ihm mit.",
+    "pwPick": "Mitarbeiter wählen",
+    "pwNew": "Neues Passwort (mind. 8 Zeichen)",
+    "pwSave": "Passwort ändern",
+    "pwDone": "Passwort geändert",
+    "pwFailed": "Passwort konnte nicht geändert werden"
   }
 }

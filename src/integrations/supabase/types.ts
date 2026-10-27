@@ -1473,6 +1473,7 @@ export type Database = {
           lead_can_assign: boolean
           lead_can_fix_time: boolean
           lead_can_report: boolean
+          lead_can_reset_password: boolean
           member_id: string
           organization_id: string
           updated_at: string
@@ -1487,6 +1488,7 @@ export type Database = {
           lead_can_assign?: boolean
           lead_can_fix_time?: boolean
           lead_can_report?: boolean
+          lead_can_reset_password?: boolean
           member_id: string
           organization_id: string
           updated_at?: string
@@ -1501,6 +1503,7 @@ export type Database = {
           lead_can_assign?: boolean
           lead_can_fix_time?: boolean
           lead_can_report?: boolean
+          lead_can_reset_password?: boolean
           member_id?: string
           organization_id?: string
           updated_at?: string
@@ -3176,6 +3179,7 @@ export type Database = {
           assigned_to: string | null
           created_at: string
           created_by: string | null
+          department: string | null
           done: boolean
           done_at: string | null
           done_by: string | null
@@ -3201,6 +3205,7 @@ export type Database = {
           assigned_to?: string | null
           created_at?: string
           created_by?: string | null
+          department?: string | null
           done?: boolean
           done_at?: string | null
           done_by?: string | null
@@ -3226,6 +3231,7 @@ export type Database = {
           assigned_to?: string | null
           created_at?: string
           created_by?: string | null
+          department?: string | null
           done?: boolean
           done_at?: string | null
           done_by?: string | null
@@ -3629,6 +3635,7 @@ export type Database = {
         Returns: boolean
       }
       can_read_todo: { Args: { _id: string }; Returns: boolean }
+      can_reset_member_password: { Args: { _target: string }; Returns: boolean }
       cleaner_user: { Args: { _cleaner: string }; Returns: string }
       cleaning_assignment_options: {
         Args: never
@@ -3795,6 +3802,14 @@ export type Database = {
         Returns: boolean
       }
       import_wp_rooms: { Args: { _batch: Json }; Returns: Json }
+      is_department_lead: {
+        Args: { _department: string; _org: string }
+        Returns: boolean
+      }
+      is_department_worker: {
+        Args: { _department: string; _org: string; _user: string }
+        Returns: boolean
+      }
       is_org_admin: { Args: { _org: string }; Returns: boolean }
       is_organization_member: { Args: { _org: string }; Returns: boolean }
       link_reservation_customers: {
@@ -3860,6 +3875,14 @@ export type Database = {
       my_report_teams: { Args: never; Returns: string[] }
       my_shift_context: { Args: { _property_id?: string }; Returns: Json }
       my_time_management_access: { Args: never; Returns: boolean }
+      my_todo_departments: {
+        Args: never
+        Returns: {
+          department: string
+          is_lead: boolean
+          members: string[]
+        }[]
+      }
       org_to_app_role: {
         Args: { _r: Database["public"]["Enums"]["org_role"] }
         Returns: Database["public"]["Enums"]["app_role"]

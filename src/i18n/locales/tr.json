@@ -820,5 +820,27 @@
     "room_history": "Bu odanın rezervasyon, temizlik veya arıza kayıtları var. Silinemez — bunun yerine pasif yapın.",
     "warning": "Bu lokasyonu sildiğinizde kalıcı olarak kaldırılır. İçinde oda, oda tipi veya geçmiş kaydı olan lokasyon silinemez — önce odaları silin.",
     "typeToConfirm": "Onaylamak için adı aynen yazın:"
+  },
+  "deptTodos": {
+    "department": "Bölüm",
+    "none": "Genel (bölümsüz)",
+    "all": "Tüm bölümler",
+    "office": "Büro",
+    "cleaning": "Temizlik",
+    "maintenance": "Bakım",
+    "onlyMe": "Kendime",
+    "unassigned": "Kimseye atanmadı",
+    "stDone": "Bitti",
+    "stLate": "Gecikti",
+    "stSoon": "Yaklaşıyor",
+    "stOpen": "Açık",
+    "stNoDate": "Tarihsiz",
+    "pwTitle": "Çalışan şifresi yenile",
+    "pwHint": "Bölümünüzdeki çalışana yeni bir geçici şifre verin ve ona söyleyin.",
+    "pwPick": "Çalışan seçin",
+    "pwNew": "Yeni şifre (en az 8 karakter)",
+    "pwSave": "Şifreyi değiştir",
+    "pwDone": "Şifre değiştirildi",
+    "pwFailed": "Şifre değiştirilemedi"
   }
 }

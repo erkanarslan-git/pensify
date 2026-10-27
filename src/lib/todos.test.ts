@@ -25,3 +25,13 @@ describe("todos", () => {
     expect(r.map((x) => x.id)).toEqual(["late", "urg", "low", "done"]);
   });
 });
+
+import { todoStatus } from "./todos";
+describe("todoStatus colours", () => {
+  const today = "2026-10-27";
+  it("done is green", () => expect(todoStatus({ due_date: "2026-10-20", done: true, priority: "normal" }, today)).toBe("done"));
+  it("past due is red", () => expect(todoStatus({ due_date: "2026-10-26", done: false, priority: "normal" }, today)).toBe("late"));
+  it("due within 2 days is orange", () => expect(todoStatus({ due_date: "2026-10-29", done: false, priority: "normal" }, today)).toBe("soon"));
+  it("later is open", () => expect(todoStatus({ due_date: "2026-10-30", done: false, priority: "normal" }, today)).toBe("open"));
+  it("no date", () => expect(todoStatus({ due_date: null, done: false, priority: "normal" }, today)).toBe("nodate"));
+});

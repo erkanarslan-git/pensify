@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { ShiftPanel } from "@/components/shift-panel";
+import { LeadPasswordReset } from "@/components/lead-password-reset";
 
 export const Route = createFileRoute("/_authenticated/me")({
   head: () => ({ meta: [{ title: "Mesaim — Pension Highway" }, { name: "description", content: "Pension Highway'da güncel mesai durumunuz ve başla/ara ver/bitir işlemleri." }, { property: "og:title", content: "Mesaim — Pension Highway" }, { property: "og:description", content: "Pension Highway'da güncel mesai durumunuz ve başla/ara ver/bitir işlemleri." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -24,6 +25,7 @@ function MePage() {
           <ArrowLeft /> {t("shift.back")}
         </Button>
         <ShiftPanel property={null} token={null} />
+        <LeadPasswordReset />
       </div>
     </AppShell>
   );

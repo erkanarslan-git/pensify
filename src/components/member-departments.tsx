@@ -10,11 +10,12 @@ const POWERS = [
   ["assign", "lead_can_assign"],
   ["time", "lead_can_fix_time"],
   ["absence", "lead_can_absence"],
+  ["password", "lead_can_reset_password"],
 ] as const;
 
 type Row = {
   id: string; department: Dept; is_worker: boolean; is_lead: boolean;
-  lead_can_assign: boolean; lead_can_fix_time: boolean; lead_can_absence: boolean; lead_can_report: boolean;
+  lead_can_assign: boolean; lead_can_fix_time: boolean; lead_can_absence: boolean; lead_can_report: boolean; lead_can_reset_password: boolean;
 };
 
 export function MemberDepartments({ userId }: { userId: string }) {

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadError } from "@/components/load-error";
@@ -9,7 +9,7 @@ import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
-import { isOverdue, sortTodos } from "@/lib/todos";
+import { isOverdue, sortTodos, todoStatus } from "@/lib/todos";
 import { loadTodoOptions } from "@/lib/todo-data.functions";
 import { TodoDetails } from "@/components/todo-details";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,10 @@ export const Route = createFileRoute("/_authenticated/todos")({
   component: TodosPage,
 });
 
-interface Todo { id: string; title: string; due_date: string | null; priority: string; done: boolean; created_by: string | null; done_by: string | null; created_at: string; assigned_to: string | null; property_id: string | null; room_id: string | null; reservation_id: string | null; notes: string | null; due_at: string | null; recurrence:string; reminder_at:string|null }
+interface Todo { id: string; title: string; due_date: string | null; priority: string; done: boolean; created_by: string | null; done_by: string | null; created_at: string; assigned_to: string | null; property_id: string | null; room_id: string | null; reservation_id: string | null; notes: string | null; due_at: string | null; recurrence:string; reminder_at:string|null; department: string | null }
 type Filter = "open" | "overdue" | "today" | "mine" | "upcoming" | "done" | "all";
+const DEPTS = ["office", "cleaning", "maintenance"] as const;
+const statusCls: Record<string, string> = { done: "bg-success", late: "bg-destructive", soon: "bg-warning", open: "bg-primary", nodate: "bg-muted-foreground/40" };
 const PRIOS = ["low", "normal", "high", "urgent"] as const;
 const prioCls: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
@@ -44,6 +46,7 @@ function TodosPage() {
   const [room, setRoom] = useState(""); const [reservation, setReservation] = useState("");
   const [time, setTime] = useState(""); const [notes, setNotes] = useState("");
   const [repeat, setRepeat] = useState("none"); const [reminder, setReminder] = useState("");
+  const [dept, setDept] = useState(""); const [deptFilter, setDeptFilter] = useState("all");
   const [editing,setEditing]=useState<string|null>(null);
   const [details, setDetails] = useState<Todo | null>(null);
   const { data: options } = useQuery({ queryKey: ["todo-options"], queryFn: () => loadTodoOptions() });
@@ -57,12 +60,22 @@ function TodosPage() {
     queryFn: async () => {
       const rows: Todo[] = [];
       for (let offset = 0; ; offset += 500) {
-        const { data, error } = await supabase.from("todos").select("id,title,due_date,due_at,notes,priority,done,created_by,done_by,created_at,assigned_to,property_id,room_id,reservation_id,recurrence,reminder_at").is("archived_at", null).order("created_at", { ascending: false }).order("id").range(offset, offset + 499);
+        const { data, error } = await supabase.from("todos").select("id,title,due_date,due_at,notes,priority,done,created_by,done_by,created_at,assigned_to,property_id,room_id,reservation_id,recurrence,reminder_at,department").is("archived_at", null).order("created_at", { ascending: false }).order("id").range(offset, offset + 499);
         if (error) throw error; rows.push(...(data ?? []) as Todo[]); if ((data?.length ?? 0) < 500) break;
       }
       return rows;
     },
   });
+  const office = options?.office ?? false;
+  const myDepts = options?.departments ?? [];
+  const defaultDept = office ? "" : (myDepts[0]?.department ?? "");
+  const deptChoices = office ? DEPTS.map(String) : myDepts.map((d) => d.department);
+  const activeDept = myDepts.find((d) => d.department === dept);
+  // Who can be picked: office staff anyone; chiefs their department; workers only themselves.
+  const assignable = office ? (options?.users ?? [])
+    : activeDept?.isLead ? (options?.users ?? []).filter((u) => activeDept.members.includes(u.id))
+    : (options?.users ?? []).filter((u) => u.id === options?.userId);
+  useEffect(() => { if (!dept && defaultDept) setDept(defaultDept); }, [dept, defaultDept]);
   const names = Object.fromEntries((options?.users ?? []).map(user => [user.id, user.name]));
   const refresh = () => qc.invalidateQueries({ queryKey: ["todos"] });
 
@@ -71,9 +84,9 @@ function TodosPage() {
     let dueAt: string | null = null; let reminderAt: string | null = null;
     try { dueAt = due && time ? berlinLocalToIso(`${due}T${time}`) : null; reminderAt = reminder ? berlinLocalToIso(reminder) : null; }
     catch { toast.error(t("todos.saveErr")); return; }
-    const { error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt } });
+    const { error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt, department: dept || null } });
     if (error) return toast.error(t("todos.saveErr"));
-    setEditing(null); setTitle(""); setDue(""); setPrio("normal"); setAssigned(""); setProperty(""); setRoom(""); setReservation(""); setTime(""); setNotes(""); setRepeat("none"); setReminder(""); refresh();
+    setEditing(null); setTitle(""); setDue(""); setPrio("normal"); setAssigned(""); setProperty(""); setRoom(""); setReservation(""); setTime(""); setNotes(""); setRepeat("none"); setReminder(""); setDept(defaultDept); refresh();
   };
   const toggle = async (x: Todo) => {
     const { error } = await supabase.rpc("general_todo_action", { _id: x.id, _action: x.done ? "reopen" : "complete" });
@@ -96,9 +109,9 @@ function TodosPage() {
     mine: todos.filter((x) => !x.done && x.assigned_to === options?.userId).length,
     upcoming: todos.filter((x) => !x.done && !!x.due_date && x.due_date > today).length,
   };
-  const shown = useMemo(() => sortTodos(todos.filter((x) =>
+  const shown = useMemo(() => sortTodos(todos.filter((x) => deptFilter === "all" || (deptFilter === "none" ? !x.department : x.department === deptFilter)).filter((x) =>
     filter === "mine" ? !x.done && x.assigned_to === options?.userId : filter === "upcoming" ? !x.done && !!x.due_date && x.due_date > today : filter === "all" ? true : filter === "done" ? x.done : filter === "overdue" ? isOverdue(x, today) : filter === "today" ? !x.done && x.due_date === today : !x.done,
-  ), today), [todos, filter, today, options?.userId]);
+  ), today), [todos, filter, today, options?.userId, deptFilter]);
 
   const daysLate = (d: string) => Math.round((Date.parse(today) - Date.parse(d)) / 86400000);
   const locale = i18n.language?.startsWith("tr") ? "tr-TR" : i18n.language?.startsWith("en") ? "en-GB" : "de-DE";
@@ -128,6 +141,10 @@ function TodosPage() {
       <div className="rounded-2xl border border-border bg-card p-3 mb-4 flex flex-wrap gap-2">
         <input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && add()} placeholder={t("todos.placeholder")} className="flex-1 min-w-[200px] px-3 py-2 rounded-md border border-input bg-background text-sm" />
         <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-background text-sm" />
+        {deptChoices.length > 0 && <select aria-label={t("deptTodos.department")} value={dept} onChange={(e) => { setDept(e.target.value); setAssigned(""); }} className="px-3 py-2 rounded-md border border-input bg-background text-sm">
+          {office && <option value="">{t("deptTodos.none")}</option>}
+          {deptChoices.map((d) => <option key={d} value={d}>{t(`deptTodos.${d}`)}</option>)}
+        </select>}
         <select value={prio} onChange={(e) => setPrio(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-background text-sm">
           {PRIOS.map((p) => <option key={p} value={p}>{t(`todos.p.${p}`)}</option>)}
         </select>
@@ -135,7 +152,7 @@ function TodosPage() {
       </div>
 
       <details className="mb-4"><summary className="cursor-pointer text-sm font-semibold">{t("todoDetails.details")}</summary><div className="mt-3 grid gap-3 sm:grid-cols-3">
-        <label className="text-xs">{t("todoDetails.assigned")}<select value={assigned} onChange={e => setAssigned(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{options?.users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></label>
+        <label className="text-xs">{t("todoDetails.assigned")}<select value={assigned} onChange={e => setAssigned(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">{t("deptTodos.unassigned")}</option>{assignable.map(u => <option key={u.id} value={u.id}>{u.id === options?.userId ? t("deptTodos.onlyMe") : u.name}</option>)}</select></label>
         <label className="text-xs">{t("todoDetails.property")}<select value={property} onChange={e => { setProperty(e.target.value); setRoom(""); setReservation(""); }} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{options?.properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
         <label className="text-xs">{t("todoDetails.room")}<select disabled={!property} value={room} onChange={e => setRoom(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{links?.rooms.map(r => <option key={r.id} value={r.id}>{r.number}</option>)}</select></label>
         <label className="text-xs">{t("todoDetails.reservation")}<select disabled={!property} value={reservation} onChange={e => setReservation(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{links?.reservations.map(r => <option key={r.id} value={r.id}>{r.guest_name}</option>)}</select></label>
@@ -157,6 +174,11 @@ function TodosPage() {
             ))}
           </div>
         )}
+        {(office || myDepts.length > 1) && <select aria-label={t("deptTodos.department")} value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="h-9 rounded-lg border border-input bg-card px-2 text-xs">
+          <option value="all">{t("deptTodos.all")}</option>
+          {office && <option value="none">{t("deptTodos.none")}</option>}
+          {deptChoices.map((d) => <option key={d} value={d}>{t(`deptTodos.${d}`)}</option>)}
+        </select>}
       </div>
 
       {todosError ? (
@@ -168,8 +190,10 @@ function TodosPage() {
           <div className="rounded-2xl border border-border bg-card divide-y divide-border">
             {shown.map((x) => {
               const late = isOverdue(x, today);
+              const st = todoStatus(x, today);
               return (
-                <div key={x.id} className={`flex items-center gap-3 px-4 py-3 text-sm ${late ? "bg-destructive/5" : ""}`}>
+                <div key={x.id} className={`relative flex items-center gap-3 pl-5 pr-4 py-3 text-sm ${late ? "bg-destructive/5" : ""}`}>
+                  <span aria-hidden className={`absolute left-0 top-2 bottom-2 w-1.5 rounded-r ${statusCls[st]}`} />
                   <input type="checkbox" checked={x.done} onChange={() => toggle(x)} className="w-4 h-4 accent-primary" />
                   <div className="flex-1 min-w-0">
                     <Button variant="link" className={`h-auto p-0 text-left whitespace-normal ${x.done ? "line-through text-muted-foreground" : ""}`} onClick={() => setDetails(x)}>{x.title}</Button>
@@ -181,8 +205,10 @@ function TodosPage() {
                       {x.done && x.done_by && names[x.done_by] && <span>· {t("todos.doneBy")}: {names[x.done_by]}</span>}
                     </div>
                   </div>
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-muted-foreground"><span className={`h-2 w-2 rounded-full ${statusCls[st]}`} />{t(`deptTodos.st${st === "nodate" ? "NoDate" : st[0].toUpperCase() + st.slice(1)}`)}</span>
+                  {x.department && <span className="text-[11px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">{t(`deptTodos.${x.department}`)}</span>}
                   <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${prioCls[x.priority] ?? prioCls.normal}`}>{t(`todos.p.${x.priority}`)}</span>
-                  <Button variant="ghost" size="icon" aria-label={t("common.edit")} onClick={()=>{setEditing(x.id);setTitle(x.title);setDue(x.due_date??"");setPrio(x.priority);setAssigned(x.assigned_to??"");setProperty(x.property_id??"");setRoom(x.room_id??"");setReservation(x.reservation_id??"");setNotes(x.notes??"");setRepeat(x.recurrence);setReminder(x.reminder_at?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(x.reminder_at)).replace(" ","T"):"");setTime(x.due_at?new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"}).format(new Date(x.due_at)):"");window.scrollTo({top:0,behavior:"smooth"});}}><Pencil className="h-4 w-4"/></Button>
+                  <Button variant="ghost" size="icon" aria-label={t("common.edit")} onClick={()=>{setEditing(x.id);setTitle(x.title);setDue(x.due_date??"");setPrio(x.priority);setAssigned(x.assigned_to??"");setProperty(x.property_id??"");setRoom(x.room_id??"");setReservation(x.reservation_id??"");setNotes(x.notes??"");setRepeat(x.recurrence);setDept(x.department??"");setReminder(x.reminder_at?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(x.reminder_at)).replace(" ","T"):"");setTime(x.due_at?new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Berlin",hour:"2-digit",minute:"2-digit"}).format(new Date(x.due_at)):"");window.scrollTo({top:0,behavior:"smooth"});}}><Pencil className="h-4 w-4"/></Button>
                   <button onClick={() => remove(x)} aria-label={t("todos.del")} className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4" /></button>
                 </div>
               );

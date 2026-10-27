@@ -19,3 +19,13 @@ export function sortTodos<T extends TodoLike>(list: T[], today: string): T[] {
     return (RANK[a.priority] ?? 2) - (RANK[b.priority] ?? 2);
   });
 }
+
+export type TodoStatus = "done" | "late" | "soon" | "open" | "nodate";
+/** Traffic-light state: green done, red overdue, orange due within 2 days, blue open, grey without date. */
+export function todoStatus(t: TodoLike, today: string, now = Date.now()): TodoStatus {
+  if (t.done) return "done";
+  if (isOverdue(t, today, now)) return "late";
+  if (!t.due_date) return "nodate";
+  const days = Math.round((Date.parse(t.due_date) - Date.parse(today)) / 86400000);
+  return days <= 2 ? "soon" : "open";
+}

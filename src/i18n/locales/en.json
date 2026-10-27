@@ -820,5 +820,27 @@
     "room_history": "This room has reservations, cleanings or issues. It cannot be deleted — deactivate it instead.",
     "warning": "Deleting this location removes it permanently. A location with rooms, room types or history cannot be deleted — delete the rooms first.",
     "typeToConfirm": "Type the name exactly to confirm:"
+  },
+  "deptTodos": {
+    "department": "Department",
+    "none": "General (no department)",
+    "all": "All departments",
+    "office": "Office",
+    "cleaning": "Cleaning",
+    "maintenance": "Maintenance",
+    "onlyMe": "Myself",
+    "unassigned": "Not assigned",
+    "stDone": "Done",
+    "stLate": "Overdue",
+    "stSoon": "Due soon",
+    "stOpen": "Open",
+    "stNoDate": "No date",
+    "pwTitle": "Reset a worker's password",
+    "pwHint": "Give a worker in your department a new temporary password and tell them.",
+    "pwPick": "Choose worker",
+    "pwNew": "New password (min. 8 characters)",
+    "pwSave": "Change password",
+    "pwDone": "Password changed",
+    "pwFailed": "Password could not be changed"
   }
 }
