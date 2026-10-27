@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadError } from "@/components/load-error";
@@ -72,10 +72,10 @@ function TodosPage() {
   const deptChoices = office ? DEPTS.map(String) : myDepts.map((d) => d.department);
   const activeDept = myDepts.find((d) => d.department === dept);
   // Who can be picked: office staff anyone; chiefs their department; workers only themselves.
-  const assignable = office && !activeDept ? (options?.users ?? [])
-    : activeDept?.isLead || office ? (options?.users ?? []).filter((u) => !dept || activeDept?.members.includes(u.id) || office)
+  const assignable = office ? (options?.users ?? [])
+    : activeDept?.isLead ? (options?.users ?? []).filter((u) => activeDept.members.includes(u.id))
     : (options?.users ?? []).filter((u) => u.id === options?.userId);
-  if (!office && !dept && defaultDept && options) setTimeout(() => setDept(defaultDept));
+  useEffect(() => { if (!dept && defaultDept) setDept(defaultDept); }, [dept, defaultDept]);
   const names = Object.fromEntries((options?.users ?? []).map(user => [user.id, user.name]));
   const refresh = () => qc.invalidateQueries({ queryKey: ["todos"] });
 
