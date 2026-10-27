@@ -2112,6 +2112,36 @@ export type Database = {
           },
         ]
       }
+      push_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen_at: string
+          organization_id: string
+          token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          organization_id: string
+          token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          organization_id?: string
+          token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       rate_plans: {
         Row: {
           active: boolean

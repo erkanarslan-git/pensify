@@ -694,6 +694,13 @@
       "when": 1793106070884,
       "tag": "0098_department_todos_and_lead_password",
       "breakpoints": true
+    },
+    {
+      "idx": 99,
+      "version": "7",
+      "when": 1793142785270,
+      "tag": "0099_push_tokens",
+      "breakpoints": true
     }
   ]
 }
