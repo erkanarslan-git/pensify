@@ -93,7 +93,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       setLoading(true);
       const [pr, rm, cl, rt, live] = await Promise.all([
         supabase.from("properties").select("id,name,address,city_id,organization_id").order("name"),
-        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id")
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id").eq("active", true)
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
         supabase.from("room_types").select("id,name,code,property_id").order("name"),
@@ -124,10 +124,11 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
 
   const properties = propertyId ? allProperties.filter((p) => p.id === propertyId) : allProperties;
   const rooms = propertyId ? allRooms.filter((r) => r.property_id === propertyId) : allRooms;
-  const summary = summarizeRooms(rooms);
   const needle = q.trim().toLocaleLowerCase();
-  const list = rooms
-    .filter((r) => filter === "all" || r.status === filter)
+  // Same status groups as the summary cards, so card, dropdown and list always agree.
+  const statusGroups: Partial<Record<RoomStatus, RoomStatus[]>> = { occupied: ["occupied", "checkout_today"], available: ["available", "cleaned"], cleaning_required: ["cleaning_required", "cleaning_in_progress"] };
+  const matchesStatus = (r: Room, s: RoomStatus | "all") => s === "all" || (statusGroups[s] ?? [s]).includes(r.status);
+  const scoped = rooms
     .filter((r) => !tFilter || (tFilter === "none" ? !r.room_type_id : r.room_type_id === tFilter))
     .filter((r) => !pFilter || r.property_id === pFilter)
     .filter((r) => {
@@ -137,7 +138,10 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
       const cleaner = cleaners.find((c) => c.id === r.default_cleaner_id);
       return [r.number, property?.name, property?.address, type?.name, type?.code, cleaner?.full_name, r.notes, t(`status.${r.status}`)]
         .some((value) => value?.toLocaleLowerCase().includes(needle));
-    })
+    });
+  const summary = summarizeRooms(scoped);
+  const list = scoped
+    .filter((r) => matchesStatus(r, filter))
     .sort((a, b) => a.number.localeCompare(b.number, "de", { numeric: true }));
   const single = propertyId ? properties[0] : undefined;
   const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
@@ -234,9 +238,9 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
           ))}
         </select>
         <select value={filter} onChange={(e) => setFilter(e.target.value as RoomStatus | "all")} className="h-9 min-w-0 rounded-md border border-input bg-background px-2 text-sm">
-          <option value="all">{t("rooms.allStatuses")} ({rooms.length})</option>
+          <option value="all">{t("rooms.allStatuses")} ({scoped.length})</option>
           {(Object.keys(statusMeta) as RoomStatus[]).map((s) => (
-            <option key={s} value={s}>{t(`status.${s}`)} ({rooms.filter((r) => r.status === s).length})</option>
+            <option key={s} value={s}>{t(`status.${s}`)} ({scoped.filter((r) => matchesStatus(r, s)).length})</option>
           ))}
         </select>
         {(pFilter || tFilter || filter !== "all" || q) && (
