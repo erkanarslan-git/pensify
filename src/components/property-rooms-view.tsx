@@ -473,6 +473,10 @@ function DeleteTypeDialog({ type, types, roomCount, onClose, onDone }: {
   const move = () => run(async () => await supabase.rpc("move_rooms_to_type", { _from_type: type.id, _to_type: target } as never), t("propertyRooms.roomsMoved"));
   const remove = () => run(async () => {
     // Plans with history (occupancy prices, channel mappings, reservations) make the delete fail → user sees "in use".
+    // Refuse before touching prices when rooms still use this type.
+    const used = await supabase.from("rooms").select("id", { count: "exact", head: true }).eq("room_type_id", type.id);
+    if (used.error) return used;
+    if ((used.count ?? 0) > 0) return { error: { message: "HAS_CHILDREN:room_type_rooms" } };
     const r1 = await supabase.from("rate_plans").delete().eq("room_type_id", type.id);
     if (r1.error) return r1;
     return await supabase.from("room_types").delete().eq("id", type.id);
