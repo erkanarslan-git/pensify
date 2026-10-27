@@ -687,6 +687,13 @@
       "when": 1793104429473,
       "tag": "0097_block_parent_delete_with_children",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1793106070884,
+      "tag": "0098_department_todos_and_lead_password",
+      "breakpoints": true
     }
   ]
 }
