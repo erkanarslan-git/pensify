@@ -1,3 +1,4 @@
+import { deleteGuardMessage } from "@/lib/delete-guard";
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { Plus, Pencil, Trash2, Users, Layers } from "lucide-react";
@@ -35,6 +36,8 @@ const todayStr = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Europ
 /** Map DB/RPC errors to safe, translated messages. Raw details go to the console only. */
 export function friendlyError(t: TFunction, err: { code?: string; message?: string } | null | undefined): string {
   if (err) console.error("[rooms]", err);
+  const guarded = deleteGuardMessage(t, err);
+  if (guarded) return guarded;
   const msg = err?.message ?? "";
   const known = ["invalid_name", "invalid_capacity", "invalid_price", "capacity_below_rooms", "invalid_count", "invalid_number",
     "invalid_floor", "duplicate_number", "number_taken", "forbidden", "invalid_code", "code_taken", "invalid_base_occupancy",
