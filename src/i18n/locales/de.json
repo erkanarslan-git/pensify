@@ -811,5 +811,14 @@
     "resolutionNote": "Was wurde gemacht? (optional)",
     "resolutionPlaceholder": "z. B. Dichtung vom Installateur getauscht",
     "confirmResolve": "Ja, behoben"
+  },
+  "deleteGuard": {
+    "property_rooms": "Dieser Standort enthält noch Zimmer. Bitte zuerst alle Zimmer dieses Standorts löschen.",
+    "property_room_types": "Dieser Standort enthält noch Zimmertypen. Bitte zuerst die Zimmertypen löschen.",
+    "property_history": "Dieser Standort hat Buchungen, Zahlungen oder Arbeitszeiten. Er kann nicht gelöscht werden, damit der Verlauf erhalten bleibt.",
+    "room_type_rooms": "Diesem Zimmertyp sind noch Zimmer zugeordnet. Bitte zuerst die Zimmer löschen oder einem anderen Typ zuordnen.",
+    "room_history": "Dieses Zimmer hat Buchungen, Reinigungen oder Störungen. Es kann nicht gelöscht werden – bitte stattdessen deaktivieren.",
+    "warning": "Wenn Sie diesen Standort löschen, wird er endgültig entfernt. Ein Standort mit Zimmern, Zimmertypen oder Verlauf kann nicht gelöscht werden – löschen Sie zuerst die Zimmer.",
+    "typeToConfirm": "Zur Bestätigung den Namen genau eintippen:"
   }
 }

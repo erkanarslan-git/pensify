@@ -811,5 +811,14 @@
     "resolutionNote": "Ne yapıldı? (isteğe bağlı)",
     "resolutionPlaceholder": "Örn. tesisatçı contayı değiştirdi",
     "confirmResolve": "Evet, çözüldü"
+  },
+  "deleteGuard": {
+    "property_rooms": "Bu lokasyonda hâlâ odalar var. Önce bu lokasyondaki bütün odaları silin.",
+    "property_room_types": "Bu lokasyonda hâlâ oda tipleri var. Önce oda tiplerini silin.",
+    "property_history": "Bu lokasyonun rezervasyon, ödeme veya mesai kayıtları var. Geçmiş korunsun diye silinemez.",
+    "room_type_rooms": "Bu oda tipinde hâlâ odalar var. Önce odaları silin ya da başka bir tipe taşıyın.",
+    "room_history": "Bu odanın rezervasyon, temizlik veya arıza kayıtları var. Silinemez — bunun yerine pasif yapın.",
+    "warning": "Bu lokasyonu sildiğinizde kalıcı olarak kaldırılır. İçinde oda, oda tipi veya geçmiş kaydı olan lokasyon silinemez — önce odaları silin.",
+    "typeToConfirm": "Onaylamak için adı aynen yazın:"
   }
 }

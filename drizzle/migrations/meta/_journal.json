@@ -680,6 +680,13 @@
       "when": 1793104025424,
       "tag": "0096_grant_property_inspection_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1793104429473,
+      "tag": "0097_block_parent_delete_with_children",
+      "breakpoints": true
     }
   ]
 }

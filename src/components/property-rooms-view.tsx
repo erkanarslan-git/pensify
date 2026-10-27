@@ -1,3 +1,4 @@
+import { deleteGuardMessage } from "@/lib/delete-guard";
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { Plus, Pencil, Trash2, Users, Layers } from "lucide-react";
@@ -35,6 +36,8 @@ const todayStr = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Europ
 /** Map DB/RPC errors to safe, translated messages. Raw details go to the console only. */
 export function friendlyError(t: TFunction, err: { code?: string; message?: string } | null | undefined): string {
   if (err) console.error("[rooms]", err);
+  const guarded = deleteGuardMessage(t, err);
+  if (guarded) return guarded;
   const msg = err?.message ?? "";
   const known = ["invalid_name", "invalid_capacity", "invalid_price", "capacity_below_rooms", "invalid_count", "invalid_number",
     "invalid_floor", "duplicate_number", "number_taken", "forbidden", "invalid_code", "code_taken", "invalid_base_occupancy",
@@ -470,6 +473,10 @@ function DeleteTypeDialog({ type, types, roomCount, onClose, onDone }: {
   const move = () => run(async () => await supabase.rpc("move_rooms_to_type", { _from_type: type.id, _to_type: target } as never), t("propertyRooms.roomsMoved"));
   const remove = () => run(async () => {
     // Plans with history (occupancy prices, channel mappings, reservations) make the delete fail → user sees "in use".
+    // Refuse before touching prices when rooms still use this type.
+    const used = await supabase.from("rooms").select("id", { count: "exact", head: true }).eq("room_type_id", type.id);
+    if (used.error) return used;
+    if ((used.count ?? 0) > 0) return { error: { message: "HAS_CHILDREN:room_type_rooms" } };
     const r1 = await supabase.from("rate_plans").delete().eq("room_type_id", type.id);
     if (r1.error) return r1;
     return await supabase.from("room_types").delete().eq("id", type.id);

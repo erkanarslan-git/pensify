@@ -1,3 +1,4 @@
+import { deleteGuardMessage } from "@/lib/delete-guard";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState } from "react";
@@ -221,6 +222,7 @@ function PropertiesPage() {
 function DeleteButton({ id, name }: { id: string; name: string }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const [typed, setTyped] = useState("");
   const del = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("properties").delete().eq("id", id);
@@ -230,10 +232,10 @@ function DeleteButton({ id, name }: { id: string; name: string }) {
       toast.success(t("pensions.deletedToast"));
       qc.invalidateQueries({ queryKey: ["properties"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(deleteGuardMessage(t, e) ?? e.message, { duration: 8000 }),
   });
   return (
-    <AlertDialog>
+    <AlertDialog onOpenChange={() => setTyped("")}>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
           <Trash2 className="w-3.5 h-3.5" />
@@ -242,11 +244,15 @@ function DeleteButton({ id, name }: { id: string; name: string }) {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
-          <AlertDialogDescription>{name}</AlertDialogDescription>
+          <AlertDialogDescription>{t("deleteGuard.warning")}</AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="space-y-2">
+          <Label htmlFor={`del-${id}`}>{t("deleteGuard.typeToConfirm")} <strong className="select-all">{name}</strong></Label>
+          <Input id={`del-${id}`} value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" />
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-          <AlertDialogAction onClick={() => del.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogAction disabled={typed.trim() !== name.trim()} onClick={() => del.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             {t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>

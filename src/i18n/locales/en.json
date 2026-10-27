@@ -811,5 +811,14 @@
     "resolutionNote": "What was done? (optional)",
     "resolutionPlaceholder": "e.g. plumber replaced the seal",
     "confirmResolve": "Yes, resolved"
+  },
+  "deleteGuard": {
+    "property_rooms": "This location still has rooms. Delete all rooms of this location first.",
+    "property_room_types": "This location still has room types. Delete the room types first.",
+    "property_history": "This location has reservations, payments or work time. It cannot be deleted so history is kept.",
+    "room_type_rooms": "Rooms are still assigned to this room type. Delete them or move them to another type first.",
+    "room_history": "This room has reservations, cleanings or issues. It cannot be deleted — deactivate it instead.",
+    "warning": "Deleting this location removes it permanently. A location with rooms, room types or history cannot be deleted — delete the rooms first.",
+    "typeToConfirm": "Type the name exactly to confirm:"
   }
 }
