@@ -673,6 +673,13 @@
       "when": 1793017895986,
       "tag": "0095_tv_today_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1793104025424,
+      "tag": "0096_grant_property_inspection_flag",
+      "breakpoints": true
     }
   ]
 }

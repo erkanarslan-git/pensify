@@ -453,7 +453,7 @@ export const legacyTextTranslations = {
     "206": "Echte Unterkunft bei WuBook anlegen (Pilot)",
     "207": "WuBook-Passwort (wird nur jetzt angezeigt – bitte sicher notieren):",
     "208": "Legt die gewählte Pension als eigene Unterkunft bei WuBook an. Es werden noch keine Zimmer, Preise oder Verfügbarkeiten gesendet und keine Kanäle verbunden.",
-    "209": "Pension",
+    "209": "Standort",
     "210": "Weiter zur Prüfung…",
     "211": "Dies erstellt ein echtes WuBook-Konto für diese Pension. Das Passwort wird nur einmal angezeigt.",
     "212": "Ich bestätige das Anlegen bei WuBook.",
