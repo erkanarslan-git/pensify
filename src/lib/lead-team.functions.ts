@@ -13,7 +13,7 @@ export const listResettableMembers = createServerFn({ method: "GET" })
     const allowed: string[] = [];
     for (const id of ids) {
       const { data, error: e } = await (context.supabase as any).rpc("can_reset_member_password", { _target: id });
-      if (e) console.error("[lead-reset] check failed", e.code, e.message);
+      console.error("[lead-reset]", id, data, e?.message);
       if (data === true) allowed.push(id);
     }
     if (!allowed.length) return [];
