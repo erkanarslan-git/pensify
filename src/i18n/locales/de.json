@@ -101,7 +101,7 @@
     },
     "rooms": {
       "title": "Zimmerstatus",
-      "subtitle": "{{rooms}} Zimmer in {{props}} Standorte"
+      "subtitle": "{{rooms}} Zimmer an {{props}} Standorten"
     },
     "cleaning": {
       "title": "Reinigung"
@@ -235,7 +235,7 @@
     "addNew": "Neuer Standort",
     "editPension": "Standort bearbeiten",
     "selectCity": "Stadt auswählen",
-    "noPensions": "Noch keine Standorte. Füge die erste hinzu.",
+    "noPensions": "Noch keine Standorte. Füge den ersten hinzu.",
     "deletedToast": "Standort gelöscht",
     "savedToast": "Standort gespeichert"
   },
@@ -525,7 +525,7 @@
       "dup": "Nummer {{n}} doppelt"
     },
     "sum": {
-      "newProps": "Neuer Standorten",
+      "newProps": "Neue Standorte",
       "newTypes": "Neue Zimmertypen",
       "create": "Neue Zimmer",
       "update": "Aktualisierte Zimmer",
