@@ -7,24 +7,24 @@ export const listResettableMembers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: depts, error } = await (context.supabase as any).rpc("my_todo_departments");
-    console.error("[lead-reset] depts", JSON.stringify(depts), error?.message);
     if (error) throw new Error("unavailable");
     const ids = [...new Set(((depts ?? []) as { is_lead: boolean; members: string[] | null }[])
       .filter((d) => d.is_lead).flatMap((d) => d.members ?? []))].filter((id) => id !== context.userId);
     const allowed: string[] = [];
     for (const id of ids) {
-      const { data, error: e } = await (context.supabase as any).rpc("can_reset_member_password", { _target: id });
-      console.error("[lead-reset]", id, data, e?.message);
+      const { data } = await (context.supabase as any).rpc("can_reset_member_password", { _target: id });
       if (data === true) allowed.push(id);
     }
     if (!allowed.length) return [];
-    const { data: names } = await context.supabase.from("profiles").select("id,full_name").in("id", allowed);
+    // Co-worker profiles are not readable by chiefs; names only for ids the database just authorised.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: names } = await supabaseAdmin.from("profiles").select("id,full_name").in("id", allowed);
     return (names ?? []).map((p) => ({ id: p.id, name: p.full_name ?? "—" }));
   });
 
 export const leadResetPassword = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { userId: string; password: string }) =>
+  .validator((d: { userId: string; password: string }) =>
     z.object({ userId: z.string().uuid(), password: z.string().min(8).max(72) }).parse(d),
   )
   .handler(async ({ data, context }) => {
