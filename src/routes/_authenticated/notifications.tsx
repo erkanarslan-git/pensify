@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
+import { PushEnableCard } from "@/components/push-enable";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [{ title: "Eylem Merkezi — Pension Highway" }, { name: "description", content: "Pension Highway'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:title", content: "Eylem Merkezi — Pension Highway" }, { property: "og:description", content: "Pension Highway'da bugün dikkat gerektiren görevler ve uyarılar." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -102,6 +103,7 @@ function NotificationsPage() {
           <ScrollText className="w-4 h-4" /> {t("pages.notifications.viewLogs")}
         </Link>
       ) : null}>
+      <div className="mb-4"><PushEnableCard /></div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Group title={t("pages.notifications.upcomingCheckouts")} icon={LogOut} tone="warning">
           {(data?.checkouts ?? []).map((r) => (
