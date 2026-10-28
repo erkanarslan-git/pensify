@@ -111,38 +111,49 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
 
   if (error) return <div role="alert" className="text-sm text-destructive">{t("cleaning.loadError")} <Button variant="outline" onClick={() => qc.invalidateQueries({ queryKey: ["room-issues"] })}>{t("rooms.retry")}</Button></div>;
   if (isLoading) return showEmpty ? <div className="text-muted-foreground">{t("common.loading")}</div> : null;
-  if (data.length === 0) return showEmpty ? <div className="text-sm text-muted-foreground">{t("departments.noOpenIssues")}</div> : null;
+  if (data.length === 0) return showEmpty ? <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground"><Check className="w-7 h-7 mx-auto mb-2 text-success" />{t("departments.noOpenIssues")}</div> : null;
+  const unassignedCount = data.filter((i) => !i.assigned_to).length;
   return (
-    <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 mb-4">
-      <div className="flex items-center gap-2 font-semibold text-sm mb-2"><Wrench className="w-4 h-4 text-destructive" />{t("issues.openTitle", { count: data.length })}</div>
-      <div className="divide-y divide-border/60">
+    <div className="mb-4 space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Wrench className="w-4 h-4 text-destructive" />{t("issues.openTitle", { count: data.length })}</div>
+          <div className="text-3xl font-semibold tabular-nums mt-1">{data.length}</div>
+        </div>
+        <div className="rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><AlertTriangle className="w-4 h-4 text-warning" />{t("cleaning.notAssigned")}</div>
+          <div className="text-3xl font-semibold tabular-nums mt-1">{unassignedCount}</div>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {data.map((i) => (
-          <div key={i.id} className="flex flex-col gap-3 py-3 text-sm lg:flex-row lg:items-center">
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-            <div className="min-w-24"><span className="font-semibold">#{roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id)}</span><div className="text-xs text-muted-foreground">{i.property_name}</div></div>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">{t(`issues.categories.${i.category}`)}</span>
-            <span className="flex-1 min-w-[160px]">{i.description}</span>
-            <span className="text-xs text-muted-foreground">
+          <div key={i.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border border-border border-l-[6px] bg-card p-4 text-sm shadow-sm ${i.assigned_to ? "border-l-info" : "border-l-destructive"}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-2xl font-bold leading-none tabular-nums">#{roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id)}</div>
+                <div className="mt-1.5 text-xs text-muted-foreground break-words">{i.property_name}</div>
+              </div>
+              <span className="shrink-0 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">{t(`issues.categories.${i.category}`)}</span>
+            </div>
+            <p className="rounded-lg bg-muted px-3 py-2 break-words">{i.description}</p>
+            <div className="text-xs text-muted-foreground">
               {i.reporter && `${i.reporter} · `}
               {new Date(i.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-            </span>
             </div>
-            <div className="flex flex-wrap items-start gap-2 lg:shrink-0">
-            <div className="w-full sm:w-auto space-y-1">
+            <div className="mt-auto space-y-2">
               {i.can_assign ? <select aria-label={t("departments.maintenanceAssign")} value={i.assigned_to ?? ""} disabled={assigning === i.id}
-                onChange={(e) => void assign(i.id, e.target.value)} className="w-full sm:w-48 min-h-11 rounded-md border border-input bg-card px-2 text-sm">
+                onChange={(e) => void assign(i.id, e.target.value)} className={`w-full min-h-11 rounded-xl border bg-card px-3 text-sm ${i.assigned_to ? "border-input" : "border-warning text-warning"}`}>
                 <option value="">{t("cleaning.notAssigned")}</option>
                 {i.assigned_to && !workers.some((w) => w.user_id === i.assigned_to) && <option value={i.assigned_to} disabled>{i.assignee || t("departments.unnamed")}</option>}
                 {workers.map((w) => <option key={w.user_id} value={w.user_id}>{w.full_name || t("departments.unnamed")}</option>)}
-              </select> : <span className="text-sm">{i.assignee || t("cleaning.notAssigned")}</span>}
+              </select> : <div className={i.assignee ? "font-medium" : "italic text-warning"}>{i.assignee || t("cleaning.notAssigned")}</div>}
               {i.assigned_at && <div className="text-xs text-muted-foreground">{t("departments.assignedBy", { name: i.assigner || t("departments.unnamed") })} · {new Date(i.assigned_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div>}
+              {(canResolve || (i as any).can_resolve) && (
+                <Button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id) })} className="h-auto min-h-12 w-full rounded-xl text-base font-semibold">
+                  <Check className="w-4 h-4" />{t("issues.markResolved")}
+                </Button>
+              )}
             </div>
-            {(canResolve || (i as any).can_resolve) && (
-              <button onClick={() => setConfirming({ id: i.id, room: roomLabel(i.room_id) })} className="min-h-11 text-sm px-3 rounded-lg bg-primary text-primary-foreground inline-flex items-center gap-1 whitespace-nowrap">
-                <Check className="w-4 h-4" />{t("issues.markResolved")}
-              </button>
-            )}
-          </div>
           </div>
         ))}
       </div>
