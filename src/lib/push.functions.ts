@@ -46,7 +46,7 @@ async function sendPushToUser(userId: string, title: string, body: string, path:
 
 export const registerPushToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { token: string; userAgent?: string }) => {
+  .inputValidator((input: { token: string; userAgent?: string; locale?: string }) => {
     if (!input || typeof input.token !== "string" || input.token.length < 10 || input.token.length > 4096) {
       throw new Error("invalid_token");
     }
@@ -61,6 +61,7 @@ export const registerPushToken = createServerFn({ method: "POST" })
         user_id: context.userId,
         token: data.token,
         user_agent: (data.userAgent ?? "").slice(0, 300),
+        locale: data.locale?.startsWith("tr") ? "tr" : data.locale?.startsWith("en") ? "en" : "de",
         last_seen_at: new Date().toISOString(),
       },
       { onConflict: "token" },

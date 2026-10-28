@@ -9,7 +9,7 @@ const TOKEN_KEY = "pension-highway.push-token";
 
 /** Card that lets a signed-in user turn push notifications on/off for this device. */
 export function PushEnableCard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [token, setToken] = useState<string | null>(() =>
     typeof window === "undefined" ? null : window.localStorage.getItem(TOKEN_KEY),
@@ -22,7 +22,7 @@ export function PushEnableCard() {
     try {
       const result = await enablePush();
       if (result.status === "registered") {
-        await registerPushToken({ data: { token: result.token, userAgent: navigator.userAgent } });
+        await registerPushToken({ data: { token: result.token, userAgent: navigator.userAgent, locale: i18n.language } });
         window.localStorage.setItem(TOKEN_KEY, result.token);
         setToken(result.token);
       } else if (result.status === "open-in-new-tab") {
