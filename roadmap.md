@@ -1,5 +1,9 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Hostinger canlı kullanıcı işlemleri (28.10.2026)
+- [x] datensoft.com bağımsız Hostinger yayını doğrulandı; görünen eksik sunucu anahtarı hatası e-posta çakışmasından önce oluşuyor. Ekleme/silme/engelleme/yönetici ve şef şifre yenileme aynı ayrıcalıklı bağlantıya bağlı; güvenlik kısıtları değiştirilmedi. 39 dosyada 255 test ve gerçek sahip hesabıyla önizlemede 11 ekran açılışı geçti, çalışma hatası yok; kullanıcılar silinmedi.
+- [ ] Hostinger canlı sunucu ayarını düzeltme ve gerçek kullanıcı ekleme/silmesini yeniden doğrulama: Hostinger yönetim bağlantısı yok, canlı tarayıcı erişimi güvenlik kontrolünde kalıyor; önizleme bağlantı yenilemesi Hostinger'a aktarılmaz. Canlı sunucu ayarları erişimi/gizli değerleri kapalı ekran görüntüsü bekleniyor; tüm canlı sistem doğrulandı sayılmadı.
+
 ## TV sayaç incelemesi (28.10.2026)
 - [x] Günlük sayaç rozetleri kaldırıldı; yalnız doluluk yüzde puan ve hazır oda adedi değişimleri 8 saniye gösteriliyor; ilk yükleme/gün değişimi/reconnect sessiz, fiziksel doluluk kuralı korundu.
 - [x] Sağ alan mevcut temizlik gereken/kullanıma kapalı oda sayılarıyla dolduruldu, yeni rezervasyon kutlaması korundu. 44 test ve derleme geçti; gerçek sahip hesabıyla geçici TV bağlantısında 206 oda / 8 dolu / 191 hazır / 4 temizlik / 3 kapalı doğrulandı; dört ekran boyutunda yatay taşma veya çalışma hatası yok. Kontrol bağlantısı iptal edildi; işletme kayıtları değişmedi. Telefonda yoğun lokasyon tablosunun mevcut küçük satırları bu kapsamda yeniden tasarlanmadı.
