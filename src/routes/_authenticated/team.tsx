@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX, Search, Building2, ChevronRight, Mail, Clock, History, AlertTriangle } from "lucide-react";
+import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX, Search, Building2, ChevronRight, Mail, Clock, History, AlertTriangle, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -389,62 +389,67 @@ function TeamPage() {
                 <SheetHeader>
                   <div className="flex items-center gap-4">
                     <Initials name={u.full_name || u.email} big />
-                    <div className="min-w-0">
-                      <SheetTitle className="truncate">{u.full_name || "—"}</SheetTitle>
-                      <div className="mt-1">{isBanned ? <Badge tone="destructive">{legacyText('Gesperrt')}</Badge> : <Badge tone="success">{legacyText('Aktiv')}</Badge>}</div>
-                      <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 truncate"><Mail className="w-3 h-3" /> {u.email}</div>
+                    <div className="min-w-0 flex-1">
+                      <MemberName key={u.user_id} userId={u.user_id} name={u.full_name || ""} canEdit={iAmAdmin && (iAmOwner || !u.roles.includes("owner"))} onSaved={() => qc.invalidateQueries({ queryKey: ["admin-users"] })} />
+                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                        {isBanned ? <Badge tone="destructive">{legacyText('Gesperrt')}</Badge> : <Badge tone="success">{legacyText('Aktiv')}</Badge>}
+                        {(u.roles as AppRole[]).map((r) => <span key={r} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"><Shield className="h-3 w-3" />{t(`roles.${r}`)}</span>)}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1 truncate"><Mail className="w-3 h-3 shrink-0" /> <span className="truncate">{u.email}</span></div>
                     </div>
                   </div>
                 </SheetHeader>
 
-                <PanelSection title={legacyText('Rollen')}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {u.roles.length === 0 && <span className="text-xs text-muted-foreground">{legacyText('Keine Rolle')}</span>}
-                    {(u.roles as AppRole[]).map((r) => (
-                      <span key={r} className="inline-flex items-center gap-1 rounded-full border border-border pl-2 pr-1 py-0.5 text-xs">
-                        <Shield className="w-3 h-3" /> {t(`roles.${r}`)}
-                        <Lock className="h-3 w-3 text-muted-foreground" />
-                      </span>
-                    ))}
-                  </div>
-                  {missing.length > 0 && (
-                    <div className="flex gap-2 mt-2">
-                      <Select value={adding?.userId === u.user_id ? adding.role : missing[0]} onValueChange={(v) => setAdding({ userId: u.user_id, role: v as AppRole })}>
-                        <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
-                        <SelectContent>{missing.map((r) => <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>)}</SelectContent>
-                      </Select>
-                      <Button size="sm" variant="outline" onClick={() => addRole.mutate({ userId: u.user_id, role: adding?.userId === u.user_id ? adding.role : missing[0] })}>
-                        <Shield className="w-3 h-3 mr-1" /> {t("teamSafety.changeRole")}
-                      </Button>
-                    </div>
-                  )}
-                  <p className="mt-2 text-xs text-muted-foreground">{t("teamSafety.coreRoles")}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("teamSafety.chief")}</p>
+                <PanelSection title={t("memberPanel.role")}>
+                  {(() => {
+                    const current = (u.roles[0] as AppRole | undefined);
+                    const chosen = adding?.userId === u.user_id ? adding.role : current;
+                    const locked = current === "owner" && !iAmOwner;
+                    return (
+                      <div className="flex gap-2">
+                        <Select value={chosen} disabled={locked || isSelf} onValueChange={(v) => setAdding({ userId: u.user_id, role: v as AppRole })}>
+                          <SelectTrigger className="h-9 flex-1"><SelectValue placeholder={legacyText('Keine Rolle')} /></SelectTrigger>
+                          <SelectContent>{ALL_ROLES.filter((r) => r !== "owner" || iAmOwner).map((r) => <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Button size="sm" className="h-9" disabled={!chosen || chosen === current || addRole.isPending} onClick={() => chosen && addRole.mutate({ userId: u.user_id, role: chosen })}>
+                          {t("memberPanel.saveRole")}
+                        </Button>
+                      </div>
+                    );
+                  })()}
                 </PanelSection>
 
                 <MemberDepartments userId={u.user_id} />
 
-                <PanelSection title={legacyText('Zugewiesene Standorte')} action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
+                <PanelSection title={t("memberPanel.locations")} action={!hasAllAccess(u.roles) ? <PropertyAccessDialog userId={u.user_id} userName={u.full_name || u.email} /> : undefined}>
                   {hasAllAccess(u.roles) ? (
                     <div className="text-sm text-muted-foreground">{legacyText('Alle Standorte (Inhaber/Admin)')}</div>
                   ) : locs.length === 0 ? (
                     <div className="text-sm text-muted-foreground">{legacyText('Noch kein Standort zugewiesen.')}</div>
                   ) : (
-                    <div className="space-y-1.5">
-                      {locs.map((id) => (
-                        <div key={id} className="flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm">
-                          <Building2 className="w-4 h-4 text-primary" /> {propName(id)}
-                        </div>
-                      ))}
-                    </div>
+                    <details className="group rounded-xl border border-border">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm">
+                        <Building2 className="w-4 h-4 text-primary" />
+                        <span className="flex-1">{t("memberPanel.locationsCount", { count: locs.length })}</span>
+                        <span className="text-xs text-muted-foreground">{t("memberPanel.showList")}</span>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-90" />
+                      </summary>
+                      <ul className="border-t border-border px-3 py-2 text-sm space-y-1.5 max-h-64 overflow-y-auto">
+                        {locs.map((id) => <li key={id} className="text-muted-foreground">{propName(id)}</li>)}
+                      </ul>
+                    </details>
                   )}
                 </PanelSection>
 
-                <UserWorkHours userId={u.user_id} />
-                <EmployeeAttendance userId={u.user_id} />
-                <UserActivity userId={u.user_id} />
+                <CollapsibleSection title={t("memberPanel.workTime")}>
+                  <UserWorkHours userId={u.user_id} />
+                  <EmployeeAttendance userId={u.user_id} />
+                </CollapsibleSection>
+                <CollapsibleSection title={t("memberPanel.activity")}>
+                  <UserActivity userId={u.user_id} />
+                </CollapsibleSection>
 
-                <PanelSection title={legacyText('Zugang & Sicherheit')}>
+                <PanelSection title={t("memberPanel.security")}>
                   <div className="flex flex-wrap gap-2">
                     <UserPermsDialog userId={u.user_id} userName={u.full_name || u.email} roles={u.roles} userPerms={userPermsQ.data ?? []} rolePerm={rolePerm} onChange={() => qc.invalidateQueries({ queryKey: ["user-perms"] })} />
                     <ResetPasswordButton onSubmit={(pw) => resetPw.mutate({ userId: u.user_id, password: pw })} />
@@ -532,6 +537,45 @@ function DeleteUserDialog({ user, onClose, onConfirm }: { user: any | null; onCl
 function Initials({ name, big }: { name: string; big?: boolean }) {
   const ini = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("");
   return <div className={`shrink-0 rounded-full bg-primary/10 text-primary font-semibold grid place-items-center ${big ? "w-16 h-16 text-xl" : "w-9 h-9 text-xs"}`}>{ini || "?"}</div>;
+}
+
+function CollapsibleSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <details className="group border-t border-border pt-4">
+      <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold">
+        {title}<ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="mt-3 space-y-4 [&>div:first-child]:border-t-0 [&>div:first-child]:pt-0">{children}</div>
+    </details>
+  );
+}
+
+function MemberName({ userId, name, canEdit, onSaved }: { userId: string; name: string; canEdit: boolean; onSaved: () => void }) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(name);
+  const [busy, setBusy] = useState(false);
+  async function save() {
+    const n = value.trim(); if (!n) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_set_member_name", { _user_id: userId, _full_name: n });
+    setBusy(false);
+    if (error) return toast.error(t("memberPanel.nameError"));
+    toast.success(t("memberPanel.nameSaved")); setEditing(false); onSaved();
+  }
+  if (!editing) return (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <SheetTitle className="truncate">{name || "—"}</SheetTitle>
+      {canEdit && <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" aria-label={t("memberPanel.editName")} title={t("memberPanel.editName")} onClick={() => { setValue(name); setEditing(true); }}><Pencil className="h-3.5 w-3.5" /></Button>}
+    </div>
+  );
+  return (
+    <div className="space-y-2">
+      <SheetTitle className="sr-only">{name}</SheetTitle>
+      <Input autoFocus value={value} maxLength={120} aria-label={t("memberPanel.editName")} onChange={(e) => setValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }} />
+      <div className="flex gap-2"><Button size="sm" disabled={busy || !value.trim()} onClick={save}>{t("memberPanel.save")}</Button><Button size="sm" variant="ghost" onClick={() => setEditing(false)}>{t("memberPanel.cancel")}</Button></div>
+    </div>
+  );
 }
 
 function PanelSection({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
