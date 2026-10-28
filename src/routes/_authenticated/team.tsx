@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Shield, Plus, X, CheckCircle2, XCircle, Inbox, UserPlus, Trash2, Lock, Unlock, KeyRound, Users, UserX, Search, Building2, ChevronRight, Mail, Clock, History, AlertTriangle, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -38,7 +39,7 @@ const ROLE_TONE: Record<AppRole, "success" | "warning" | "muted" | "destructive"
 function TeamPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { userId: currentUserId, isOwner: iAmOwner } = usePermissions();
+  const { userId: currentUserId, isOwner: iAmOwner, isAdmin: iAmAdmin } = usePermissions();
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
   const [adding, setAdding] = useState<{ userId: string; role: AppRole } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
