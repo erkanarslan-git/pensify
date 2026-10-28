@@ -631,7 +631,7 @@
   input[type="month"],
   input[type="time"] {
     min-width: 0;
-    padding-inline-end: 0.5rem;
+    padding-inline: 0.5rem;
   }
   input[type="date"]::-webkit-datetime-edit,
   input[type="datetime-local"]::-webkit-datetime-edit,
