@@ -199,25 +199,26 @@ function CleaningPage() {
         <StatCard icon={<UserX className="w-4 h-4" />} label={t("cleaning.notAssigned")} value={counts.unassigned} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="inline-flex flex-wrap gap-1 p-1 rounded-xl bg-muted">
+      <div className="grid gap-2 mb-4 sm:flex sm:items-center">
+        <div className="-mx-1 flex min-w-0 gap-1.5 overflow-x-auto px-1 pb-1">
           {views.map((v) => (
             <button
               key={v.id}
               onClick={() => setView(v.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === v.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              aria-pressed={view === v.id}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 min-h-10 text-sm font-medium transition-colors ${view === v.id ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground hover:text-foreground"}`}
             >
-              {v.label} ({v.n})
+              {v.label}
+              <span className={`rounded-full px-1.5 text-xs tabular-nums ${view === v.id ? "bg-primary-foreground/20" : "bg-card"}`}>{v.n}</span>
             </button>
           ))}
         </div>
-        <select value={prop} onChange={(e) => setProp(e.target.value)} className="ml-auto px-3 py-2 rounded-md border border-input bg-card text-sm">
+        <select value={prop} onChange={(e) => setProp(e.target.value)} aria-label={t("rooms.allProperties")} className="w-full sm:w-56 sm:ml-auto min-h-11 px-3 rounded-xl border border-input bg-card text-sm">
           <option value="all">{t("rooms.allProperties")}</option>
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </div>
 
-      <OpenIssuesList canResolve={canAssign || perm.can("manage_rooms")} roomLabel={(id) => rooms.get(id)?.number ?? "—"} />
       {reporting && (
         <ReportIssueDialog roomId={reporting.roomId} taskId={reporting.taskId} roomLabel={rooms.get(reporting.roomId)?.number ?? ""}
           onClose={() => setReporting(null)}
