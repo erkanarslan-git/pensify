@@ -13,7 +13,6 @@
 - Room/rate/occupancy writes use scoped atomic RPCs with manage_rooms; imports require owner/admin. Why: authorized writes.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
-- WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
 - Access codes live in locked operational_access_secrets; scoped reveal/edit RPCs audit metadata only; lists never fetch values, legacy key_code stays NULL. Why: shared workspace privacy.
 - Membership/department triggers enable time profiles for cleaners/workers; breaks use time eligibility, not cleaning-active. Why: one identity, no cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
