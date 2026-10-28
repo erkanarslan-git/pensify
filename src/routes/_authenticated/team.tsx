@@ -383,7 +383,6 @@ function TeamPage() {
             const u = selected;
             const isBanned = isBannedUser(u);
             const isSelf = u.user_id === currentUserId;
-            const missing = ALL_ROLES.filter((r) => !u.roles.includes(r));
             const locs = memberPropsQ.data?.[u.user_id] ?? [];
             return (
               <div className="space-y-6">
