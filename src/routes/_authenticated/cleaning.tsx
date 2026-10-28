@@ -28,10 +28,6 @@ const statusMeta: Record<CleaningStatus, { tone: "warning" | "info" | "success" 
   completed: { tone: "success" }, problem: { tone: "destructive" },
 };
 
-const toneBorder: Record<string, string> = {
-  warning: "border-l-warning", info: "border-l-info", success: "border-l-success", destructive: "border-l-destructive", muted: "border-l-border",
-};
-
 type View = "open" | "problem" | "review" | "done" | "all";
 
 interface Task {

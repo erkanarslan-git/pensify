@@ -125,9 +125,9 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
           <div className="text-3xl font-semibold tabular-nums mt-1">{unassignedCount}</div>
         </div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+      <div className="grid gap-3 md:hidden">
         {data.map((i) => (
-          <div key={i.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border border-border border-l-[6px] bg-card p-4 text-sm shadow-sm ${i.assigned_to ? "border-l-info" : "border-l-destructive"}`}>
+          <div key={i.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-4 text-sm shadow-sm`}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-2xl font-bold leading-none tabular-nums">#{roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id)}</div>
@@ -156,6 +156,29 @@ export function OpenIssuesList({ canResolve, roomLabel, showEmpty = false }: { c
             </div>
           </div>
         ))}
+      </div>
+      <div className="hidden overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:block">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left text-xs text-muted-foreground"><tr>
+            <th className="px-4 py-2 font-medium">{t("cleaning.room", "Zimmer")}</th><th className="px-3 py-2 font-medium">{t("issues.category")}</th><th className="px-3 py-2 font-medium">{t("issues.description")}</th><th className="px-3 py-2 font-medium">{t("departments.maintenanceAssign")}</th><th className="px-4 py-2" />
+          </tr></thead>
+          <tbody className="divide-y divide-border/60">
+            {data.map((i) => (
+              <tr key={i.id} className="align-middle hover:bg-accent/40">
+                <td className="px-4 py-2.5"><div className="font-semibold">#{(roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id))}</div><div className="text-xs text-muted-foreground">{i.property_name}</div></td>
+                <td className="px-3 py-2.5"><span className="whitespace-nowrap rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">{t(`issues.categories.${i.category}`)}</span></td>
+                <td className="px-3 py-2.5 max-w-80"><div className="break-words">{i.description}</div><div className="text-xs text-muted-foreground">{i.reporter && `${i.reporter} · `}{new Date(i.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</div></td>
+                <td className="px-3 py-2.5 min-w-48">{i.can_assign ? <select aria-label={t("departments.maintenanceAssign")} value={i.assigned_to ?? ""} disabled={assigning === i.id}
+                  onChange={(e) => void assign(i.id, e.target.value)} className={`h-9 w-full rounded-lg border bg-card px-2 text-sm ${i.assigned_to ? "border-input" : "border-warning text-warning"}`}>
+                  <option value="">{t("cleaning.notAssigned")}</option>
+                  {i.assigned_to && !workers.some((w) => w.user_id === i.assigned_to) && <option value={i.assigned_to} disabled>{i.assignee || t("departments.unnamed")}</option>}
+                  {workers.map((w) => <option key={w.user_id} value={w.user_id}>{w.full_name || t("departments.unnamed")}</option>)}
+                </select> : <span className={i.assignee ? "" : "italic text-warning"}>{i.assignee || t("cleaning.notAssigned")}</span>}</td>
+                <td className="px-4 py-2.5 text-right">{(canResolve || (i as any).can_resolve) && <Button size="sm" onClick={() => setConfirming({ id: i.id, room: (roomLabel(i.room_id) === "—" ? i.room_number : roomLabel(i.room_id)) })}><Check className="w-4 h-4" />{t("issues.markResolved")}</Button>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-foreground/40 p-4" onClick={() => setConfirming(null)}>
