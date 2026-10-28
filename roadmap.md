@@ -1,8 +1,8 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
 ## Project monitoring (28.10.2026)
-- [ ] Oda/lokasyon oda sayfalarının güncel okuma izinlerini ve oturumlu açılışlarını doğrula; eski bulguysa gereksiz değişiklik yapma.
-- [ ] Bölüm çalışanının hızlı görev eklemesini kendine varsayılan atamayla düzelt; kural testleri ve çalışan akışıyla doğrula.
+- [x] Oda bulgusu güncelliğini yitirmiş: organization_id okuma izni zaten mevcut; sahip oturumuyla genel oda listesi ve lokasyon oda görünümü HTTP 200 ile açıldı. Gereksiz izin/kod değişikliği yapılmadı.
+- [x] Bölüm çalışanının hızlı görev eklemesi kendine varsayılan atamayla düzeltildi; sıfırlama ve bölüm değişiminde aynı kural korunuyor, şef/büro seçenekleri değişmedi. 16 test ve hatasız derleme; Bakım 1 test hesabıyla Enter üzerinden iki kayıt, yenileme sonrası görünürlük ve arşivleme doğrulandı. İşletme kayıtları ve sunucu yetkileri değiştirilmedi.
 
 ## Program adı ve güvenlik araştırması (26.10.2026)
 - [x] Görünen adlar, sayfa başlıkları, üç dildeki metinler, TV başlığı ve rapor dosya adları Pension Highway oldu; adresler, kayıtlar ve tarayıcı tercihleri korundu. Animasyon eklenmedi. Oturumlu panel/rezervasyon ve girişsiz TV açılışı doğrulandı; 74 mevcut test geçti.
