@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { History, User as UserIcon, Clock, Lock } from "lucide-react";
+import { History, User as UserIcon, Clock, Lock, CalendarPlus } from "lucide-react";
+import { formatDateDE } from "@/lib/date-de";
+import { extensionDays } from "@/lib/overnight-stats";
 import { usePermissions } from "@/hooks/use-permissions";
 import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
@@ -49,6 +51,19 @@ interface Reservation {
   created_by: string | null;
   created_at: string;
 }
+
+interface Extension { id: string; old_check_out: string; new_check_out: string; days: number; note: string | null; created_at: string }
+
+const addDaysIso = (iso: string, d: number) => {
+  const x = new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + d));
+  return x.toISOString().slice(0, 10);
+};
+
+const EXT_COPY = {
+  de: { title: "Aufenthalt verlängern", current: "Abreise", button: "Verlängern", newDate: "Neue Abreise", note: "Notiz (optional)", later: "Die neue Abreise muss nach der aktuellen liegen.", done: (n: number) => `Um ${n} Nächte verlängert`, confirmExt: (n: number) => `+${n} Nächte bestätigen`, guestsMissing: "Personenzahl nicht erfasst", confirm: "Stimmt so" },
+  tr: { title: "Konaklamayı uzat", current: "Çıkış", button: "Uzat", newDate: "Yeni çıkış", note: "Not (isteğe bağlı)", later: "Yeni çıkış mevcut çıkıştan sonra olmalı.", done: (n: number) => `${n} gece uzatıldı`, confirmExt: (n: number) => `+${n} gece onayla`, guestsMissing: "Kişi sayısı girilmemiş", confirm: "Doğru" },
+  en: { title: "Extend stay", current: "Check-out", button: "Extend", newDate: "New check-out", note: "Note (optional)", later: "The new check-out must be after the current one.", done: (n: number) => `Extended by ${n} nights`, confirmExt: (n: number) => `Confirm +${n} nights`, guestsMissing: "Guest count not recorded", confirm: "Correct" },
+};
 
 interface Props {
   open: boolean;
@@ -334,6 +349,45 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                   className="px-3 py-2 rounded-md border border-input bg-card resize-none" />
               </label>
             </div>
+
+            {!["cancelled", "no_show", "checked_out"].includes(r.status) && (
+              <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <CalendarPlus className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">{ex.title}</span>
+                  <span className="text-xs text-muted-foreground">{ex.current}: {formatDateDE(r.check_out)}</span>
+                  {!extOpen && <button type="button" onClick={() => { setExtOpen(true); setExtDate(addDaysIso(r.check_out, 1)); }}
+                    className="ml-auto px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">{ex.button}</button>}
+                </div>
+                {extOpen && (
+                  <div className="mt-3 grid gap-2 sm:grid-cols-[auto_1fr_auto] items-end">
+                    <div className="flex gap-1 sm:col-span-full">
+                      {[1, 3, 7, 14, 30].map((d) => (
+                        <button key={d} type="button" onClick={() => setExtDate(addDaysIso(r.check_out, d))}
+                          className={`px-2.5 py-1 rounded-md border text-xs ${extDate === addDaysIso(r.check_out, d) ? "bg-primary text-primary-foreground border-primary" : "border-border bg-card hover:bg-accent"}`}>+{d}</button>
+                      ))}
+                    </div>
+                    <label className="grid gap-1"><span className="text-xs text-muted-foreground">{ex.newDate}</span>
+                      <input type="date" min={addDaysIso(r.check_out, 1)} value={extDate} onChange={(e) => setExtDate(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card" /></label>
+                    <label className="grid gap-1"><span className="text-xs text-muted-foreground">{ex.note}</span>
+                      <input value={extNote} onChange={(e) => setExtNote(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card" /></label>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setExtOpen(false)} className="px-3 py-2 rounded-md border border-border text-sm">{t("common.cancel")}</button>
+                      <button type="button" onClick={extend} disabled={extSaving || !extDate}
+                        className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
+                        {ex.confirmExt(extDate > r.check_out ? extensionDays(r.check_out, extDate) : 0)}</button>
+                    </div>
+                  </div>
+                )}
+                {extensions.length > 0 && (
+                  <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    {extensions.map((e) => (
+                      <li key={e.id}>{new Date(e.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, dateStyle: "short", timeStyle: "short" })} · {formatDateDE(e.old_check_out)} → <span className="text-foreground font-medium">{formatDateDE(e.new_check_out)}</span> (+{e.days}){e.note ? ` · ${e.note}` : ""}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
             <div className="mt-4 border-t border-border pt-3">
               <button
