@@ -11,6 +11,7 @@ import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
 import { isOverdue, sortTodos, todoStatus } from "@/lib/todos";
 import { loadTodoOptions } from "@/lib/todo-data.functions";
+import { notifyTodoAssigned } from "@/lib/push.functions";
 import { TodoDetails } from "@/components/todo-details";
 import { Button } from "@/components/ui/button";
 import { berlinLocalToIso } from "@/lib/business-time";
@@ -84,8 +85,11 @@ function TodosPage() {
     let dueAt: string | null = null; let reminderAt: string | null = null;
     try { dueAt = due && time ? berlinLocalToIso(`${due}T${time}`) : null; reminderAt = reminder ? berlinLocalToIso(reminder) : null; }
     catch { toast.error(t("todos.saveErr")); return; }
-    const { error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt, department: dept || null } });
+    const { data: savedId, error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt, department: dept || null } });
     if (error) return toast.error(t("todos.saveErr"));
+    if (savedId && assigned && assigned !== options?.userId) {
+      notifyTodoAssigned({ data: { todoId: savedId } }).catch(() => {});
+    }
     setEditing(null); setTitle(""); setDue(""); setPrio("normal"); setAssigned(""); setProperty(""); setRoom(""); setReservation(""); setTime(""); setNotes(""); setRepeat("none"); setReminder(""); setDept(defaultDept); refresh();
   };
   const toggle = async (x: Todo) => {

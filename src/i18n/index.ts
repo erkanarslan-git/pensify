@@ -28,6 +28,7 @@ import { legacyUiTranslations } from "./legacy-ui";
 import { legacyTextTranslations } from "./legacy-text";
 import { simpleRecordsTranslations } from "./simple-records";
 import { salesChannelTranslations } from "./sales-channels";
+import { pushTranslations } from "./push";
 
 export const SUPPORTED_LANGS = ["de", "en", "tr"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -79,6 +80,7 @@ for (const lng of SUPPORTED_LANGS) {
     fallback: fallbackTranslations[lng],
     legacyUi: legacyUiTranslations[lng],
     legacyText: legacyTextTranslations[lng],
+    push: pushTranslations[lng],
     common: { close: legacyUiTranslations[lng].close },
     dashboard: { properties: legacyUiTranslations[lng].properties },
   }, true, true);
