@@ -83,6 +83,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/payments", labelKey: "nav.payments", icon: Wallet },
       { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
+      { to: "/overnights", labelKey: "nav.overnights", icon: BedDouble },
     ],
   },
   {
