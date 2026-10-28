@@ -701,6 +701,20 @@
       "when": 1793142785270,
       "tag": "0099_push_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1793184745477,
+      "tag": "0100_morning_task_digest",
+      "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1793184826211,
+      "tag": "0101_lock_morning_delivery_reads",
+      "breakpoints": true
     }
   ]
 }

@@ -25,7 +25,7 @@
 - Customers use explicit organization-scoped party identities, reservation payer links and per-room occupant links; historical snapshots stay unchanged and legacy booking groups require confirmed matching. Why: contacts are not identity and private stays must not enter company balances.
 - Customer writes use scoped save/link/create RPCs and per-property finance DTO omission; lists/cache keys include organization and filters. Why: preserve tenant isolation, historical billing and least privilege.
 - Personnel tracking loads an authorized names-only selector, then employee_attendance_board for one chosen user and one period; personnelLedger drives rows/summary/export and action dialogs preserve distinct powers. Why: no bulk first-load records, inferred absences or financial clutter.
-- Todos use scoped RPCs/private files; worker quick-add defaults to self after reset/dept change.
+- Todos use scoped RPCs/files; workers self-assign; Berlin morning push is service-only/daily-claimed.
 - Integrations reuse bank/channel screens with truthful status, no automatic outbound activation. Why: safe shared entry.
 - Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.

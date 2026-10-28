@@ -1571,6 +1571,36 @@ export type Database = {
           },
         ]
       }
+      morning_push_deliveries: {
+        Row: {
+          created_at: string
+          day: string
+          finished_at: string | null
+          organization_id: string
+          sent_count: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          finished_at?: string | null
+          organization_id: string
+          sent_count?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          finished_at?: string | null
+          organization_id?: string
+          sent_count?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       occupancy_rates: {
         Row: {
           closed: boolean
@@ -2117,6 +2147,7 @@ export type Database = {
           created_at: string
           id: string
           last_seen_at: string
+          locale: string
           organization_id: string
           token: string
           user_agent: string | null
@@ -2126,6 +2157,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_seen_at?: string
+          locale?: string
           organization_id: string
           token: string
           user_agent?: string | null
@@ -2135,6 +2167,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_seen_at?: string
+          locale?: string
           organization_id?: string
           token?: string
           user_agent?: string | null
@@ -3666,6 +3699,10 @@ export type Database = {
       }
       can_read_todo: { Args: { _id: string }; Returns: boolean }
       can_reset_member_password: { Args: { _target: string }; Returns: boolean }
+      claim_morning_push: {
+        Args: { _day: string; _org: string; _user: string }
+        Returns: boolean
+      }
       cleaner_user: { Args: { _cleaner: string }; Returns: string }
       cleaning_assignment_options: {
         Args: never
@@ -3890,6 +3927,15 @@ export type Database = {
       }
       maintenance_board: { Args: never; Returns: Json }
       member_user: { Args: { _member: string }; Returns: string }
+      morning_task_counts: {
+        Args: { _day: string }
+        Returns: {
+          organization_id: string
+          overdue_count: number
+          today_count: number
+          user_id: string
+        }[]
+      }
       move_rooms_to_type: {
         Args: { _from_type: string; _to_type: string }
         Returns: number
