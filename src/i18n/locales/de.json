@@ -857,5 +857,16 @@
     "workTime": "Arbeitszeit & Abwesenheit",
     "activity": "Letzte Aktivitäten",
     "security": "Zugang & Sicherheit"
+  },
+  "payments": {
+    "permissions": {
+      "view_properties": "Pensionen ansehen (zugewiesene Standorte)"
+    }
+  },
+  "confirmDialog": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "title": "Bist du sicher?",
+    "reason": "Grund"
   }
 }

@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "../components/ui/sonner";
+import { ConfirmDialogHost } from "../components/confirm-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import "../i18n";
 import { useTranslation } from "react-i18next";
@@ -130,6 +131,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <Toaster position="top-right" />
+      <ConfirmDialogHost />
     </QueryClientProvider>
   );
 }
