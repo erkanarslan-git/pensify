@@ -10,7 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { refreshCleaningQueries } from "@/lib/cleaning-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
-import { OpenIssuesList, ReportIssueDialog } from "@/components/room-issues";
+import { ReportIssueDialog } from "@/components/room-issues";
 import { canChangeCleaningAssignment, taskAssignmentOptions } from "@/lib/assignment";
 import { cleaningNeedsReview, validCleaningReason, type InspectionState } from "@/lib/cleaning-inspection";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,10 @@ type CleaningStatus = "pending" | "accepted" | "in_progress" | "completed" | "pr
 const statusMeta: Record<CleaningStatus, { tone: "warning" | "info" | "success" | "destructive" | "muted" }> = {
   pending: { tone: "warning" }, accepted: { tone: "info" }, in_progress: { tone: "info" },
   completed: { tone: "success" }, problem: { tone: "destructive" },
+};
+
+const toneBorder: Record<string, string> = {
+  warning: "border-l-warning", info: "border-l-info", success: "border-l-success", destructive: "border-l-destructive", muted: "border-l-border",
 };
 
 type View = "open" | "problem" | "review" | "done" | "all";
@@ -300,27 +304,27 @@ function CleaningPage() {
                             <SecBtn tone="warning" icon={<RotateCcw className="w-4 h-4" />} label={t("cleaningInspection.reject")} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "reject" }); }} />
                           </>}
                           {task.status === "pending" && (
-                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.accept")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4" />}>{t("cleaning.accept")}</ActionBtn>
                           )}
                           {(task.status === "accepted" || task.status === "problem") && (
-                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.start")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4" />}>{t("cleaning.start")}</ActionBtn>
                           )}
                           {task.status === "in_progress" && (
-                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.finish")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4" />}>{t("cleaning.finish")}</ActionBtn>
                           )}
                           {task.status !== "pending" && (task.status !== "completed" || canAssign) && (
                             <SecBtn onClick={() => update(task.id, task.status === "accepted" ? "pending" : task.status === "completed" ? "in_progress" : "accepted")}
-                              icon={<Undo2 className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.undo")} />
+                              icon={<Undo2 className="w-4 h-4" />} label={t("common.undo")} />
                           )}
                           {isOpen(task.status) && (
                             <SecBtn tone="destructive" onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })}
-                              icon={<AlertTriangle className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("cleaning.reportProblem")} />
+                              icon={<AlertTriangle className="w-4 h-4" />} label={t("cleaning.reportProblem")} />
                           )}
                           {canAssign && (
-                            <SecBtn tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.reset")} />
+                            <SecBtn tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4" />} label={t("common.reset")} />
                           )}
                           {name && canAssign && (
-                            <SecBtn onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("cleaning.notify")} />
+                            <SecBtn onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4" />} label={t("cleaning.notify")} />
                           )}
                         </div>
                       </div>
@@ -347,7 +351,7 @@ function CleaningPage() {
 
 function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Button onClick={onClick} className="h-auto col-span-2 text-base font-medium py-3.5 sm:col-span-1 sm:text-xs sm:font-normal px-2.5 sm:py-1.5 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 sm:gap-1 whitespace-normal">
+    <Button onClick={onClick} className="h-auto col-span-2 min-h-12 text-base font-semibold px-3 rounded-xl inline-flex items-center justify-center gap-2 whitespace-normal shadow-sm">
       {icon} {children}
     </Button>
   );
@@ -356,8 +360,8 @@ function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: Rea
 function SecBtn({ onClick, icon, label, tone }: { onClick: () => void; icon: React.ReactNode; label: string; tone?: "destructive" | "warning" }) {
   const c = tone === "destructive" ? "border-destructive/40 text-destructive hover:bg-destructive/5" : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/5" : "border-input bg-card hover:bg-accent";
   return (
-    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`h-auto inline-flex items-center justify-center gap-2 py-3 px-3 text-sm sm:py-1.5 sm:px-2 sm:text-xs rounded-xl sm:rounded-lg border ${c}`}>
-      {icon}<span className="sm:hidden">{label}</span>
+    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`h-auto min-h-11 inline-flex items-center justify-center gap-1.5 px-2 text-xs font-medium rounded-xl border whitespace-normal ${c}`}>
+      {icon}<span>{label}</span>
     </Button>
   );
 }
