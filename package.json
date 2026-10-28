@@ -80,7 +80,11 @@
   "overrides": {
     "zod": "4.6.6",
     "esbuild": "0.28.1",
-    "@grpc/grpc-js": "1.13.6"
+    "@grpc/grpc-js": "1.13.6",
+    "source-map-js": "1.2.2",
+    "browserslist": "^4.28.7",
+    "js-yaml": "^4.3.2",
+    "baseline-browser-mapping": "^2.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
