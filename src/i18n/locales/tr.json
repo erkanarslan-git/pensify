@@ -620,7 +620,10 @@
     "actionFailed": "İşlem başarısız. Lütfen tekrar deneyin.",
     "shiftStarted": "Mesai otomatik başlatıldı.",
     "shiftNoLocation": "Mesai başlatılamadı: konum alınamadı.",
-    "shiftStartFailed": "Mesai başlatılamadı (konum uzak veya yetersiz)."
+    "shiftStartFailed": "Mesai başlatılamadı (konum uzak veya yetersiz).",
+    "room": "Oda",
+    "due": "Zamanı",
+    "status": "Durum"
   },
   "cleaners": {
     "staff": "Personel",
