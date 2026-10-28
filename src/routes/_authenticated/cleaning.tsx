@@ -157,6 +157,57 @@ function CleaningPage() {
     await refreshCleaningQueries(queryClient);
   };
 
+  const taskActions = (task: Task, name: string | undefined, compact: boolean) => (
+    <>
+                          {cleaningNeedsReview(task) && canAssign && <>
+                            <ActionBtn compact={compact} icon={<Check className="w-4 h-4" />} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "approve" }); }}>{t("cleaningInspection.approve")}</ActionBtn>
+                            <SecBtn compact={compact} tone="warning" icon={<RotateCcw className="w-4 h-4" />} label={t("cleaningInspection.reject")} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "reject" }); }} />
+                          </>}
+                          {task.status === "pending" && (
+                            <ActionBtn compact={compact} onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4" />}>{t("cleaning.accept")}</ActionBtn>
+                          )}
+                          {(task.status === "accepted" || task.status === "problem") && (
+                            <ActionBtn compact={compact} onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4" />}>{t("cleaning.start")}</ActionBtn>
+                          )}
+                          {task.status === "in_progress" && (
+                            <ActionBtn compact={compact} onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4" />}>{t("cleaning.finish")}</ActionBtn>
+                          )}
+                          {task.status !== "pending" && (task.status !== "completed" || canAssign) && (
+                            <SecBtn compact={compact} onClick={() => update(task.id, task.status === "accepted" ? "pending" : task.status === "completed" ? "in_progress" : "accepted")}
+                              icon={<Undo2 className="w-4 h-4" />} label={t("common.undo")} />
+                          )}
+                          {isOpen(task.status) && (
+                            <SecBtn compact={compact} tone="destructive" onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })}
+                              icon={<AlertTriangle className="w-4 h-4" />} label={t("cleaning.reportProblem")} />
+                          )}
+                          {canAssign && (
+                            <SecBtn compact={compact} tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4" />} label={t("common.reset")} />
+                          )}
+                          {name && canAssign && (
+                            <SecBtn compact={compact} onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4" />} label={t("cleaning.notify")} />
+                          )}
+    </>
+  );
+  const assignControl = (task: Task, name: string | undefined, compact: boolean) => {
+    const options = taskAssignmentOptions(data?.assignmentOptions ?? [], task.property_id);
+    const unassigned = !task.cleaner_id;
+    return options.length > 0 && canChangeCleaningAssignment(task.status) ? (
+      <select value={task.cleaner_id ?? ""} aria-label={t("departments.assign")} onChange={(e) => reassign(task.id, e.target.value)}
+        className={`w-full rounded-xl border bg-card text-sm ${compact ? "h-9 px-2" : "min-h-11 px-3"} ${unassigned ? "border-warning text-warning" : "border-input"}`}>
+        <option value="">— {t("cleaning.notAssigned")} —</option>
+        {task.cleaner_id && !options.some((o) => o.cleaner_id === task.cleaner_id) && <option value={task.cleaner_id} disabled>{name ?? t("cleaning.notAssigned")}</option>}
+        {options.map((c) => <option key={c.cleaner_id} value={c.cleaner_id}>{c.full_name}</option>)}
+      </select>
+    ) : (
+      <span className={`inline-flex items-center gap-1.5 ${unassigned ? "text-warning italic" : "font-medium"}`}>{unassigned && <UserX className="w-4 h-4" />}{name ?? t("cleaning.notAssigned")}</span>
+    );
+  };
+  const dueText = (task: Task) => new Date(task.due_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const statusBadge = (task: Task) => { const review = cleaningNeedsReview(task); return <Badge tone={review ? "warning" : statusMeta[task.status].tone}>{review ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge>; };
+  const noteLines = (task: Task) => <>
+    {task.notes && <div className="mt-1 text-xs italic text-muted-foreground break-words">"{task.notes}"</div>}
+    {task.inspected_at && <div className="text-xs text-muted-foreground mt-1 break-words">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
+  </>;
   const isOpen = (s: CleaningStatus) => s === "pending" || s === "accepted" || s === "in_progress";
   const counts = {
     open: tasks.filter((x) => isOpen(x.status)).length,
@@ -257,80 +308,43 @@ function CleaningPage() {
                     {t("cleaning.groupSummary", { total: g.items.length, open: gOpen })}{gProb > 0 ? ` · ${t("cleaning.problemCount", { count: gProb })}` : ""}
                   </span>
                 </summary>
-                <div className="grid gap-3 border-t border-border bg-muted/30 p-3 md:grid-cols-2 2xl:grid-cols-3">
+                <div className="grid gap-3 border-t border-border p-3 md:hidden">
                   {g.items.map((task) => {
-                    const room = rooms.get(task.room_id);
-                    const review = cleaningNeedsReview(task);
-                    const tone = review ? "warning" : statusMeta[task.status].tone;
-                    const due = new Date(task.due_at);
-                    const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
-                    const options = taskAssignmentOptions(data?.assignmentOptions ?? [], task.property_id);
                     return (
-                      <div key={task.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border border-border border-l-[6px] bg-card p-4 shadow-sm text-sm ${toneBorder[tone]}`}>
+                      <div key={task.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm text-sm">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <div className="text-2xl font-bold leading-none tabular-nums">#{room?.number ?? "—"}</div>
-                            <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">
-                              {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                              {task.photos_count > 0 && <span className="ml-2 inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>}
-                            </div>
+                            <div className="text-2xl font-bold leading-none tabular-nums">#{rooms.get(task.room_id)?.number ?? "—"}</div>
+                            <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">{dueText(task)}</div>
                           </div>
-                          <Badge tone={tone}>{review ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge>
+                          {statusBadge(task)}
                         </div>
-                        <div className="min-w-0">
-                          {options.length > 0 && canChangeCleaningAssignment(task.status) ? (
-                            <select
-                              value={task.cleaner_id ?? ""}
-                              aria-label={t("departments.assign")}
-                              onChange={(e) => reassign(task.id, e.target.value)}
-                              className={`w-full min-h-11 px-3 rounded-xl border bg-card text-sm ${unassigned ? "border-warning text-warning" : "border-input"}`}
-                            >
-                              <option value="">— {t("cleaning.notAssigned")} —</option>
-                              {task.cleaner_id && !options.some((o) => o.cleaner_id === task.cleaner_id) && <option value={task.cleaner_id} disabled>{name ?? t("cleaning.notAssigned")}</option>}
-                              {options.map((c) => (
-                                <option key={c.cleaner_id} value={c.cleaner_id}>{c.full_name}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <span className={`inline-flex items-center gap-1.5 ${unassigned ? "text-warning italic" : "font-medium"}`}>{unassigned && <UserX className="w-4 h-4" />}{name ?? t("cleaning.notAssigned")}</span>
-                          )}
-                          {task.notes && <div className="mt-2 rounded-lg bg-muted px-3 py-2 text-xs italic text-muted-foreground break-words">"{task.notes}"</div>}
-                          {task.inspected_at && <div className="text-xs text-muted-foreground mt-2 break-words">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
-                        </div>
-                        <div className="mt-auto grid grid-cols-2 gap-2">
-                          {cleaningNeedsReview(task) && canAssign && <>
-                            <ActionBtn icon={<Check className="w-4 h-4" />} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "approve" }); }}>{t("cleaningInspection.approve")}</ActionBtn>
-                            <SecBtn tone="warning" icon={<RotateCcw className="w-4 h-4" />} label={t("cleaningInspection.reject")} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "reject" }); }} />
-                          </>}
-                          {task.status === "pending" && (
-                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4" />}>{t("cleaning.accept")}</ActionBtn>
-                          )}
-                          {(task.status === "accepted" || task.status === "problem") && (
-                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4" />}>{t("cleaning.start")}</ActionBtn>
-                          )}
-                          {task.status === "in_progress" && (
-                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4" />}>{t("cleaning.finish")}</ActionBtn>
-                          )}
-                          {task.status !== "pending" && (task.status !== "completed" || canAssign) && (
-                            <SecBtn onClick={() => update(task.id, task.status === "accepted" ? "pending" : task.status === "completed" ? "in_progress" : "accepted")}
-                              icon={<Undo2 className="w-4 h-4" />} label={t("common.undo")} />
-                          )}
-                          {isOpen(task.status) && (
-                            <SecBtn tone="destructive" onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })}
-                              icon={<AlertTriangle className="w-4 h-4" />} label={t("cleaning.reportProblem")} />
-                          )}
-                          {canAssign && (
-                            <SecBtn tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4" />} label={t("common.reset")} />
-                          )}
-                          {name && canAssign && (
-                            <SecBtn onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4" />} label={t("cleaning.notify")} />
-                          )}
-                        </div>
+                        <div className="min-w-0">{assignControl(task, name, false)}{noteLines(task)}</div>
+                        <div className="grid grid-cols-2 gap-2">{taskActions(task, name, false)}</div>
                       </div>
                     );
                   })}
                 </div>
+                <table className="hidden w-full border-t border-border text-sm md:table">
+                  <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+                    <tr><th className="px-4 py-2 font-medium">{t("cleaning.room", "Zimmer")}</th><th className="px-3 py-2 font-medium">{t("cleaning.due", "Fällig")}</th><th className="px-3 py-2 font-medium">{t("cleaning.status", "Status")}</th><th className="px-3 py-2 font-medium">{t("departments.assign")}</th><th className="px-4 py-2" /></tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {g.items.map((task) => {
+                      const name = cleanerName(task.cleaner_id);
+                      return (
+                        <tr key={task.id} className="align-middle hover:bg-accent/40">
+                          <td className="px-4 py-2.5 font-semibold whitespace-nowrap">#{rooms.get(task.room_id)?.number ?? "—"}{task.photos_count > 0 && <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground"><Camera className="w-3 h-3" />{task.photos_count}</span>}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{dueText(task)}</td>
+                          <td className="px-3 py-2.5">{statusBadge(task)}</td>
+                          <td className="px-3 py-2.5 min-w-48 max-w-72">{assignControl(task, name, true)}{noteLines(task)}</td>
+                          <td className="px-4 py-2.5"><div className="flex flex-wrap justify-end gap-1.5">{taskActions(task, name, true)}</div></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </details>
             );
           })}
@@ -349,19 +363,19 @@ function CleaningPage() {
   );
 }
 
-function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+function ActionBtn({ onClick, icon, children, compact }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode; compact?: boolean }) {
   return (
-    <Button onClick={onClick} className="h-auto col-span-2 min-h-12 text-base font-semibold px-3 rounded-xl inline-flex items-center justify-center gap-2 whitespace-normal shadow-sm">
+    <Button onClick={onClick} className={compact ? "h-8 px-3 rounded-lg text-xs gap-1" : "h-auto col-span-2 min-h-12 text-base font-semibold px-3 rounded-xl inline-flex items-center justify-center gap-2 whitespace-normal shadow-sm"}>
       {icon} {children}
     </Button>
   );
 }
 
-function SecBtn({ onClick, icon, label, tone }: { onClick: () => void; icon: React.ReactNode; label: string; tone?: "destructive" | "warning" }) {
+function SecBtn({ onClick, icon, label, tone, compact }: { onClick: () => void; icon: React.ReactNode; label: string; tone?: "destructive" | "warning"; compact?: boolean }) {
   const c = tone === "destructive" ? "border-destructive/40 text-destructive hover:bg-destructive/5" : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/5" : "border-input bg-card hover:bg-accent";
   return (
-    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`h-auto min-h-11 inline-flex items-center justify-center gap-1.5 px-2 text-xs font-medium rounded-xl border whitespace-normal ${c}`}>
-      {icon}<span>{label}</span>
+    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`${compact ? "h-8 w-8 p-0 rounded-lg" : "h-auto min-h-11 px-2 rounded-xl"} inline-flex items-center justify-center gap-1.5 text-xs font-medium border whitespace-normal ${c}`}>
+      {icon}{!compact && <span>{label}</span>}
     </Button>
   );
 }
