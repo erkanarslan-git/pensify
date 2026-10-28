@@ -1,5 +1,9 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## TV sayaç incelemesi (28.10.2026)
+- [ ] Günlük sayaç rozetlerini kaldır; yalnız doluluk yüzde puan ve hazır oda değişimlerini doğrulanmış güncellemelerde göster.
+- [ ] Sağ bekleme alanına mevcut oda hazırlık sayılarını koy; yeni rezervasyon kutlamasını koru; test ve gerçek ekran kontrolü.
+
 ## Sabah görev özeti (28.10.2026)
 - [x] Bugünkü/geciken atanmış yapılacaklar ve temizlik işleri Almanya saatiyle 08.00’de, bildirim izni olan aktif çalışanlara firma kapsamlı ve günde bir kez özetleniyor; görev yoksa gönderilmiyor.
 - [x] 20 test, DST, izinsiz/yanlış anahtar 401 ve derleme doğrulandı. Toplu görev özeti çalışan hesaplarına kapalı.

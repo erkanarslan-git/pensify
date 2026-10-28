@@ -76,10 +76,20 @@ describe("TV count reconciliation",()=>{
  it("priority details never contain room or guest identities",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,priorityDetails:[{location:"Bünde",arrivalNotReady:1,cleaningPriority:1,dueOpen:0,maintenanceBlocking:0,guest_name:"private"}]}).success).toBe(false);});
 });
 
-import { tvAccumulate } from "./tv";
-describe("daily delta badges", () => {
- it("two new reservations on the same day show +2", () => { const a = tvAccumulate(null, "2026-10-23", { created: 1 }); expect(tvAccumulate(a, "2026-10-23", { created: 1 }).values.created).toBe(2); });
- it("a new day starts from zero", () => { const a = tvAccumulate(null, "2026-10-23", { created: 3 }); expect(tvAccumulate(a, "2026-10-24", {}).values.created).toBeUndefined(); });
+import { tvStateDeltas } from "./tv";
+describe("live-state badges only", () => {
+ const base = {...snapshot, totals:{...totals,total:200,occupied:100,ready:100}};
+ const changed = {...base, at:"2026-10-23T00:00:10Z", totals:{...base.totals,occupied:101,ready:99},metrics:{...base.metrics,created:2,manual:2}};
+ it("50 percent gains 0.5 percentage points for one of 200 rooms",()=>{expect(tvStateDeltas(base,changed).occupied).toBe(0.5);});
+ it("one fewer ready room shows minus one",()=>{expect(tvStateDeltas(base,changed).ready).toBe(-1);});
+ it("daily counters never get badges",()=>{expect(Object.keys(tvStateDeltas(base,changed))).toEqual(["occupied","ready"]);});
+ it("booking alone does not change physical occupancy or readiness",()=>{expect(tvStateDeltas(base,{...changed,totals:base.totals})).toEqual({occupied:0,ready:0});});
+ it("uses each snapshot denominator",()=>{expect(tvStateDeltas(base,{...changed,totals:{...base.totals,total:250}}).occupied).toBe(-10);});
+ it("zero rooms produce a finite change",()=>{expect(tvStateDeltas({...base,totals:{...base.totals,total:0,occupied:0}},changed).occupied).toBe(50.5);});
+ it("first load stays silent",()=>{expect(tvStateDeltas(null,changed)).toEqual({});});
+ it("reconnect stays silent",()=>{expect(tvStateDeltas(base,changed,true)).toEqual({});});
+ it("new Berlin day stays silent",()=>{expect(tvStateDeltas(base,{...changed,day:"2026-10-24"})).toEqual({});});
+ it("stale and repeated snapshots stay silent",()=>{expect(tvStateDeltas(base,{...changed,at:"2026-10-23T00:02:00Z"})).toEqual({});expect(tvStateDeltas(base,base)).toEqual({});expect(tvStateDeltas(changed,base)).toEqual({});});
 });
 
 import { tvLocationLabel as label } from "./tv";
