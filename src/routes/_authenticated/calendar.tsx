@@ -94,8 +94,14 @@ function CalendarPage() {
         gridFocusRef.current?.focus({ preventScroll: true });
       }
     };
+    // Coming back from another window/tab: keyboard keeps working without an extra click.
+    const onWinFocus = () => {
+      const a = document.activeElement;
+      if (!a || a === document.body) gridFocusRef.current?.focus({ preventScroll: true });
+    };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("focus", onWinFocus);
+    return () => { window.removeEventListener("keydown", handler); window.removeEventListener("focus", onWinFocus); };
   }, []);
 
   // Helper: is given iso date strictly before today?
