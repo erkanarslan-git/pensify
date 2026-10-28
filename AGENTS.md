@@ -45,3 +45,4 @@
 - Reservation trash: 168h from deleted_at, hourly pg_cron purge via shared purge step; finance/task-linked stays are kept, restore rechecks overlap under room lock. Why: no orphan or lost finance history.
 - Login keeps submission pending through awaited navigation and shows errors inline; its light surface is scoped with semantic CSS tokens. Why: no silent waiting or theme-dependent unreadable fields.
 - Room distribution (channel_sync_mode, sales_channels) is informational, written only via set_rooms_distribution; future channel sync must only touch rooms marked api for that channel. Why: one integration fault must not disturb manually tracked rooms.
+- Stay extensions go only through extend_reservation (caller RLS, later check-out only) which logs reservation_extensions; overnight statistics use src/lib/overnight-stats with guests_confirmed=false counting as nights without persons. Why: auditable extensions and honest Beherbergungsstatistik.
