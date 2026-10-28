@@ -1,4 +1,5 @@
 import { deleteGuardMessage } from "@/lib/delete-guard";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useEffect, useState } from "react";
@@ -186,7 +187,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   };
 
   const remove = async (id: string) => {
-    if (!confirm(t("rooms.confirmDelete"))) return;
+    if (!(await confirmAction({ description: t("rooms.confirmDelete"), destructive: true }))) return;
     const { error } = await supabase.from("rooms").delete().eq("id", id);
     if (error) toast.error(deleteGuardMessage(t, error) ?? t("rooms.actionFailed"));
     else { toast.success(t("rooms.deleted")); setRefreshKey((k) => k + 1); }

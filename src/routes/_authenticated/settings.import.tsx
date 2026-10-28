@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -164,7 +165,7 @@ function ImportPage() {
   })();
 
   const runImport = async () => {
-    if (!confirm(t("import.confirm"))) return;
+    if (!(await confirmAction({ description: t("import.confirm") }))) return;
     const effKeys = [...new Set(groups.map((g) => effKey(g.key)))];
     const batch = {
       file_names: fileNames,

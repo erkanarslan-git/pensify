@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { useTranslation } from "react-i18next";
 import { displayLocale } from "@/i18n/legacy-ui";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
 
   const act = async (fn: "restore_reservation" | "purge_reservation", id: string) => {
     if (busy) return;
-    if (fn === "purge_reservation" && !confirm(t("legacyUi.purgeConfirm"))) return;
+    if (fn === "purge_reservation" && !(await confirmAction({ description: t("legacyUi.purgeConfirm"), destructive: true }))) return;
     setBusy(id);
     try {
       const { error } = await supabase.rpc(fn, { _id: id });

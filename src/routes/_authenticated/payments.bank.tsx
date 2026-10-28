@@ -1,4 +1,5 @@
 import { displayLocale } from "@/i18n/legacy-ui";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -64,7 +65,7 @@ function BankSettingsPage() {
     qc.invalidateQueries({ queryKey: ["bank-settings"] });
   };
   const runDisconnect = async (id: string) => {
-    if (!window.confirm(t("bank.confirmDisconnect"))) return;
+    if (!(await confirmAction({ description: t("bank.confirmDisconnect"), destructive: true }))) return;
     const r = await disconnect({ data: { connectionId: id } }).catch(() => ({ ok: false }));
     if (r.ok) toast.success(t("bank.done")); else toast.error(t("bank.failed"));
     qc.invalidateQueries({ queryKey: ["bank-settings"] });

@@ -1,4 +1,5 @@
 import { displayLocale } from "@/i18n/legacy-ui";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
@@ -114,7 +115,7 @@ function ReservationsPage() {
   }
 
   const softDelete = async (r: Row) => {
-    const reason = window.prompt(t("resv.deletePrompt", { name: r.guest_name }), "");
+    const reason = await promptAction({ description: t("resv.deletePrompt", { name: r.guest_name }), destructive: true });
     if (reason === null) return;
     const { error } = await (supabase as any).rpc("soft_delete_reservation", { _id: r.id, _reason: reason });
     if (error) { toast.error(error.code === "42501" ? t("resv.noPermission") : t("resv.deleteFailed")); return; }

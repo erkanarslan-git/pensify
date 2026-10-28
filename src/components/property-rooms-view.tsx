@@ -1,4 +1,5 @@
 import { deleteGuardMessage } from "@/lib/delete-guard";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { Plus, Pencil, Trash2, Users, Layers } from "lucide-react";
@@ -120,7 +121,7 @@ export function PropertyRoomsView({ propertyId }: { propertyId: string }) {
     load();
   };
   const removeRoom = async (id: string) => {
-    if (!confirm(t("propertyRooms.confirmDeleteRoom"))) return;
+    if (!(await confirmAction({ description: t("propertyRooms.confirmDeleteRoom"), destructive: true }))) return;
     const { error } = await supabase.from("rooms").delete().eq("id", id);
     if (error) return toast.error(friendlyError(t, error));
     toast.success(t("propertyRooms.roomDeleted"));
