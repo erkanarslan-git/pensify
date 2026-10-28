@@ -1,5 +1,9 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## TV sayaç incelemesi (28.10.2026)
+- [x] Günlük sayaç rozetleri kaldırıldı; yalnız doluluk yüzde puan ve hazır oda adedi değişimleri 8 saniye gösteriliyor; ilk yükleme/gün değişimi/reconnect sessiz, fiziksel doluluk kuralı korundu.
+- [x] Sağ alan mevcut temizlik gereken/kullanıma kapalı oda sayılarıyla dolduruldu, yeni rezervasyon kutlaması korundu. 44 test ve derleme geçti; gerçek sahip hesabıyla geçici TV bağlantısında 206 oda / 8 dolu / 191 hazır / 4 temizlik / 3 kapalı doğrulandı; dört ekran boyutunda yatay taşma veya çalışma hatası yok. Kontrol bağlantısı iptal edildi; işletme kayıtları değişmedi. Telefonda yoğun lokasyon tablosunun mevcut küçük satırları bu kapsamda yeniden tasarlanmadı.
+
 ## Sabah görev özeti (28.10.2026)
 - [x] Bugünkü/geciken atanmış yapılacaklar ve temizlik işleri Almanya saatiyle 08.00’de, bildirim izni olan aktif çalışanlara firma kapsamlı ve günde bir kez özetleniyor; görev yoksa gönderilmiyor.
 - [x] 20 test, DST, izinsiz/yanlış anahtar 401 ve derleme doğrulandı. Toplu görev özeti çalışan hesaplarına kapalı.

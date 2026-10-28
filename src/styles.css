@@ -528,6 +528,11 @@
 .tv-live-symbol svg { width: 25px; height: 25px; }
 .tv-live-card strong { font-size: 18px; font-weight: 600; line-height: 1.3; }
 .tv-live-card p { font-size: 15px; line-height: 1.4; margin: 0; color: var(--muted-foreground); }
+.tv-room-status { width: 100%; margin: 0; display: grid; gap: 14px; text-align: left; }
+.tv-room-status > div { display: grid; grid-template-columns: 34px minmax(0,1fr); align-items: center; gap: 10px; }
+.tv-room-status dd { margin: 0; font-size: 26px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+.tv-room-status dt { font-size: 13px; line-height: 1.3; overflow-wrap: anywhere; color: var(--muted-foreground); }
+.tv-number-line { flex-wrap: wrap; gap: 6px; }
 .tv-celebration { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; text-align: center; box-shadow: none; border-radius: 0; }
 .tv-celebration svg { position: static; width: 32px; height: 32px; color: var(--tv-success); }
 .tv-celebration strong { font-size: 21px; line-height: 1.25; }
@@ -558,6 +563,7 @@
  .tv-screen { grid-template-rows: 30px minmax(0,46fr) minmax(0,32fr) minmax(0,14fr) 25px; }
  .tv-top { grid-template-rows: minmax(0,1fr) 50px; }.tv-celebration-area { position: relative; inset: auto; width: 100%; height: 50px; }
  .tv-live-card { flex-direction: row; gap: 10px; padding: 5px 10px; }.tv-live-symbol { display: none; }.tv-live-card strong { font-size: 11px; }.tv-live-card p { font-size: 10px; }
+ .tv-room-status { display: flex; gap: 10px; width: auto; }.tv-room-status > div { grid-template-columns: auto minmax(0,1fr); gap: 4px; }.tv-room-status dd { font-size: 16px; }.tv-room-status dt { font-size: 9px; }.tv-live-card:has(.tv-room-status) > strong { display: none; }
  .tv-summary-card { padding: 6px 9px; }.tv-card-label { font-size: 11px; }.tv-number { font-size: 24px; }.tv-card-detail { font-size: 9px; }.tv-card-content { gap: 1px; }
  .tv-celebration { flex-direction: row; gap: 6px; padding: 5px; }.tv-celebration strong { font-size: 12px; }.tv-celebration p { font-size: 10px; }.tv-celebration time { display: none; }.tv-celebration svg { width: 18px; height: 18px; }
  .tv-page-status { min-width: 68px; }.tv-no-priorities { font-size: 11px; }

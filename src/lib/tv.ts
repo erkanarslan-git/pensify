@@ -44,18 +44,18 @@ export function tvUpdate(previous: TvSnapshot | null, current: TvSnapshot, recon
 }
 export function nextTvPage(page: number, pages: number) { return pages > 1 ? (page + 1) % pages : 0; }
 
+/** Only live room states need badges; occupancy changes are percentage points. */
+export function tvStateDeltas(previous: TvSnapshot | null, current: TvSnapshot, reconnecting = false): Record<string, number> {
+ const update = tvUpdate(previous, current, reconnecting);
+ if (!previous || reconnecting || current.day !== previous.day || Date.parse(current.at) <= Date.parse(previous.at) || Date.parse(current.at) - Date.parse(previous.at) > 90000) return {};
+ const percent = (s: TvSnapshot) => s.totals.total ? s.totals.occupied / s.totals.total * 100 : 0;
+ return { occupied: Math.round((percent(current) - percent(previous)) * 10) / 10, ready: update.deltas.ready };
+}
+
 /** Two balanced pages at most; odd counts reserve the same row tracks. */
 export function tvLocationLayout(total: number, capacity: number) {
  const pages = total > Math.max(1, capacity) ? 2 : 1;
  return { pages, slots: Math.max(1, Math.ceil(total / pages)) };
-}
-
-export type TvDailyDeltas = { day: string; values: Record<string, number> };
-/** Badges add up during the Berlin business day and start from zero on a new day. */
-export function tvAccumulate(previous: TvDailyDeltas | null, day: string, deltas: Record<string, number>): TvDailyDeltas {
- const base = previous && previous.day === day ? { ...previous.values } : {};
- for (const [key, value] of Object.entries(deltas)) if (value) base[key] = (base[key] ?? 0) + value;
- return { day, values: base };
 }
 
 /** TV shows the address part only: "Pension Bünde — Borriesstr. 39" becomes "Borriesstr. 39". */
