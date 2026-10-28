@@ -4,21 +4,13 @@ export const loadTodoOptions = createServerFn({ method: "GET" }).middleware([req
   const { resolveActiveOrg } = await import("./org-auth.server"); const { orgId } = await resolveActiveOrg(context.supabase);
   const { data: members, error } = await context.supabase.from("organization_members").select("user_id").eq("organization_id", orgId).eq("active", true);
   if (error) throw new Error("todo_options_unavailable");
-  const ids = (members ?? []).map((m) => m.user_id);
-  const { data: names } = ids.length ? await context.supabase.from("profiles").select("id,full_name").in("id", ids) : { data: [] };
+  if (!members) throw new Error("todo_options_unavailable");
+  // Names come from a scoped database function, so this works without the server admin key (e.g. on external hosting).
+  const { data: names, error: namesError } = await (context.supabase as any).rpc("todo_member_names");
+  if (namesError) throw new Error("todo_options_unavailable");
   const { data: properties, error: propertyError } = await context.supabase.from("properties").select("id,name").eq("organization_id", orgId).order("name");
   if (propertyError) throw new Error("todo_options_unavailable");
   const { data: depts } = await (context.supabase as any).rpc("my_todo_departments");
   const { data: office } = await (context.supabase as any).rpc("has_organization_role", { _org: orgId, _roles: ["owner", "admin", "operations_manager", "property_manager", "reception"] });
-  // Chiefs may not read co-worker profiles directly; names for members the database already scoped to them come from the server.
-  const deptRows = (depts ?? []) as { department: string; is_lead: boolean; members: string[] | null }[];
-  const known = new Set((names ?? []).map((p) => p.id));
-  const missing = [...new Set(deptRows.filter((d) => d.is_lead).flatMap((d) => d.members ?? []))].filter((id) => !known.has(id));
-  let extra: { id: string; full_name: string | null }[] = [];
-  if (missing.length) {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: more } = await supabaseAdmin.from("profiles").select("id,full_name").in("id", missing);
-    extra = more ?? [];
-  }
-  return { departments: ((depts ?? []) as { department: string; is_lead: boolean; members: string[] | null }[]).map((d) => ({ department: d.department, isLead: d.is_lead, members: d.members ?? [] })), office: office === true, users: [...(names ?? []), ...extra].map((p) => ({ id: p.id, name: p.full_name ?? "—" })), properties: properties ?? [], userId: context.userId };
+  return { departments: ((depts ?? []) as { department: string; is_lead: boolean; members: string[] | null }[]).map((d) => ({ department: d.department, isLead: d.is_lead, members: d.members ?? [] })), office: office === true, users: ((names ?? []) as { id: string; full_name: string | null }[]).map((p) => ({ id: p.id, name: p.full_name ?? "—" })), properties: properties ?? [], userId: context.userId };
 });
