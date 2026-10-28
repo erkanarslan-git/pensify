@@ -50,6 +50,7 @@ import { Route as AuthenticatedPropertiesIdQrRouteImport } from './routes/_authe
 import { Route as AuthenticatedPropertiesIdRoomsRouteImport } from './routes/_authenticated/properties.$id.rooms'
 import { Route as ApiPublicHooksChannelOutboxRouteImport } from './routes/api/public/hooks/channel-outbox'
 import { Route as ApiPublicHooksDispatchMorningRouteImport } from './routes/api/public/hooks/dispatch-morning'
+import { Route as ApiPublicHooksMorningTasksRouteImport } from './routes/api/public/hooks/morning-tasks'
 import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
@@ -279,6 +280,12 @@ const ApiPublicHooksDispatchMorningRoute =
     path: '/api/public/hooks/dispatch-morning',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksMorningTasksRoute =
+  ApiPublicHooksMorningTasksRouteImport.update({
+    id: '/api/public/hooks/morning-tasks',
+    path: '/api/public/hooks/morning-tasks',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSyncManualRoute = ApiPublicSyncManualRouteImport.update({
   id: '/api/public/sync/manual',
   path: '/api/public/sync/manual',
@@ -349,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
   '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
+  '/api/public/hooks/morning-tasks': typeof ApiPublicHooksMorningTasksRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
@@ -396,6 +404,7 @@ export interface FileRoutesByTo {
   '/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
   '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
+  '/api/public/hooks/morning-tasks': typeof ApiPublicHooksMorningTasksRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
@@ -445,6 +454,7 @@ export interface FileRoutesById {
   '/_authenticated/properties/$id/rooms': typeof AuthenticatedPropertiesIdRoomsRoute
   '/api/public/hooks/channel-outbox': typeof ApiPublicHooksChannelOutboxRoute
   '/api/public/hooks/dispatch-morning': typeof ApiPublicHooksDispatchMorningRoute
+  '/api/public/hooks/morning-tasks': typeof ApiPublicHooksMorningTasksRoute
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
@@ -494,6 +504,7 @@ export interface FileRouteTypes {
     | '/properties/$id/rooms'
     | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
+    | '/api/public/hooks/morning-tasks'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
@@ -541,6 +552,7 @@ export interface FileRouteTypes {
     | '/properties/$id/rooms'
     | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
+    | '/api/public/hooks/morning-tasks'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
@@ -589,6 +601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/properties/$id/rooms'
     | '/api/public/hooks/channel-outbox'
     | '/api/public/hooks/dispatch-morning'
+    | '/api/public/hooks/morning-tasks'
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
@@ -604,6 +617,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiPublicHooksChannelOutboxRoute: typeof ApiPublicHooksChannelOutboxRoute
   ApiPublicHooksDispatchMorningRoute: typeof ApiPublicHooksDispatchMorningRoute
+  ApiPublicHooksMorningTasksRoute: typeof ApiPublicHooksMorningTasksRoute
   ApiPublicSyncManualRoute: typeof ApiPublicSyncManualRoute
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
   ApiPublicWebhooksBookingRoute: typeof ApiPublicWebhooksBookingRoute
@@ -900,6 +914,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDispatchMorningRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/morning-tasks': {
+      id: '/api/public/hooks/morning-tasks'
+      path: '/api/public/hooks/morning-tasks'
+      fullPath: '/api/public/hooks/morning-tasks'
+      preLoaderRoute: typeof ApiPublicHooksMorningTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sync/manual': {
       id: '/api/public/sync/manual'
       path: '/api/public/sync/manual'
@@ -1036,6 +1057,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiPublicHooksChannelOutboxRoute: ApiPublicHooksChannelOutboxRoute,
   ApiPublicHooksDispatchMorningRoute: ApiPublicHooksDispatchMorningRoute,
+  ApiPublicHooksMorningTasksRoute: ApiPublicHooksMorningTasksRoute,
   ApiPublicSyncManualRoute: ApiPublicSyncManualRoute,
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,
   ApiPublicWebhooksBookingRoute: ApiPublicWebhooksBookingRoute,
