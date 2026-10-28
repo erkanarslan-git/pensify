@@ -620,7 +620,10 @@
     "actionFailed": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
     "shiftStarted": "Schicht automatisch gestartet.",
     "shiftNoLocation": "Schicht nicht gestartet: Standort nicht verfügbar.",
-    "shiftStartFailed": "Schicht konnte nicht gestartet werden (Standort außerhalb oder zu ungenau)."
+    "shiftStartFailed": "Schicht konnte nicht gestartet werden (Standort außerhalb oder zu ungenau).",
+    "room": "Zimmer",
+    "due": "Fällig",
+    "status": "Status"
   },
   "cleaners": {
     "staff": "Personal",

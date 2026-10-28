@@ -620,7 +620,10 @@
     "actionFailed": "Action failed. Please try again.",
     "shiftStarted": "Shift started automatically.",
     "shiftNoLocation": "Shift not started: location unavailable.",
-    "shiftStartFailed": "Shift could not be started (location out of range or too inaccurate)."
+    "shiftStartFailed": "Shift could not be started (location out of range or too inaccurate).",
+    "room": "Room",
+    "due": "Due",
+    "status": "Status"
   },
   "cleaners": {
     "staff": "Staff",
