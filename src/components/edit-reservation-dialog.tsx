@@ -37,6 +37,7 @@ interface Reservation {
   guest_email: string | null;
   guest_phone: string | null;
   guests_count: number;
+  guests_confirmed: boolean;
   check_in: string;
   check_out: string;
   channel: Channel;
@@ -73,6 +74,31 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const [history, setHistory] = useState<AuditEntry[]>([]);
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const { i18n } = useTranslation();
+  const ex = EXT_COPY[i18n.language.startsWith("tr") ? "tr" : i18n.language.startsWith("en") ? "en" : "de"];
+  const [extensions, setExtensions] = useState<Extension[]>([]);
+  const [extOpen, setExtOpen] = useState(false);
+  const [extDate, setExtDate] = useState("");
+  const [extNote, setExtNote] = useState("");
+  const [extSaving, setExtSaving] = useState(false);
+  const loadExtensions = async (id: string) => {
+    const { data } = await supabase.from("reservation_extensions").select("id,old_check_out,new_check_out,days,note,created_at").eq("reservation_id", id).order("created_at", { ascending: false });
+    setExtensions((data ?? []) as Extension[]);
+  };
+  const extend = async () => {
+    if (!r || !extDate) return;
+    if (extDate <= r.check_out) { toast.error(ex.later); return; }
+    const others = stays.filter((s) => s.id !== r.id && s.room_id === r.room_id && s.check_in < extDate && s.check_out > r.check_out);
+    if (others.length) { toast.error(t("bookingAvailability.unavailable")); return; }
+    setExtSaving(true);
+    const { error } = await supabase.rpc("extend_reservation", { _reservation_id: r.id, _new_check_out: extDate, _note: extNote || undefined });
+    setExtSaving(false);
+    if (error) { toast.error(error.message.includes("room_not_bookable") || error.message.includes("overlap") ? t("bookingAvailability.unavailable") : t("legacyUi.updateFailed"), { description: error.message }); return; }
+    toast.success(ex.done(extensionDays(r.check_out, extDate)));
+    setR({ ...r, check_out: extDate }); setOriginal((o) => (o ? { ...o, check_out: extDate } : o));
+    setExtOpen(false); setExtNote("");
+    loadExtensions(r.id); onSaved?.();
+  };
 
   const todayIso = new Date().toISOString().slice(0, 10);
   const isPast = !!r && r.check_in < todayIso;
@@ -98,7 +124,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       }
       const res = resResult.data, props = propsResult.data, rms = roomsResult.data, hist = histResult.data;
       setStays(staysResult.data ?? []);
-      if (res) { setR(res as Reservation); setOriginal(res as Reservation); }
+      if (res) { setR(res as Reservation); setOriginal(res as Reservation); setExtDate(""); setExtOpen(false); loadExtensions(res.id); }
       setProperties((props ?? []) as Property[]);
       setRooms((rms ?? []) as Room[]);
       setHistory((hist ?? []) as AuditEntry[]);
@@ -150,6 +176,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       guest_email: r.guest_email?.trim() || null,
       guest_phone: r.guest_phone?.trim() || null,
       guests_count: r.guests_count,
+      guests_confirmed: r.guests_confirmed,
       check_in: r.check_in,
       check_out: r.check_out,
       channel: r.channel,
@@ -268,8 +295,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("common.guests")}</span>
                 <input type="number" min={1} value={r.guests_count}
-                  onChange={(e) => update("guests_count", Math.max(1, +e.target.value || 1))}
-                  className="px-3 py-2 rounded-md border border-input bg-card" />
+                  onChange={(e) => { update("guests_count", Math.max(1, +e.target.value || 1)); update("guests_confirmed", true); }}
+                  className={`px-3 py-2 rounded-md border bg-card ${r.guests_confirmed ? "border-input" : "border-warning"}`} />
+                {!r.guests_confirmed && (
+                  <span className="text-[11px] text-warning flex items-center gap-2">{ex.guestsMissing}
+                    <button type="button" className="underline" onClick={() => update("guests_confirmed", true)}>{ex.confirm}</button></span>
+                )}
               </label>
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("newRes.amount")}</span>
