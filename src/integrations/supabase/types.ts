@@ -2288,6 +2288,50 @@ export type Database = {
           },
         ]
       }
+      reservation_extensions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          days: number
+          id: string
+          new_check_out: string
+          note: string | null
+          old_check_out: string
+          organization_id: string
+          reservation_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          days: number
+          id?: string
+          new_check_out: string
+          note?: string | null
+          old_check_out: string
+          organization_id: string
+          reservation_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          id?: string
+          new_check_out?: string
+          note?: string | null
+          old_check_out?: string
+          organization_id?: string
+          reservation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_extensions_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservation_occupants: {
         Row: {
           organization_id: string
@@ -2348,6 +2392,7 @@ export type Database = {
           guest_email: string | null
           guest_name: string
           guest_phone: string | null
+          guests_confirmed: boolean
           guests_count: number
           ical_uid: string | null
           id: string
@@ -2386,6 +2431,7 @@ export type Database = {
           guest_email?: string | null
           guest_name: string
           guest_phone?: string | null
+          guests_confirmed?: boolean
           guests_count?: number
           ical_uid?: string | null
           id?: string
@@ -2424,6 +2470,7 @@ export type Database = {
           guest_email?: string | null
           guest_name?: string
           guest_phone?: string | null
+          guests_confirmed?: boolean
           guests_count?: number
           ical_uid?: string | null
           id?: string
@@ -3812,6 +3859,14 @@ export type Database = {
       exclude_bank_transaction: {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
+      }
+      extend_reservation: {
+        Args: {
+          _new_check_out: string
+          _note?: string
+          _reservation_id: string
+        }
+        Returns: string
       }
       finance_dashboard: { Args: { _today: string }; Returns: Json }
       finance_installment_page: {

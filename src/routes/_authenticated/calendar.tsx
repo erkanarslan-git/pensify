@@ -94,8 +94,14 @@ function CalendarPage() {
         gridFocusRef.current?.focus({ preventScroll: true });
       }
     };
+    // Coming back from another window/tab: keyboard keeps working without an extra click.
+    const onWinFocus = () => {
+      const a = document.activeElement;
+      if (!a || a === document.body) gridFocusRef.current?.focus({ preventScroll: true });
+    };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("focus", onWinFocus);
+    return () => { window.removeEventListener("keydown", handler); window.removeEventListener("focus", onWinFocus); };
   }, []);
 
   // Helper: is given iso date strictly before today?
@@ -907,7 +913,14 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
   const step = () => (ref.current?.clientWidth ?? 600) * 0.7;
   const scrollBy = (dx: number) => ref.current?.scrollBy({ left: dx, behavior: "smooth" });
 
+  // Right mouse button pans from anywhere (also over booking bars), like grabbing an Excel sheet.
+  const onMouseDownCapture = (e: React.MouseEvent) => {
+    if (e.button !== 2 || !ref.current) return;
+    e.stopPropagation(); e.preventDefault();
+    drag.current = { startX: e.clientX, startScroll: ref.current.scrollLeft, active: true, moved: false };
+  };
   const onMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
     if ((e.target as HTMLElement).closest("button, a, input, [role='button']")) return;
     const el = ref.current;
     if (!el) return;
@@ -928,7 +941,10 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
     <div className="relative -m-5">
       <div
         ref={ref}
+        title={t("calendarExtra.panHint")}
         className="overflow-x-auto select-none cursor-grab active:cursor-grabbing"
+        onMouseDownCapture={onMouseDownCapture}
+        onContextMenu={(e) => e.preventDefault()}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={endDrag}

@@ -27,6 +27,7 @@ import { Route as AuthenticatedGuestsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMaintenanceRouteImport } from './routes/_authenticated/maintenance'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedOvernightsRouteImport } from './routes/_authenticated/overnights'
 import { Route as AuthenticatedRequestAccessRouteImport } from './routes/_authenticated/request-access'
 import { Route as AuthenticatedReservationsRouteImport } from './routes/_authenticated/reservations'
 import { Route as AuthenticatedRoomsRouteImport } from './routes/_authenticated/rooms'
@@ -149,6 +150,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOvernightsRoute = AuthenticatedOvernightsRouteImport.update({
+  id: '/overnights',
+  path: '/overnights',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRequestAccessRoute =
   AuthenticatedRequestAccessRouteImport.update({
     id: '/request-access',
@@ -333,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/overnights': typeof AuthenticatedOvernightsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -380,6 +387,7 @@ export interface FileRoutesByTo {
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/overnights': typeof AuthenticatedOvernightsRoute
   '/request-access': typeof AuthenticatedRequestAccessRoute
   '/reservations': typeof AuthenticatedReservationsRoute
   '/rooms': typeof AuthenticatedRoomsRoute
@@ -430,6 +438,7 @@ export interface FileRoutesById {
   '/_authenticated/maintenance': typeof AuthenticatedMaintenanceRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/overnights': typeof AuthenticatedOvernightsRoute
   '/_authenticated/request-access': typeof AuthenticatedRequestAccessRoute
   '/_authenticated/reservations': typeof AuthenticatedReservationsRoute
   '/_authenticated/rooms': typeof AuthenticatedRoomsRoute
@@ -481,6 +490,7 @@ export interface FileRouteTypes {
     | '/maintenance'
     | '/me'
     | '/notifications'
+    | '/overnights'
     | '/request-access'
     | '/reservations'
     | '/rooms'
@@ -528,6 +538,7 @@ export interface FileRouteTypes {
     | '/maintenance'
     | '/me'
     | '/notifications'
+    | '/overnights'
     | '/request-access'
     | '/reservations'
     | '/rooms'
@@ -577,6 +588,7 @@ export interface FileRouteTypes {
     | '/_authenticated/maintenance'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
+    | '/_authenticated/overnights'
     | '/_authenticated/request-access'
     | '/_authenticated/reservations'
     | '/_authenticated/rooms'
@@ -751,6 +763,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/overnights': {
+      id: '/_authenticated/overnights'
+      path: '/overnights'
+      fullPath: '/overnights'
+      preLoaderRoute: typeof AuthenticatedOvernightsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/request-access': {
@@ -993,6 +1012,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMaintenanceRoute: typeof AuthenticatedMaintenanceRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOvernightsRoute: typeof AuthenticatedOvernightsRoute
   AuthenticatedRequestAccessRoute: typeof AuthenticatedRequestAccessRoute
   AuthenticatedReservationsRoute: typeof AuthenticatedReservationsRoute
   AuthenticatedRoomsRoute: typeof AuthenticatedRoomsRoute
@@ -1026,6 +1046,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMaintenanceRoute: AuthenticatedMaintenanceRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOvernightsRoute: AuthenticatedOvernightsRoute,
   AuthenticatedRequestAccessRoute: AuthenticatedRequestAccessRoute,
   AuthenticatedReservationsRoute: AuthenticatedReservationsRoute,
   AuthenticatedRoomsRoute: AuthenticatedRoomsRoute,

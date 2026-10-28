@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { History, User as UserIcon, Clock, Lock } from "lucide-react";
+import { History, User as UserIcon, Clock, Lock, CalendarPlus } from "lucide-react";
+import { formatDateDE } from "@/lib/date-de";
+import { extensionDays } from "@/lib/overnight-stats";
 import { usePermissions } from "@/hooks/use-permissions";
 import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
@@ -37,6 +39,7 @@ interface Reservation {
   guest_email: string | null;
   guest_phone: string | null;
   guests_count: number;
+  guests_confirmed: boolean;
   check_in: string;
   check_out: string;
   channel: Channel;
@@ -48,6 +51,19 @@ interface Reservation {
   created_by: string | null;
   created_at: string;
 }
+
+interface Extension { id: string; old_check_out: string; new_check_out: string; days: number; note: string | null; created_at: string }
+
+const addDaysIso = (iso: string, d: number) => {
+  const x = new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + d));
+  return x.toISOString().slice(0, 10);
+};
+
+const EXT_COPY = {
+  de: { title: "Aufenthalt verlängern", current: "Abreise", button: "Verlängern", newDate: "Neue Abreise", note: "Notiz (optional)", later: "Die neue Abreise muss nach der aktuellen liegen.", done: (n: number) => `Um ${n} Nächte verlängert`, confirmExt: (n: number) => `+${n} Nächte bestätigen`, guestsMissing: "Personenzahl nicht erfasst", confirm: "Stimmt so" },
+  tr: { title: "Konaklamayı uzat", current: "Çıkış", button: "Uzat", newDate: "Yeni çıkış", note: "Not (isteğe bağlı)", later: "Yeni çıkış mevcut çıkıştan sonra olmalı.", done: (n: number) => `${n} gece uzatıldı`, confirmExt: (n: number) => `+${n} gece onayla`, guestsMissing: "Kişi sayısı girilmemiş", confirm: "Doğru" },
+  en: { title: "Extend stay", current: "Check-out", button: "Extend", newDate: "New check-out", note: "Note (optional)", later: "The new check-out must be after the current one.", done: (n: number) => `Extended by ${n} nights`, confirmExt: (n: number) => `Confirm +${n} nights`, guestsMissing: "Guest count not recorded", confirm: "Correct" },
+};
 
 interface Props {
   open: boolean;
@@ -73,6 +89,31 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const [history, setHistory] = useState<AuditEntry[]>([]);
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const { i18n } = useTranslation();
+  const ex = EXT_COPY[i18n.language.startsWith("tr") ? "tr" : i18n.language.startsWith("en") ? "en" : "de"];
+  const [extensions, setExtensions] = useState<Extension[]>([]);
+  const [extOpen, setExtOpen] = useState(false);
+  const [extDate, setExtDate] = useState("");
+  const [extNote, setExtNote] = useState("");
+  const [extSaving, setExtSaving] = useState(false);
+  const loadExtensions = async (id: string) => {
+    const { data } = await supabase.from("reservation_extensions").select("id,old_check_out,new_check_out,days,note,created_at").eq("reservation_id", id).order("created_at", { ascending: false });
+    setExtensions((data ?? []) as Extension[]);
+  };
+  const extend = async () => {
+    if (!r || !extDate) return;
+    if (extDate <= r.check_out) { toast.error(ex.later); return; }
+    const others = stays.filter((s) => s.id !== r.id && s.room_id === r.room_id && s.check_in < extDate && s.check_out > r.check_out);
+    if (others.length) { toast.error(t("bookingAvailability.unavailable")); return; }
+    setExtSaving(true);
+    const { error } = await supabase.rpc("extend_reservation", { _reservation_id: r.id, _new_check_out: extDate, _note: extNote || undefined });
+    setExtSaving(false);
+    if (error) { toast.error(error.message.includes("room_not_bookable") || error.message.includes("overlap") ? t("bookingAvailability.unavailable") : t("legacyUi.updateFailed"), { description: error.message }); return; }
+    toast.success(ex.done(extensionDays(r.check_out, extDate)));
+    setR({ ...r, check_out: extDate }); setOriginal((o) => (o ? { ...o, check_out: extDate } : o));
+    setExtOpen(false); setExtNote("");
+    loadExtensions(r.id); onSaved?.();
+  };
 
   const todayIso = new Date().toISOString().slice(0, 10);
   const isPast = !!r && r.check_in < todayIso;
@@ -98,7 +139,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       }
       const res = resResult.data, props = propsResult.data, rms = roomsResult.data, hist = histResult.data;
       setStays(staysResult.data ?? []);
-      if (res) { setR(res as Reservation); setOriginal(res as Reservation); }
+      if (res) { setR(res as Reservation); setOriginal(res as Reservation); setExtDate(""); setExtOpen(false); loadExtensions(res.id); }
       setProperties((props ?? []) as Property[]);
       setRooms((rms ?? []) as Room[]);
       setHistory((hist ?? []) as AuditEntry[]);
@@ -150,6 +191,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       guest_email: r.guest_email?.trim() || null,
       guest_phone: r.guest_phone?.trim() || null,
       guests_count: r.guests_count,
+      guests_confirmed: r.guests_confirmed,
       check_in: r.check_in,
       check_out: r.check_out,
       channel: r.channel,
@@ -268,8 +310,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("common.guests")}</span>
                 <input type="number" min={1} value={r.guests_count}
-                  onChange={(e) => update("guests_count", Math.max(1, +e.target.value || 1))}
-                  className="px-3 py-2 rounded-md border border-input bg-card" />
+                  onChange={(e) => { update("guests_count", Math.max(1, +e.target.value || 1)); update("guests_confirmed", true); }}
+                  className={`px-3 py-2 rounded-md border bg-card ${r.guests_confirmed ? "border-input" : "border-warning"}`} />
+                {!r.guests_confirmed && (
+                  <span className="text-[11px] text-warning flex items-center gap-2">{ex.guestsMissing}
+                    <button type="button" className="underline" onClick={() => update("guests_confirmed", true)}>{ex.confirm}</button></span>
+                )}
               </label>
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("newRes.amount")}</span>
@@ -303,6 +349,45 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                   className="px-3 py-2 rounded-md border border-input bg-card resize-none" />
               </label>
             </div>
+
+            {!["cancelled", "no_show", "checked_out"].includes(r.status) && (
+              <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <CalendarPlus className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">{ex.title}</span>
+                  <span className="text-xs text-muted-foreground">{ex.current}: {formatDateDE(r.check_out)}</span>
+                  {!extOpen && <button type="button" onClick={() => { setExtOpen(true); setExtDate(addDaysIso(r.check_out, 1)); }}
+                    className="ml-auto px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">{ex.button}</button>}
+                </div>
+                {extOpen && (
+                  <div className="mt-3 grid gap-2 sm:grid-cols-[auto_1fr_auto] items-end">
+                    <div className="flex gap-1 sm:col-span-full">
+                      {[1, 3, 7, 14, 30].map((d) => (
+                        <button key={d} type="button" onClick={() => setExtDate(addDaysIso(r.check_out, d))}
+                          className={`px-2.5 py-1 rounded-md border text-xs ${extDate === addDaysIso(r.check_out, d) ? "bg-primary text-primary-foreground border-primary" : "border-border bg-card hover:bg-accent"}`}>+{d}</button>
+                      ))}
+                    </div>
+                    <label className="grid gap-1"><span className="text-xs text-muted-foreground">{ex.newDate}</span>
+                      <input type="date" min={addDaysIso(r.check_out, 1)} value={extDate} onChange={(e) => setExtDate(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card" /></label>
+                    <label className="grid gap-1"><span className="text-xs text-muted-foreground">{ex.note}</span>
+                      <input value={extNote} onChange={(e) => setExtNote(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-card" /></label>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setExtOpen(false)} className="px-3 py-2 rounded-md border border-border text-sm">{t("common.cancel")}</button>
+                      <button type="button" onClick={extend} disabled={extSaving || !extDate}
+                        className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
+                        {ex.confirmExt(extDate > r.check_out ? extensionDays(r.check_out, extDate) : 0)}</button>
+                    </div>
+                  </div>
+                )}
+                {extensions.length > 0 && (
+                  <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    {extensions.map((e) => (
+                      <li key={e.id}>{new Date(e.created_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, dateStyle: "short", timeStyle: "short" })} · {formatDateDE(e.old_check_out)} → <span className="text-foreground font-medium">{formatDateDE(e.new_check_out)}</span> (+{e.days}){e.note ? ` · ${e.note}` : ""}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
             <div className="mt-4 border-t border-border pt-3">
               <button

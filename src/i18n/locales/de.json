@@ -13,6 +13,7 @@
     "dispatch": "Aufgaben-Versand",
     "notifications": "Benachrichtigungen",
     "analytics": "Analysen",
+    "overnights": "Übernachtungen",
     "properties": "Standorte",
     "timeTracking": "Zeiterfassung",
     "workReport": "Erledigte Arbeiten",
@@ -31,7 +32,7 @@
       "admin": "Verwaltung",
       "tools": "Werkzeuge"
     },
-    "payments": "Zahlungen"
+    "payments": "Buchhaltung"
   },
   "common": {
     "today": "Heute",

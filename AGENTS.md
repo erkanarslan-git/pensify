@@ -13,7 +13,6 @@
 - Room/rate/occupancy writes use scoped atomic RPCs with manage_rooms; imports require owner/admin. Why: authorized writes.
 - CSV imports are parsed in the browser (src/lib/import) and stored only after explicit approval; imported rows keep source_system/external_source_id, unique per org. Why: preview first, idempotent re-imports.
 - Controlled internal price backfills set the transaction-local `app.skip_channel_outbox` flag; the outbox trigger must honor it. Why: demo/import maintenance must never create OTA work.
-- WuBook push notifications land in wubook_inbox via /api/public/webhooks/wubook/$secret and are only recorded; booking import stays behind WUBOOK_RESERVATION_IMPORT_ENABLED, and mark_bookings is permanently blocked. Why: no data loss or silent acknowledgement before import is proven.
 - Access codes live in locked operational_access_secrets; scoped reveal/edit RPCs audit metadata only; lists never fetch values, legacy key_code stays NULL. Why: shared workspace privacy.
 - Membership/department triggers enable time profiles for cleaners/workers; breaks use time eligibility, not cleaning-active. Why: one identity, no cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
@@ -45,3 +44,4 @@
 - Reservation trash: 168h from deleted_at, hourly pg_cron purge via shared purge step; finance/task-linked stays are kept, restore rechecks overlap under room lock. Why: no orphan or lost finance history.
 - Login keeps submission pending through awaited navigation and shows errors inline; its light surface is scoped with semantic CSS tokens. Why: no silent waiting or theme-dependent unreadable fields.
 - Room distribution (channel_sync_mode, sales_channels) is informational, written only via set_rooms_distribution; future channel sync must only touch rooms marked api for that channel. Why: one integration fault must not disturb manually tracked rooms.
+- Extensions only via extend_reservation (logged); overnight stats treat guests_confirmed=false as nights without persons. Why: audit and honest statistics.

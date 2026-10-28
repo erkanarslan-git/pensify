@@ -729,6 +729,13 @@
       "when": 1793193896002,
       "tag": "0103_cities_member_read",
       "breakpoints": true
+    },
+    {
+      "idx": 104,
+      "version": "7",
+      "when": 1793204950354,
+      "tag": "0104_reservation_extensions_and_guest_flag",
+      "breakpoints": true
     }
   ]
 }
