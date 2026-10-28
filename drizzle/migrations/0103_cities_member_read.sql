@@ -1,0 +1,1 @@
+CREATE POLICY cities_member_read ON public.cities FOR SELECT TO authenticated USING (public.is_organization_member(organization_id));
