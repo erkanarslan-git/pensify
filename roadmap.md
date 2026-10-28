@@ -1,5 +1,9 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Sabah görev özeti (28.10.2026)
+- [ ] Bugünkü/geciken atanmış görevleri Almanya saatiyle 08.00’de yalnız bildirim izni olan aktif çalışanlara özetle; firma kapsamı ve günlük tekrar koruması.
+- [ ] Zamanlama, boş görev/DST/kapsam testleri ve bildirim bağlantısı kontrolü; gerçek telefona teslimatı doğrulanmadıysa açıkça belirt.
+
 ## Project monitoring (28.10.2026)
 - [x] Oda bulgusu güncelliğini yitirmiş: organization_id okuma izni zaten mevcut; sahip oturumuyla genel oda listesi ve lokasyon oda görünümü HTTP 200 ile açıldı. Gereksiz izin/kod değişikliği yapılmadı.
 - [x] Bölüm çalışanının hızlı görev eklemesi kendine varsayılan atamayla düzeltildi; sıfırlama ve bölüm değişiminde aynı kural korunuyor, şef/büro seçenekleri değişmedi. 16 test ve hatasız derleme; Bakım 1 test hesabıyla Enter üzerinden iki kayıt, yenileme sonrası görünürlük ve arşivleme doğrulandı. İşletme kayıtları ve sunucu yetkileri değiştirilmedi.
