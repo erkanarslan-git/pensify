@@ -3641,6 +3641,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_set_member_name: {
+        Args: { _full_name: string; _user_id: string }
+        Returns: undefined
+      }
       admin_set_member_properties: {
         Args: { _property_ids: string[]; _user_id: string }
         Returns: undefined
@@ -4171,6 +4175,13 @@ export type Database = {
       todo_attachment_access: {
         Args: { _path: string; _write: boolean }
         Returns: boolean
+      }
+      todo_member_names: {
+        Args: never
+        Returns: {
+          full_name: string
+          id: string
+        }[]
       }
       transition_cleaning_task: {
         Args: {
