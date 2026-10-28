@@ -253,28 +253,34 @@ function CleaningPage() {
                     {t("cleaning.groupSummary", { total: g.items.length, open: gOpen })}{gProb > 0 ? ` · ${t("cleaning.problemCount", { count: gProb })}` : ""}
                   </span>
                 </summary>
-                <div className="border-t border-border divide-y divide-border/60">
+                <div className="grid gap-3 border-t border-border bg-muted/30 p-3 md:grid-cols-2 2xl:grid-cols-3">
                   {g.items.map((task) => {
                     const room = rooms.get(task.room_id);
-                    const meta = statusMeta[task.status];
+                    const review = cleaningNeedsReview(task);
+                    const tone = review ? "warning" : statusMeta[task.status].tone;
                     const due = new Date(task.due_at);
                     const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
                     const options = taskAssignmentOptions(data?.assignmentOptions ?? [], task.property_id);
                     return (
-                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 sm:py-2.5 text-sm hover:bg-accent/40 transition-colors">
-                        <div className="min-w-20 whitespace-nowrap font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
-                        <div className="w-28 text-muted-foreground tabular-nums">
-                          {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      <div key={task.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border border-border border-l-[6px] bg-card p-4 shadow-sm text-sm ${toneBorder[tone]}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-2xl font-bold leading-none tabular-nums">#{room?.number ?? "—"}</div>
+                            <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">
+                              {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                              {task.photos_count > 0 && <span className="ml-2 inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>}
+                            </div>
+                          </div>
+                          <Badge tone={tone}>{review ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge>
                         </div>
-                        <div className="w-28"><Badge tone={cleaningNeedsReview(task) ? "warning" : meta.tone}>{cleaningNeedsReview(task) ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge></div>
-                        <div className="flex-1 min-w-[160px]">
+                        <div className="min-w-0">
                           {options.length > 0 && canChangeCleaningAssignment(task.status) ? (
                             <select
                               value={task.cleaner_id ?? ""}
                               aria-label={t("departments.assign")}
                               onChange={(e) => reassign(task.id, e.target.value)}
-                              className={`text-xs px-2 py-1 rounded-md border bg-card ${unassigned ? "border-warning text-warning" : "border-input"}`}
+                              className={`w-full min-h-11 px-3 rounded-xl border bg-card text-sm ${unassigned ? "border-warning text-warning" : "border-input"}`}
                             >
                               <option value="">— {t("cleaning.notAssigned")} —</option>
                               {task.cleaner_id && !options.some((o) => o.cleaner_id === task.cleaner_id) && <option value={task.cleaner_id} disabled>{name ?? t("cleaning.notAssigned")}</option>}
@@ -283,13 +289,12 @@ function CleaningPage() {
                               ))}
                             </select>
                           ) : (
-                            <span className={unassigned ? "text-warning italic" : ""}>{name ?? t("cleaning.notAssigned")}</span>
+                            <span className={`inline-flex items-center gap-1.5 ${unassigned ? "text-warning italic" : "font-medium"}`}>{unassigned && <UserX className="w-4 h-4" />}{name ?? t("cleaning.notAssigned")}</span>
                           )}
-                          {task.notes && <div className="text-xs text-muted-foreground italic mt-0.5">"{task.notes}"</div>}
-                          {task.inspected_at && <div className="text-xs text-muted-foreground mt-1">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(undefined, { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
+                          {task.notes && <div className="mt-2 rounded-lg bg-muted px-3 py-2 text-xs italic text-muted-foreground break-words">"{task.notes}"</div>}
+                          {task.inspected_at && <div className="text-xs text-muted-foreground mt-2 break-words">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
                         </div>
-                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
-                        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:gap-1.5">
+                        <div className="mt-auto grid grid-cols-2 gap-2">
                           {cleaningNeedsReview(task) && canAssign && <>
                             <ActionBtn icon={<Check className="w-4 h-4" />} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "approve" }); }}>{t("cleaningInspection.approve")}</ActionBtn>
                             <SecBtn tone="warning" icon={<RotateCcw className="w-4 h-4" />} label={t("cleaningInspection.reject")} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "reject" }); }} />
