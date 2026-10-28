@@ -3,6 +3,11 @@ export interface TodoLike { due_date: string | null; due_at?: string | null; don
 
 const RANK: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
 
+/** Workers always note tasks for themselves; office staff and leads may leave tasks unassigned. */
+export function resolveTodoAssignee(selected: string, context: { office: boolean; isLead: boolean; userId: string }): string | null {
+  return context.office || context.isLead ? selected || null : context.userId;
+}
+
 /** Overdue = not done and due date strictly before today (business date, YYYY-MM-DD). */
 export function isOverdue(t: TodoLike, today: string, now = Date.now()): boolean {
   return !t.done && (t.due_at ? Date.parse(t.due_at) < now : !!t.due_date && t.due_date < today);

@@ -1,5 +1,9 @@
 # Roadmap — Aktuelle Runde (05.10.2026)
 
+## Project monitoring (28.10.2026)
+- [ ] Oda/lokasyon oda sayfalarının güncel okuma izinlerini ve oturumlu açılışlarını doğrula; eski bulguysa gereksiz değişiklik yapma.
+- [ ] Bölüm çalışanının hızlı görev eklemesini kendine varsayılan atamayla düzelt; kural testleri ve çalışan akışıyla doğrula.
+
 ## Program adı ve güvenlik araştırması (26.10.2026)
 - [x] Görünen adlar, sayfa başlıkları, üç dildeki metinler, TV başlığı ve rapor dosya adları Pension Highway oldu; adresler, kayıtlar ve tarayıcı tercihleri korundu. Animasyon eklenmedi. Oturumlu panel/rezervasyon ve girişsiz TV açılışı doğrulandı; 74 mevcut test geçti.
 - [x] Cloudflare resmi kaynakları incelendi: VibeSDK/Code Mode genel kod denetleyicisi değil; API Shield Vulnerability Scanner farklı kapsamda. Bu tur Cloudflare taraması yapılmadı; Lovable hızlı/derin taraması ve ayrı sızma testi seçenekleri açıklandı.
