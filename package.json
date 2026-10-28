@@ -79,7 +79,8 @@
   },
   "overrides": {
     "zod": "4.6.6",
-    "esbuild": "0.25.12"
+    "esbuild": "0.28.1",
+    "@grpc/grpc-js": "1.13.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
