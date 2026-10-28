@@ -9,7 +9,7 @@ import { AppShell } from "@/components/app-shell";
 import { supabase } from "@/integrations/supabase/client";
 import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
-import { isOverdue, sortTodos, todoStatus } from "@/lib/todos";
+import { isOverdue, sortTodos, todoStatus, resolveTodoAssignee } from "@/lib/todos";
 import { loadTodoOptions } from "@/lib/todo-data.functions";
 import { notifyTodoAssigned } from "@/lib/push.functions";
 import { TodoDetails } from "@/components/todo-details";
@@ -71,7 +71,10 @@ function TodosPage() {
   const myDepts = options?.departments ?? [];
   const defaultDept = office ? "" : (myDepts[0]?.department ?? "");
   const deptChoices = office ? DEPTS.map(String) : myDepts.map((d) => d.department);
-  const activeDept = myDepts.find((d) => d.department === dept);
+  const effectiveDept = dept || defaultDept;
+  const activeDept = myDepts.find((d) => d.department === effectiveDept);
+  const selfOnly = !office && !activeDept?.isLead;
+  const effectiveAssignee = options ? resolveTodoAssignee(assigned, { office, isLead: activeDept?.isLead ?? false, userId: options.userId }) : null;
   // Who can be picked: office staff anyone; chiefs their department; workers only themselves.
   const assignable = office ? (options?.users ?? [])
     : activeDept?.isLead ? (options?.users ?? []).filter((u) => activeDept.members.includes(u.id))
@@ -81,13 +84,13 @@ function TodosPage() {
   const refresh = () => qc.invalidateQueries({ queryKey: ["todos"] });
 
   const add = async () => {
-    if (!title.trim()) return;
+    if (!title.trim() || !options) return;
     let dueAt: string | null = null; let reminderAt: string | null = null;
     try { dueAt = due && time ? berlinLocalToIso(`${due}T${time}`) : null; reminderAt = reminder ? berlinLocalToIso(reminder) : null; }
     catch { toast.error(t("todos.saveErr")); return; }
-    const { data: savedId, error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: assigned || null, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt, department: dept || null } });
+    const { data: savedId, error } = await supabase.rpc("save_general_todo", { _input: { id:editing, title: title.trim(), due_date: due || null, due_at: dueAt, priority: prio, notes, assigned_to: effectiveAssignee, property_id: property || null, room_id: room || null, reservation_id: reservation || null, recurrence: repeat, reminder_at: reminderAt, department: effectiveDept || null } });
     if (error) return toast.error(t("todos.saveErr"));
-    if (savedId && assigned && assigned !== options?.userId) {
+    if (savedId && effectiveAssignee && effectiveAssignee !== options.userId) {
       notifyTodoAssigned({ data: { todoId: savedId } }).catch(() => {});
     }
     setEditing(null); setTitle(""); setDue(""); setPrio("normal"); setAssigned(""); setProperty(""); setRoom(""); setReservation(""); setTime(""); setNotes(""); setRepeat("none"); setReminder(""); setDept(defaultDept); refresh();
@@ -152,11 +155,11 @@ function TodosPage() {
         <select value={prio} onChange={(e) => setPrio(e.target.value)} className="px-3 py-2 rounded-md border border-input bg-background text-sm">
           {PRIOS.map((p) => <option key={p} value={p}>{t(`todos.p.${p}`)}</option>)}
         </select>
-        <button onClick={add} disabled={!title.trim()} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50"><Plus className="w-4 h-4" />{t(editing?"common.save":"todos.add")}</button>
+        <Button onClick={add} disabled={!title.trim() || !options}><Plus className="w-4 h-4" />{t(editing?"common.save":"todos.add")}</Button>
       </div>
 
       <details className="mb-4"><summary className="cursor-pointer text-sm font-semibold">{t("todoDetails.details")}</summary><div className="mt-3 grid gap-3 sm:grid-cols-3">
-        <label className="text-xs">{t("todoDetails.assigned")}<select value={assigned} onChange={e => setAssigned(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">{t("deptTodos.unassigned")}</option>{assignable.map(u => <option key={u.id} value={u.id}>{u.id === options?.userId ? t("deptTodos.onlyMe") : u.name}</option>)}</select></label>
+        <label className="text-xs">{t("todoDetails.assigned")}<select value={effectiveAssignee ?? ""} disabled={!options || selfOnly} onChange={e => setAssigned(e.target.value)} className="w-full border border-input rounded-md bg-card p-2">{!selfOnly && <option value="">{t("deptTodos.unassigned")}</option>}{assignable.map(u => <option key={u.id} value={u.id}>{u.id === options?.userId ? t("deptTodos.onlyMe") : u.name}</option>)}</select></label>
         <label className="text-xs">{t("todoDetails.property")}<select value={property} onChange={e => { setProperty(e.target.value); setRoom(""); setReservation(""); }} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{options?.properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
         <label className="text-xs">{t("todoDetails.room")}<select disabled={!property} value={room} onChange={e => setRoom(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{links?.rooms.map(r => <option key={r.id} value={r.id}>{r.number}</option>)}</select></label>
         <label className="text-xs">{t("todoDetails.reservation")}<select disabled={!property} value={reservation} onChange={e => setReservation(e.target.value)} className="w-full border border-input rounded-md bg-card p-2"><option value="">—</option>{links?.reservations.map(r => <option key={r.id} value={r.id}>{r.guest_name}</option>)}</select></label>

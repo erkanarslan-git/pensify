@@ -1,5 +1,28 @@
 import { describe, it, expect } from "vitest";
-import { isOverdue, sortTodos } from "./todos";
+import { isOverdue, sortTodos, resolveTodoAssignee } from "./todos";
+
+describe("department task assignment defaults", () => {
+  it.each(["cleaning", "maintenance"])("%s workers quick-add and reset to themselves", () => {
+    const worker = { office: false, isLead: false, userId: "worker-id" };
+    expect(resolveTodoAssignee("", worker)).toBe("worker-id");
+    expect(resolveTodoAssignee("other-id", worker)).toBe("worker-id");
+    expect(resolveTodoAssignee("", worker)).toBe("worker-id");
+  });
+  it("switching from a lead department to a worker department defaults to self", () => {
+    expect(resolveTodoAssignee("", { office: false, isLead: true, userId: "self" })).toBeNull();
+    expect(resolveTodoAssignee("", { office: false, isLead: false, userId: "self" })).toBe("self");
+  });
+  it("department leads can leave tasks unassigned or select a member", () => {
+    const lead = { office: false, isLead: true, userId: "lead" };
+    expect(resolveTodoAssignee("", lead)).toBeNull();
+    expect(resolveTodoAssignee("member", lead)).toBe("member");
+  });
+  it("office staff keep optional assignment", () => {
+    const office = { office: true, isLead: false, userId: "office" };
+    expect(resolveTodoAssignee("", office)).toBeNull();
+    expect(resolveTodoAssignee("member", office)).toBe("member");
+  });
+});
 
 describe("todos", () => {
   it("a timed task becomes overdue during its due day", () => {
