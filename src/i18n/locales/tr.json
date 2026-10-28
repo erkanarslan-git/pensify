@@ -842,5 +842,20 @@
     "pwSave": "Şifreyi değiştir",
     "pwDone": "Şifre değiştirildi",
     "pwFailed": "Şifre değiştirilemedi"
+  },
+  "memberPanel": {
+    "editName": "Adı değiştir",
+    "nameSaved": "Ad kaydedildi",
+    "nameError": "Ad kaydedilemedi",
+    "save": "Kaydet",
+    "cancel": "Vazgeç",
+    "role": "Rol",
+    "saveRole": "Rolü kaydet",
+    "locations": "Tesisler",
+    "locationsCount": "{{count}} tesis atandı",
+    "showList": "Listeyi göster",
+    "workTime": "Çalışma süresi ve devamsızlık",
+    "activity": "Son işlemler",
+    "security": "Erişim ve güvenlik"
   }
 }

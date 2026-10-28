@@ -50,7 +50,7 @@ function TodosPage() {
   const [dept, setDept] = useState(""); const [deptFilter, setDeptFilter] = useState("all");
   const [editing,setEditing]=useState<string|null>(null);
   const [details, setDetails] = useState<Todo | null>(null);
-  const { data: options } = useQuery({ queryKey: ["todo-options"], queryFn: () => loadTodoOptions() });
+  const { data: options, isError: optionsError, refetch: refetchOptions } = useQuery({ queryKey: ["todo-options"], queryFn: () => loadTodoOptions() });
   const { data: links } = useQuery({ queryKey: ["todo-links", property], enabled: !!property, queryFn: async () => {
     const [rooms, reservations] = await Promise.all([supabase.from("rooms").select("id,number").eq("property_id", property), supabase.from("reservations").select("id,guest_name").eq("property_id", property).is("deleted_at", null).order("check_in", { ascending: false }).limit(100)]);
     return { rooms: rooms.data ?? [], reservations: reservations.data ?? [] };
@@ -84,7 +84,8 @@ function TodosPage() {
   const refresh = () => qc.invalidateQueries({ queryKey: ["todos"] });
 
   const add = async () => {
-    if (!title.trim() || !options) return;
+    if (!title.trim()) return;
+    if (!options) { toast.error(t("todos.saveErr")); if (optionsError) refetchOptions(); return; }
     let dueAt: string | null = null; let reminderAt: string | null = null;
     try { dueAt = due && time ? berlinLocalToIso(`${due}T${time}`) : null; reminderAt = reminder ? berlinLocalToIso(reminder) : null; }
     catch { toast.error(t("todos.saveErr")); return; }

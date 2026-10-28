@@ -842,5 +842,20 @@
     "pwSave": "Passwort ändern",
     "pwDone": "Passwort geändert",
     "pwFailed": "Passwort konnte nicht geändert werden"
+  },
+  "memberPanel": {
+    "editName": "Name ändern",
+    "nameSaved": "Name gespeichert",
+    "nameError": "Name konnte nicht gespeichert werden",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "role": "Rolle",
+    "saveRole": "Rolle speichern",
+    "locations": "Standorte",
+    "locationsCount": "{{count}} Standorte zugewiesen",
+    "showList": "Liste anzeigen",
+    "workTime": "Arbeitszeit & Abwesenheit",
+    "activity": "Letzte Aktivitäten",
+    "security": "Zugang & Sicherheit"
   }
 }
