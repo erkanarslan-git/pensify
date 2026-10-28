@@ -169,4 +169,4 @@
 - [x] Firma oda listesi (207 oda, 20 lokasyon, 89 anahtar kutusu kodu) yüklendi; eski test kayıtları silindi, demo kayıtları eklendi
 - [x] Oda bazında satış kanalları (Booking/Airbnb/Expedia/Web sitesi) ve otomatik/elle takip ayarı
 
-- [ ] Excel import: demo silme, 1009 rezervasyon, gerçek isimli müşteri kayıtları
+- [x] Excel import (1002/1009; 6 "Dom" kaydı oda bekliyor)
