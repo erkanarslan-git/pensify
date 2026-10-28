@@ -10,7 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { refreshCleaningQueries } from "@/lib/cleaning-queries";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
-import { OpenIssuesList, ReportIssueDialog } from "@/components/room-issues";
+import { ReportIssueDialog } from "@/components/room-issues";
 import { canChangeCleaningAssignment, taskAssignmentOptions } from "@/lib/assignment";
 import { cleaningNeedsReview, validCleaningReason, type InspectionState } from "@/lib/cleaning-inspection";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,10 @@ type CleaningStatus = "pending" | "accepted" | "in_progress" | "completed" | "pr
 const statusMeta: Record<CleaningStatus, { tone: "warning" | "info" | "success" | "destructive" | "muted" }> = {
   pending: { tone: "warning" }, accepted: { tone: "info" }, in_progress: { tone: "info" },
   completed: { tone: "success" }, problem: { tone: "destructive" },
+};
+
+const toneBorder: Record<string, string> = {
+  warning: "border-l-warning", info: "border-l-info", success: "border-l-success", destructive: "border-l-destructive", muted: "border-l-border",
 };
 
 type View = "open" | "problem" | "review" | "done" | "all";
@@ -199,25 +203,26 @@ function CleaningPage() {
         <StatCard icon={<UserX className="w-4 h-4" />} label={t("cleaning.notAssigned")} value={counts.unassigned} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="inline-flex flex-wrap gap-1 p-1 rounded-xl bg-muted">
+      <div className="grid gap-2 mb-4 sm:flex sm:items-center">
+        <div className="-mx-1 flex min-w-0 gap-1.5 overflow-x-auto px-1 pb-1">
           {views.map((v) => (
             <button
               key={v.id}
               onClick={() => setView(v.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${view === v.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              aria-pressed={view === v.id}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 min-h-10 text-sm font-medium transition-colors ${view === v.id ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground hover:text-foreground"}`}
             >
-              {v.label} ({v.n})
+              {v.label}
+              <span className={`rounded-full px-1.5 text-xs tabular-nums ${view === v.id ? "bg-primary-foreground/20" : "bg-card"}`}>{v.n}</span>
             </button>
           ))}
         </div>
-        <select value={prop} onChange={(e) => setProp(e.target.value)} className="ml-auto px-3 py-2 rounded-md border border-input bg-card text-sm">
+        <select value={prop} onChange={(e) => setProp(e.target.value)} aria-label={t("rooms.allProperties")} className="w-full sm:w-56 sm:ml-auto min-h-11 px-3 rounded-xl border border-input bg-card text-sm">
           <option value="all">{t("rooms.allProperties")}</option>
           {properties.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
       </div>
 
-      <OpenIssuesList canResolve={canAssign || perm.can("manage_rooms")} roomLabel={(id) => rooms.get(id)?.number ?? "—"} />
       {reporting && (
         <ReportIssueDialog roomId={reporting.roomId} taskId={reporting.taskId} roomLabel={rooms.get(reporting.roomId)?.number ?? ""}
           onClose={() => setReporting(null)}
@@ -252,28 +257,34 @@ function CleaningPage() {
                     {t("cleaning.groupSummary", { total: g.items.length, open: gOpen })}{gProb > 0 ? ` · ${t("cleaning.problemCount", { count: gProb })}` : ""}
                   </span>
                 </summary>
-                <div className="border-t border-border divide-y divide-border/60">
+                <div className="grid gap-3 border-t border-border bg-muted/30 p-3 md:grid-cols-2 2xl:grid-cols-3">
                   {g.items.map((task) => {
                     const room = rooms.get(task.room_id);
-                    const meta = statusMeta[task.status];
+                    const review = cleaningNeedsReview(task);
+                    const tone = review ? "warning" : statusMeta[task.status].tone;
                     const due = new Date(task.due_at);
                     const unassigned = !task.cleaner_id;
                     const name = cleanerName(task.cleaner_id);
                     const options = taskAssignmentOptions(data?.assignmentOptions ?? [], task.property_id);
                     return (
-                      <div key={task.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 sm:py-2.5 text-sm hover:bg-accent/40 transition-colors">
-                        <div className="min-w-20 whitespace-nowrap font-semibold text-lg sm:text-sm">#{room?.number ?? "—"}</div>
-                        <div className="w-28 text-muted-foreground tabular-nums">
-                          {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      <div key={task.id} className={`flex min-w-0 flex-col gap-3 rounded-2xl border border-border border-l-[6px] bg-card p-4 shadow-sm text-sm ${toneBorder[tone]}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-2xl font-bold leading-none tabular-nums">#{room?.number ?? "—"}</div>
+                            <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">
+                              {due.toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                              {task.photos_count > 0 && <span className="ml-2 inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>}
+                            </div>
+                          </div>
+                          <Badge tone={tone}>{review ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge>
                         </div>
-                        <div className="w-28"><Badge tone={cleaningNeedsReview(task) ? "warning" : meta.tone}>{cleaningNeedsReview(task) ? t("cleaningInspection.review") : t(`status.${task.status}`)}</Badge></div>
-                        <div className="flex-1 min-w-[160px]">
+                        <div className="min-w-0">
                           {options.length > 0 && canChangeCleaningAssignment(task.status) ? (
                             <select
                               value={task.cleaner_id ?? ""}
                               aria-label={t("departments.assign")}
                               onChange={(e) => reassign(task.id, e.target.value)}
-                              className={`text-xs px-2 py-1 rounded-md border bg-card ${unassigned ? "border-warning text-warning" : "border-input"}`}
+                              className={`w-full min-h-11 px-3 rounded-xl border bg-card text-sm ${unassigned ? "border-warning text-warning" : "border-input"}`}
                             >
                               <option value="">— {t("cleaning.notAssigned")} —</option>
                               {task.cleaner_id && !options.some((o) => o.cleaner_id === task.cleaner_id) && <option value={task.cleaner_id} disabled>{name ?? t("cleaning.notAssigned")}</option>}
@@ -282,39 +293,38 @@ function CleaningPage() {
                               ))}
                             </select>
                           ) : (
-                            <span className={unassigned ? "text-warning italic" : ""}>{name ?? t("cleaning.notAssigned")}</span>
+                            <span className={`inline-flex items-center gap-1.5 ${unassigned ? "text-warning italic" : "font-medium"}`}>{unassigned && <UserX className="w-4 h-4" />}{name ?? t("cleaning.notAssigned")}</span>
                           )}
-                          {task.notes && <div className="text-xs text-muted-foreground italic mt-0.5">"{task.notes}"</div>}
-                          {task.inspected_at && <div className="text-xs text-muted-foreground mt-1">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(undefined, { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
+                          {task.notes && <div className="mt-2 rounded-lg bg-muted px-3 py-2 text-xs italic text-muted-foreground break-words">"{task.notes}"</div>}
+                          {task.inspected_at && <div className="text-xs text-muted-foreground mt-2 break-words">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
                         </div>
-                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Camera className="w-3 h-3" />{task.photos_count}</span>
-                        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:gap-1.5">
+                        <div className="mt-auto grid grid-cols-2 gap-2">
                           {cleaningNeedsReview(task) && canAssign && <>
                             <ActionBtn icon={<Check className="w-4 h-4" />} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "approve" }); }}>{t("cleaningInspection.approve")}</ActionBtn>
                             <SecBtn tone="warning" icon={<RotateCcw className="w-4 h-4" />} label={t("cleaningInspection.reject")} onClick={() => { setReason(""); setReviewing({ id: task.id, action: "reject" }); }} />
                           </>}
                           {task.status === "pending" && (
-                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.accept")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "accepted")} icon={<Check className="w-4 h-4" />}>{t("cleaning.accept")}</ActionBtn>
                           )}
                           {(task.status === "accepted" || task.status === "problem") && (
-                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.start")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "in_progress")} icon={<Play className="w-4 h-4" />}>{t("cleaning.start")}</ActionBtn>
                           )}
                           {task.status === "in_progress" && (
-                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4 sm:w-3 sm:h-3" />}>{t("cleaning.finish")}</ActionBtn>
+                            <ActionBtn onClick={() => update(task.id, "completed")} icon={<Check className="w-4 h-4" />}>{t("cleaning.finish")}</ActionBtn>
                           )}
                           {task.status !== "pending" && (task.status !== "completed" || canAssign) && (
                             <SecBtn onClick={() => update(task.id, task.status === "accepted" ? "pending" : task.status === "completed" ? "in_progress" : "accepted")}
-                              icon={<Undo2 className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.undo")} />
+                              icon={<Undo2 className="w-4 h-4" />} label={t("common.undo")} />
                           )}
                           {isOpen(task.status) && (
                             <SecBtn tone="destructive" onClick={() => setReporting({ taskId: task.id, roomId: task.room_id })}
-                              icon={<AlertTriangle className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("cleaning.reportProblem")} />
+                              icon={<AlertTriangle className="w-4 h-4" />} label={t("cleaning.reportProblem")} />
                           )}
                           {canAssign && (
-                            <SecBtn tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("common.reset")} />
+                            <SecBtn tone="warning" onClick={() => update(task.id, "pending")} icon={<RotateCcw className="w-4 h-4" />} label={t("common.reset")} />
                           )}
                           {name && canAssign && (
-                            <SecBtn onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4 sm:w-3 sm:h-3" />} label={t("cleaning.notify")} />
+                            <SecBtn onClick={() => toast.info(`WhatsApp → ${name}`)} icon={<MessageCircle className="w-4 h-4" />} label={t("cleaning.notify")} />
                           )}
                         </div>
                       </div>
@@ -341,7 +351,7 @@ function CleaningPage() {
 
 function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Button onClick={onClick} className="h-auto col-span-2 text-base font-medium py-3.5 sm:col-span-1 sm:text-xs sm:font-normal px-2.5 sm:py-1.5 rounded-xl sm:rounded-lg inline-flex items-center justify-center gap-2 sm:gap-1 whitespace-normal">
+    <Button onClick={onClick} className="h-auto col-span-2 min-h-12 text-base font-semibold px-3 rounded-xl inline-flex items-center justify-center gap-2 whitespace-normal shadow-sm">
       {icon} {children}
     </Button>
   );
@@ -350,8 +360,8 @@ function ActionBtn({ onClick, icon, children }: { onClick: () => void; icon: Rea
 function SecBtn({ onClick, icon, label, tone }: { onClick: () => void; icon: React.ReactNode; label: string; tone?: "destructive" | "warning" }) {
   const c = tone === "destructive" ? "border-destructive/40 text-destructive hover:bg-destructive/5" : tone === "warning" ? "border-warning/40 text-warning hover:bg-warning/5" : "border-input bg-card hover:bg-accent";
   return (
-    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`h-auto inline-flex items-center justify-center gap-2 py-3 px-3 text-sm sm:py-1.5 sm:px-2 sm:text-xs rounded-xl sm:rounded-lg border ${c}`}>
-      {icon}<span className="sm:hidden">{label}</span>
+    <Button variant="outline" onClick={onClick} aria-label={label} title={label} className={`h-auto min-h-11 inline-flex items-center justify-center gap-1.5 px-2 text-xs font-medium rounded-xl border whitespace-normal ${c}`}>
+      {icon}<span>{label}</span>
     </Button>
   );
 }
