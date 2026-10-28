@@ -907,7 +907,25 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
   const step = () => (ref.current?.clientWidth ?? 600) * 0.7;
   const scrollBy = (dx: number) => ref.current?.scrollBy({ left: dx, behavior: "smooth" });
 
+  // Right mouse button pans from anywhere (also over booking bars), like grabbing an Excel sheet.
+  const onMouseDownCapture = (e: React.MouseEvent) => {
+    if (e.button !== 2 || !ref.current) return;
+    e.stopPropagation(); e.preventDefault();
+    drag.current = { startX: e.clientX, startScroll: ref.current.scrollLeft, active: true, moved: false };
+    ref.current.focus({ preventScroll: true });
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.target as HTMLElement).closest("input, textarea, select")) return;
+    const el = ref.current; if (!el) return;
+    const day = 56;
+    if (e.key === "ArrowRight") { el.scrollBy({ left: e.shiftKey ? step() : day }); e.preventDefault(); }
+    if (e.key === "ArrowLeft") { el.scrollBy({ left: e.shiftKey ? -step() : -day }); e.preventDefault(); }
+    if (e.key === "Home") { el.scrollTo({ left: 0, behavior: "smooth" }); e.preventDefault(); }
+    if (e.key === "End") { el.scrollTo({ left: el.scrollWidth, behavior: "smooth" }); e.preventDefault(); }
+  };
   const onMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    ref.current?.focus({ preventScroll: true });
     if ((e.target as HTMLElement).closest("button, a, input, [role='button']")) return;
     const el = ref.current;
     if (!el) return;
@@ -928,7 +946,13 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
     <div className="relative -m-5">
       <div
         ref={ref}
-        className="overflow-x-auto select-none cursor-grab active:cursor-grabbing"
+        tabIndex={0}
+        aria-label={t("calendarExtra.panHint")}
+        title={t("calendarExtra.panHint")}
+        className="overflow-x-auto select-none cursor-grab active:cursor-grabbing outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg"
+        onMouseDownCapture={onMouseDownCapture}
+        onContextMenu={(e) => e.preventDefault()}
+        onKeyDown={onKeyDown}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={endDrag}
