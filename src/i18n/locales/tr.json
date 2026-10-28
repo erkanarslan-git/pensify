@@ -857,5 +857,16 @@
     "workTime": "Çalışma süresi ve devamsızlık",
     "activity": "Son işlemler",
     "security": "Erişim ve güvenlik"
+  },
+  "payments": {
+    "permissions": {
+      "view_properties": "Pansiyonları görüntüle (atanan tesisler)"
+    }
+  },
+  "confirmDialog": {
+    "confirm": "Onayla",
+    "cancel": "Vazgeç",
+    "title": "Emin misiniz?",
+    "reason": "Sebep"
   }
 }

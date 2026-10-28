@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -102,7 +103,7 @@ function TodosPage() {
     refresh();
   };
   const remove = async (x: Todo) => {
-    if (!window.confirm(t("todos.confirmDel"))) return;
+    if (!(await confirmAction({ description: t("todos.confirmDel"), destructive: true }))) return;
     const { error } = await supabase.rpc("general_todo_action", { _id: x.id, _action: "archive" });
     if (error) return toast.error(t("todos.saveErr"));
     refresh();

@@ -23,6 +23,7 @@ export const PERMISSIONS: Permission[] = [
   { key: "create_reservation", label: "Buchungen erstellen / bearbeiten", group: "Buchungen", defaultRoles: ["owner", "admin", "manager", "reception"] },
   { key: "create_past_reservation", label: "Abgelaufene Buchungen bearbeiten / löschen", group: "Buchungen", defaultRoles: ["owner", "admin"] },
   { key: "delete_reservation", label: "Buchungen löschen", group: "Buchungen", defaultRoles: ["owner", "admin"] },
+  { key: "view_properties", label: "Pensionen ansehen (zugewiesene Standorte)", group: "Stammdaten", defaultRoles: ["owner", "admin"] },
   { key: "manage_rooms", label: "Zimmer & Pensionen verwalten", group: "Stammdaten", defaultRoles: ["owner", "admin"] },
   { key: "view_access_codes", label: "Zugangscodes anzeigen", group: "Stammdaten", defaultRoles: ["owner"] },
   { key: "edit_access_codes", label: "Zugangscodes bearbeiten", group: "Stammdaten", defaultRoles: ["owner"] },
@@ -96,6 +97,7 @@ export function routeRolesFor(pathname: string): AppRole[] | null {
 export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = [], timeManagementAccess = false, can?: (key: string) => boolean): boolean {
   if (pathname === "/time-tracking" && timeManagementAccess) return true;
   if (pathname === "/work-report") return roles.includes("owner");
+  if ((pathname === "/properties" || pathname.startsWith("/properties/")) && can?.("view_properties") === true) return true;
   if (pathname === "/payments/bank") return roles.includes("owner") || can?.("manage_bank") === true;
   if (pathname === "/payments" || pathname.startsWith("/payments/") || pathname === "/analytics") return roles.includes("owner") || can?.("view_finance") === true;
   const required = routeRolesFor(pathname);

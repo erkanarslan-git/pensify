@@ -857,5 +857,16 @@
     "workTime": "Working time & absence",
     "activity": "Recent activity",
     "security": "Access & security"
+  },
+  "payments": {
+    "permissions": {
+      "view_properties": "View properties (assigned locations)"
+    }
+  },
+  "confirmDialog": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "title": "Are you sure?",
+    "reason": "Reason"
   }
 }
