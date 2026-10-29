@@ -43,6 +43,7 @@ interface UnifiedRes {
   checkIn: string;
   checkOut: string;
   realId: string | null; // supabase id if real
+  payment?: "paid" | "partial" | "open";
 }
 
 function CalendarPage() {
@@ -228,6 +229,7 @@ function CalendarPage() {
         .map((r) => ({
           id: r.id, realId: r.id, roomId: r.room_id, guestName: r.guest_name,
           source: r.channel, checkIn: r.check_in, checkOut: r.check_out,
+          payment: paymentStates?.[r.id] as "paid" | "partial" | "open" | undefined,
         })));
       } catch { if (current && !controller.signal.aborted) setLoadError(true); }
     })();
