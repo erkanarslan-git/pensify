@@ -45,4 +45,4 @@
 - Room distribution (channel_sync_mode, sales_channels) is informational, written only via set_rooms_distribution; future channel sync must only touch rooms marked api for that channel. Why: one integration fault must not disturb manually tracked rooms.
 - Extensions only via extend_reservation (logged); overnight stats treat guests_confirmed=false as nights without persons. Why: audit and honest statistics.
 
-- Guest messages: booking info and access codes are separate copy/wa.me actions; settings in guest_message_settings (admin write). Why: no codes in confirmations.
+- Guest messages: booking info and access codes are separate copy/wa.me actions; settings in guest_message_settings (admin write). Why: codes stay separate.
