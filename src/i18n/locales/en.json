@@ -697,6 +697,8 @@
     "roomsCount": "{{count}} rooms",
     "dragToMove": "Drag to move",
     "pastEditNote": "(Past — only managers/admins/owners may edit)",
+    "hoverNights_one": "{{count}} night",
+    "hoverNights_other": "{{count}} nights",
     "colRoom": "Room",
     "keyboardHint": "Press G (or click here) to activate keyboard navigation. Then: arrow keys, Enter, ?",
     "roomsOccupiedToday": "{{count}} rooms · occupied today: {{occupied}}",
