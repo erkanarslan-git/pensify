@@ -38,9 +38,15 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       fetchAll(() => context.supabase.from("cleaning_tasks").select("room_id,status,notes").eq("organization_id", orgId).in("property_id", ids).in("status", ["pending", "in_progress", "problem"]).order("id")),
       fetchAll(() => context.supabase.from("reservations").select("id,room_id").eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").lte("check_in", today).gt("check_out", today).order("id")),
     ]);
-    // Payment state per reservation. RLS on payment_schedules/payments restricts
-    // these reads to finance-powered users; everyone else gets no status line.
-    const resIds = reservations.map(r => r.id);
+    // Payment state per reservation. Schedules/payments are readable only by
+    // view_finance users (RLS can_manage_payments); everyone else gets no status.
+    const financeProps: string[] = [];
+    await Promise.all(ids.map(async pid => {
+      const r = await context.supabase.rpc("can_finance_action", { _org: orgId, _property: pid, _permission: "view_finance" });
+      if (!r.error && r.data === true) financeProps.push(pid);
+    }));
+    const scoped = reservations.filter(r => financeProps.includes(r.property_id));
+    const resIds = scoped.map(r => r.id);
     const paymentStates: Record<string, "paid" | "partial" | "open"> = {};
     if (resIds.length) {
       const [schedRes, payRes] = await Promise.all([
@@ -65,6 +71,8 @@ export const loadCalendarData = createServerFn({ method: "POST" })
         for (const [id, paid] of paidBy) {
           if (!totals.has(id)) paymentStates[id] = "partial";
         }
+        // Every finance-visible reservation gets a state; nothing recorded yet = pending.
+        for (const r of scoped) if (!paymentStates[r.id]) paymentStates[r.id] = "open";
       }
     }
     return { properties, rooms, reservations, tasks, todayReservations, paymentStates };
