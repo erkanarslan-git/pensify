@@ -232,6 +232,7 @@ function CleaningPage() {
     });
   }
   const isDueNow = (x: Task) => isDueRaw(x) && !hiddenDup.has(x.id);
+  const isUpcoming = (x: Task) => isOpen(x.status) && dueDay(x) > today;
   const leavingToday = data?.leavingToday ?? new Map<string, string>();
   const occupancyLine = (task: Task) => {
     if (!isDueNow(task)) return null;
