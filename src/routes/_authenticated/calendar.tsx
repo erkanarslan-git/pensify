@@ -206,7 +206,7 @@ function CalendarPage() {
       setLoadError(false);
       const result = await fetchCalendar({ data: { start: start.toISOString().slice(0, 10), days: range as 7 | 14 | 30, propertyId }, signal: controller.signal });
       if (!current) return;
-      const { properties: props, rooms: rms, reservations: res, tasks, paymentStates } = result;
+      const { properties: props, rooms: rms, reservations: res, tasks } = result;
       setTodayRoomIds(new Set(result.todayReservations.map(r => r.room_id)));
       setRealProperties((props ?? []) as UnifiedProperty[]);
       const list = (props ?? []) as UnifiedProperty[];
@@ -229,7 +229,6 @@ function CalendarPage() {
         .map((r) => ({
           id: r.id, realId: r.id, roomId: r.room_id, guestName: r.guest_name,
           source: r.channel, checkIn: r.check_in, checkOut: r.check_out,
-          payment: paymentStates?.[r.id] as "paid" | "partial" | "open" | undefined,
         })));
       } catch { if (current && !controller.signal.aborted) setLoadError(true); }
     })();
@@ -735,10 +734,6 @@ function CalendarPage() {
                                 <div className="font-semibold">{occupant.guestName}</div>
                                 <div>{sourceLabel(occupant.source, (k) => t(k))}</div>
                                 <div>{occupant.checkIn} → {occupant.checkOut} · {t("calendar.hoverNights", { count: nights })}</div>
-                                {occupant.payment && <div className="flex items-center gap-1.5">
-                                  <span className={`w-1.5 h-1.5 rounded-full ${occupant.payment === "paid" ? "bg-success" : occupant.payment === "partial" ? "bg-warning" : "bg-muted-foreground"}`} />
-                                  {t(`calendar.pay${occupant.payment[0].toUpperCase()}${occupant.payment.slice(1)}`)}
-                                </div>}
                                 {draggable && <div className="text-muted-foreground">{t("calendar.dragToMove")}</div>}
                                 {occPast && !canCreatePast && <div className="text-muted-foreground">{t("calendar.pastEditNote")}</div>}
                               </TooltipContent>

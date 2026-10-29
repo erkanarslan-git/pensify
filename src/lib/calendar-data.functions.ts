@@ -35,23 +35,10 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       fetchAll(() => context.supabase.from("rooms").select("id,number,property_id,floor,status").eq("organization_id", orgId).in("property_id", ids).order("floor", { ascending: true, nullsFirst: true }).order("number").order("id")),
       // Include checkout on the first visible day for the daily departure cards.
       fetchAll(() => reservationBase().lt("check_in", window.end).gte("check_out", window.start)),
-      fetchAll(() => context.supabase.from("cleaning_tasks").select("room_id,status,notes").eq("organization_id", orgId).in("property_id", ids).in("status", ["pending", "in_progress", "problem"]).order("id")),
+      // Only tasks due by today (Berlin): future checkout tasks are not "waiting" yet.
+      fetchAll(() => context.supabase.from("cleaning_tasks").select("room_id,status,notes,due_at").eq("organization_id", orgId).in("property_id", ids).in("status", ["pending", "in_progress", "problem"]).order("id")),
       fetchAll(() => context.supabase.from("reservations").select("id,room_id").eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").lte("check_in", today).gt("check_out", today).order("id")),
     ]);
-    // Payment state per reservation. The SECURITY DEFINER RPC returns only the
-    // state (paid/partial/open), never amounts, and only for reservations the
-    // caller's properties can access — so every calendar viewer can show it.
-    const resIds = reservations.map(r => r.id);
-    const paymentStates: Record<string, "paid" | "partial" | "open"> = {};
-    if (resIds.length) {
-      const rpc = await context.supabase.rpc("reservation_payment_states", { _org: orgId, _reservation_ids: resIds });
-      if (!rpc.error) {
-        for (const row of (rpc.data ?? []) as { reservation_id: string; state: string }[]) {
-          if (row.state === "paid" || row.state === "partial" || row.state === "open") {
-            paymentStates[row.reservation_id] = row.state;
-          }
-        }
-      }
-    }
-    return { properties, rooms, reservations, tasks, todayReservations, paymentStates };
+    const dueTasks = (tasks as { room_id: string; status: string; notes: string | null; due_at: string | null }[]).filter(t => !t.due_at || businessDate(new Date(t.due_at)) <= today);
+    return { properties, rooms, reservations, tasks: dueTasks, todayReservations };
   });

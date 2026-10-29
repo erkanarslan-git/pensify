@@ -257,6 +257,24 @@ export function AppShell({ title, subtitle, actions, children }: {
       ];
   const flatResults = searchSections.flatMap((s) => s.items);
   const canSeeNotifications = allNavItems.some((i) => i.to === "/notifications");
+  // Overdue installments (due today or earlier, not fully paid) for the red Buchhaltung badge.
+  const canSeePayments = allNavItems.some((i) => i.to === "/payments");
+  const { data: duePayments = 0 } = useQuery({
+    queryKey: ["nav-due-payments", profile?.id ?? null],
+    enabled: canSeePayments,
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+    queryFn: async () => {
+      const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
+      const { data: due, error } = await supabase.from("payment_schedules").select("id,amount").lte("due_date", today).limit(1000);
+      if (error || !due?.length) return 0;
+      const ids = due.map((d) => d.id);
+      const { data: paid } = await supabase.from("payments").select("schedule_id,amount").in("schedule_id", ids).is("reversed_at", null);
+      const sums = new Map<string, number>();
+      for (const p of paid ?? []) if (p.schedule_id) sums.set(p.schedule_id, (sums.get(p.schedule_id) ?? 0) + Number(p.amount));
+      return due.filter((d) => (sums.get(d.id) ?? 0) < Number(d.amount)).length;
+    },
+  });
   const goToPage = (to: string) => { setPageQuery(""); setSearchOpen(false); navigate({ to: to as never }); };
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -324,8 +342,18 @@ export function AppShell({ title, subtitle, actions, children }: {
                       : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                   }`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {!mini && <span className="truncate">{t(item.labelKey)}</span>}
+                  <span className="relative shrink-0">
+                    <Icon className="w-4 h-4" />
+                    {mini && item.to === "/payments" && duePayments > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-destructive" />
+                    )}
+                  </span>
+                  {!mini && <span className="truncate flex-1">{t(item.labelKey)}</span>}
+                  {!mini && item.to === "/payments" && duePayments > 0 && (
+                    <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold grid place-items-center">
+                      {duePayments > 99 ? "99+" : duePayments}
+                    </span>
+                  )}
                 </Link>
               );
             })}
