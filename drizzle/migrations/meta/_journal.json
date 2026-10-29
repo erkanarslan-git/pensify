@@ -743,6 +743,13 @@
       "when": 1793260724087,
       "tag": "0105_reservation_payment_states",
       "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1793270236312,
+      "tag": "0106_guest_message_settings",
+      "breakpoints": true
     }
   ]
 }

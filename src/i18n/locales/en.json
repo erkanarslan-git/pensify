@@ -882,5 +882,30 @@
     "cancel": "Cancel",
     "title": "Are you sure?",
     "reason": "Reason"
+  },
+  "guestMsg": {
+    "booking": "Send booking info",
+    "access": "Send access codes",
+    "hint": "Check the text, then copy it or send via WhatsApp.",
+    "withBank": "Add bank details",
+    "noIban": "Add an IBAN under Settings > Guest information to include bank details.",
+    "copy": "Copy text",
+    "copied": "Text copied",
+    "noPhone": "No valid phone number on this reservation.",
+    "noCodes": "No codes stored for this room.",
+    "settingsTitle": "Guest information",
+    "settingsText": "Check-in/out times and bank details used in guest messages.",
+    "saved": "Saved",
+    "saveFailed": "Could not save (owner/admin only)",
+    "f": {
+      "check_in_time": "Check-in from",
+      "check_out_time": "Check-out until",
+      "account_holder": "Account holder",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "bank_name": "Bank name",
+      "contact_phone": "Contact phone",
+      "extra_note": "Extra note (added to every message)"
+    }
   }
 }

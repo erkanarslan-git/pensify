@@ -5,7 +5,7 @@
 - Property access: owner/admin/ops_manager all; property_manager/reception via member_property_access; cleaners via assigned tasks. Why: least privilege.
 - Settings, permissions, iCal URLs, external reservation ids are unique per organization. Why: tenants reuse keys.
 - Cron endpoints use private.cron_secrets and loop per active organization. Why: no implicit tenant.
-- Bun 1.3.x + bun.lock only; CI: bun install --frozen-lockfile && bun run build. Why: one lockfile.
+- Bun 1.3.x + bun.lock only (CI: frozen install + build). Why: one lockfile.
 - Use Zod 4 Standard Schema directly for route validation; overrides keep Zod patched and esbuild above the development-server advisory range. Why: avoid a Zod-3-only adapter and vulnerable nested build tools.
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
@@ -28,7 +28,7 @@
 - Integrations reuse bank/channel screens with truthful status, no automatic outbound activation. Why: safe shared entry.
 - Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
-- Read nested AGENTS.md before edits.
+- Read nested AGENTS.md first.
 - Payments: scoped atomic receipts/plans, persistent retry IDs, relational pagination; separate finance powers; history blocks deletion; RLS-scoped sidebar badges (payments, cleaning, maintenance); list shows state-only payment status. Why: no duplicate payment or loss.
 - Work reports use owner-only department_work_report in the active organization; task/time powers stay separate. Why: prevent report delegation and tenant leaks.
 - Sidebar: grouped navigation (channels have their own group); /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
@@ -36,8 +36,7 @@
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
 - TV: revocable org tokens, anonymous DTO, dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages, active-only links; transient state deltas and idle room totals. Why: privacy, truthful units, no replay.
 - Reservations: org/property-scoped server filters, exact counts and stable ID ordering shared by pages/export. Why: no truncation or scope drift.
-- Typography: shared scale/weights, no vertical offsets. Why: alignment.
-- Dashboard and Action Center use zero-minimum grid tracks and stacked mobile record metadata with wrapping location names. Why: long names must not widen the screen or hide the identifying location/room details.
+- Typography uses a shared scale without vertical offsets; Dashboard/Action Center use zero-minimum grid tracks, stacked wrapping mobile metadata. Why: alignment, no widened screens.
 - Cleaning inspection is a separate task state with property opt-in; atomic review/reopen/report RPCs retain reasons and maintenance blocks. Why: problems are not inspections.
 
 - Legacy UI copy uses shared three-language catalogs and active-locale display formatting; theme-specific calendar guest contrast lives in CSS tokens. Why: language/theme switching must not leave stale labels or unreadable booking bars.
@@ -45,3 +44,5 @@
 - Login keeps submission pending through awaited navigation and shows errors inline; its light surface is scoped with semantic CSS tokens. Why: no silent waiting or theme-dependent unreadable fields.
 - Room distribution (channel_sync_mode, sales_channels) is informational, written only via set_rooms_distribution; future channel sync must only touch rooms marked api for that channel. Why: one integration fault must not disturb manually tracked rooms.
 - Extensions only via extend_reservation (logged); overnight stats treat guests_confirmed=false as nights without persons. Why: audit and honest statistics.
+
+- Guest messages: booking info and access codes are separate copy/wa.me actions; settings in guest_message_settings (admin write). Why: codes stay separate.
