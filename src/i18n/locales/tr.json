@@ -697,6 +697,7 @@
     "roomsCount": "{{count}} oda",
     "dragToMove": "Taşımak için sürükleyin",
     "pastEditNote": "(Geçmiş — sadece yönetici/admin/sahip düzenleyebilir)",
+    "hoverNights_other": "{{count}} gece",
     "colRoom": "Oda",
     "keyboardHint": "Klavye navigasyonunu etkinleştirmek için G tuşuna basın (veya buraya tıklayın). Sonra: ok tuşları, Enter, ?",
     "roomsOccupiedToday": "{{count}} oda · bugün dolu: {{occupied}}",

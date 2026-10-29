@@ -701,10 +701,13 @@ function CalendarPage() {
                            const occPast = isPastDate(occupant.checkIn);
                            const draggable = !!occupant.realId && (!occPast || canCreatePast);
                            const dragDays = dragDelta?.resId === occupant.id ? dragDelta.days : 0;
+                         const nights = Math.round((new Date(occupant.checkOut).getTime() - new Date(occupant.checkIn).getTime()) / 86400000);
                            return (
-                             <div
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                              <div
                                onMouseDown={draggable ? (e) => startMoveDrag(e, occupant) : undefined}
-                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-warning ring-offset-1 ring-offset-background" : ""}`}
+                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity hover:brightness-105 ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-warning ring-offset-1 ring-offset-background" : ""}`}
                                style={{
                                  width: `calc(${span} * 100% - 8px)`,
                                  left: dragDays !== 0 ? `calc(0.25rem + ${dragDays * 100}%)` : undefined,
@@ -712,20 +715,28 @@ function CalendarPage() {
                                  color: c.fg,
                                  borderLeft: `3px solid ${sc}`,
                                }}
-                               title={`${occupant.guestName} · ${sourceLabel(occupant.source, (k) => t(k))}\n${occupant.checkIn} → ${occupant.checkOut}${draggable ? `\n${t("calendar.dragToMove")}` : ""}${occPast && !canCreatePast ? `\n${t("calendar.pastEditNote")}` : ""}`}
                              >
                               <span className="truncate">{label}</span>
                               {occupant.realId && (
                                  <button
-                                   onMouseDown={(e) => e.stopPropagation()}
-                                   onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
-                                  className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
-                                  title={occPast && !canCreatePast ? t("calendar.view") : t("common.edit")}
-                                >
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => { e.stopPropagation(); setEditId(occupant.realId); }}
+                                    className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
+                                    title={occPast && !canCreatePast ? t("calendar.view") : t("common.edit")}
+                                  >
                                   <Pencil className="w-3 h-3" />
                                 </button>
                               )}
                             </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+                                <div className="font-semibold">{occupant.guestName}</div>
+                                <div>{sourceLabel(occupant.source, (k) => t(k))}</div>
+                                <div>{occupant.checkIn} → {occupant.checkOut} · {t("calendar.hoverNights", { count: nights })}</div>
+                                {draggable && <div className="text-muted-foreground">{t("calendar.dragToMove")}</div>}
+                                {occPast && !canCreatePast && <div className="text-muted-foreground">{t("calendar.pastEditNote")}</div>}
+                              </TooltipContent>
+                            </Tooltip>
                           );
                         })()
                       ) : occupant ? null : (
