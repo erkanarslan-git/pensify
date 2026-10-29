@@ -45,3 +45,5 @@
 - Login keeps submission pending through awaited navigation and shows errors inline; its light surface is scoped with semantic CSS tokens. Why: no silent waiting or theme-dependent unreadable fields.
 - Room distribution (channel_sync_mode, sales_channels) is informational, written only via set_rooms_distribution; future channel sync must only touch rooms marked api for that channel. Why: one integration fault must not disturb manually tracked rooms.
 - Extensions only via extend_reservation (logged); overnight stats treat guests_confirmed=false as nights without persons. Why: audit and honest statistics.
+
+- Guest messages: booking info and access codes are separate actions (copy text or wa.me link); texts come from src/lib/guest-messages.ts and org-level guest_message_settings (admin write). Why: codes are never sent with booking confirmations; staff choose when to share payment info.
