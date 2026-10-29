@@ -1,5 +1,5 @@
 import { displayLocale } from "@/i18n/legacy-ui";
-import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
+import { BUSINESS_TIME_ZONE, businessDate } from "@/lib/business-time";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useMemo, useState } from "react";
@@ -28,7 +28,7 @@ const statusMeta: Record<CleaningStatus, { tone: "warning" | "info" | "success" 
   completed: { tone: "success" }, problem: { tone: "destructive" },
 };
 
-type View = "open" | "problem" | "review" | "done" | "all";
+type View = "open" | "upcoming" | "problem" | "review" | "done" | "all";
 
 interface Task {
   id: string;
@@ -205,17 +205,24 @@ function CleaningPage() {
     {task.inspected_at && <div className="text-xs text-muted-foreground mt-1 break-words">{t("cleaningInspection.history")} · {new Date(task.inspected_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE })}{task.inspection_note ? ` · ${task.inspection_note}` : ""}</div>}
   </>;
   const isOpen = (s: CleaningStatus) => s === "pending" || s === "accepted" || s === "in_progress";
+  // Today's work = open tasks due today or earlier (Berlin); later checkouts wait under "upcoming".
+  const today = businessDate();
+  const dueDay = (x: Task) => businessDate(new Date(x.due_at));
+  const isDueNow = (x: Task) => isOpen(x.status) && dueDay(x) <= today;
+  const isUpcoming = (x: Task) => isOpen(x.status) && dueDay(x) > today;
   const counts = {
-    open: tasks.filter((x) => isOpen(x.status)).length,
+    open: tasks.filter(isDueNow).length,
+    upcoming: tasks.filter(isUpcoming).length,
     problem: tasks.filter((x) => x.status === "problem").length,
     review: tasks.filter(cleaningNeedsReview).length,
     done: tasks.filter((x) => x.status === "completed" && !cleaningNeedsReview(x)).length,
-    unassigned: tasks.filter((x) => !x.cleaner_id && x.status !== "completed").length,
+    unassigned: tasks.filter((x) => !x.cleaner_id && isDueNow(x)).length,
   };
 
   const filtered = tasks.filter((x) => {
     if (prop !== "all" && x.property_id !== prop) return false;
-    if (view === "open") return isOpen(x.status);
+    if (view === "open") return isDueNow(x);
+    if (view === "upcoming") return isUpcoming(x);
     if (view === "problem") return x.status === "problem";
     if (view === "review") return cleaningNeedsReview(x);
     if (view === "done") return x.status === "completed" && !cleaningNeedsReview(x);
@@ -232,6 +239,7 @@ function CleaningPage() {
 
   const views: { id: View; label: string; n: number }[] = [
     { id: "open", label: t("cleaning.toDo"), n: counts.open },
+    { id: "upcoming", label: t("cleaning.upcoming"), n: counts.upcoming },
     { id: "problem", label: t("cleaning.problems"), n: counts.problem },
     { id: "review", label: t("cleaningInspection.review"), n: counts.review },
     { id: "done", label: t("cleaning.done"), n: counts.done },

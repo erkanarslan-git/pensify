@@ -602,6 +602,7 @@
   "cleaning": {
     "subtitle": "{{open}} açık · {{unassigned}} görevlisiz",
     "toDo": "Yapılacak",
+    "upcoming": "Yaklaşan",
     "problems": "Sorunlar",
     "done": "Tamamlanan",
     "loadError": "Temizlik görevleri yüklenemedi.",

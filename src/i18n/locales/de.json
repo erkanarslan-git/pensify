@@ -602,6 +602,7 @@
   "cleaning": {
     "subtitle": "{{open}} offen · {{unassigned}} ohne Reinigungskraft",
     "toDo": "Zu erledigen",
+    "upcoming": "Demnächst",
     "problems": "Probleme",
     "done": "Erledigt",
     "loadError": "Reinigungsaufgaben konnten nicht geladen werden.",
