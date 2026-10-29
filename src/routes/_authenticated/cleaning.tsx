@@ -211,8 +211,33 @@ function CleaningPage() {
   // Today's work = open tasks due today or earlier (Berlin); later checkouts wait under "upcoming".
   const today = businessDate();
   const dueDay = (x: Task) => businessDate(new Date(x.due_at));
-  const isDueNow = (x: Task) => isOpen(x.status) && dueDay(x) <= today;
-  const isUpcoming = (x: Task) => isOpen(x.status) && dueDay(x) > today;
+  const isDueRaw = (x: Task) => isOpen(x.status) && dueDay(x) <= today;
+  // One room = one card: older unfinished checkouts of the same room fold into the newest task.
+  const mergedInto = new Map<string, string[]>();
+  const hiddenDup = new Set<string>();
+  {
+    const byRoom = new Map<string, Task[]>();
+    tasks.filter(isDueRaw).forEach((x) => byRoom.set(x.room_id, [...(byRoom.get(x.room_id) ?? []), x]));
+    byRoom.forEach((list) => {
+      if (list.length < 2) return;
+      const sorted = [...list].sort((a, b) => b.due_at.localeCompare(a.due_at));
+      mergedInto.set(sorted[0].id, sorted.slice(1).map((x) => x.id));
+      sorted.slice(1).forEach((x) => hiddenDup.add(x.id));
+    });
+  }
+  const isDueNow = (x: Task) => isDueRaw(x) && !hiddenDup.has(x.id);
+  const leavingToday = data?.leavingToday ?? new Map<string, string>();
+  const occupancyLine = (task: Task) => {
+    if (!isDueNow(task)) return null;
+    const extra = mergedInto.get(task.id)?.length ?? 0;
+    const guest = leavingToday.get(task.room_id);
+    return <div className="mt-1 space-y-0.5 text-xs">
+      {guest !== undefined
+        ? <div className="font-medium text-warning">{t("cleaning.leavingToday", { name: guest || "—", time: new Date(task.due_at).toLocaleTimeString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, hour: "2-digit", minute: "2-digit" }) })}</div>
+        : <div className="font-medium text-success">{t("cleaning.roomFree")}</div>}
+      {extra > 0 && <div className="text-muted-foreground">{t("cleaning.mergedCheckouts", { count: extra })}</div>}
+    </div>;
+  };
   const counts = {
     open: tasks.filter(isDueNow).length,
     upcoming: tasks.filter(isUpcoming).length,
