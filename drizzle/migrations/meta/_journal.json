@@ -736,6 +736,13 @@
       "when": 1793204950354,
       "tag": "0104_reservation_extensions_and_guest_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "7",
+      "when": 1793260724087,
+      "tag": "0105_reservation_payment_states",
+      "breakpoints": true
     }
   ]
 }

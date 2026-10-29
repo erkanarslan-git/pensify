@@ -4084,6 +4084,13 @@ export type Database = {
         }
         Returns: string
       }
+      reservation_payment_states: {
+        Args: { _org: string; _reservation_ids: string[] }
+        Returns: {
+          reservation_id: string
+          state: string
+        }[]
+      }
       reservation_trash_blocker: { Args: { _id: string }; Returns: string }
       reserve_todo_attachment: {
         Args: {
