@@ -39,6 +39,6 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       fetchAll(() => context.supabase.from("cleaning_tasks").select("room_id,status,notes,due_at").eq("organization_id", orgId).in("property_id", ids).in("status", ["pending", "in_progress", "problem"]).order("id")),
       fetchAll(() => context.supabase.from("reservations").select("id,room_id").eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").lte("check_in", today).gt("check_out", today).order("id")),
     ]);
-    const dueTasks = (tasks as { due_at: string | null }[]).filter(t => !t.due_at || businessDate(new Date(t.due_at)) <= today);
+    const dueTasks = (tasks as { room_id: string; status: string; notes: string | null; due_at: string | null }[]).filter(t => !t.due_at || businessDate(new Date(t.due_at)) <= today);
     return { properties, rooms, reservations, tasks: dueTasks, todayReservations };
   });
