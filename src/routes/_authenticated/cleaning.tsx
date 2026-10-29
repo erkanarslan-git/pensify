@@ -356,6 +356,7 @@ function CleaningPage() {
                           <div className="min-w-0">
                             <div className="text-2xl font-bold leading-none tabular-nums">#{rooms.get(task.room_id)?.number ?? "—"}</div>
                             <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">{dueText(task)}</div>
+                            {occupancyLine(task)}
                           </div>
                           {statusBadge(task)}
                         </div>
@@ -375,7 +376,7 @@ function CleaningPage() {
                       return (
                         <tr key={task.id} className="align-middle hover:bg-accent/40">
                           <td className="px-4 py-2.5 font-semibold whitespace-nowrap">#{rooms.get(task.room_id)?.number ?? "—"}{task.photos_count > 0 && <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground"><Camera className="w-3 h-3" />{task.photos_count}</span>}</td>
-                          <td className="px-3 py-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{dueText(task)}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{dueText(task)}{occupancyLine(task)}</td>
                           <td className="px-3 py-2.5">{statusBadge(task)}</td>
                           <td className="px-3 py-2.5 min-w-48 max-w-72">{assignControl(task, name, true)}{noteLines(task)}</td>
                           <td className="px-4 py-2.5"><div className="flex flex-wrap justify-end gap-1.5">{taskActions(task, name, true)}</div></td>
