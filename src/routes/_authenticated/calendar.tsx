@@ -892,7 +892,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
-  const drag = useRef<{ startX: number; startScroll: number; active: boolean; moved: boolean }>({ startX: 0, startScroll: 0, active: false, moved: false });
+  const drag = useRef<{ startX: number; startScroll: number; active: boolean; moved: boolean; button: number }>({ startX: 0, startScroll: 0, active: false, moved: false, button: 0 });
 
   const update = () => {
     const el = ref.current;
@@ -917,7 +917,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
   const onMouseDownCapture = (e: React.MouseEvent) => {
     if (e.button !== 2 || !ref.current) return;
     e.stopPropagation(); e.preventDefault();
-    drag.current = { startX: e.clientX, startScroll: ref.current.scrollLeft, active: true, moved: false };
+    drag.current = { startX: e.clientX, startScroll: ref.current.scrollLeft, active: true, moved: false, button: 2 };
   };
   const onMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
