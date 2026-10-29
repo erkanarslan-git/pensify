@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
 });
 
-type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import" | "integrations" | "trash";
+type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import" | "integrations" | "trash" | "guestInfo";
 
 const tabs: { key: TabKey; icon: typeof Globe }[] = [
   { key: "general", icon: Globe },
@@ -21,6 +21,7 @@ const tabs: { key: TabKey; icon: typeof Globe }[] = [
   { key: "notifications", icon: Bell },
   { key: "email", icon: Mail },
   { key: "company", icon: Building2 },
+  { key: "guestInfo", icon: Mail },
   { key: "appearance", icon: Palette },
   { key: "channels", icon: Paintbrush },
   { key: "integrations", icon: Globe },
@@ -72,7 +73,7 @@ function SettingsLayout() {
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "brand-tile font-medium shadow-sm" : "hover:bg-accent/50 text-muted-foreground"}`}
               >
-                <Icon className="w-4 h-4" /> {t(x.key === "integrations" ? "integrations.title" : `pages.settings.tabs.${x.key}`)}
+                <Icon className="w-4 h-4" /> {t(x.key === "integrations" ? "integrations.title" : x.key === "guestInfo" ? "guestMsg.settingsTitle" : `pages.settings.tabs.${x.key}`)}
               </button>
             );
           })}
@@ -90,6 +91,7 @@ import { Section } from "@/components/app-shell";
 import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-color";
 import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
 import { Button } from "@/components/ui/button";
+import { GuestInfoSettingsTab } from "@/components/guest-info-settings";
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
@@ -225,6 +227,7 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
         </Section>
       )}
 
+      {activeTab === "guestInfo" && <GuestInfoSettingsTab />}
       {activeTab === "profile" && <ProfileTab />}
 
       {activeTab === "security" && <SecurityTab />}

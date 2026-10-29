@@ -882,5 +882,30 @@
     "cancel": "Abbrechen",
     "title": "Bist du sicher?",
     "reason": "Grund"
+  },
+  "guestMsg": {
+    "booking": "Buchungsinfo senden",
+    "access": "Zugangscodes senden",
+    "hint": "Text prüfen, dann kopieren oder per WhatsApp senden.",
+    "withBank": "Bankdaten hinzufügen",
+    "noIban": "Für Bankdaten IBAN unter Einstellungen > Gästeinformationen eintragen.",
+    "copy": "Text kopieren",
+    "copied": "Text kopiert",
+    "noPhone": "Keine gültige Telefonnummer in der Reservierung.",
+    "noCodes": "Für dieses Zimmer sind keine Codes hinterlegt.",
+    "settingsTitle": "Gästeinformationen",
+    "settingsText": "An- und Abreisezeiten sowie Bankdaten für Gästenachrichten.",
+    "saved": "Gespeichert",
+    "saveFailed": "Speichern fehlgeschlagen (nur Inhaber/Admin)",
+    "f": {
+      "check_in_time": "Anreise ab",
+      "check_out_time": "Abreise bis",
+      "account_holder": "Kontoinhaber",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "bank_name": "Bank",
+      "contact_phone": "Kontakttelefon",
+      "extra_note": "Zusatztext (in jeder Nachricht)"
+    }
   }
 }

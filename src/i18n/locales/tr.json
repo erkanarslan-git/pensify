@@ -881,5 +881,30 @@
     "cancel": "Vazgeç",
     "title": "Emin misiniz?",
     "reason": "Sebep"
+  },
+  "guestMsg": {
+    "booking": "Rezervasyon bilgisini gönder",
+    "access": "Giriş şifrelerini gönder",
+    "hint": "Metni kontrol edin, sonra kopyalayın ya da WhatsApp ile gönderin.",
+    "withBank": "Banka bilgisi ekle",
+    "noIban": "Banka bilgisi eklemek için Ayarlar > Misafir bilgileri bölümüne IBAN girin.",
+    "copy": "Metni kopyala",
+    "copied": "Metin kopyalandı",
+    "noPhone": "Rezervasyonda geçerli telefon numarası yok.",
+    "noCodes": "Bu oda için kayıtlı şifre bulunamadı.",
+    "settingsTitle": "Misafir bilgileri",
+    "settingsText": "Misafire gönderilen mesajlarda kullanılan giriş/çıkış saatleri ve banka bilgileri.",
+    "saved": "Kaydedildi",
+    "saveFailed": "Kaydedilemedi (yalnız sahip/yönetici değiştirebilir)",
+    "f": {
+      "check_in_time": "Giriş saati (itibaren)",
+      "check_out_time": "Çıkış saati (en geç)",
+      "account_holder": "Hesap sahibi",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "bank_name": "Banka adı",
+      "contact_phone": "İletişim telefonu",
+      "extra_note": "Ek not (her mesaja eklenir)"
+    }
   }
 }

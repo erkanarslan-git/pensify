@@ -10,6 +10,7 @@ import { extensionDays } from "@/lib/overnight-stats";
 import { usePermissions } from "@/hooks/use-permissions";
 import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
+import { GuestMessagePanel } from '@/components/guest-message-panel';
 import { ReservationCustomerLinks } from '@/components/reservation-customer-links';
 
 type Channel = "booking" | "airbnb" | "check24" | "woocommerce" | "phone" | "direct" | "walkin" | "website" | "ical";
@@ -238,6 +239,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 {t("legacyUi.pastRestricted")}
               </div>
             )}
+            <GuestMessagePanel reservation={r} />
             <fieldset disabled={readOnly} className={readOnly ? "opacity-90" : ""}>
             <details className="mb-4 border-b border-border pb-3"><summary className="cursor-pointer text-sm font-medium">{t('records.linked')}</summary><div className="mt-3"><ReservationCustomerLinks key={r.id} reservationIds={[r.id]} defaultKind={r.customer_type==='company'?'company':'person'} initialName={r.customer_type==='company'?r.company_name??r.guest_name:r.guest_name}/></div></details>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
