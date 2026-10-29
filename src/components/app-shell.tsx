@@ -275,6 +275,34 @@ export function AppShell({ title, subtitle, actions, children }: {
       return due.filter((d) => (sums.get(d.id) ?? 0) < Number(d.amount)).length;
     },
   });
+  // Red badges: cleaning tasks due by today (Berlin) and open maintenance issues, RLS-scoped.
+  const canSeeCleaning = allNavItems.some((i) => i.to === "/cleaning");
+  const { data: dueCleaning = 0 } = useQuery({
+    queryKey: ["nav-due-cleaning", profile?.id ?? null],
+    enabled: canSeeCleaning,
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+    queryFn: async () => {
+      const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
+      const { data, error } = await supabase.from("cleaning_tasks").select("room_id,due_at").in("status", ["pending", "in_progress", "problem"]).limit(2000);
+      if (error || !data) return 0;
+      const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" });
+      return new Set(data.filter((d) => !d.due_at || fmt.format(new Date(d.due_at)) <= today).map((d) => d.room_id)).size;
+    },
+  });
+  const canSeeMaintenance = allNavItems.some((i) => i.to === "/maintenance");
+  const { data: openIssues = 0 } = useQuery({
+    queryKey: ["nav-open-issues", profile?.id ?? null],
+    enabled: canSeeMaintenance,
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("maintenance_board");
+      if (error || !data) return 0;
+      return ((data as unknown as { issues?: unknown[] }).issues ?? []).length;
+    },
+  });
+  const navBadge = (to: string) => to === "/payments" ? duePayments : to === "/cleaning" ? dueCleaning : to === "/maintenance" ? openIssues : 0;
   const goToPage = (to: string) => { setPageQuery(""); setSearchOpen(false); navigate({ to: to as never }); };
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
