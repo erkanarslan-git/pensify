@@ -372,14 +372,14 @@ export function AppShell({ title, subtitle, actions, children }: {
                 >
                   <span className="relative shrink-0">
                     <Icon className="w-4 h-4" />
-                    {mini && item.to === "/payments" && duePayments > 0 && (
+                    {mini && navBadge(item.to) > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-destructive" />
                     )}
                   </span>
                   {!mini && <span className="truncate flex-1">{t(item.labelKey)}</span>}
-                  {!mini && item.to === "/payments" && duePayments > 0 && (
+                  {!mini && navBadge(item.to) > 0 && (
                     <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold grid place-items-center">
-                      {duePayments > 99 ? "99+" : duePayments}
+                      {navBadge(item.to) > 99 ? "99+" : navBadge(item.to)}
                     </span>
                   )}
                 </Link>
