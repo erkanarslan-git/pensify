@@ -602,6 +602,7 @@
   "cleaning": {
     "subtitle": "{{open}} open · {{unassigned}} without cleaner",
     "toDo": "To do",
+    "upcoming": "Upcoming",
     "problems": "Problems",
     "done": "Done",
     "loadError": "Cleaning tasks could not be loaded.",
