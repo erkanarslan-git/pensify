@@ -62,7 +62,8 @@ function CleaningPage() {
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["cleaning-page"],
     queryFn: async () => {
-      const [userRes, ts, rm, pr, cl, options] = await Promise.all([
+      const todayStr = businessDate();
+      const [userRes, ts, rm, pr, cl, options, outs] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cleaning_tasks")
           .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes,inspection_state,inspected_at,inspection_note")
@@ -71,6 +72,7 @@ function CleaningPage() {
         supabase.from("properties").select("id,name").order("name"),
         supabase.from("cleaners").select("id,full_name,active,user_id").order("full_name"),
         supabase.rpc("cleaning_assignment_options"),
+        supabase.from("reservations").select("room_id,guest_name").eq("check_out", todayStr).is("deleted_at", null).in("status", ["confirmed", "checked_in", "tentative"]),
       ]);
       const err = ts.error ?? rm.error ?? pr.error ?? cl.error ?? options.error;
       if (err) throw err;
@@ -82,6 +84,7 @@ function CleaningPage() {
         cleaners: (cl.data ?? []) as Cleaner[],
         assignmentOptions: options.data ?? [],
         myCleanerId: (cl.data ?? []).find((c) => c.user_id === uid)?.id ?? null,
+        leavingToday: new Map((outs.data ?? []).map((r) => [r.room_id as string, (r.guest_name as string | null) ?? ""])),
       };
     },
   });
@@ -123,6 +126,12 @@ function CleaningPage() {
     }
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
+    // Folded older tasks of the same room follow the same step (one cleaning covers them all).
+    for (const sib of mergedInto.get(id) ?? []) {
+      const s = tasks.find((x) => x.id === sib)?.status;
+      if (status === "completed" && s !== "in_progress") await supabase.rpc("transition_cleaning_task", { _task_id: sib, _to: "in_progress" });
+      await supabase.rpc("transition_cleaning_task", { _task_id: sib, _to: status });
+    }
     await refreshCleaningQueries(queryClient);
     toast.success(t("cleaning.statusChanged", { status: t(`status.${status}`) }));
     if (status === "in_progress" && myCleanerId && tasks.find((x) => x.id === id)?.cleaner_id === myCleanerId) {
@@ -208,8 +217,34 @@ function CleaningPage() {
   // Today's work = open tasks due today or earlier (Berlin); later checkouts wait under "upcoming".
   const today = businessDate();
   const dueDay = (x: Task) => businessDate(new Date(x.due_at));
-  const isDueNow = (x: Task) => isOpen(x.status) && dueDay(x) <= today;
+  const isDueRaw = (x: Task) => isOpen(x.status) && dueDay(x) <= today;
+  // One room = one card: older unfinished checkouts of the same room fold into the newest task.
+  const mergedInto = new Map<string, string[]>();
+  const hiddenDup = new Set<string>();
+  {
+    const byRoom = new Map<string, Task[]>();
+    tasks.filter(isDueRaw).forEach((x) => byRoom.set(x.room_id, [...(byRoom.get(x.room_id) ?? []), x]));
+    byRoom.forEach((list) => {
+      if (list.length < 2) return;
+      const sorted = [...list].sort((a, b) => b.due_at.localeCompare(a.due_at));
+      mergedInto.set(sorted[0].id, sorted.slice(1).map((x) => x.id));
+      sorted.slice(1).forEach((x) => hiddenDup.add(x.id));
+    });
+  }
+  const isDueNow = (x: Task) => isDueRaw(x) && !hiddenDup.has(x.id);
   const isUpcoming = (x: Task) => isOpen(x.status) && dueDay(x) > today;
+  const leavingToday = data?.leavingToday ?? new Map<string, string>();
+  const occupancyLine = (task: Task) => {
+    if (!isDueNow(task)) return null;
+    const extra = mergedInto.get(task.id)?.length ?? 0;
+    const guest = leavingToday.get(task.room_id);
+    return <div className="mt-1 space-y-0.5 text-xs">
+      {guest !== undefined
+        ? <div className="font-medium text-warning">{t("cleaning.leavingToday", { name: guest || "—", time: new Date(task.due_at).toLocaleTimeString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE, hour: "2-digit", minute: "2-digit" }) })}</div>
+        : <div className="font-medium text-success">{t("cleaning.roomFree")}</div>}
+      {extra > 0 && <div className="text-muted-foreground">{t("cleaning.mergedCheckouts", { count: extra })}</div>}
+    </div>;
+  };
   const counts = {
     open: tasks.filter(isDueNow).length,
     upcoming: tasks.filter(isUpcoming).length,
@@ -321,6 +356,7 @@ function CleaningPage() {
                           <div className="min-w-0">
                             <div className="text-2xl font-bold leading-none tabular-nums">#{rooms.get(task.room_id)?.number ?? "—"}</div>
                             <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">{dueText(task)}</div>
+                            {occupancyLine(task)}
                           </div>
                           {statusBadge(task)}
                         </div>
@@ -340,7 +376,7 @@ function CleaningPage() {
                       return (
                         <tr key={task.id} className="align-middle hover:bg-accent/40">
                           <td className="px-4 py-2.5 font-semibold whitespace-nowrap">#{rooms.get(task.room_id)?.number ?? "—"}{task.photos_count > 0 && <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-muted-foreground"><Camera className="w-3 h-3" />{task.photos_count}</span>}</td>
-                          <td className="px-3 py-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{dueText(task)}</td>
+                          <td className="px-3 py-2.5 text-muted-foreground tabular-nums whitespace-nowrap">{dueText(task)}{occupancyLine(task)}</td>
                           <td className="px-3 py-2.5">{statusBadge(task)}</td>
                           <td className="px-3 py-2.5 min-w-48 max-w-72">{assignControl(task, name, true)}{noteLines(task)}</td>
                           <td className="px-4 py-2.5"><div className="flex flex-wrap justify-end gap-1.5">{taskActions(task, name, true)}</div></td>

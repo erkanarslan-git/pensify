@@ -625,7 +625,11 @@
     "shiftStartFailed": "Schicht konnte nicht gestartet werden (Standort außerhalb oder zu ungenau).",
     "room": "Zimmer",
     "due": "Fällig",
-    "status": "Status"
+    "status": "Status",
+    "leavingToday": "Gast reist heute ab: {{name}} · frei ab {{time}}",
+    "roomFree": "Zimmer frei — kann gereinigt werden",
+    "mergedCheckouts": "+{{count}} frühere Abreise in dieser Reinigung enthalten",
+    "badgeHint": "{{ready}} Zimmer bereit, {{leaving}} werden heute frei"
   },
   "cleaners": {
     "staff": "Personal",

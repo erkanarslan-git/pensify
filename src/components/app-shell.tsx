@@ -277,19 +277,27 @@ export function AppShell({ title, subtitle, actions, children }: {
   });
   // Red badges: cleaning tasks due by today (Berlin) and open maintenance issues, RLS-scoped.
   const canSeeCleaning = allNavItems.some((i) => i.to === "/cleaning");
-  const { data: dueCleaning = 0 } = useQuery({
+  const { data: cleaningSplit = { ready: 0, leaving: 0 } } = useQuery({
     queryKey: ["nav-due-cleaning", profile?.id ?? null],
     enabled: canSeeCleaning,
     staleTime: 60_000,
     refetchInterval: 5 * 60_000,
     queryFn: async () => {
-      const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
-      const { data, error } = await supabase.from("cleaning_tasks").select("room_id,due_at").in("status", ["pending", "in_progress", "problem"]).limit(2000);
-      if (error || !data) return 0;
       const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" });
-      return new Set(data.filter((d) => !d.due_at || fmt.format(new Date(d.due_at)) <= today).map((d) => d.room_id)).size;
+      const today = fmt.format(new Date());
+      const [{ data, error }, { data: outs }] = await Promise.all([
+        supabase.from("cleaning_tasks").select("room_id,due_at").in("status", ["pending", "accepted", "in_progress", "problem"]).limit(2000),
+        supabase.from("reservations").select("room_id").eq("check_out", today).is("deleted_at", null).in("status", ["confirmed", "checked_in", "tentative"]),
+      ]);
+      if (error || !data) return { ready: 0, leaving: 0 };
+      const rooms = new Set(data.filter((d) => !d.due_at || fmt.format(new Date(d.due_at)) <= today).map((d) => d.room_id));
+      const leavingSet = new Set((outs ?? []).map((r) => r.room_id));
+      let leaving = 0;
+      rooms.forEach((r) => { if (leavingSet.has(r)) leaving++; });
+      return { ready: rooms.size - leaving, leaving };
     },
   });
+  const dueCleaning = cleaningSplit.ready + cleaningSplit.leaving;
   const canSeeMaintenance = allNavItems.some((i) => i.to === "/maintenance");
   const { data: openIssues = 0 } = useQuery({
     queryKey: ["nav-open-issues", profile?.id ?? null],
@@ -377,7 +385,12 @@ export function AppShell({ title, subtitle, actions, children }: {
                     )}
                   </span>
                   {!mini && <span className="truncate flex-1">{t(item.labelKey)}</span>}
-                  {!mini && navBadge(item.to) > 0 && (
+                  {!mini && item.to === "/cleaning" && dueCleaning > 0 ? (
+                    <span className="ml-auto flex items-center gap-1" title={t("cleaning.badgeHint", { ready: cleaningSplit.ready, leaving: cleaningSplit.leaving })}>
+                      {cleaningSplit.ready > 0 && <span className="min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold grid place-items-center">{cleaningSplit.ready}</span>}
+                      {cleaningSplit.leaving > 0 && <span className="h-5 px-1.5 rounded-full bg-warning/20 text-warning text-[11px] font-semibold grid place-items-center">+{cleaningSplit.leaving}</span>}
+                    </span>
+                  ) : !mini && navBadge(item.to) > 0 && (
                     <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold grid place-items-center">
                       {navBadge(item.to) > 99 ? "99+" : navBadge(item.to)}
                     </span>
