@@ -266,7 +266,7 @@ function ReservationsPage() {
                           {data?.paymentStates?.[r.id] && (() => {
                             const ps = data.paymentStates[r.id];
                             const tone = ps === "paid" ? "success" : ps === "partial" ? "warning" : "muted";
-                            return <Badge tone={tone}>{t(`calendar.payState.${ps}`, { defaultValue: ps === "paid" ? "Bezahlt" : ps === "partial" ? "Teilweise" : "Offen" })}</Badge>;
+                            return <Badge tone={tone}>{t(`payments.state.${ps}`)}</Badge>;
                           })()}
                         </span>
                         <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
