@@ -29,7 +29,7 @@
 - Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
 - Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
 - Read nested AGENTS.md before edits.
-- Payments: scoped atomic receipts/plans, persistent retry IDs, relational pagination; separate finance powers; history blocks deletion. Why: no duplicate payment or loss.
+- Payments: scoped atomic receipts/plans, persistent retry IDs, relational pagination; separate finance powers; history blocks deletion; calendar hover uses the state-only reservation_payment_states RPC. Why: no duplicate payment or loss.
 - Work reports use owner-only department_work_report in the active organization; task/time powers stay separate. Why: prevent report delegation and tenant leaks.
 - Sidebar: grouped navigation (channels have their own group); /me uses AppShell, no header shortcut; Personnel keeps scoped cleaning RPC and RLS department reads. Why: clear navigation, no wider access.
 - Departments: assignment RPC/guards check worker, org, property, powers; maintenance board scopes reads and records assigner/time. Why: scoped authority.
