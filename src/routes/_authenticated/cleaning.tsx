@@ -126,6 +126,12 @@ function CleaningPage() {
     }
     const { error } = await supabase.rpc("transition_cleaning_task", { _task_id: id, _to: status });
     if (error) { toast.error(t("cleaning.actionFailed")); return; }
+    // Folded older tasks of the same room follow the same step (one cleaning covers them all).
+    for (const sib of mergedInto.get(id) ?? []) {
+      const s = tasks.find((x) => x.id === sib)?.status;
+      if (status === "completed" && s !== "in_progress") await supabase.rpc("transition_cleaning_task", { _task_id: sib, _to: "in_progress" });
+      await supabase.rpc("transition_cleaning_task", { _task_id: sib, _to: status });
+    }
     await refreshCleaningQueries(queryClient);
     toast.success(t("cleaning.statusChanged", { status: t(`status.${status}`) }));
     if (status === "in_progress" && myCleanerId && tasks.find((x) => x.id === id)?.cleaner_id === myCleanerId) {

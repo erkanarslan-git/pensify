@@ -625,7 +625,11 @@
     "shiftStartFailed": "Mesai başlatılamadı (konum uzak veya yetersiz).",
     "room": "Oda",
     "due": "Zamanı",
-    "status": "Durum"
+    "status": "Durum",
+    "leavingToday": "Misafir bugün çıkıyor: {{name}} · {{time}} sonrası boş",
+    "roomFree": "Oda boş — temizlenebilir",
+    "mergedCheckouts": "+{{count}} önceki çıkış da bu temizliğe dahil",
+    "badgeHint": "{{ready}} oda hazır, {{leaving}} oda bugün boşalacak"
   },
   "cleaners": {
     "staff": "Personel",

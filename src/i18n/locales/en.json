@@ -625,7 +625,11 @@
     "shiftStartFailed": "Shift could not be started (location out of range or too inaccurate).",
     "room": "Room",
     "due": "Due",
-    "status": "Status"
+    "status": "Status",
+    "leavingToday": "Guest leaves today: {{name}} · free after {{time}}",
+    "roomFree": "Room empty — ready to clean",
+    "mergedCheckouts": "+{{count}} earlier checkout included in this cleaning",
+    "badgeHint": "{{ready}} rooms ready, {{leaving}} free up today"
   },
   "cleaners": {
     "staff": "Staff",
