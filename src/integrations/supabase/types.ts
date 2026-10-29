@@ -1402,6 +1402,56 @@ export type Database = {
           },
         ]
       }
+      guest_message_settings: {
+        Row: {
+          account_holder: string | null
+          bank_name: string | null
+          bic: string | null
+          check_in_time: string
+          check_out_time: string
+          contact_phone: string | null
+          extra_note: string | null
+          iban: string | null
+          organization_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          account_holder?: string | null
+          bank_name?: string | null
+          bic?: string | null
+          check_in_time?: string
+          check_out_time?: string
+          contact_phone?: string | null
+          extra_note?: string | null
+          iban?: string | null
+          organization_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          account_holder?: string | null
+          bank_name?: string | null
+          bic?: string | null
+          check_in_time?: string
+          check_out_time?: string
+          contact_phone?: string | null
+          extra_note?: string | null
+          iban?: string | null
+          organization_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_message_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_outbox: {
         Row: {
           attempts: number
