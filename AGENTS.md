@@ -36,7 +36,7 @@
 - QR scanner loads on click; validates clock tokens server-side and navigates locally. Why: camera cleanup, no external redirects or auto clock-in.
 - TV: revocable org tokens, anonymous DTO, dedupe, checked-in occupancy, immutable origins, silent reset, balanced pages, active-only links; transient state deltas and idle room totals. Why: privacy, truthful units, no replay.
 - Reservations: org/property-scoped server filters, exact counts and stable ID ordering shared by pages/export. Why: no truncation or scope drift.
-- Typography uses a shared scale without vertical offsets; Dashboard/Action Center use zero-minimum grid tracks, stacked wrapping mobile metadata. Why: long names must not widen the screen.
+- Typography uses a shared scale without vertical offsets; Dashboard/Action Center use zero-minimum grid tracks, stacked wrapping mobile metadata. Why: alignment, no widened screens.
 - Cleaning inspection is a separate task state with property opt-in; atomic review/reopen/report RPCs retain reasons and maintenance blocks. Why: problems are not inspections.
 
 - Legacy UI copy uses shared three-language catalogs and active-locale display formatting; theme-specific calendar guest contrast lives in CSS tokens. Why: language/theme switching must not leave stale labels or unreadable booking bars.
@@ -45,4 +45,4 @@
 - Room distribution (channel_sync_mode, sales_channels) is informational, written only via set_rooms_distribution; future channel sync must only touch rooms marked api for that channel. Why: one integration fault must not disturb manually tracked rooms.
 - Extensions only via extend_reservation (logged); overnight stats treat guests_confirmed=false as nights without persons. Why: audit and honest statistics.
 
-- Guest messages: booking info and access codes are separate copy/wa.me actions; settings in guest_message_settings (admin write). Why: codes never leak into confirmations.
+- Guest messages: booking info and access codes are separate copy/wa.me actions; settings in guest_message_settings (admin write). Why: no codes in confirmations.
