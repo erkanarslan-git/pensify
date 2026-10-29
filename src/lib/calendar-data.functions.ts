@@ -29,7 +29,7 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       if (result.error) throw new Error("calendar_unavailable");
       return result.data ?? [];
     });
-    const reservationBase = () => context.supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status")
+    const reservationBase = () => context.supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status,property_id")
       .eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").order("id");
     const [rooms, reservations, tasks, todayReservations] = await Promise.all([
       fetchAll(() => context.supabase.from("rooms").select("id,number,property_id,floor,status").eq("organization_id", orgId).in("property_id", ids).order("floor", { ascending: true, nullsFirst: true }).order("number").order("id")),
