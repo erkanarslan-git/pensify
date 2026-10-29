@@ -62,7 +62,8 @@ function CleaningPage() {
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["cleaning-page"],
     queryFn: async () => {
-      const [userRes, ts, rm, pr, cl, options] = await Promise.all([
+      const todayStr = businessDate();
+      const [userRes, ts, rm, pr, cl, options, outs] = await Promise.all([
         supabase.auth.getUser(),
         supabase.from("cleaning_tasks")
           .select("id,room_id,property_id,cleaner_id,due_at,status,photos_count,notes,inspection_state,inspected_at,inspection_note")
@@ -71,6 +72,7 @@ function CleaningPage() {
         supabase.from("properties").select("id,name").order("name"),
         supabase.from("cleaners").select("id,full_name,active,user_id").order("full_name"),
         supabase.rpc("cleaning_assignment_options"),
+        supabase.from("reservations").select("room_id,guest_name").eq("check_out", todayStr).is("deleted_at", null).in("status", ["confirmed", "checked_in", "tentative"]),
       ]);
       const err = ts.error ?? rm.error ?? pr.error ?? cl.error ?? options.error;
       if (err) throw err;
@@ -82,6 +84,7 @@ function CleaningPage() {
         cleaners: (cl.data ?? []) as Cleaner[],
         assignmentOptions: options.data ?? [],
         myCleanerId: (cl.data ?? []).find((c) => c.user_id === uid)?.id ?? null,
+        leavingToday: new Map((outs.data ?? []).map((r) => [r.room_id as string, (r.guest_name as string | null) ?? ""])),
       };
     },
   });
