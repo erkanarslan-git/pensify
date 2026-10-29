@@ -892,6 +892,7 @@
     "copied": "Metin kopyalandı",
     "noPhone": "Rezervasyonda geçerli telefon numarası yok.",
     "noCodes": "Bu oda için kayıtlı şifre bulunamadı.",
+    "missing": "Kayıtlı değil (odanın Giriş şifreleri bölümünden ekleyin)",
     "settingsTitle": "Misafir bilgileri",
     "settingsText": "Misafire gönderilen mesajlarda kullanılan giriş/çıkış saatleri ve banka bilgileri.",
     "saved": "Kaydedildi",
