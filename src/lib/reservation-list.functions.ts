@@ -37,7 +37,7 @@ export const listReservations = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => reservationPageSchema.parse(data))
   .handler(async ({ data, context }) => {
     const s = await scope(context.supabase, data);
-    if (!s.ids.length) return { rows: [] as ReservationListRow[], total: 0, page: 0, properties: s.properties, stats: { arrivals: 0, departures: 0, staying: 0 } };
+    if (!s.ids.length) return { rows: [] as ReservationListRow[], paymentStates: {} as Record<string, "paid" | "partial" | "open">, total: 0, page: 0, properties: s.properties, stats: { arrivals: 0, departures: 0, staying: 0 } };
     const base = () => context.supabase.from("reservations").select(columns, { count: "exact" })
       .eq("organization_id", s.orgId).in("property_id", s.ids);
     const filtered = () => applyReservationFilters(base(), data, s.today, s.roomIds);
@@ -59,7 +59,13 @@ export const listReservations = createServerFn({ method: "POST" })
       countBase().lte("check_in", s.today).gt("check_out", s.today),
     ]);
     if (counts.some(c => c.error)) throw new Error("reservations_unavailable");
-    return { rows: result.data ?? [], total, page, properties: s.properties,
+    const rowIds = (result.data ?? []).map(r => r.id);
+    const paymentStates: Record<string, "paid" | "partial" | "open"> = {};
+    if (rowIds.length) {
+      const states = await context.supabase.rpc("reservation_payment_states", { _org: s.orgId, _reservation_ids: rowIds });
+      for (const st of (states.data ?? []) as { reservation_id: string; state: "paid" | "partial" | "open" }[]) paymentStates[st.reservation_id] = st.state;
+    }
+    return { rows: result.data ?? [], paymentStates, total, page, properties: s.properties,
       stats: { arrivals: counts[0]?.count ?? 0, departures: counts[1]?.count ?? 0, staying: counts[2]?.count ?? 0 } };
   });
 
