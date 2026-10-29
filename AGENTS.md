@@ -5,7 +5,7 @@
 - Property access: owner/admin/ops_manager all; property_manager/reception via member_property_access; cleaners via assigned tasks. Why: least privilege.
 - Settings, permissions, iCal URLs, external reservation ids are unique per organization. Why: tenants reuse keys.
 - Cron endpoints use private.cron_secrets and loop per active organization. Why: no implicit tenant.
-- Bun 1.3.x + bun.lock only; CI: bun install --frozen-lockfile && bun run build. Why: one lockfile.
+- Bun 1.3.x + bun.lock only (CI: frozen install + build). Why: one lockfile.
 - Use Zod 4 Standard Schema directly for route validation; overrides keep Zod patched and esbuild above the development-server advisory range. Why: avoid a Zod-3-only adapter and vulnerable nested build tools.
 - Migrations only via the Lovable migration tool (drizzle/migrations); supabase/migrations is frozen history. Why: one history.
 - supabase/tests/tenant_isolation.sql (rolls back) must pass after auth changes. Why: prove isolation.
