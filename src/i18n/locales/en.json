@@ -893,6 +893,7 @@
     "copied": "Text copied",
     "noPhone": "No valid phone number on this reservation.",
     "noCodes": "No codes stored for this room.",
+    "missing": "Not stored (add it under the room's access codes)",
     "settingsTitle": "Guest information",
     "settingsText": "Check-in/out times and bank details used in guest messages.",
     "saved": "Saved",

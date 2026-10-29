@@ -893,6 +893,7 @@
     "copied": "Text kopiert",
     "noPhone": "Keine gültige Telefonnummer in der Reservierung.",
     "noCodes": "Für dieses Zimmer sind keine Codes hinterlegt.",
+    "missing": "Nicht hinterlegt (im Zimmer unter Zugangscodes eintragen)",
     "settingsTitle": "Gästeinformationen",
     "settingsText": "An- und Abreisezeiten sowie Bankdaten für Gästenachrichten.",
     "saved": "Gespeichert",

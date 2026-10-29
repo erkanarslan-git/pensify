@@ -61,6 +61,11 @@ export function GuestMessagePanel({ reservation: r }: Props) {
           {mode === "booking" && <label className="ml-auto flex items-center gap-2"><input type="checkbox" checked={withBank} disabled={!ctx?.g.iban} onChange={(e) => { setWithBank(e.target.checked); build("booking", ctx, lang, e.target.checked); }} />{t("guestMsg.withBank")}</label>}
         </div>
         {mode === "booking" && !ctx?.g.iban && <p className="text-xs text-muted-foreground">{t("guestMsg.noIban")}</p>}
+        {mode === "access" && ctx && (["building", "door", "keybox"] as const).some((k) => !ctx.codes[k]) && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            {t("guestMsg.missing")}: {(["building", "door", "keybox"] as const).filter((k) => !ctx.codes[k]).map((k) => t(`accessCodes.${k}`)).join(", ")}
+          </p>
+        )}
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={14} className="w-full rounded-md border border-input bg-card p-3 text-sm" />
         <div className="flex flex-wrap justify-end gap-2">
           <Button type="button" variant="outline" onClick={copy}><Copy className="h-4 w-4" />{t("guestMsg.copy")}</Button>
