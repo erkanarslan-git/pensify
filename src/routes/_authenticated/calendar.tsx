@@ -924,7 +924,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
     if ((e.target as HTMLElement).closest("button, a, input, [role='button']")) return;
     const el = ref.current;
     if (!el) return;
-    drag.current = { startX: e.clientX, startScroll: el.scrollLeft, active: true, moved: false };
+    drag.current = { startX: e.clientX, startScroll: el.scrollLeft, active: true, moved: false, button: 0 };
   };
   const onMouseMove = (e: React.MouseEvent) => {
     if (!drag.current.active || !ref.current) return;
@@ -932,7 +932,12 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
     if (Math.abs(dx) > 4) drag.current.moved = true;
     ref.current.scrollLeft = drag.current.startScroll - dx;
   };
-  const endDrag = () => { drag.current.active = false; };
+  const endDrag = () => {
+    drag.current.active = false;
+    // A right-button release never fires a click, so `moved` would survive the
+    // drag and swallow the next left click. Only left drags rely on `moved`.
+    if (drag.current.button === 2) drag.current.moved = false;
+  };
   const onClickCapture = (e: React.MouseEvent) => {
     if (drag.current.moved) { e.stopPropagation(); e.preventDefault(); drag.current.moved = false; }
   };
