@@ -11,7 +11,7 @@ export const tvSnapshotSchema = z.object({
   totals: z.object({ total: count, occupied: count, ready: count, cleaning: count, maintenance: count, arrivals: count, departures: count, created: count }).strict(),
   properties: z.array(z.object({ name: z.string(), total: count, occupied: count, ready: count, cleaning: count, maintenance: count, arrivals: count, departures: count }).strict()),
   weekly: z.array(z.object({ day: z.string(), arrivals: count, departures: count }).strict()),
-  events: z.array(z.object({ id: z.string(), at: z.string(), kind: z.enum(["reservation_created", "reservation_removed", "reservation_updated", "cleaning_updated", "maintenance_updated", "task_updated"]), source: z.string(), location: z.string(), eligible: z.boolean() }).strict()),
+  events: z.array(z.object({ id: z.string(), at: z.string(), kind: z.enum(["reservation_created", "reservation_removed", "reservation_updated", "cleaning_updated", "maintenance_updated", "task_updated"]), source: z.string(), location: z.string(), eligible: z.boolean(), room: z.string().optional(), checkIn: z.string().optional(), checkOut: z.string().optional() }).strict()),
   dues: z.object({ overdue: count, dueToday: count, dueWeek: count, paid: count, partial: count, open: count }).strict(),
   today: z.object({cleaningTotal:count,cleaningDone:count,todosTotal:count,todosDone:count,issuesOpen:count,issuesResolved:count}).strict().default({cleaningTotal:0,cleaningDone:0,todosTotal:0,todosDone:0,issuesOpen:0,issuesResolved:0}),
   colors: z.record(z.string(), z.string().regex(/^#[0-9a-fA-F]{6}$/)),

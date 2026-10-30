@@ -1,5 +1,7 @@
 import { deleteGuardMessage } from "@/lib/delete-guard";
 import { confirmAction, promptAction } from "@/components/confirm-dialog";
+import { RoomActiveSection, useRoomActiveToggle } from "@/components/room-active-toggle";
+import { roomActiveCopy } from "@/lib/room-active-copy";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useEffect, useState } from "react";
@@ -68,10 +70,11 @@ function RoomsPage() {
 }
 
 export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [allProperties, setProperties] = useState<Property[]>([]);
   const [allRooms, setRooms] = useState<Room[]>([]);
+  const [closedRooms, setClosedRooms] = useState<Room[]>([]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
   const initialStatus = Route.useSearch().status;
   const [filter, setFilter] = useState<RoomStatus | "all">((initialStatus as RoomStatus) ?? "all");
@@ -93,14 +96,16 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [pr, rm, cl, rt, live] = await Promise.all([
+      const [pr, rm, cl, rt, live, closed] = await Promise.all([
         supabase.from("properties").select("id,name,address,city_id,organization_id").order("name"),
         supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id").eq("active", true)
           .order("floor", { ascending: true, nullsFirst: true }).order("number"),
         supabase.from("cleaners").select("id,full_name,active").order("full_name"),
         supabase.from("room_types").select("id,name,code,property_id").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
+        supabase.from("rooms").select("id,property_id,number,capacity,status,floor,notes,default_cleaner_id,room_type_id").eq("active", false).order("number"),
       ]);
+      setClosedRooms((closed.data ?? []) as Room[]);
       const critical = [["properties", pr.error], ["rooms", rm.error]] as const;
       const failed = critical.find(([, e]) => e);
       for (const [name, res] of [["cleaners", cl], ["room_types", rt], ["room_operational_status", live]] as const) {
@@ -146,6 +151,9 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
     .filter((r) => matchesStatus(r, filter))
     .sort((a, b) => a.number.localeCompare(b.number, "de", { numeric: true }));
   const single = propertyId ? properties[0] : undefined;
+  const activeCopy = roomActiveCopy(i18n.language);
+  const toggleActive = useRoomActiveToggle(() => { setRefreshKey((k) => k + 1); queryClient.invalidateQueries({ queryKey: ["dashboard"] }); queryClient.invalidateQueries({ queryKey: ["cleaning"] }); });
+  const closedList = (propertyId ? closedRooms.filter((r) => r.property_id === propertyId) : closedRooms).filter((r) => !pFilter || r.property_id === pFilter);
   const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
   const visibleRooms = list.slice((page - 1) * pageSize, page * pageSize);
   const allVisibleSelected = visibleRooms.length > 0 && visibleRooms.every((room) => selected.has(room.id));
@@ -266,6 +274,7 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
             {list.length === 0 ? <div className="p-5 text-sm text-muted-foreground">{t("rooms.noRooms")}</div> : <div className="overflow-x-auto"><table className="w-full min-w-[900px] border-collapse text-sm"><thead className="sticky top-0 z-10 bg-muted/70"><tr className="border-b border-border text-left text-[11px] font-medium uppercase tracking-wide text-muted-foreground"><th className="w-11 px-3 py-2"><input type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} aria-label={t("rooms.selectPage")} /></th><th className="px-3 py-2">{t("rooms.roomNumber")}</th><th className="px-3 py-2">{t("rooms.property")}</th><th className="px-3 py-2">{t("rooms.roomType")}</th><th className="px-3 py-2">{t("rooms.status")}</th><th className="px-3 py-2">{t("rooms.keyCode")}</th><th className="px-3 py-2">{t("rooms.capacity")}</th><th className="px-3 py-2">{t("rooms.floor")}</th><th className="w-24 px-3 py-2 text-right">{t("rooms.actions")}</th></tr></thead><tbody className="divide-y divide-border">{visibleRooms.map((room) => { const property = properties.find((item) => item.id === room.property_id); const roomType = roomTypes.find((item) => item.id === room.room_type_id); return <tr key={room.id} className="group transition-colors hover:bg-muted/60"><td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(room.id)} onChange={() => toggleRoom(room.id)} aria-label={t("rooms.selectRoom", { room: room.number })} /></td><td className="px-3 py-2.5 font-semibold">{room.number}</td><td className="max-w-52 px-3 py-2.5"><span className="block truncate font-medium">{property?.name ?? "—"}</span><span className="block truncate text-xs text-muted-foreground">{property?.address}</span></td><td className="px-3 py-2.5">{roomType?.name ?? t("rooms.withoutRoomType")}</td><td className="px-3 py-2.5"><Badge tone={statusMeta[room.status].tone}>{t(`status.${room.status}`)}</Badge></td><td className="px-3 py-2.5"><RoomAccessButton propertyId={room.property_id} roomId={room.id} /></td><td className="px-3 py-2.5"><span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{room.capacity}</span></td><td className="px-3 py-2.5 text-muted-foreground">{floorLabel(room.floor)}</td><td className="px-3 py-2 text-right"><Button variant="ghost" size="icon" onClick={() => setEditing(room)} title={t("common.edit")}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => remove(room.id)} title={t("common.delete")} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button></td></tr>; })}</tbody></table></div>}
           </div>
           {pageCount > 1 && <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground"><span>{t("rooms.page", { page, pages: pageCount })}</span><div className="flex gap-1"><Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage((value) => value - 1)}>{t("rooms.previous")}</Button><Button size="sm" variant="outline" disabled={page === pageCount} onClick={() => setPage((value) => value + 1)}>{t("rooms.next")}</Button></div></div>}
+          {closedList.length > 0 && <div className="mt-5 rounded-2xl border border-border bg-card shadow-sm"><div className="border-b border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground">{activeCopy.listTitle(closedList.length)}</div><ul className="divide-y divide-border">{closedList.map((room) => { const property = properties.find((p) => p.id === room.property_id); return <li key={room.id} className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground"><span className="font-semibold">{room.number}</span><span className="min-w-0 flex-1 truncate">{property?.name ?? "—"}</span><Badge tone="muted">{activeCopy.badge}</Badge><Button size="sm" variant="outline" onClick={() => void toggleActive(room, true)}>{activeCopy.open}</Button></li>; })}</ul></div>}
         </>
       )}
 
@@ -487,6 +496,7 @@ export function RoomDialog({
             <label className="text-xs text-muted-foreground">{t("rooms.notes")}</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </div>
+          {room && <RoomActiveSection room={room} onDone={() => { onSaved(); onInvalidate(); onClose(); }} />}
         </div>
         <DialogFooter className="gap-2 border-t border-border bg-background px-4 py-3 sm:px-6">
           <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>

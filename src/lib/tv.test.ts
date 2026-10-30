@@ -46,6 +46,7 @@ describe("Approved TV invariants",()=>{
  it("decrease uses signed delta",()=>{expect(tvUpdate(later,{...later,at:"2026-10-23T00:00:20Z",metrics:{...later.metrics,cleaned:18}}).deltas.cleaned).toBe(-1);});
  it("delta expires at 8 seconds",()=>{expect(TV_DELTA_MS).toBe(8000);});
  it("celebration expires at 7 seconds",()=>{expect(TV_CELEBRATION_MS).toBe(7000);});
+ it("new booking card may carry room and stay dates only",()=>{expect(tvSnapshotSchema.safeParse({...snapshot,events:[{...event,room:"101",checkIn:"2026-11-01",checkOut:"2026-11-04"}]}).success).toBe(true);expect(tvSnapshotSchema.safeParse({...snapshot,events:[{...event,room:"101",guest:"Max"}]}).success).toBe(false);});
  it("rotation wraps last to first",()=>{expect(nextTvPage(1,2)).toBe(0);});
  it("single-page rotation stays put",()=>{expect(nextTvPage(0,1)).toBe(0);});
  it("only approved intervals are valid",()=>{for(const rotationSeconds of [5,10,15,20])expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds}).success).toBe(true);expect(tvSnapshotSchema.safeParse({...snapshot,rotationSeconds:3}).success).toBe(false);});
