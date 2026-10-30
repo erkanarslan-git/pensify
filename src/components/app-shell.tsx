@@ -266,7 +266,7 @@ export function AppShell({ title, subtitle, actions, children }: {
     refetchInterval: 5 * 60_000,
     queryFn: async () => {
       const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(new Date());
-      const { data: due, error } = await supabase.from("payment_schedules").select("id,amount").lte("due_date", today).limit(1000);
+      const { data: due, error } = await supabase.from("payment_schedules").select("id,amount,reservations!inner(id)").lte("due_date", today).is("reservations.deleted_at", null).not("reservations.status", "in", "(cancelled,no_show)").limit(1000);
       if (error || !due?.length) return 0;
       const ids = due.map((d) => d.id);
       const { data: paid } = await supabase.from("payments").select("schedule_id,amount").in("schedule_id", ids).is("reversed_at", null);
@@ -286,7 +286,7 @@ export function AppShell({ title, subtitle, actions, children }: {
       const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" });
       const today = fmt.format(new Date());
       const [{ data, error }, { data: outs }] = await Promise.all([
-        supabase.from("cleaning_tasks").select("room_id,due_at").in("status", ["pending", "accepted", "in_progress", "problem"]).limit(2000),
+        supabase.from("cleaning_tasks").select("room_id,due_at").in("status", ["pending", "accepted", "in_progress"]).limit(2000),
         supabase.from("reservations").select("room_id").eq("check_out", today).is("deleted_at", null).in("status", ["confirmed", "checked_in", "tentative"]),
       ]);
       if (error || !data) return { ready: 0, leaving: 0 };
