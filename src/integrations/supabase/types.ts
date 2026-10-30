@@ -3666,6 +3666,18 @@ export type Database = {
         Returns: string
       }
       active_organization_id: { Args: never; Returns: string }
+      add_manual_time_entry: {
+        Args: {
+          _break_minutes: number
+          _clock_in_at: string
+          _clock_out_at: string
+          _overtime_minutes: number
+          _property_id: string
+          _reason: string
+          _user_id: string
+        }
+        Returns: string
+      }
       admin_get_member_properties: {
         Args: { _user_id: string }
         Returns: {
