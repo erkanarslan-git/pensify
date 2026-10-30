@@ -3,8 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { confirmAction } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { berlinToday } from "@/lib/room-active-copy";
-import { roomActiveCopy } from "@/lib/room-active-copy";
+import { berlinToday, roomActiveCopy } from "@/lib/room-active-copy";
 
 /** Close (deactivate) or reopen a physical room after an explicit, informative confirmation. */
 export function useRoomActiveToggle(onDone: () => void) {
@@ -39,4 +38,3 @@ export function RoomActiveSection({ room, onDone }: { room: { id: string; number
   );
 }
 
-export { Button };
