@@ -421,12 +421,12 @@ export function RoomDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-lg">
-        <DialogHeader className="border-b border-border px-4 py-4 pr-12 sm:px-6">
+      <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogHeader className="shrink-0 border-b border-border px-4 py-4 pr-12 sm:px-6">
           <DialogTitle>{room ? t("rooms.editRoom") : t("rooms.newRoom")}</DialogTitle>
           <DialogDescription>{t("rooms.dialogDescription")}</DialogDescription>
         </DialogHeader>
-        <div className="max-h-[calc(100dvh-10rem)] space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
           <div>
             <label className="text-xs text-muted-foreground">{t("rooms.property")}</label>
             <select value={propId} onChange={(e) => { setPropId(e.target.value); setRoomTypeId(""); }} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm">
@@ -498,7 +498,7 @@ export function RoomDialog({
           </div>
           {room && <RoomActiveSection room={room} onDone={() => { onSaved(); onInvalidate(); onClose(); }} />}
         </div>
-        <DialogFooter className="gap-2 border-t border-border bg-background px-4 py-3 sm:px-6">
+        <DialogFooter className="shrink-0 gap-2 border-t border-border bg-background px-4 py-3 sm:px-6">
           <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
           <Button onClick={save} disabled={saving}>{saving ? t("rooms.saving") : t("common.save")}</Button>
         </DialogFooter>
