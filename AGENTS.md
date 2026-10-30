@@ -17,7 +17,7 @@
 - Membership/department triggers enable time profiles for cleaners/workers; breaks use time eligibility, not cleaning-active. Why: one identity, no cleaning access leak.
 - Staff removal deactivates the profile without erasing attendance; permanent user deletion requires repeated name confirmation and refuses cross-organization accounts. Why: retain work evidence and protect other tenants.
 - Use set_rooms_status for updates; Dashboard/Rooms count room_operational_status via summarizeRooms, excluding trashed stays. Why: atomic changes and consistent room counts, separate from tasks.
-- After a successful cleaning transition, await refreshCleaningQueries for tasks, dashboard (including inactive cache), and action center. Why: completed rooms must leave cleaning counts immediately using committed database status.
+- After a successful cleaning transition, await refreshCleaningQueries for tasks, dashboard (including inactive cache), and action center. Why: done rooms leave counts at once.
 - Reservation selection uses shared date-overlap rules; database triggers reject maintenance/inactive room bookings and queue property-scoped availability on sellability changes without enabling outbound. Why: stale browsers and direct writes must not bypass sale blocks.
 - WuBook pilot: one real account per property; explicit property/room mappings, admin-confirmed new_room, sync_enabled=false. Why: auditable stepwise go-live.
 
@@ -27,7 +27,7 @@
 - Todos use scoped RPCs/files; workers self-assign; Berlin morning push is service-only/daily-claimed.
 - Integrations reuse bank/channel screens with truthful status, no automatic outbound activation. Why: safe shared entry.
 - Business time uses shared Berlin helpers; UTC stored, daily work and timestamped breaks split at Berlin midnight with DST-aware interval intersections. Why: consistent daylight-saving and overnight reporting.
-- Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections; cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no location bypass or double pay.
+- Time: server clock, own-open-only, idempotent; checkout DB geofence; configurable operational thresholds, missing exits remain NULL/review-only and do not block new shifts; hourly org-scoped SQL cron records run status; logged corrections and manual entries (add_manual_time_entry); cleaning never closes shifts. Overtime RPC scopes approval, snapshots rates, subtracts overtime from regular minutes, computes pay. Why: no bypass or double pay.
 - Read nested AGENTS.md first.
 - Payments: scoped atomic receipts/plans, persistent retry IDs, relational pagination; separate finance powers; history blocks deletion; RLS-scoped sidebar badges (payments, cleaning, maintenance); list shows state-only payment status. Why: no duplicate payment or loss.
 - Work reports use owner-only department_work_report in the active organization; task/time powers stay separate. Why: prevent report delegation and tenant leaks.

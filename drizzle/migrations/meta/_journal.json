@@ -750,6 +750,13 @@
       "when": 1793270236312,
       "tag": "0106_guest_message_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1793372656009,
+      "tag": "0107_add_manual_time_entry",
+      "breakpoints": true
     }
   ]
 }
