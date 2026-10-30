@@ -28,7 +28,7 @@ function toLocalInput(iso: string): string {
 }
 
 /** Interpret a Berlin wall-clock input value as a UTC instant. */
-function fromLocalInput(v: string): string {
+export function fromLocalInput(v: string): string {
   const guess = new Date(`${v}:00Z`);
   const shown = new Date(toLocalInput(guess.toISOString()) + ":00Z");
   return new Date(guess.getTime() - (shown.getTime() - guess.getTime())).toISOString();
