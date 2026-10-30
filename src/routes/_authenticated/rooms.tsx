@@ -496,7 +496,6 @@ export function RoomDialog({
             <label className="text-xs text-muted-foreground">{t("rooms.notes")}</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-md border border-input bg-card text-sm" />
           </div>
-        </div>
           {room && <RoomActiveSection room={room} onDone={() => { onSaved(); onInvalidate(); onClose(); }} />}
         </div>
         <DialogFooter className="gap-2 border-t border-border bg-background px-4 py-3 sm:px-6">
