@@ -73,7 +73,7 @@ function WorkReportPage() {
 
   const allowedTeams = q.data?.allowedTeams ?? [];
   s.team = effectiveReportTeam(requestedSearch.team, allowedTeams) ?? "all";
-  const items = useMemo(() => teamItems(q.data?.items ?? [], s.team), [q.data?.items, s.team]);
+  const items = useMemo(() => teamItems(mergeOpenCleaningByRoom(q.data?.items ?? []), s.team), [q.data?.items, s.team]);
   const topics = TEAM_TOPICS[s.team];
   const groups = GROUPS.filter((g) => [...g.done, ...g.open].some((t) => topics.includes(t)));
   const locCols = LOC_COLS.filter((t) => topics.includes(t));

@@ -19,6 +19,18 @@ export function teamItems(items: WorkItem[], team: WorkTeam) {
   return items.filter((i) => TEAM_TOPICS[team].includes(i.topic));
 }
 
+/** Several open cleaning tasks for the same room are one cleaning job (same rule as the Cleaning page and menu badge). */
+export function mergeOpenCleaningByRoom(items: WorkItem[]) {
+  const seen = new Set<string>();
+  return items.filter((i) => {
+    if (i.topic !== "clean_open" || !i.propertyId || !i.room) return true;
+    const key = `${i.propertyId}|${i.room}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export interface WorkItem {
   id: string;
   topic: Topic;
