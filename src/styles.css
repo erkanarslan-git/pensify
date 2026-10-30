@@ -652,3 +652,5 @@
   }
   .dark input::-webkit-calendar-picker-indicator { filter: invert(1); }
 }
+
+.tv-celebration p.tv-celebration-stay { color: var(--foreground); font-weight: 600; }
