@@ -29,8 +29,8 @@ export function ManualTimeEntryButton({ userId }: { userId: string }) {
   const [ot, setOt] = useState("0");
   const [reason, setReason] = useState("");
   const props = useQuery({ queryKey: ["manual-time-properties"], enabled: open, queryFn: async () => {
-    const { data, error } = await supabase.from("properties").select("id,name").is("deleted_at" as never, null as never).order("name");
-    if (error) { const r = await supabase.from("properties").select("id,name").order("name"); return r.data ?? []; }
+    const { data, error } = await supabase.from("properties").select("id,name").order("name");
+    if (error) throw error;
     return data ?? [];
   } });
   const save = useMutation({
