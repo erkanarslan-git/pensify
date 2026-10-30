@@ -757,6 +757,13 @@
       "when": 1793372656009,
       "tag": "0107_add_manual_time_entry",
       "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "7",
+      "when": 1793388757661,
+      "tag": "0108_tv_new_booking_details",
+      "breakpoints": true
     }
   ]
 }
