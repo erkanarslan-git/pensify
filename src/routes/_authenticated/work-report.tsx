@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getWorkReport } from "@/lib/work-report.functions";
 import { businessDate, BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
-import { presetRange, countTopics, dailySeries, byLocation, byStaff, filterItems, DONE_TOPICS, OPEN_TOPICS, type Topic, type WorkItem, type Preset, TEAM_TOPICS, teamItems, type WorkTeam } from "@/lib/work-report";
+import { mergeOpenCleaningByRoom, presetRange, countTopics, dailySeries, byLocation, byStaff, filterItems, DONE_TOPICS, OPEN_TOPICS, type Topic, type WorkItem, type Preset, TEAM_TOPICS, teamItems, type WorkTeam } from "@/lib/work-report";
 import { effectiveReportTeam } from "@/lib/report-access";
 import { usePermissions } from "@/hooks/use-permissions";
 import { workReportTranslations } from "@/i18n/work-report";
