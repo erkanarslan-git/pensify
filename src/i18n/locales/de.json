@@ -753,7 +753,8 @@
     "errSave": "Buchung konnte nicht gespeichert werden",
     "errPrice": "Preis konnte nicht berechnet werden",
     "created": "Buchung erstellt",
-    "createdN": "{{count}} Zimmer gespeichert"
+    "createdN": "{{count}} Zimmer gespeichert",
+    "resetPrice": "Listenpreis"
   },
   "resv": {
     "arrivalsToday": "Anreisen heute",
@@ -909,5 +910,10 @@
       "contact_phone": "Kontakttelefon",
       "extra_note": "Zusatztext (in jeder Nachricht)"
     }
+  },
+  "channelPrices": {
+    "title": "Kanalpreise",
+    "desc": "Auf- oder Abschlag in % je Kanal, wird bei neuen Buchungen automatisch berechnet.",
+    "saved": "Gespeichert"
   }
 }

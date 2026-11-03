@@ -139,14 +139,14 @@ export function NewReservationDialog({
   // Auto-fill price from the room's rate plan whenever room or dates change.
   // Manual edits to the price stay until room/dates change again.
   const quotedKeys = useRef<Record<string, string>>({});
-  const priceKey = lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`).join(",");
+  const priceKey = channel + "#" + lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`).join(",");
   useEffect(() => {
     lines.forEach(async (l) => {
-      const key = `${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`;
+      const key = `${channel}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`;
       if (!l.roomId || l.checkOut <= l.checkIn || quotedKeys.current[l.uid] === key) return;
       quotedKeys.current[l.uid] = key;
-      const { data, error } = await supabase.rpc("quote_room_price", {
-        _room_id: l.roomId, _check_in: l.checkIn, _check_out: l.checkOut, _guests: l.guestsCount,
+      const { data, error } = await supabase.rpc("quote_room_price_for_channel", {
+        _room_id: l.roomId, _check_in: l.checkIn, _check_out: l.checkOut, _guests: l.guestsCount, _channel: channel,
       });
       if (quotedKeys.current[l.uid] !== key) return;
       if (error) {
@@ -509,6 +509,20 @@ export function NewReservationDialog({
                           }
                           className="bg-background"
                         />
+                        {l.listPrice != null && l.listPrice > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {[5, 10, 15, 20].map((pct) => (
+                              <Button key={pct} type="button" variant="outline" size="sm" className="h-7 px-2 text-xs"
+                                onClick={() => updateLine(l.uid, { revenue: Math.round(l.listPrice! * (100 - pct)) / 100 })}>
+                                −{pct}%
+                              </Button>
+                            ))}
+                            <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs"
+                              onClick={() => updateLine(l.uid, { revenue: l.listPrice! })}>
+                              {t("newRes.resetPrice")}
+                            </Button>
+                          </div>
+                        )}
                         {l.listPrice != null && (
                           <p className="text-[11px] text-muted-foreground">
                             {t("newRes.calculated", { price: l.listPrice.toFixed(2) })}

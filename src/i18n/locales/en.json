@@ -753,7 +753,8 @@
     "errSave": "Booking could not be saved",
     "errPrice": "Price could not be calculated",
     "created": "Booking created",
-    "createdN": "{{count}} rooms saved"
+    "createdN": "{{count}} rooms saved",
+    "resetPrice": "List price"
   },
   "resv": {
     "arrivalsToday": "Arrivals today",
@@ -909,5 +910,10 @@
       "contact_phone": "Contact phone",
       "extra_note": "Extra note (added to every message)"
     }
+  },
+  "channelPrices": {
+    "title": "Channel prices",
+    "desc": "Markup or discount in % per channel, applied automatically to new bookings.",
+    "saved": "Saved"
   }
 }
