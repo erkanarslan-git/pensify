@@ -771,6 +771,13 @@
       "when": 1793687058153,
       "tag": "0109_optional_price_change_reason",
       "breakpoints": true
+    },
+    {
+      "idx": 110,
+      "version": "7",
+      "when": 1793704600742,
+      "tag": "0110_channel_price_rules",
+      "breakpoints": true
     }
   ]
 }

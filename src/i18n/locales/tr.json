@@ -752,7 +752,8 @@
     "errSave": "Rezervasyon kaydedilemedi",
     "errPrice": "Fiyat hesaplanamadı",
     "created": "Rezervasyon oluşturuldu",
-    "createdN": "{{count}} oda kaydedildi"
+    "createdN": "{{count}} oda kaydedildi",
+    "resetPrice": "Liste fiyatı"
   },
   "resv": {
     "arrivalsToday": "Bugün giriş",
@@ -908,5 +909,10 @@
       "contact_phone": "İletişim telefonu",
       "extra_note": "Ek not (her mesaja eklenir)"
     }
+  },
+  "channelPrices": {
+    "title": "Kanal fiyatları",
+    "desc": "Kanal başına % zam veya indirim; yeni rezervasyonlarda otomatik hesaplanır.",
+    "saved": "Kaydedildi"
   }
 }

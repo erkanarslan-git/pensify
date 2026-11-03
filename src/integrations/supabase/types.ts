@@ -2192,6 +2192,44 @@ export type Database = {
           },
         ]
       }
+      property_channel_prices: {
+        Row: {
+          adjust_percent: number
+          channel: Database["public"]["Enums"]["reservation_channel"]
+          id: string
+          organization_id: string
+          property_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          adjust_percent?: number
+          channel: Database["public"]["Enums"]["reservation_channel"]
+          id?: string
+          organization_id: string
+          property_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          adjust_percent?: number
+          channel?: Database["public"]["Enums"]["reservation_channel"]
+          id?: string
+          organization_id?: string
+          property_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_channel_prices_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_tokens: {
         Row: {
           created_at: string
@@ -4112,6 +4150,16 @@ export type Database = {
             }
             Returns: number
           }
+      quote_room_price_for_channel: {
+        Args: {
+          _channel: Database["public"]["Enums"]["reservation_channel"]
+          _check_in: string
+          _check_out: string
+          _guests: number
+          _room_id: string
+        }
+        Returns: number
+      }
       remove_todo_attachment: { Args: { _id: string }; Returns: undefined }
       reopen_cleaning_task: {
         Args: {
@@ -4216,6 +4264,14 @@ export type Database = {
       }
       save_attendance_review_controls: {
         Args: { _review: number; _warning: number }
+        Returns: undefined
+      }
+      save_channel_price: {
+        Args: {
+          _channel: Database["public"]["Enums"]["reservation_channel"]
+          _percent: number
+          _property_id: string
+        }
         Returns: undefined
       }
       save_customer: { Args: { _data: Json; _id?: string }; Returns: string }

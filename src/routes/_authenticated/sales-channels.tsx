@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/app-shell";
+import { ChannelPriceRules } from "@/components/channel-price-rules";
 import { RoomSalesChannels } from "@/components/room-sales-channels";
 
 export const Route = createFileRoute("/_authenticated/sales-channels")({
@@ -19,6 +20,7 @@ function SalesChannelsPage() {
   const { t } = useTranslation();
   return (
     <AppShell title={t("salesChannels.title")} subtitle={t("salesChannels.subtitle")}>
+      <ChannelPriceRules />
       <RoomSalesChannels />
     </AppShell>
   );
