@@ -3,7 +3,10 @@ export const MESSAGE_LANGUAGES = [
   { value: "en", label: "English" },
   { value: "tr", label: "Türkçe" },
   { value: "pl", label: "Polski" },
-  { value: "uk", label: "Українська" },
+  { value: "sk", label: "Slovenčina" },
+  { value: "hr", label: "Hrvatski" },
+  { value: "sr", label: "Srpski" },
+  { value: "bs", label: "Bosanski" },
   { value: "ru", label: "Русский" },
 ] as const;
 export type MessageLang = (typeof MESSAGE_LANGUAGES)[number]["value"];
