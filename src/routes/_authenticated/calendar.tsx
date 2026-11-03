@@ -1,4 +1,5 @@
 import { displayLocale } from "@/i18n/legacy-ui";
+import { addDaysIso, localIso, nightsBetween, parseLocalIso } from "@/lib/calendar-date";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 
@@ -124,11 +125,7 @@ function CalendarPage() {
   }
 
   // ---------- Drag to move a stay ----------
-  const addDaysIso = (dIso: string, n: number) => {
-    const d = new Date(dIso + "T00:00:00");
-    d.setDate(d.getDate() + n);
-    return d.toISOString().slice(0, 10);
-  };
+
 
   function startMoveDrag(e: React.MouseEvent, res: UnifiedRes) {
     if (!res.realId || e.button !== 0) return;
@@ -204,7 +201,7 @@ function CalendarPage() {
     (async () => {
       try {
       setLoadError(false);
-      const result = await fetchCalendar({ data: { start: start.toISOString().slice(0, 10), days: range as 7 | 14 | 30, propertyId }, signal: controller.signal });
+      const result = await fetchCalendar({ data: { start: localIso(start), days: range as 7 | 14 | 30, propertyId }, signal: controller.signal });
       if (!current) return;
       const { properties: props, rooms: rms, reservations: res, tasks } = result;
       setTodayRoomIds(new Set(result.todayReservations.map(r => r.room_id)));
@@ -253,7 +250,7 @@ function CalendarPage() {
       }),
     [start, range],
   );
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const iso = localIso;
   const today = businessDate();
 
   const filteredRooms = useMemo(() => {
@@ -285,7 +282,7 @@ function CalendarPage() {
 
   function goToReservation(res: UnifiedRes) {
     // Shift calendar so check-in is visible near the left edge
-    const target = new Date(res.checkIn);
+    const target = parseLocalIso(res.checkIn);
     target.setDate(target.getDate() - 2);
     setStart(startOfDay(target));
     // If reservation's room is in a specific property, switch filter to it
@@ -479,7 +476,7 @@ function CalendarPage() {
           type="date"
           value={iso(start)}
           onChange={(e) => {
-            if (e.target.value) setStart(startOfDay(new Date(e.target.value)));
+            if (e.target.value) setStart(parseLocalIso(e.target.value));
           }}
           className="px-3 py-2 rounded-md border border-input bg-card text-sm"
         />
@@ -702,7 +699,7 @@ function CalendarPage() {
                            const occPast = isPastDate(occupant.checkIn);
                            const draggable = !!occupant.realId && (!occPast || canCreatePast);
                            const dragDays = dragDelta?.resId === occupant.id ? dragDelta.days : 0;
-                         const nights = Math.round((new Date(occupant.checkOut).getTime() - new Date(occupant.checkIn).getTime()) / 86400000);
+                         const nights = nightsBetween(occupant.checkIn, occupant.checkOut);
                            return (
                             <Tooltip>
                               <TooltipTrigger asChild>
