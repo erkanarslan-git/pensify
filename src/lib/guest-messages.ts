@@ -1,6 +1,6 @@
 export type MessageLang = "de" | "en" | "tr";
 export interface GuestInfoSettings {
-  check_in_time: string; check_out_time: string;
+  check_in_time: string; check_out_time: string; check_in_until?: string | null;
   account_holder?: string | null; iban?: string | null; bic?: string | null; bank_name?: string | null;
   contact_phone?: string | null; extra_note?: string | null;
 }
