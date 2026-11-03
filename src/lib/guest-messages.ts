@@ -1,6 +1,6 @@
 export type MessageLang = "de" | "en" | "tr";
 export interface GuestInfoSettings {
-  check_in_time: string; check_out_time: string;
+  check_in_time: string; check_out_time: string; check_in_until?: string | null;
   account_holder?: string | null; iban?: string | null; bic?: string | null; bank_name?: string | null;
   contact_phone?: string | null; extra_note?: string | null;
 }
@@ -10,46 +10,41 @@ export interface StayInfo {
 }
 
 const L = {
-  de: { hello: "Hallo", conf: "Ihre Reservierung ist bestätigt.", prop: "Unterkunft", room: "Zimmer", in: "Anreise", out: "Abreise", from: "ab", until: "bis", amount: "Betrag", pay: "Zahlung per Überweisung möglich:", holder: "Kontoinhaber", ref: "Verwendungszweck", cash: "Sie können auch vor Ort bezahlen.", later: "Ihre Zugangscodes erhalten Sie vor der Anreise.", ready: "Willkommen! Hier sind Ihre Zugangsdaten.", building: "Haustür-Code", door: "Zimmer-Code", keybox: "Schlüsselbox", contact: "Bei Fragen", bye: "Wir wünschen Ihnen einen angenehmen Aufenthalt." },
-  en: { hello: "Hello", conf: "Your reservation is confirmed.", prop: "Property", room: "Room", in: "Check-in", out: "Check-out", from: "from", until: "until", amount: "Amount", pay: "You can pay by bank transfer:", holder: "Account holder", ref: "Reference", cash: "You can also pay on site.", later: "You will receive your access codes before arrival.", ready: "Welcome! Here are your access details.", building: "Entrance code", door: "Room code", keybox: "Key box", contact: "Questions", bye: "We wish you a pleasant stay." },
-  tr: { hello: "Merhaba", conf: "Rezervasyonunuz onaylandı.", prop: "Konaklama yeri", room: "Oda", in: "Giriş", out: "Çıkış", from: "saat", until: "saat", amount: "Tutar", pay: "Havale ile ödeme yapabilirsiniz:", holder: "Hesap sahibi", ref: "Açıklama", cash: "Dilerseniz yerinde de ödeyebilirsiniz.", later: "Giriş şifreleriniz varıştan önce gönderilecektir.", ready: "Hoş geldiniz! Giriş bilgileriniz aşağıdadır.", building: "Bina kapı şifresi", door: "Oda şifresi", keybox: "Anahtar kutusu", contact: "Sorularınız için", bye: "İyi konaklamalar dileriz." },
+  de: { hello: "Hallo", thanks: "vielen Dank für Ihre Buchung bei Pension Highway!", stay: "Aufenthalt", addr: "Adresse", room: "Zimmer", amount: "Betrag", pay: "Zahlung per Überweisung:", holder: "Kontoinhaber", ref: "Verwendungszweck", later: "Ihre Zugangscodes erhalten Sie nach Zahlungseingang.", ready: "hier sind Ihre Informationen für den Check-in.", code: "Code", building: "Haustür", checkin: "Check-in", keys: "Die Schlüssel finden Sie in den Schlüsselboxen.", contact: "Bei Fragen", bye: "Wir wünschen Ihnen einen angenehmen Aufenthalt!", team: "Ihr Pension-Highway-Team" },
+  en: { hello: "Hello", thanks: "thank you for booking with Pension Highway!", stay: "Stay", addr: "Address", room: "Room", amount: "Amount", pay: "Payment by bank transfer:", holder: "Account holder", ref: "Reference", later: "You will receive your access codes once payment is received.", ready: "here is your check-in information.", code: "Code", building: "Entrance", checkin: "Check-in", keys: "Your keys are in the key boxes.", contact: "Questions", bye: "We wish you a pleasant stay!", team: "Your Pension Highway team" },
+  tr: { hello: "Merhaba", thanks: "Pension Highway'i tercih ettiğiniz için teşekkür ederiz!", stay: "Konaklama", addr: "Adres", room: "Oda", amount: "Tutar", pay: "Havale ile ödeme:", holder: "Hesap sahibi", ref: "Açıklama", later: "Giriş şifreleriniz ödemeniz alındıktan sonra iletilecektir.", ready: "check-in bilgileriniz aşağıdadır.", code: "Şifre", building: "Bina kapısı", checkin: "Giriş", keys: "Anahtarlar anahtar kutularındadır.", contact: "Sorularınız için", bye: "İyi konaklamalar dileriz!", team: "Pension Highway ekibi" },
 } as const;
 
 const fmtDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
-const head = (s: StayInfo, g: GuestInfoSettings, l: (typeof L)[MessageLang]) => [
-  `${l.prop}: ${s.propertyName}${s.address ? `, ${s.address}` : ""}`,
-  `${l.room}: ${s.room}`,
-  `${l.in}: ${fmtDate(s.checkIn)} (${l.from} ${g.check_in_time})`,
-  `${l.out}: ${fmtDate(s.checkOut)} (${l.until} ${g.check_out_time})`,
-];
+const address = (s: StayInfo) => s.address ? `${s.propertyName}, ${s.address}` : s.propertyName;
 
-/** Booking confirmation; never contains access codes. Bank details are optional. */
+/** Short welcome/confirmation; never contains access codes. Bank details are optional. */
 export function bookingMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageLang, includeBank: boolean): string {
-  const l = L[lang]; const out = [`${l.hello} ${s.guestName},`, "", l.conf, "", ...head(s, g, l)];
+  const l = L[lang];
+  const out = [`${l.hello} ${s.guestName}, ${l.thanks}`, "",
+    `${l.stay}: ${fmtDate(s.checkIn)} – ${fmtDate(s.checkOut)}`,
+    `${l.addr}: ${address(s)}`];
   if (s.amount && s.amount > 0) out.push(`${l.amount}: ${s.amount.toFixed(2).replace(".", lang === "en" ? "." : ",")} €`);
   if (includeBank && g.iban) {
     out.push("", l.pay);
     if (g.account_holder) out.push(`${l.holder}: ${g.account_holder}`);
     out.push(`IBAN: ${g.iban}`);
-    if (g.bic) out.push(`BIC: ${g.bic}`);
-    if (g.bank_name) out.push(g.bank_name);
     if (s.reference) out.push(`${l.ref}: ${s.reference}`);
-    out.push(l.cash);
   }
   out.push("", l.later);
-  if (g.extra_note) out.push("", g.extra_note);
-  if (g.contact_phone) out.push("", `${l.contact}: ${g.contact_phone}`);
-  out.push("", l.bye);
   return out.join("\n");
 }
 
+/** Check-in info in the short format the office asked for. */
 export function accessMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageLang, codes: { building?: string | null; door?: string | null; keybox?: string | null }): string {
-  const l = L[lang]; const out = [`${l.hello} ${s.guestName},`, "", l.ready, "", ...head(s, g, l), ""];
-  if (codes.building) out.push(`${l.building}: ${codes.building}`);
-  if (codes.door) out.push(`${l.door}: ${codes.door}`);
-  if (codes.keybox) out.push(`${l.keybox}: ${codes.keybox}`);
-  if (g.contact_phone) out.push("", `${l.contact}: ${g.contact_phone}`);
-  out.push("", l.bye);
+  const l = L[lang];
+  const out = [`${l.hello} ${s.guestName},`, l.ready, "", `${l.addr}: ${address(s)}`];
+  if (codes.building) out.push(`${l.building} – ${l.code}: ${codes.building}`);
+  const roomCode = codes.keybox ?? codes.door;
+  out.push(roomCode ? `${l.room} ${s.room} – ${l.code}: ${roomCode}` : `${l.room} ${s.room}`);
+  out.push(`${l.checkin}: ${g.check_in_time}${g.check_in_until ? `–${g.check_in_until}` : ""}`, "", l.keys);
+  if (g.contact_phone) out.push(`${l.contact}: ${g.contact_phone}`);
+  out.push("", l.bye, l.team);
   return out.join("\n");
 }
 

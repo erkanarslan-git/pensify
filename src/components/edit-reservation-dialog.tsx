@@ -1,4 +1,5 @@
 import { displayLocale } from "@/i18n/legacy-ui";
+import { businessDate as businessDateNow } from "@/lib/business-time";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -116,7 +117,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     loadExtensions(r.id); onSaved?.();
   };
 
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = businessDateNow();
   const isPast = !!r && r.check_in < todayIso;
   const canEditPast = perms.can("create_past_reservation");
   const readOnly = isPast && !canEditPast;
