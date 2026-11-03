@@ -393,7 +393,7 @@ function CalendarPage() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setShowHelp(true)}
-            className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
+            className="w-9 h-9 rounded-md border border-border hidden md:grid place-items-center hover:bg-accent"
             title={t("calendar.keyboardShortcuts")}
           >
             <Keyboard className="w-4 h-4" />
@@ -424,7 +424,7 @@ function CalendarPage() {
         <select
           value={propertyId}
           onChange={(e) => setPropertyId(e.target.value)}
-          className="px-3 py-2 rounded-md border border-input bg-card text-sm"
+          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-full sm:w-auto"
         >
           <option value="all">{t("calendar.allPensions")}</option>
           {properties.map((p) => (
@@ -435,7 +435,7 @@ function CalendarPage() {
           value={roomQ}
           onChange={(e) => setRoomQ(e.target.value)}
           placeholder={t("calendar.roomNrPlaceholder")}
-          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-28"
+          className="px-3 py-2 rounded-md border border-input bg-card text-sm w-24 sm:w-28"
         />
         <div className="relative">
           <input

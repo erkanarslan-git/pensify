@@ -143,7 +143,7 @@ function ReservationsPage() {
         </button>
       }
     >
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
         <StatCard highlight icon={<LogIn className="w-4 h-4" />} label={t("resv.arrivalsToday")} value={arrivals} />
         <StatCard icon={<LogOut className="w-4 h-4" />} label={t("resv.departuresToday")} value={departures} />
         <StatCard icon={<BedDouble className="w-4 h-4" />} label={t("resv.guestsInHouse")} value={staying} />
@@ -321,9 +321,9 @@ function ReservationsPage() {
 
 function StatCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: number | undefined; highlight?: boolean }) {
   return (
-    <div className={`rounded-2xl px-5 py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
-      <div className={`flex items-center gap-1.5 text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{icon} {label}</div>
-      <div className="text-3xl font-semibold mt-1 tabular-nums">{value ?? "—"}</div>
+    <div className={`min-w-0 rounded-2xl px-3 py-3 sm:px-5 sm:py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
+      <div className={`flex items-center gap-1.5 text-[11px] sm:text-xs leading-tight ${highlight ? "opacity-80" : "text-muted-foreground"}`}><span className="hidden sm:inline">{icon}</span> {label}</div>
+      <div className="text-2xl sm:text-3xl font-semibold mt-1 tabular-nums">{value ?? "—"}</div>
     </div>
   );
 }
