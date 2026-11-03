@@ -56,6 +56,7 @@ import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/syn
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
 import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
+import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
 import { Route as ApiPublicWebhooksWubookSecretRouteImport } from './routes/api/public/webhooks/wubook/$secret'
 
@@ -315,6 +316,12 @@ const ApiPublicWebhooksWhatsappRoute =
     path: '/api/public/webhooks/whatsapp',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWhatsappWebhookRoute =
+  ApiPublicWhatsappWebhookRouteImport.update({
+    id: '/api/public/whatsapp/webhook',
+    path: '/api/public/whatsapp/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicIcalRoomsRoomIdRoute =
   ApiPublicIcalRoomsRoomIdRouteImport.update({
     id: '/api/public/ical/rooms/$roomId',
@@ -375,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
   '/api/public/webhooks/wubook/$secret': typeof ApiPublicWebhooksWubookSecretRoute
 }
@@ -425,6 +433,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
   '/api/public/webhooks/wubook/$secret': typeof ApiPublicWebhooksWubookSecretRoute
 }
@@ -477,6 +486,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
   '/api/public/webhooks/wubook/$secret': typeof ApiPublicWebhooksWubookSecretRoute
 }
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
     | '/api/public/webhooks/whatsapp'
+    | '/api/public/whatsapp/webhook'
     | '/api/public/ical/rooms/$roomId'
     | '/api/public/webhooks/wubook/$secret'
   fileRoutesByTo: FileRoutesByTo
@@ -579,6 +590,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
     | '/api/public/webhooks/whatsapp'
+    | '/api/public/whatsapp/webhook'
     | '/api/public/ical/rooms/$roomId'
     | '/api/public/webhooks/wubook/$secret'
   id:
@@ -630,6 +642,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
     | '/api/public/webhooks/whatsapp'
+    | '/api/public/whatsapp/webhook'
     | '/api/public/ical/rooms/$roomId'
     | '/api/public/webhooks/wubook/$secret'
   fileRoutesById: FileRoutesById
@@ -647,6 +660,7 @@ export interface RootRouteChildren {
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
   ApiPublicWebhooksBookingRoute: typeof ApiPublicWebhooksBookingRoute
   ApiPublicWebhooksWhatsappRoute: typeof ApiPublicWebhooksWhatsappRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
   ApiPublicIcalRoomsRoomIdRoute: typeof ApiPublicIcalRoomsRoomIdRoute
   ApiPublicWebhooksWubookSecretRoute: typeof ApiPublicWebhooksWubookSecretRoute
 }
@@ -982,6 +996,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/whatsapp/webhook': {
+      id: '/api/public/whatsapp/webhook'
+      path: '/api/public/whatsapp/webhook'
+      fullPath: '/api/public/whatsapp/webhook'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ical/rooms/$roomId': {
       id: '/api/public/ical/rooms/$roomId'
       path: '/api/public/ical/rooms/$roomId'
@@ -1104,6 +1125,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,
   ApiPublicWebhooksBookingRoute: ApiPublicWebhooksBookingRoute,
   ApiPublicWebhooksWhatsappRoute: ApiPublicWebhooksWhatsappRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
   ApiPublicIcalRoomsRoomIdRoute: ApiPublicIcalRoomsRoomIdRoute,
   ApiPublicWebhooksWubookSecretRoute: ApiPublicWebhooksWubookSecretRoute,
 }
