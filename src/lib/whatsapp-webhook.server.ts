@@ -42,7 +42,7 @@ export async function receiveEvent(request: Request): Promise<Response> {
   const { error } = await supabaseAdmin.from("whatsapp_webhook_events").insert({
     delivery_id: deliveryId,
     event,
-    payload: payload as Record<string, unknown>,
+    payload: payload as any,
     processed_at: new Date().toISOString(),
   });
   if (error) {
