@@ -211,8 +211,6 @@ export function NewReservationDialog({
         return toast.error(t("newRes.errSelectRoom"));
       if (l.checkOut <= l.checkIn)
         return toast.error(t("newRes.errDates"));
-      if (l.listPrice != null && l.revenue !== l.listPrice && !l.discountReason.trim())
-        return toast.error(t("newRes.errDiscountReason"));
     }
 
     setSaving(true);

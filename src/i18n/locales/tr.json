@@ -739,7 +739,7 @@
     "amount": "Tutar (€)",
     "calculated": "Hesaplanan: €{{price}}",
     "deviation": " · Fark €{{amount}}",
-    "discountReason": "Fiyat değişikliği nedeni *",
+    "discountReason": "Fiyat değişikliği nedeni (isteğe bağlı)",
     "discountPlaceholder": "örn. sürekli misafir, uzun konaklama",
     "saving": "Kaydediliyor…",
     "saveN": "Kaydet ({{count}} oda)",
@@ -795,7 +795,7 @@
   "editRes": {
     "close": "Kapat",
     "calculated": "Hesaplanan: €{{price}}",
-    "discountReason": "Fiyat değişikliği nedeni *"
+    "discountReason": "Fiyat değişikliği nedeni (isteğe bağlı)"
   },
   "issues": {
     "reportTitle": "Oda {{room}} için sorun bildir",
