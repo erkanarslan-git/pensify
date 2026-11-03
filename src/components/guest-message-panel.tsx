@@ -43,7 +43,6 @@ export function GuestMessagePanel({ reservation: r }: Props) {
     }
     const c = { g, prop: prop?.name ?? "", address: prop?.address ?? null, room: room?.number ?? "", codes };
     setCtx(c); setMode(m); build(m, c); setBusy(false);
-    if (m === "access" && !codes.building && !codes.door && !codes.keybox) toast.warning(t("guestMsg.noCodes"));
   };
 
   const phone = whatsappDigits(r.guest_phone);
@@ -62,7 +61,7 @@ export function GuestMessagePanel({ reservation: r }: Props) {
         </div>
         {mode === "booking" && !ctx?.g.iban && <p className="text-xs text-muted-foreground">{t("guestMsg.noIban")}</p>}
         {mode === "access" && ctx && (["building", "door", "keybox"] as const).some((k) => !ctx.codes[k]) && (
-          <p className="text-xs text-amber-600 dark:text-amber-400">
+          <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
             {t("guestMsg.missing")}: {(["building", "door", "keybox"] as const).filter((k) => !ctx.codes[k]).map((k) => t(`accessCodes.${k}`)).join(", ")}
           </p>
         )}
@@ -71,7 +70,7 @@ export function GuestMessagePanel({ reservation: r }: Props) {
           <Button type="button" variant="outline" onClick={copy}><Copy className="h-4 w-4" />{t("guestMsg.copy")}</Button>
           <Button type="button" disabled={!phone} onClick={wa} title={phone ? undefined : t("guestMsg.noPhone")}><MessageCircle className="h-4 w-4" />WhatsApp</Button>
         </div>
-        {!phone && <p className="text-xs text-muted-foreground">{t("guestMsg.noPhone")}</p>}
+        {!phone && <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{t("guestMsg.noPhone")}</p>}
       </DialogContent>
     </Dialog>
   </div>;
