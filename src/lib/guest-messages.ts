@@ -1,4 +1,15 @@
-export type MessageLang = "de" | "en" | "tr";
+export const MESSAGE_LANGUAGES = [
+  { value: "de", label: "Deutsch" },
+  { value: "en", label: "English" },
+  { value: "tr", label: "Türkçe" },
+  { value: "pl", label: "Polski" },
+  { value: "uk", label: "Українська" },
+  { value: "ru", label: "Русский" },
+] as const;
+export type MessageLang = (typeof MESSAGE_LANGUAGES)[number]["value"];
+export function isMessageLang(value: string): value is MessageLang {
+  return MESSAGE_LANGUAGES.some((language) => language.value === value);
+}
 export interface GuestInfoSettings {
   check_in_time: string; check_out_time: string; check_in_until?: string | null;
   account_holder?: string | null; iban?: string | null; bic?: string | null; bank_name?: string | null;
@@ -13,6 +24,9 @@ const L = {
   de: { hello: "Hallo", thanks: "vielen Dank für Ihre Buchung bei Pension Highway!", stay: "Aufenthalt", addr: "Adresse", room: "Zimmer", amount: "Betrag", pay: "Zahlung per Überweisung:", holder: "Kontoinhaber", ref: "Verwendungszweck", later: "Ihre Zugangscodes erhalten Sie nach Zahlungseingang.", ready: "hier sind Ihre Informationen für den Check-in.", code: "Code", building: "Haustür", checkin: "Check-in", keys: "Die Schlüssel finden Sie in den Schlüsselboxen.", contact: "Bei Fragen", bye: "Wir wünschen Ihnen einen angenehmen Aufenthalt!", team: "Ihr Pension-Highway-Team" },
   en: { hello: "Hello", thanks: "thank you for booking with Pension Highway!", stay: "Stay", addr: "Address", room: "Room", amount: "Amount", pay: "Payment by bank transfer:", holder: "Account holder", ref: "Reference", later: "You will receive your access codes once payment is received.", ready: "here is your check-in information.", code: "Code", building: "Entrance", checkin: "Check-in", keys: "Your keys are in the key boxes.", contact: "Questions", bye: "We wish you a pleasant stay!", team: "Your Pension Highway team" },
   tr: { hello: "Merhaba", thanks: "Pension Highway'i tercih ettiğiniz için teşekkür ederiz!", stay: "Konaklama", addr: "Adres", room: "Oda", amount: "Tutar", pay: "Havale ile ödeme:", holder: "Hesap sahibi", ref: "Açıklama", later: "Giriş şifreleriniz ödemeniz alındıktan sonra iletilecektir.", ready: "check-in bilgileriniz aşağıdadır.", code: "Şifre", building: "Bina kapısı", checkin: "Giriş", keys: "Anahtarlar anahtar kutularındadır.", contact: "Sorularınız için", bye: "İyi konaklamalar dileriz!", team: "Pension Highway ekibi" },
+  pl: { hello: "Dzień dobry", thanks: "dziękujemy za rezerwację w Pension Highway!", stay: "Pobyt", addr: "Adres", room: "Pokój", amount: "Kwota", pay: "Płatność przelewem:", holder: "Właściciel konta", ref: "Tytuł przelewu", later: "Kody dostępu otrzymają Państwo po zaksięgowaniu płatności.", ready: "poniżej znajdują się informacje dotyczące zameldowania.", code: "Kod", building: "Drzwi wejściowe", checkin: "Zameldowanie", keys: "Klucze znajdują się w skrytkach na klucze.", contact: "Kontakt", bye: "Życzymy miłego pobytu!", team: "Zespół Pension Highway" },
+  uk: { hello: "Вітаємо", thanks: "дякуємо за бронювання в Pension Highway!", stay: "Проживання", addr: "Адреса", room: "Кімната", amount: "Сума", pay: "Оплата банківським переказом:", holder: "Власник рахунку", ref: "Призначення платежу", later: "Ви отримаєте коди доступу після надходження оплати.", ready: "нижче наведено інформацію для заселення.", code: "Код", building: "Вхідні двері", checkin: "Заселення", keys: "Ключі знаходяться у скриньках для ключів.", contact: "Контакт", bye: "Бажаємо приємного перебування!", team: "Команда Pension Highway" },
+  ru: { hello: "Здравствуйте", thanks: "спасибо за бронирование в Pension Highway!", stay: "Проживание", addr: "Адрес", room: "Комната", amount: "Сумма", pay: "Оплата банковским переводом:", holder: "Владелец счёта", ref: "Назначение платежа", later: "Вы получите коды доступа после поступления оплаты.", ready: "ниже приведена информация для заселения.", code: "Код", building: "Входная дверь", checkin: "Заселение", keys: "Ключи находятся в ящиках для ключей.", contact: "Контакт", bye: "Желаем приятного пребывания!", team: "Команда Pension Highway" },
 } as const;
 
 const fmtDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
