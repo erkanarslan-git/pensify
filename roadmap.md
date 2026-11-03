@@ -1,6 +1,6 @@
 - [x] 0 € / serbest fiyat (neden isteğe bağlı)
 - [x] Takvim 1 gün kayması ve bugün tarihi
 - [x] Kısa misafir mesaj şablonu
-- [ ] Mobil sadeleştirme (takvim/rezervasyon telefonda)
+- [x] Mobil sadeleştirme (üst çubuk, takvim, rezervasyon)
 - [ ] WhatsApp Business arka plan gönderimi (WhatsApp Business hesabı bağlanması bekleniyor)
 - [ ] Kanal bazlı oda fiyatları ve indirim seçenekleri
