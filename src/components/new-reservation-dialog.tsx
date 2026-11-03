@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { addDaysIso } from "@/lib/calendar-date";
+import { businessDate as businessDateToday } from "@/lib/business-time";
 import {
   Dialog,
   DialogContent,
@@ -53,11 +55,7 @@ interface Props {
   onCreated?: () => void;
 }
 
-function addDays(iso: string, n: number) {
-  const d = new Date(iso);
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
-}
+const addDays = addDaysIso;
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export function NewReservationDialog({
@@ -70,7 +68,7 @@ export function NewReservationDialog({
 }: Props) {
   const { t } = useTranslation();
   const [stays, setStays] = useState<RoomStay[]>([]);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = businessDateToday();
   const [properties, setProperties] = useState<Property[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [guestName, setGuestName] = useState("");

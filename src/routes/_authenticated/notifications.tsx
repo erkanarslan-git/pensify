@@ -1,4 +1,6 @@
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
+import { businessDate as businessDateNow } from "@/lib/business-time";
+import { addDaysIso } from "@/lib/calendar-date";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { AlertTriangle, Clock, Wrench, LogOut, ScrollText } from "lucide-react";
@@ -17,8 +19,8 @@ function NotificationsPage() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const canSeeLogs = perms.roles.some((r) => r === "owner" || r === "admin");
-  const today = new Date().toISOString().slice(0, 10);
-  const in7 = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const today = businessDateNow();
+  const in7 = addDaysIso(today, 7);
   const locale = i18n.language?.startsWith("tr") ? "tr-TR" : i18n.language?.startsWith("en") ? "en-GB" : "de-DE";
 
   const { data } = useQuery({

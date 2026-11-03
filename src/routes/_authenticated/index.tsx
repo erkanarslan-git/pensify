@@ -1,4 +1,5 @@
 import { BUSINESS_TIME_ZONE, businessDate, businessDayBounds } from "@/lib/business-time";
+import { addDaysIso, parseLocalIso } from "@/lib/calendar-date";
 import { summarizeRooms } from "@/lib/room-summary";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section, Badge, useV2Theme } from "@/components/app-shell";
@@ -92,8 +93,7 @@ function Dashboard() {
   const { data: weekRes } = useQuery({
     queryKey: ["dashboard-week"],
     queryFn: async () => {
-      const start = new Date(); start.setDate(start.getDate() - 6);
-      const startIso = start.toISOString().slice(0, 10);
+      const startIso = addDaysIso(businessDate(), -6);
       const { data } = await supabase.from("reservations").select("check_in,check_out,channel").is("deleted_at", null).gte("check_out", startIso).not("status", "in", "(cancelled,no_show)");
       return data ?? [];
     },
@@ -118,12 +118,11 @@ function Dashboard() {
 
   const weekly = useMemo(() => {
     const arr: { day: string; rate: number }[] = [];
-    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const todayIso = businessDate();
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(now); d.setDate(d.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
-      const end = new Date(d); end.setDate(end.getDate() + 1);
-      const endIso = end.toISOString().slice(0, 10);
+      const iso = addDaysIso(todayIso, -i);
+      const d = parseLocalIso(iso);
+      const endIso = addDaysIso(iso, 1);
       const occ = (weekRes ?? []).filter((r: any) => r.check_in < endIso && r.check_out > iso).length;
       arr.push({ day: d.toLocaleDateString(i18n.language, { weekday: "short" }), rate: totalRooms ? Math.round((occ / totalRooms) * 100) : 0 });
     }
@@ -136,15 +135,11 @@ function Dashboard() {
 
   // 7-day trend series for the v2 tile sparklines (real counts where history exists).
   const dayIsos = useMemo(() => {
-    const now = new Date(); now.setHours(0, 0, 0, 0);
-    return Array.from({ length: 7 }, (_, k) => {
-      const d = new Date(now); d.setDate(d.getDate() - (6 - k));
-      return d.toISOString().slice(0, 10);
-    });
+    const todayIso = businessDate();
+    return Array.from({ length: 7 }, (_, k) => addDaysIso(todayIso, -(6 - k)));
   }, []);
   const occSeries = useMemo(() => dayIsos.map((iso) => {
-    const end = new Date(iso); end.setDate(end.getDate() + 1);
-    const endIso = end.toISOString().slice(0, 10);
+    const endIso = addDaysIso(iso, 1);
     return (weekRes ?? []).filter((r: any) => r.check_in < endIso && r.check_out > iso).length;
   }), [dayIsos, weekRes]);
   const tileSeries = {
