@@ -740,7 +740,7 @@
     "amount": "Amount (€)",
     "calculated": "Calculated: €{{price}}",
     "deviation": " · Deviation €{{amount}}",
-    "discountReason": "Reason for price change *",
+    "discountReason": "Reason for price change (optional)",
     "discountPlaceholder": "e.g. regular guest, long stay",
     "saving": "Saving…",
     "saveN": "Save ({{count}} rooms)",
@@ -796,7 +796,7 @@
   "editRes": {
     "close": "Close",
     "calculated": "Calculated: €{{price}}",
-    "discountReason": "Reason for price change *"
+    "discountReason": "Reason for price change (optional)"
   },
   "issues": {
     "reportTitle": "Report issue for room {{room}}",

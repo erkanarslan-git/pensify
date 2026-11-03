@@ -740,7 +740,7 @@
     "amount": "Betrag (€)",
     "calculated": "Berechnet: €{{price}}",
     "deviation": " · Abweichung €{{amount}}",
-    "discountReason": "Begründung für Preisänderung *",
+    "discountReason": "Begründung für Preisänderung (optional)",
     "discountPlaceholder": "z. B. Stammgast, Langzeitaufenthalt",
     "saving": "Speichern…",
     "saveN": "Speichern ({{count}} Zimmer)",
@@ -796,7 +796,7 @@
   "editRes": {
     "close": "Schließen",
     "calculated": "Berechnet: €{{price}}",
-    "discountReason": "Begründung für Preisänderung *"
+    "discountReason": "Begründung für Preisänderung (optional)"
   },
   "issues": {
     "reportTitle": "Problem für Zimmer {{room}} melden",
