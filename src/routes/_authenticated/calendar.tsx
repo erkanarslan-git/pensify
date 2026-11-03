@@ -56,7 +56,7 @@ function CalendarPage() {
     perms.roles.includes("manager") && !perms.roles.includes("admin") && !perms.roles.includes("owner");
   const [range, setRange] = useState(14);
   const [start, setStart] = useState(() => {
-    const d = startOfDay(new Date());
+    const d = parseLocalIso(businessDate());
     d.setDate(d.getDate() - 3);
     return d;
   });
@@ -375,7 +375,7 @@ function CalendarPage() {
     setStart(d);
   };
   const goToday = () => {
-    const d = startOfDay(new Date());
+    const d = parseLocalIso(businessDate());
     d.setDate(d.getDate() - 3);
     setStart(d);
   };
