@@ -5,15 +5,16 @@ const s = { guestName: "Anna", propertyName: "Dom", room: "101", checkIn: "2026-
 const g = { check_in_time: "15:00", check_out_time: "11:00", iban: "DE89370400440532013000" };
 
 describe("guest messages", () => {
-  it("offers the six requested guest languages independently of the phone number", () => {
-    expect(MESSAGE_LANGUAGES.map(({ value }) => value)).toEqual(["de", "en", "tr", "pl", "uk", "ru"]);
-    expect(isMessageLang("uk")).toBe(true);
+  it("offers the requested guest languages independently of the phone number", () => {
+    expect(MESSAGE_LANGUAGES.map(({ value }) => value)).toEqual(["de", "en", "tr", "pl", "sk", "hr", "sr", "bs", "ru"]);
+    expect(isMessageLang("sk")).toBe(true);
+    expect(isMessageLang("uk")).toBe(false);
     expect(isMessageLang("unknown")).toBe(false);
     const guest = { ...s, guestPhone: "+49 176 1234567" };
     expect(bookingMessage(guest, g, "pl", false)).toBe(bookingMessage(s, g, "pl", false));
     expect(bookingMessage(s, g, "pl", false)).not.toBe(bookingMessage(s, g, "de", false));
   });
-  it.each(["pl", "uk", "ru"] as const)("keeps booking and access information separate in %s", (lang) => {
+  it.each(["pl", "sk", "hr", "sr", "bs", "ru"] as const)("keeps booking and access information separate in %s", (lang) => {
     const booking = bookingMessage(s, g, lang, false);
     const access = accessMessage(s, g, lang, { building: "123456", keybox: "9465" });
     expect(booking).not.toContain("123456");
