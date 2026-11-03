@@ -516,7 +516,7 @@ export function AppShell({ title, subtitle, actions, children }: {
       {actions}
       <button
         onClick={lock}
-        className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+        className="w-10 h-10 rounded-xl border border-border hidden sm:grid place-items-center hover:bg-accent transition-colors shrink-0"
         aria-label={lockLabel}
         title={lockLabel}
       >
@@ -524,7 +524,7 @@ export function AppShell({ title, subtitle, actions, children }: {
       </button>
       <button
         onClick={() => setDark((d) => !d)}
-        className="w-10 h-10 rounded-xl border border-border grid place-items-center hover:bg-accent transition-colors shrink-0"
+        className="w-10 h-10 rounded-xl border border-border hidden sm:grid place-items-center hover:bg-accent transition-colors shrink-0"
         aria-label={t("common.theme")}
       >
         {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -570,7 +570,7 @@ export function AppShell({ title, subtitle, actions, children }: {
           <header className="min-h-14 md:min-h-16 border-b border-border flex items-center gap-2 md:gap-3 px-3 md:px-6 py-2 sticky top-0 bg-background/80 backdrop-blur-md z-10">
             {menuButtons}
             <div className="flex-1 max-w-xl hidden sm:block">{searchBox(true)}</div>
-            <div className="flex flex-wrap items-center gap-2 ml-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 ml-auto min-w-0">
               {headerButtons}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -595,6 +595,9 @@ export function AppShell({ title, subtitle, actions, children }: {
                       {l.label}
                     </DropdownMenuItem>
                   ))}
+                  <DropdownMenuSeparator className="sm:hidden" />
+                  <DropdownMenuItem className="sm:hidden" onClick={lock}><Lock className="w-4 h-4 mr-2" /> {lockLabel}</DropdownMenuItem>
+                  <DropdownMenuItem className="sm:hidden" onClick={() => setDark((d) => !d)}>{dark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />} {t("common.theme")}</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" /> {t("common.signOut")}
