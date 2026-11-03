@@ -7,13 +7,15 @@ const g = { check_in_time: "15:00", check_out_time: "11:00", iban: "DE8937040044
 describe("guest messages", () => {
   it("booking message never contains codes and shows times", () => {
     const m = bookingMessage(s, g, "de", true);
-    expect(m).toContain("ab 15:00"); expect(m).toContain("bis 11:00"); expect(m).toContain("IBAN: DE89");
+    expect(m).toContain("02.11.2026 – 05.11.2026"); expect(m).toContain("IBAN: DE89");
+    expect(m).toContain("nach Zahlungseingang"); expect(m).not.toContain("Code:");
   });
   it("bank details are left out when not chosen", () => {
     expect(bookingMessage(s, g, "de", false)).not.toContain("IBAN");
   });
-  it("access message includes the room code", () => {
-    expect(accessMessage(s, g, "en", { door: "4711" })).toContain("Room code: 4711");
+  it("access message uses the short room – code format", () => {
+    const m = accessMessage(s, { ...g, check_in_until: "22:00" }, "de", { keybox: "9465" });
+    expect(m).toContain("Zimmer 101 – Code: 9465"); expect(m).toContain("Check-in: 15:00–22:00");
   });
   it("normalizes phone numbers for WhatsApp", () => {
     expect(whatsappDigits("0176 1234567")).toBe("491761234567");
