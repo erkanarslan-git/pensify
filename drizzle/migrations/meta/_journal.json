@@ -778,6 +778,13 @@
       "when": 1793704600742,
       "tag": "0110_channel_price_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 111,
+      "version": "7",
+      "when": 1793730922929,
+      "tag": "0111_whatsapp_webhook_events_inbox",
+      "breakpoints": true
     }
   ]
 }
