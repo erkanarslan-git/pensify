@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { accessMessage, bookingMessage, whatsappDigits, type GuestInfoSettings, type MessageLang } from "@/lib/guest-messages";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { accessMessage, bookingMessage, whatsappDigits, MESSAGE_LANGUAGES, isMessageLang, type GuestInfoSettings, type MessageLang } from "@/lib/guest-messages";
 
 interface Props { reservation: { property_id: string; room_id: string; guest_name: string; guest_phone: string | null; check_in: string; check_out: string; revenue: number } }
 const DEFAULTS: GuestInfoSettings = { check_in_time: "15:00", check_out_time: "11:00" };
@@ -56,7 +57,11 @@ export function GuestMessagePanel({ reservation: r }: Props) {
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{t(mode === "access" ? "guestMsg.access" : "guestMsg.booking")}</DialogTitle><DialogDescription>{t("guestMsg.hint")}</DialogDescription></DialogHeader>
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          {(["de", "en", "tr"] as const).map((l) => <Button key={l} type="button" size="sm" variant={lang === l ? "default" : "outline"} onClick={() => { setLang(l); if (mode) build(mode, ctx, l); }}>{l.toUpperCase()}</Button>)}
+          <label htmlFor="guest-message-language" className="font-medium">{t("guestMsg.language")}</label>
+          <Select value={lang} onValueChange={(value) => { if (!isMessageLang(value)) return; setLang(value); if (mode) build(mode, ctx, value); }}>
+            <SelectTrigger id="guest-message-language" className="w-40" aria-label={t("guestMsg.language")}><SelectValue /></SelectTrigger>
+            <SelectContent>{MESSAGE_LANGUAGES.map((language) => <SelectItem key={language.value} value={language.value}>{language.label}</SelectItem>)}</SelectContent>
+          </Select>
           {mode === "booking" && <label className="ml-auto flex items-center gap-2"><input type="checkbox" checked={withBank} disabled={!ctx?.g.iban} onChange={(e) => { setWithBank(e.target.checked); build("booking", ctx, lang, e.target.checked); }} />{t("guestMsg.withBank")}</label>}
         </div>
         {mode === "booking" && !ctx?.g.iban && <p className="text-xs text-muted-foreground">{t("guestMsg.noIban")}</p>}
