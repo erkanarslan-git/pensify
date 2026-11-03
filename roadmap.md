@@ -2,6 +2,6 @@
 - [x] Takvim 1 gün kayması ve bugün tarihi
 - [x] Kısa misafir mesaj şablonu
 - [x] Mobil sadeleştirme (üst çubuk, takvim, rezervasyon)
-- [ ] Misafir mesajı uyarılarını ekran diline uyarlama ve ayrı mesaj diline Lehçe/Ukraynaca/Rusça ekleme
+- [x] Misafir mesajı uyarılarını ekran diline uyarlama ve ayrı mesaj diline Lehçe/Ukraynaca/Rusça ekleme
 - [ ] WhatsApp Business arka plan gönderimi (WhatsApp Business hesabı bağlanması bekleniyor)
 - [ ] Kanal bazlı oda fiyatları ve indirim seçenekleri
