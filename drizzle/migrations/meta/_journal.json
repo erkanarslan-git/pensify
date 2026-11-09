@@ -785,6 +785,13 @@
       "when": 1793730922929,
       "tag": "0111_whatsapp_webhook_events_inbox",
       "breakpoints": true
+    },
+    {
+      "idx": 112,
+      "version": "7",
+      "when": 1794254753122,
+      "tag": "0112_channel_aware_list_price",
+      "breakpoints": true
     }
   ]
 }
