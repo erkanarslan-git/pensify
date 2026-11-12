@@ -561,7 +561,7 @@ function CalendarPage() {
           <div className="min-w-[900px] px-5">
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
-              <div className="sticky top-0 left-0 z-30 bg-card text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
+              <div className="sticky top-0 left-0 z-40 bg-card text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
                 <span>{t("calendar.colRoom")}</span>
                 {!gridFocused && (
                   <Tooltip>
@@ -586,7 +586,7 @@ function CalendarPage() {
                 const isFocusCol = dIdx === focus.col;
                 const past = isPastDate(iso(d));
                 return (
-                  <div key={iso(d)} className={`sticky top-0 z-20 bg-card text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
+                  <div key={iso(d)} className={`sticky top-0 z-30 bg-card text-center py-3 border-b border-border ${isToday ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_8%,transparent),color-mix(in_oklab,var(--primary)_8%,transparent))]" : ""} ${isFocusCol ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
                     <div className="text-[10px] uppercase text-muted-foreground">
                       {d.toLocaleDateString(displayLocale(), { weekday: "short" })}
                     </div>
@@ -621,7 +621,7 @@ function CalendarPage() {
                   );
                 }
                 cells.push(
-                  <div key={`${r.id}-label`} className={`sticky left-0 z-10 bg-card py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-primary/10" : ""}`}>
+                  <div key={`${r.id}-label`} className={`sticky left-0 z-20 bg-card py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""}`}>
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate flex items-center gap-1.5">
                         {r.floor != null && (
