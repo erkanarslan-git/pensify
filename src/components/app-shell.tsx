@@ -560,7 +560,7 @@ export function AppShell({ title, subtitle, actions, children }: {
   );
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
+    <div className="h-dvh flex bg-background text-foreground">
       <aside className={`${collapsed ? "w-16" : "w-64"} shrink-0 border-r border-sidebar-border ${v2 ? "bg-sidebar" : "bg-sidebar/80 backdrop-blur-sm"} hidden md:flex flex-col transition-[width] duration-200`}>
         <SidebarContent mini={collapsed} />
       </aside>
@@ -619,7 +619,7 @@ export function AppShell({ title, subtitle, actions, children }: {
             </div>
           </header>
         )}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <div className="flex-1 min-h-0 p-4 md:p-6 overflow-y-auto">
           {v2 && pathname !== "/" && title && (
             <div className="mb-5 min-w-0">
               <h1 className="text-2xl font-semibold tracking-tight break-words">{title}</h1>

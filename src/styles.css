@@ -654,3 +654,23 @@
 }
 
 .tv-celebration p.tv-celebration-stay { color: var(--foreground); font-weight: 600; }
+
+/* Thin, quiet scrollbars: the board and the page keep one slim bar each
+   instead of the wide system one with arrow buttons. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--muted-foreground) 40%, transparent);
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--muted-foreground) 65%, transparent);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner { background: transparent; }
