@@ -307,7 +307,7 @@ function CalendarPage() {
     properties
       .filter((p) => propertyId === "all" || p.id === propertyId)
       .forEach((p) => {
-        filteredRooms.filter((r) => r.propertyId === p.id).forEach((room) => out.push({ room, property: p }));
+        filteredRooms.filter((r) => r.propertyId === p.id).sort((a, b) => (a.floor ?? 9999) - (b.floor ?? 9999)).forEach((room) => out.push({ room, property: p }));
       });
     return out;
   }, [properties, filteredRooms, propertyId]);
@@ -561,7 +561,7 @@ function CalendarPage() {
           <div className="min-w-[900px] px-5">
 
             <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
+              <div className="sticky top-0 left-0 z-30 bg-card text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
                 <span>{t("calendar.colRoom")}</span>
                 {!gridFocused && (
                   <Tooltip>
@@ -586,7 +586,7 @@ function CalendarPage() {
                 const isFocusCol = dIdx === focus.col;
                 const past = isPastDate(iso(d));
                 return (
-                  <div key={iso(d)} className={`text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
+                  <div key={iso(d)} className={`sticky top-0 z-20 bg-card text-center py-3 border-b border-border ${isToday ? "bg-primary/5" : ""} ${isFocusCol ? "bg-primary/10" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
                     <div className="text-[10px] uppercase text-muted-foreground">
                       {d.toLocaleDateString(displayLocale(), { weekday: "short" })}
                     </div>
@@ -614,8 +614,14 @@ function CalendarPage() {
                     </div>,
                   );
                 }
+                const prevRoom = rowIdx > 0 ? flatRooms[rowIdx - 1] : null;
+                if (!isNewGroup && prevRoom && r.floor != null && prevRoom.room.floor !== r.floor) {
+                  cells.push(
+                    <div key={`${r.id}-floor`} style={{ gridColumn: "1 / -1" }} className="h-3 border-b-2 border-dashed border-border bg-muted/40" aria-hidden />,
+                  );
+                }
                 cells.push(
-                  <div key={`${r.id}-label`} className={`py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-primary/10" : ""}`}>
+                  <div key={`${r.id}-label`} className={`sticky left-0 z-10 bg-card py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-primary/10" : ""}`}>
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate flex items-center gap-1.5">
                         {r.floor != null && (
@@ -956,7 +962,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
       <div
         ref={ref}
         title={t("calendarExtra.panHint")}
-        className="overflow-x-auto select-none cursor-grab active:cursor-grabbing"
+        className="overflow-auto max-h-[75vh] select-none cursor-grab active:cursor-grabbing"
         onMouseDownCapture={onMouseDownCapture}
         onContextMenu={(e) => e.preventDefault()}
         onMouseDown={onMouseDown}

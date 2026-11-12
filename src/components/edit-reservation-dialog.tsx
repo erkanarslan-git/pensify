@@ -118,7 +118,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   };
 
   const todayIso = businessDateNow();
-  const isPast = !!r && r.check_in < todayIso;
+  const isPast = !!r && r.check_out <= todayIso;
   const canEditPast = perms.can("create_past_reservation");
   const readOnly = isPast && !canEditPast;
 

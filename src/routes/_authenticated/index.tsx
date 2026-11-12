@@ -257,7 +257,7 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")} action={<Link to="/cleaning" className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}>
           <div className="divide-y divide-border">
-            {tasks.filter((t) => t.status !== "completed").slice(0, 3).map((task) => (
+            {tasks.filter((t) => t.status !== "completed" && (t.due_at ?? "").slice(0, 10) <= today).sort((a, b) => (b.due_at ?? "").localeCompare(a.due_at ?? "")).slice(0, 3).map((task) => (
               <Link key={task.id} to="/cleaning" className="flex min-w-0 flex-col items-start gap-3 py-4 first:pt-0 last:pb-0 transition hover:bg-accent/50 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-semibold text-primary [overflow-wrap:anywhere]">{t("resv.thRoom")} {task.room?.number}</div>
