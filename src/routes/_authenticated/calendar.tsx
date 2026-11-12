@@ -560,7 +560,7 @@ function CalendarPage() {
         <ScrollableGrid>
           <div className="min-w-[900px] px-5">
 
-            <div className="grid" style={{ gridTemplateColumns: `220px repeat(${days.length}, minmax(60px, 1fr))` }}>
+            <div className="grid" style={{ gridTemplateColumns: `max-content repeat(${days.length}, minmax(60px, 1fr))` }}>
               <div className="sticky top-0 left-0 z-40 bg-card text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
                 <span>{t("calendar.colRoom")}</span>
                 {!gridFocused && (
