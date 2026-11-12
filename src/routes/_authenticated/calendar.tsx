@@ -389,29 +389,6 @@ function CalendarPage() {
     <AppShell
       title={t("pages.calendar.title")}
       subtitle={t("common.occupancyCalendarSubtitle")}
-      actions={
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowHelp(true)}
-            className="w-9 h-9 rounded-md border border-border hidden md:grid place-items-center hover:bg-accent"
-            title={t("calendar.keyboardShortcuts")}
-          >
-            <Keyboard className="w-4 h-4" />
-          </button>
-          <button
-            onClick={goToday}
-            className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
-          >
-            <CalendarIcon className="w-3.5 h-3.5" /> {t("common.today")}
-          </button>
-          <button onClick={() => shift(-range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button onClick={() => shift(range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      }
     >
       {loadError && <p role="alert" className="mb-4 text-sm text-destructive">{t("resv.loadError")}</p>}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
@@ -490,6 +467,27 @@ function CalendarPage() {
               {t("reservationList.days", { count: r.key })}
             </button>
           ))}
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="w-9 h-9 rounded-md border border-border hidden md:grid place-items-center hover:bg-accent"
+            title={t("calendar.keyboardShortcuts")}
+          >
+            <Keyboard className="w-4 h-4" />
+          </button>
+          <button
+            onClick={goToday}
+            className="px-3 h-9 rounded-md border border-border text-xs font-medium hover:bg-accent inline-flex items-center gap-1"
+          >
+            <CalendarIcon className="w-3.5 h-3.5" /> {t("common.today")}
+          </button>
+          <button onClick={() => shift(-range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button onClick={() => shift(range)} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent">
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -915,36 +913,14 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
     setCanLeft(el.scrollLeft > 4);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   };
-  // The board should reach the bottom of the window: grow the scroll box until
-  // the card that wraps it ends just above the page padding, so the window
-  // itself never scrolls and only one vertical bar is left.
-  const [fitH, setFitH] = useState<number | null>(null);
-  const fit = () => {
-    const el = ref.current;
-    if (!el) return;
-    const box = el.getBoundingClientRect();
-    if (box.height < 40) return; // mobile list view: the board is not rendered
-    const card = el.closest("section");
-    if (!card) return;
-    let host: HTMLElement | null = card.parentElement;
-    while (host && !/(auto|scroll)/.test(getComputedStyle(host).overflowY)) host = host.parentElement;
-    const padBottom = host ? parseFloat(getComputedStyle(host).paddingBottom) || 0 : 0;
-    const limit = (host ? host.getBoundingClientRect().bottom : window.innerHeight) - padBottom;
-    const delta = limit - card.getBoundingClientRect().bottom;
-    if (Math.abs(delta) < 2) return;
-    setFitH(Math.max(200, Math.round(box.height + delta)));
-  };
-
   useEffect(() => {
     update();
-    fit();
     const el = ref.current;
     if (!el) return;
     el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(() => { update(); fit(); });
+    const ro = new ResizeObserver(() => { update(); });
     ro.observe(el);
-    window.addEventListener("resize", fit);
-    return () => { el.removeEventListener("scroll", update); window.removeEventListener("resize", fit); ro.disconnect(); };
+    return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
   }, [children]);
 
   const step = () => (ref.current?.clientWidth ?? 600) * 0.7;
@@ -984,8 +960,7 @@ function ScrollableGrid({ children }: { children: React.ReactNode }) {
       <div
         ref={ref}
         title={t("calendarExtra.panHint")}
-        style={fitH ? { height: fitH } : undefined}
-        className="overflow-auto select-none cursor-grab active:cursor-grabbing"
+        className="overflow-x-auto overflow-y-hidden select-none cursor-grab active:cursor-grabbing"
         onMouseDownCapture={onMouseDownCapture}
         onContextMenu={(e) => e.preventDefault()}
         onMouseDown={onMouseDown}
