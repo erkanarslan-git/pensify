@@ -712,7 +712,8 @@
     "roomsOccupiedToday": "{{count}} Zimmer · heute belegt: {{occupied}}",
     "shortcuts": "Tastatur-Kürzel",
     "conflictLine": "Konflikt: Zimmer in diesem Zeitraum bereits belegt",
-    "helpToggle": "Diese Hilfe ein-/ausblenden"
+    "helpToggle": "Diese Hilfe ein-/ausblenden",
+    "helpActivate": "Kalender aktivieren"
   },
   "newRes": {
     "title": "Neue Buchung",

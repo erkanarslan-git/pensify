@@ -91,7 +91,7 @@ function CalendarPage() {
       const tag = t?.tagName;
       const inField = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable;
       if (inField && e.key !== "Escape") return;
-      if (e.key === "g" || e.key === "G" || e.key === "Escape") {
+      if (((e.ctrlKey || e.metaKey) && (e.key === "g" || e.key === "G")) || ((e.key === "g" || e.key === "G") && !e.ctrlKey && !e.metaKey && !e.altKey) || e.key === "Escape") {
         e.preventDefault();
         gridFocusRef.current?.focus({ preventScroll: true });
       }
@@ -313,6 +313,11 @@ function CalendarPage() {
   }, [properties, filteredRooms, propertyId]);
 
   const [focus, setFocus] = useState<{ row: number; col: number }>({ row: 0, col: 0 });
+  // Excel-like: keep the active cell visible, scrolling only when it reaches an edge.
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>('[data-cal-focused="1"]');
+    el?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [focus]);
   useEffect(() => {
     setFocus((f) => ({
       row: Math.min(f.row, Math.max(0, flatRooms.length - 1)),
@@ -692,7 +697,8 @@ function CalendarPage() {
                     <div
                       key={`${r.id}-${dIso}`}
                       onClick={() => setFocus({ row: rowIdx, col: dIdx })}
-                      style={pastStyle}
+                      data-cal-focused={isFocused ? "1" : undefined}
+                      style={{ ...pastStyle, scrollMarginLeft: 170, scrollMarginTop: 80, scrollMarginBottom: 24, scrollMarginRight: 24 }}
                       className={`border-b border-l border-border h-12 relative group ${past ? "bg-muted/30" : ""} ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
                     >
                       {occupant && isOccupantStart ? (
@@ -845,6 +851,7 @@ function CalendarPage() {
               {[
                 { keys: ["↑", "↓", "←", "→"], desc: t("calendar.helpNavCells") },
                 { keys: ["←", "→"], desc: t("calendar.helpNavEdge") },
+                { keys: ["Ctrl", "G"], desc: t("calendar.helpActivate") },
                 { keys: ["Enter"], desc: t("calendar.helpEnter") },
                 { keys: ["?"], desc: t("calendar.helpToggle") },
                 { keys: ["Esc"], desc: t("calendar.helpEsc") },

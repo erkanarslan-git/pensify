@@ -711,7 +711,8 @@
     "roomsOccupiedToday": "{{count}} oda · bugün dolu: {{occupied}}",
     "shortcuts": "Klavye kısayolları",
     "conflictLine": "Çakışma: oda bu dönemde zaten dolu",
-    "helpToggle": "Bu yardımı aç/kapat"
+    "helpToggle": "Bu yardımı aç/kapat",
+    "helpActivate": "Takvimi etkinleştir"
   },
   "newRes": {
     "title": "Yeni Rezervasyon",

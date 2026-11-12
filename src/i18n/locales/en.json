@@ -712,7 +712,8 @@
     "roomsOccupiedToday": "{{count}} rooms · occupied today: {{occupied}}",
     "shortcuts": "Keyboard shortcuts",
     "conflictLine": "Conflict: room already booked in this period",
-    "helpToggle": "Toggle this help"
+    "helpToggle": "Toggle this help",
+    "helpActivate": "Activate calendar"
   },
   "newRes": {
     "title": "New booking",
