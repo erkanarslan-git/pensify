@@ -52,6 +52,7 @@ interface Reservation {
   discount_reason: string | null;
   notes: string | null;
   payment_method: string | null;
+  long_stay: boolean;
   created_by: string | null;
   created_at: string;
 }
@@ -62,6 +63,9 @@ const addDaysIso = (iso: string, d: number) => {
   const x = new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + d));
   return x.toISOString().slice(0, 10);
 };
+
+const LS: Record<string,string> = { de: "Dauergast", tr: "Uzun dönem misafir", en: "Long-stay guest" };
+const LSH: Record<string,string> = { de: "Zimmer bleibt belegt; die Abreise wird automatisch verlängert, bis Sie dies abwählen.", tr: "Oda dolu kalır; işareti kaldırana kadar çıkış tarihi otomatik uzatılır.", en: "The room stays occupied; check-out is extended automatically until you untick this." };
 
 const EXT_COPY = {
   de: { title: "Aufenthalt verlängern", current: "Abreise", button: "Verlängern", newDate: "Neue Abreise", note: "Notiz (optional)", later: "Die neue Abreise muss nach der aktuellen liegen.", done: (n: number) => `Um ${n} Nächte verlängert`, confirmExt: (n: number) => `+${n} Nächte bestätigen`, guestsMissing: "Personenzahl nicht erfasst", confirm: "Stimmt so" },
@@ -77,7 +81,7 @@ interface Props {
 }
 
 const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_phone",
-  "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes", "payment_method"] as const;
+  "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes", "payment_method", "long_stay"] as const;
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
   const { t } = useTranslation();
@@ -204,6 +208,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       discount_reason: r.discount_reason?.trim() || null,
       notes: r.notes?.trim() || null,
       payment_method: r.payment_method || null,
+      long_stay: r.long_stay,
     }).eq("id", r.id);
     setSaving(false);
     if (error) {
@@ -355,6 +360,10 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                   className="px-3 py-2 rounded-md border border-input bg-card">
                   {(["", ...PAYMENT_METHODS] as string[]).map((m) => <option key={m} value={m}>{paymentMethodLabel(m || null, i18n.language)}</option>)}
                 </select>
+              </label>
+              <label className="col-span-full flex items-start gap-2 rounded-md border border-border p-3">
+                <input type="checkbox" className="mt-1" checked={r.long_stay} onChange={(e) => update("long_stay", e.target.checked)} />
+                <span><span className="font-medium">{LS[i18n.language.slice(0, 2)] ?? LS.de}</span><span className="block text-xs text-muted-foreground">{LSH[i18n.language.slice(0, 2)] ?? LSH.de}</span></span>
               </label>
               <label className="col-span-full grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("newRes.note")}</span>

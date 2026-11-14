@@ -80,3 +80,16 @@ d3("payment method filter", () => {
     e3(reservationFiltersSchema.safeParse({ paymentMethod: "paypal" }).success).toBe(false);
   });
 });
+
+describe("long-stay guests", () => {
+  it("filters only long-stay reservations when requested", async () => {
+    const { applyReservationFilters, reservationFiltersSchema } = await import("./reservation-list");
+    const calls: unknown[][] = [];
+    const q: any = new Proxy({}, { get: (_t, k) => (...a: unknown[]) => { calls.push([k, ...a]); return q; } });
+    applyReservationFilters(q, reservationFiltersSchema.parse({ longStayOnly: true }), "2026-11-14");
+    expect(calls).toContainEqual(["eq", "long_stay", true]);
+    calls.length = 0;
+    applyReservationFilters(q, reservationFiltersSchema.parse({}), "2026-11-14");
+    expect(calls.some((c) => c[1] === "long_stay")).toBe(false);
+  });
+});

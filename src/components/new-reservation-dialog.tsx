@@ -59,6 +59,8 @@ interface Props {
 const addDays = addDaysIso;
 const uid = () => Math.random().toString(36).slice(2, 9);
 
+const LS: Record<string,string> = { de: "Dauergast", tr: "Uzun dönem misafir", en: "Long-stay guest" };
+
 export function NewReservationDialog({
   open,
   onOpenChange,
@@ -84,6 +86,7 @@ export function NewReservationDialog({
   const enabledChannels = useEnabledChannels();
   const [notes, setNotes] = useState("");
   const [payMethod, setPayMethod] = useState<string>("none");
+  const [longStay, setLongStay] = useState(false);
   const [lines, setLines] = useState<RoomLine[]>([]);
   const [saving, setSaving] = useState(false);
   const [payerParty, setPayerParty] = useState<CustomerParty | null>(null);
@@ -243,8 +246,8 @@ export function NewReservationDialog({
         payer_is_occupant: customerType === 'person' && !payer && occupants[l.uid] === undefined,
       })),
     });
-    if (!error && bookingId && payMethod !== "none") {
-      await supabase.from("reservations").update({ payment_method: payMethod }).eq("booking_id", bookingId as string);
+    if (!error && bookingId && (payMethod !== "none" || longStay)) {
+      await supabase.from("reservations").update({ ...(payMethod !== "none" ? { payment_method: payMethod } : {}), ...(longStay ? { long_stay: true } : {}) }).eq("booking_id", bookingId as string);
     }
     setSaving(false);
 
@@ -381,6 +384,10 @@ export function NewReservationDialog({
                 </SelectContent>
               </Select>
             </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={longStay} onChange={(e) => setLongStay(e.target.checked)} />
+              {LS[i18n.language.slice(0, 2)] ?? LS.de}
+            </label>
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-xs text-muted-foreground uppercase tracking-wider">
                 {t("newRes.note")}

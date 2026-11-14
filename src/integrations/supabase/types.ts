@@ -2488,6 +2488,7 @@ export type Database = {
           ical_uid: string | null
           id: string
           list_price: number | null
+          long_stay: boolean
           notes: string | null
           organization_id: string
           payer_ibans: string[]
@@ -2528,6 +2529,7 @@ export type Database = {
           ical_uid?: string | null
           id?: string
           list_price?: number | null
+          long_stay?: boolean
           notes?: string | null
           organization_id?: string
           payer_ibans?: string[]
@@ -2568,6 +2570,7 @@ export type Database = {
           ical_uid?: string | null
           id?: string
           list_price?: number | null
+          long_stay?: boolean
           notes?: string | null
           organization_id?: string
           payer_ibans?: string[]
@@ -3996,6 +3999,7 @@ export type Database = {
         Args: { _reason: string; _tx_id: string }
         Returns: undefined
       }
+      extend_long_stays: { Args: never; Returns: number }
       extend_reservation: {
         Args: {
           _new_check_out: string

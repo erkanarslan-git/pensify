@@ -11,6 +11,7 @@ export const reservationFiltersSchema = z.object({
   period: z.enum(["upcoming", "today", "past", "all"]).default("upcoming"),
   paymentMethod: z.enum(["all", ...PAYMENT_METHODS] as const).default("all"),
   createdTodayOnly: z.boolean().default(false),
+  longStayOnly: z.boolean().default(false),
   focus: z.enum(["none", "arrivals", "departures", "inHouse"]).default("none"),
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")).default(""),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")).default(""),
@@ -25,7 +26,7 @@ export type ReservationPage = z.infer<typeof reservationPageSchema>;
 export interface ReservationListRow {
   id: string; guest_name: string; channel: string; status: string;
   check_in: string; check_out: string; guests_count: number; revenue: number; created_at: string;
-  customer_type: string | null; company_name: string | null; payment_method?: string | null;
+  customer_type: string | null; company_name: string | null; payment_method?: string | null; long_stay?: boolean;
   room: { number: string; property_id: string } | null;
   property: { id: string; name: string } | null;
 }
@@ -55,6 +56,7 @@ export function applyReservationFilters<T>(query: T, filters: ReservationFilters
   if (filters.focus === "departures") q = q.eq("check_out", today);
   if (filters.focus === "inHouse") q = q.lte("check_in", today).gt("check_out", today);
   if (filters.focus !== "none") q = q.not("status", "in", "(cancelled,no_show)");
+  if (filters.longStayOnly) q = q.eq("long_stay", true);
   if (filters.from) q = q.gte("check_in", filters.from);
   if (filters.to) q = q.lte("check_in", filters.to);
   if (filters.createdTodayOnly) {

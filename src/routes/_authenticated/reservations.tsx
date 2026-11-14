@@ -22,6 +22,8 @@ import { RESERVATION_PAGE_SIZES, reservationCsvCell, type ReservationFilters, ty
 
 type Search = { property?: string; created?: string };
 
+const LS: Record<string,string> = { de: "Dauergast", tr: "Uzun dönem misafir", en: "Long-stay guest" };
+
 export const Route = createFileRoute("/_authenticated/reservations")({
   validateSearch: (s: Record<string, unknown>): Search => {
     const out: Search = {};
@@ -61,6 +63,7 @@ function ReservationsPage() {
   const [newOpen, setNewOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("all");
+  const [longStay, setLongStay] = useState(false);
   const [pay, setPay] = useState<ReservationFilters["paymentMethod"]>("all");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<10 | 20 | 30 | 40 | 50>(20);
@@ -78,12 +81,12 @@ function ReservationsPage() {
     const timer = setTimeout(() => { setDq(q.trim()); setPage(0); }, 300);
     return () => clearTimeout(timer);
   }, [q]);
-  useEffect(() => setPage(0), [src, prop, period, status, pay, createdTodayOnly, from, to, sort, pageSize, focus]);
+  useEffect(() => setPage(0), [src, prop, period, status, pay, longStay, createdTodayOnly, from, to, sort, pageSize, focus]);
   const filters: ReservationFilters = {
     search: dq, propertyId: prop, source: src as ReservationFilters["source"],
     status: status as ReservationFilters["status"], period,
     paymentMethod: pay,
-    createdTodayOnly, from, to, sort, focus,
+    createdTodayOnly, longStayOnly: longStay, from, to, sort, focus,
   };
   const { data, refetch, error, isLoading } = useQuery({
     queryKey: ["reservations-list", filters, page, pageSize, today],
@@ -208,6 +211,13 @@ function ReservationsPage() {
           ))}
         </select>
         <button
+          onClick={() => setLongStay((v) => !v)}
+          aria-pressed={longStay}
+          className={`px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${longStay ? "bg-primary text-primary-foreground" : "border border-input bg-card text-muted-foreground hover:text-foreground"}`}
+        >
+          {LS[i18n.language.slice(0, 2)] ?? LS.de}
+        </button>
+        <button
           onClick={() => setCreatedTodayOnly((v) => !v)}
           className={`px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${createdTodayOnly ? "bg-primary text-primary-foreground" : "border border-input bg-card text-muted-foreground hover:text-foreground"}`}
         >
@@ -284,6 +294,7 @@ function ReservationsPage() {
                             const tone = ps === "paid" ? "success" : ps === "partial" ? "warning" : "muted";
                             return <Badge tone={tone}>{t(`payments.state.${ps}`)}</Badge>;
                           })()}
+                          {r.long_stay && <Badge tone="warning">{LS[i18n.language.slice(0, 2)] ?? LS.de}</Badge>}
                           {r.payment_method && <Badge tone="info">{paymentMethodLabel(r.payment_method, i18n.language)}</Badge>}
                         </span>
                         <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>

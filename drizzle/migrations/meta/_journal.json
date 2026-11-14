@@ -806,6 +806,13 @@
       "when": 1794670587711,
       "tag": "0114_guest_message_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 115,
+      "version": "7",
+      "when": 1794672261899,
+      "tag": "0115_long_stay_guests",
+      "breakpoints": true
     }
   ]
 }

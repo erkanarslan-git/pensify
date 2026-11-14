@@ -4,7 +4,7 @@ import { resolveActiveOrg } from "./org-auth.server";
 import { businessDate } from "./business-time";
 import { applyReservationFilters, collectReservationExport, orderReservations, reservationFiltersSchema, reservationPageRange, reservationPageSchema, type ReservationFilters, type ReservationListRow } from "./reservation-list";
 
-const columns: string = "id,guest_name,channel,status,check_in,check_out,guests_count,revenue,created_at,customer_type,company_name,payment_method,room:rooms(number,property_id),property:properties(id,name)";
+const columns: string = "id,guest_name,channel,status,check_in,check_out,guests_count,revenue,created_at,customer_type,company_name,payment_method,long_stay,room:rooms(number,property_id),property:properties(id,name)";
 
 async function scope(client: any, filters: ReservationFilters) {
   const { orgId } = await resolveActiveOrg(client);
