@@ -1,0 +1,1 @@
+- Guest message templates are organization-scoped, language-specific overrides with built-in fallbacks; booking substitution has no access secrets and runs once. Why: customization must preserve code privacy and guest-language selection.

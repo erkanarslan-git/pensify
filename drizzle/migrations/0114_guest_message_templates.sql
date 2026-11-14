@@ -1,0 +1,2 @@
+ALTER TABLE public.guest_message_settings ADD COLUMN message_templates jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE public.guest_message_settings ADD CONSTRAINT guest_message_templates_object CHECK (jsonb_typeof(message_templates) = 'object');

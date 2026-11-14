@@ -5,6 +5,27 @@ const s = { guestName: "Anna", propertyName: "Dom", room: "101", checkIn: "2026-
 const g = { check_in_time: "15:00", check_out_time: "11:00", iban: "DE89370400440532013000" };
 
 describe("guest messages", () => {
+  it("uses the saved text for the selected language and substitutes reservation data", () => {
+    const settings = { ...g, message_templates: { de: { booking: "{{guest_name}} / {{room}} / {{check_in}}" } } };
+    expect(bookingMessage(s, settings, "de", false)).toBe("Anna / 101 / 02.11.2026");
+    expect(bookingMessage(s, settings, "tr", false)).toBe(bookingMessage(s, g, "tr", false));
+  });
+  it("never expands code placeholders in a booking template", () => {
+    const settings = { ...g, message_templates: { de: { booking: "{{guest_name}} {{access_codes}} {{building_code}} {{door_code}} {{keybox_code}}" } } };
+    expect(bookingMessage(s, settings, "de", false)).toBe("Anna");
+  });
+  it("substitutes revealed codes only in access templates and does not expand guest input", () => {
+    const settings = { ...g, message_templates: { de: { access: "{{guest_name}} {{keybox_code}} {{bank_details}}" } } };
+    expect(accessMessage({ ...s, guestName: "{{building_code}}" }, settings, "de", { building: "123456", keybox: "9465" })).toBe("{{building_code}} 9465");
+  });
+  it("keeps bank details optional in custom templates", () => {
+    const settings = { ...g, message_templates: { de: { booking: "Anna {{bank_details}}" } } };
+    expect(bookingMessage(s, settings, "de", false)).toBe("Anna");
+    expect(bookingMessage(s, settings, "de", true)).toContain(g.iban);
+  });
+  it("restores defaults when a custom template is removed", () => {
+    expect(bookingMessage(s, { ...g, message_templates: { de: { booking: " " } } }, "de", false)).toBe(bookingMessage(s, g, "de", false));
+  });
   it("offers the requested guest languages independently of the phone number", () => {
     expect(MESSAGE_LANGUAGES.map(({ value }) => value)).toEqual(["de", "en", "tr", "pl", "sk", "hr", "sr", "bs", "ru"]);
     expect(isMessageLang("sk")).toBe(true);

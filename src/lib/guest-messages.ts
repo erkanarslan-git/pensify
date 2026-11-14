@@ -17,6 +17,25 @@ export interface GuestInfoSettings {
   check_in_time: string; check_out_time: string; check_in_until?: string | null;
   account_holder?: string | null; iban?: string | null; bic?: string | null; bank_name?: string | null;
   contact_phone?: string | null; extra_note?: string | null;
+  message_templates?: unknown;
+}
+export type MessageMode = "booking" | "access";
+export type MessageTemplates = Partial<Record<MessageLang, Partial<Record<MessageMode, string>>>>;
+export const MESSAGE_FIELDS = ["guest_name", "property_name", "address", "room", "check_in", "check_out", "check_in_time", "check_out_time", "amount", "bank_details", "contact_phone", "extra_note"] as const;
+export function readMessageTemplates(value: unknown): MessageTemplates {
+  const out: MessageTemplates = {};
+  if (!value || typeof value !== "object") return out;
+  for (const { value: lang } of MESSAGE_LANGUAGES) {
+    const entry = (value as Record<string, unknown>)[lang];
+    if (!entry || typeof entry !== "object") continue;
+    const modes: Partial<Record<MessageMode, string>> = {};
+    for (const mode of ["booking", "access"] as const) {
+      const text = (entry as Record<string, unknown>)[mode];
+      if (typeof text === "string" && text.trim()) modes[mode] = text;
+    }
+    out[lang] = modes;
+  }
+  return out;
 }
 export interface StayInfo {
   guestName: string; propertyName: string; address?: string | null; room: string;
@@ -38,8 +57,33 @@ const L = {
 const fmtDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const address = (s: StayInfo) => s.address ? `${s.propertyName}, ${s.address}` : s.propertyName;
 
+export function defaultMessageTemplate(mode: MessageMode, lang: MessageLang): string {
+  const l = L[lang];
+  return mode === "booking"
+    ? `${l.hello} {{guest_name}}, ${l.thanks}\n\n${l.stay}: {{check_in}} – {{check_out}}\n${l.addr}: {{address}}\n${l.amount}: {{amount}}\n{{bank_details}}\n\n${l.later}\n{{extra_note}}`
+    : `${l.hello} {{guest_name}},\n${l.ready}\n\n${l.addr}: {{address}}\n{{access_codes}}\n${l.checkin}: {{check_in_time}}\n\n${l.keys}\n{{contact_phone}}\n\n${l.bye}\n${l.team}\n{{extra_note}}`;
+}
+
+function renderTemplate(template: string, s: StayInfo, g: GuestInfoSettings, lang: MessageLang, bank: boolean, codes?: { building?: string | null; door?: string | null; keybox?: string | null }): string {
+  const l = L[lang];
+  const bankDetails = bank && g.iban ? [l.pay, g.account_holder ? `${l.holder}: ${g.account_holder}` : "", `IBAN: ${g.iban}`, s.reference ? `${l.ref}: ${s.reference}` : ""].filter(Boolean).join("\n") : "";
+  const roomCode = codes?.keybox ?? codes?.door;
+  const fields: Record<string, string> = {
+    guest_name: s.guestName, property_name: s.propertyName, address: address(s), room: s.room,
+    check_in: fmtDate(s.checkIn), check_out: fmtDate(s.checkOut), check_in_time: g.check_in_time, check_out_time: g.check_out_time,
+    amount: s.amount != null ? `${s.amount.toFixed(2).replace(".", lang === "en" ? "." : ",")} €` : "",
+    bank_details: bankDetails, contact_phone: g.contact_phone ?? "", extra_note: g.extra_note ?? "",
+    access_codes: codes ? [codes.building ? `${l.building} – ${l.code}: ${codes.building}` : "", roomCode ? `${l.room} ${s.room} – ${l.code}: ${roomCode}` : `${l.room} ${s.room}`].filter(Boolean).join("\n") : "",
+    building_code: codes?.building ?? "", door_code: codes?.door ?? "", keybox_code: codes?.keybox ?? "",
+  };
+  // Substitute once: guest input and notes cannot expand into secret placeholders.
+  return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (_, key: string) => fields[key] ?? "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /** Short welcome/confirmation; never contains access codes. Bank details are optional. */
 export function bookingMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageLang, includeBank: boolean): string {
+  const custom = readMessageTemplates(g.message_templates)[lang]?.booking;
+  if (custom) return renderTemplate(custom, s, g, lang, includeBank);
   const l = L[lang];
   const out = [`${l.hello} ${s.guestName}, ${l.thanks}`, "",
     `${l.stay}: ${fmtDate(s.checkIn)} – ${fmtDate(s.checkOut)}`,
@@ -52,11 +96,14 @@ export function bookingMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageL
     if (s.reference) out.push(`${l.ref}: ${s.reference}`);
   }
   out.push("", l.later);
+  if (g.extra_note) out.push("", g.extra_note);
   return out.join("\n");
 }
 
 /** Check-in info in the short format the office asked for. */
 export function accessMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageLang, codes: { building?: string | null; door?: string | null; keybox?: string | null }): string {
+  const custom = readMessageTemplates(g.message_templates)[lang]?.access;
+  if (custom) return renderTemplate(custom, s, g, lang, false, codes);
   const l = L[lang];
   const out = [`${l.hello} ${s.guestName},`, l.ready, "", `${l.addr}: ${address(s)}`];
   if (codes.building) out.push(`${l.building} – ${l.code}: ${codes.building}`);
@@ -65,6 +112,7 @@ export function accessMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageLa
   out.push(`${l.checkin}: ${g.check_in_time}${g.check_in_until ? `–${g.check_in_until}` : ""}`, "", l.keys);
   if (g.contact_phone) out.push(`${l.contact}: ${g.contact_phone}`);
   out.push("", l.bye, l.team);
+  if (g.extra_note) out.push("", g.extra_note);
   return out.join("\n");
 }
 

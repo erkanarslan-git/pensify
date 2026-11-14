@@ -1412,6 +1412,7 @@ export type Database = {
           contact_phone: string | null
           extra_note: string | null
           iban: string | null
+          message_templates: Json
           organization_id: string
           updated_at: string
           updated_by: string | null
@@ -1425,6 +1426,7 @@ export type Database = {
           contact_phone?: string | null
           extra_note?: string | null
           iban?: string | null
+          message_templates?: Json
           organization_id: string
           updated_at?: string
           updated_by?: string | null
@@ -1438,6 +1440,7 @@ export type Database = {
           contact_phone?: string | null
           extra_note?: string | null
           iban?: string | null
+          message_templates?: Json
           organization_id?: string
           updated_at?: string
           updated_by?: string | null

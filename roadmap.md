@@ -4,4 +4,8 @@
 - [x] Mobil sadeleştirme (üst çubuk, takvim, rezervasyon)
 - [x] Misafir mesajı uyarılarını ekran diline uyarlama ve ayrı mesaj diline Lehçe/Ukraynaca/Rusça ekleme
 - [ ] WhatsApp Business arka plan gönderimi (WhatsApp Business hesabı bağlanması bekleniyor)
-- [ ] Kanal bazlı oda fiyatları ve indirim seçenekleri
+- [x] Kanal bazlı oda fiyatları ve indirim seçenekleri
+- [x] Müşteri talepleri: takvim düzeni/kısayolları, temizlik tarihi, tıklanabilir rezervasyon sayaçları, ödeme yöntemi ve filtresi
+- [x] Müşteri talepleri: düzenlenebilir misafir mesaj metinleri
+- [ ] Müşteri talepleri: uzun dönem misafir kategorisi ve açık uçlu konaklama
+- [ ] Müşteri talepleri: fatura oluşturma ve gönderme
