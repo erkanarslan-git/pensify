@@ -2488,6 +2488,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           payer_ibans: string[]
+          payment_method: string | null
           price_overridden_at: string | null
           price_overridden_by: string | null
           property_id: string
@@ -2527,6 +2528,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           payer_ibans?: string[]
+          payment_method?: string | null
           price_overridden_at?: string | null
           price_overridden_by?: string | null
           property_id: string
@@ -2566,6 +2568,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           payer_ibans?: string[]
+          payment_method?: string | null
           price_overridden_at?: string | null
           price_overridden_by?: string | null
           property_id?: string

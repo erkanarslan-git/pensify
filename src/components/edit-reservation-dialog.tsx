@@ -1,3 +1,4 @@
+import { PAYMENT_METHODS, PAYMENT_METHOD_TITLE, paymentMethodLabel } from "@/lib/payment-method";
 import { displayLocale } from "@/i18n/legacy-ui";
 import { businessDate as businessDateNow } from "@/lib/business-time";
 import { BUSINESS_TIME_ZONE } from "@/lib/business-time";
@@ -50,6 +51,7 @@ interface Reservation {
   list_price: number | null;
   discount_reason: string | null;
   notes: string | null;
+  payment_method: string | null;
   created_by: string | null;
   created_at: string;
 }
@@ -75,7 +77,7 @@ interface Props {
 }
 
 const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_phone",
-  "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes"] as const;
+  "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes", "payment_method"] as const;
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
   const { t } = useTranslation();
@@ -201,6 +203,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       revenue: r.revenue,
       discount_reason: r.discount_reason?.trim() || null,
       notes: r.notes?.trim() || null,
+      payment_method: r.payment_method || null,
     }).eq("id", r.id);
     setSaving(false);
     if (error) {
@@ -346,6 +349,13 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <input value={r.guest_phone ?? ""} onChange={(e) => update("guest_phone", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card" />
               </label>
+              <label className="grid gap-1">
+                <span className="text-xs text-muted-foreground">{PAYMENT_METHOD_TITLE[i18n.language.slice(0, 2)] ?? PAYMENT_METHOD_TITLE.de}</span>
+                <select value={r.payment_method ?? ""} onChange={(e) => update("payment_method", e.target.value || null)}
+                  className="px-3 py-2 rounded-md border border-input bg-card">
+                  {(["", ...PAYMENT_METHODS] as string[]).map((m) => <option key={m} value={m}>{paymentMethodLabel(m || null, i18n.language)}</option>)}
+                </select>
+              </label>
               <label className="col-span-full grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("newRes.note")}</span>
                 <textarea value={r.notes ?? ""} onChange={(e) => update("notes", e.target.value)} rows={2}
@@ -420,7 +430,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                           <ul className="mt-1.5 space-y-0.5">
                             {changes.map((k) => (
                               <li key={k}>
-                                <span className="font-medium">{t(({ property_id: "newRes.property", room_id: "newRes.room", guest_name: "resv.thGuest", guest_email: "common.email", guest_phone: "newRes.phone", guests_count: "common.guests", check_in: "newRes.checkIn", check_out: "newRes.checkOut", channel: "newRes.channel", status: "resv.thStatus", revenue: "newRes.amount", notes: "newRes.note" })[k])}:</span>{" "}
+                                <span className="font-medium">{t(({ property_id: "newRes.property", room_id: "newRes.room", guest_name: "resv.thGuest", guest_email: "common.email", guest_phone: "newRes.phone", guests_count: "common.guests", check_in: "newRes.checkIn", check_out: "newRes.checkOut", channel: "newRes.channel", status: "resv.thStatus", revenue: "newRes.amount", notes: "newRes.note" } as Record<string, string>)[k] ?? k)}:</span>{" "}
                                 <span className="text-muted-foreground line-through">{String(old[k] ?? "—")}</span>{" → "}
                                 <span>{String(nw[k] ?? "—")}</span>
                               </li>

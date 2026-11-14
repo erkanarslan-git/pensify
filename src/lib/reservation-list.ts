@@ -23,7 +23,7 @@ export type ReservationPage = z.infer<typeof reservationPageSchema>;
 export interface ReservationListRow {
   id: string; guest_name: string; channel: string; status: string;
   check_in: string; check_out: string; guests_count: number; revenue: number; created_at: string;
-  customer_type: string | null; company_name: string | null;
+  customer_type: string | null; company_name: string | null; payment_method?: string | null;
   room: { number: string; property_id: string } | null;
   property: { id: string; name: string } | null;
 }

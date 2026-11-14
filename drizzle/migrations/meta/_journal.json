@@ -792,6 +792,13 @@
       "when": 1794254753122,
       "tag": "0112_channel_aware_list_price",
       "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "7",
+      "when": 1794669963308,
+      "tag": "0113_reservation_payment_method",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { paymentMethodLabel } from "@/lib/payment-method";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -48,7 +49,7 @@ const statusTone: Record<string, "success" | "info" | "warning" | "destructive" 
 const fmt = formatDateDE;
 
 function ReservationsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const isAdmin = perms.isAdmin;
   const search = Route.useSearch();
@@ -270,6 +271,7 @@ function ReservationsPage() {
                             const tone = ps === "paid" ? "success" : ps === "partial" ? "warning" : "muted";
                             return <Badge tone={tone}>{t(`payments.state.${ps}`)}</Badge>;
                           })()}
+                          {r.payment_method && <Badge tone="info">{paymentMethodLabel(r.payment_method, i18n.language)}</Badge>}
                         </span>
                         <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
                         <div className="col-span-2 md:col-span-1 flex justify-end gap-1.5 w-full md:w-[120px]">

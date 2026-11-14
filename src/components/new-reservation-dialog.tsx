@@ -1,3 +1,4 @@
+import { PAYMENT_METHODS, PAYMENT_METHOD_TITLE, paymentMethodLabel } from "@/lib/payment-method";
 import { useEffect, useRef, useState } from "react";
 import { addDaysIso } from "@/lib/calendar-date";
 import { businessDate as businessDateToday } from "@/lib/business-time";
@@ -66,7 +67,7 @@ export function NewReservationDialog({
   initialRoomNumber,
   onCreated,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [stays, setStays] = useState<RoomStay[]>([]);
   const today = businessDateToday();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -82,6 +83,7 @@ export function NewReservationDialog({
   const [channel, setChannel] = useState<Channel>("direct");
   const enabledChannels = useEnabledChannels();
   const [notes, setNotes] = useState("");
+  const [payMethod, setPayMethod] = useState<string>("none");
   const [lines, setLines] = useState<RoomLine[]>([]);
   const [saving, setSaving] = useState(false);
   const [payerParty, setPayerParty] = useState<CustomerParty | null>(null);
@@ -214,7 +216,7 @@ export function NewReservationDialog({
     setSaving(true);
     const payer = payerParty;
     // One database transaction: booking + all rooms succeed together or not at all.
-    const { error } = await supabase.rpc("create_customer_booking", {
+    const { data: bookingId, error } = await supabase.rpc("create_customer_booking", {
       _booking: {
         payer_id: payer?.id ?? null,
         new_customer: payer ? null : { kind: customerType, name: customerType === 'company' ? companyName.trim() : guestName.trim(), email: guestEmail.trim(), phone: guestPhone.trim(), vat: companyVat.trim(), address: companyAddress.trim(), contact: companyContact.trim() },
@@ -241,6 +243,9 @@ export function NewReservationDialog({
         payer_is_occupant: customerType === 'person' && !payer && occupants[l.uid] === undefined,
       })),
     });
+    if (!error && bookingId && payMethod !== "none") {
+      await supabase.from("reservations").update({ payment_method: payMethod }).eq("booking_id", bookingId as string);
+    }
     setSaving(false);
 
     if (error) {
@@ -364,6 +369,15 @@ export function NewReservationDialog({
                       {sourceLabel(c, (k) => t(k))}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider">{PAYMENT_METHOD_TITLE[i18n.language.slice(0, 2)] ?? PAYMENT_METHOD_TITLE.de}</Label>
+              <Select value={payMethod} onValueChange={setPayMethod}>
+                <SelectTrigger className="bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(["none", ...PAYMENT_METHODS] as string[]).map((m) => <SelectItem key={m} value={m}>{paymentMethodLabel(m === "none" ? null : m, i18n.language)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

@@ -1,0 +1,1 @@
+ALTER TABLE public.reservations ADD COLUMN IF NOT EXISTS payment_method text CHECK (payment_method IN ('cash','card','transfer','invoice','online'));
