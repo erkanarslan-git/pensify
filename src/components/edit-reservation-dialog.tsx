@@ -14,6 +14,7 @@ import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookab
 import { useTranslation } from "react-i18next";
 import { GuestMessagePanel } from '@/components/guest-message-panel';
 import { ReservationCustomerLinks } from '@/components/reservation-customer-links';
+import { InvoiceDialog } from '@/components/invoice-dialog';
 
 type Channel = "booking" | "airbnb" | "check24" | "woocommerce" | "phone" | "direct" | "walkin" | "website" | "ical";
 import { sourceLabel } from "@/lib/guest-color";
@@ -87,6 +88,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const { t } = useTranslation();
   const [stays, setStays] = useState<RoomStay[]>([]);
   const perms = usePermissions();
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const enabledChannels = useEnabledChannels();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -457,6 +459,8 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
             </fieldset>
 
             <DialogFooter>
+              {perms.can("collect_payments") && <button type="button" onClick={() => setInvoiceOpen(true)} disabled={saving}
+                className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent sm:mr-auto">{t("invoice.button")}</button>}
               <button onClick={() => onOpenChange(false)} disabled={saving}
                 className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? t("editRes.close") : t("common.cancel")}</button>
               {!readOnly && (
@@ -469,6 +473,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
           </>
         )}
       </DialogContent>
+      {r && <InvoiceDialog open={invoiceOpen} onOpenChange={setInvoiceOpen} reservation={{ id: r.id, guest_name: r.guest_name, guest_email: r.guest_email, company_name: r.company_name ?? null, check_in: r.check_in, check_out: r.check_out, revenue: Number(r.revenue), room: rooms.find((x) => x.id === r.room_id)?.number ?? "" }} />}
     </Dialog>
   );
 }

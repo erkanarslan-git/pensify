@@ -2,7 +2,7 @@ import { createFileRoute, useRouterState, Outlet } from "@tanstack/react-router"
 import { AppShell } from "@/components/app-shell";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText, User as UserIcon, FileUp, Trash2 } from "lucide-react";
+import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, ScrollText, User as UserIcon, FileUp, Trash2, FileText } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
 });
 
-type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import" | "integrations" | "trash" | "guestInfo";
+type TabKey = "general" | "profile" | "language" | "notifications" | "email" | "company" | "appearance" | "channels" | "security" | "logs" | "import" | "integrations" | "trash" | "guestInfo" | "invoice";
 
 const tabs: { key: TabKey; icon: typeof Globe }[] = [
   { key: "general", icon: Globe },
@@ -22,6 +22,7 @@ const tabs: { key: TabKey; icon: typeof Globe }[] = [
   { key: "email", icon: Mail },
   { key: "company", icon: Building2 },
   { key: "guestInfo", icon: Mail },
+  { key: "invoice", icon: FileText },
   { key: "appearance", icon: Palette },
   { key: "channels", icon: Paintbrush },
   { key: "integrations", icon: Globe },
@@ -73,7 +74,7 @@ function SettingsLayout() {
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${active ? "brand-tile font-medium shadow-sm" : "hover:bg-accent/50 text-muted-foreground"}`}
               >
-                <Icon className="w-4 h-4" /> {t(x.key === "integrations" ? "integrations.title" : x.key === "guestInfo" ? "guestMsg.settingsTitle" : `pages.settings.tabs.${x.key}`)}
+                <Icon className="w-4 h-4" /> {t(x.key === "integrations" ? "integrations.title" : x.key === "guestInfo" ? "guestMsg.settingsTitle" : x.key === "invoice" ? "invoice.settingsTitle" : `pages.settings.tabs.${x.key}`)}
               </button>
             );
           })}
@@ -92,6 +93,7 @@ import { ACTIVE_CHANNELS, type ActiveChannel, sourceLabel } from "@/lib/guest-co
 import { DEFAULT_CHANNEL_COLORS, loadChannelColors, saveChannelColors } from "@/lib/channel-colors";
 import { Button } from "@/components/ui/button";
 import { GuestInfoSettingsTab } from "@/components/guest-info-settings";
+import { InvoiceSettingsTab } from "@/components/invoice-settings";
 
 const LANGS = [
   { code: "de", label: "Deutsch" },
@@ -228,6 +230,7 @@ function SettingsIndexContent({ activeTab, setActiveTab }: { activeTab: TabKey; 
       )}
 
       {activeTab === "guestInfo" && <GuestInfoSettingsTab />}
+      {activeTab === "invoice" && <InvoiceSettingsTab />}
       {activeTab === "profile" && <ProfileTab />}
 
       {activeTab === "security" && <SecurityTab />}

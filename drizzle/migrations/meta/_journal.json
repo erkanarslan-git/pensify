@@ -813,6 +813,13 @@
       "when": 1794672261899,
       "tag": "0115_long_stay_guests",
       "breakpoints": true
+    },
+    {
+      "idx": 116,
+      "version": "7",
+      "when": 1794674359447,
+      "tag": "0116_invoices",
+      "breakpoints": true
     }
   ]
 }

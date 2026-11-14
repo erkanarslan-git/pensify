@@ -1515,6 +1515,159 @@ export type Database = {
           },
         ]
       }
+      invoice_settings: {
+        Row: {
+          address: string | null
+          bank_name: string | null
+          bic: string | null
+          company_name: string | null
+          email: string | null
+          footer_note: string | null
+          iban: string | null
+          next_number: number
+          number_format: string
+          number_year: number | null
+          organization_id: string
+          phone: string | null
+          tax_number: string | null
+          updated_at: string
+          updated_by: string | null
+          vat_id: string | null
+          vat_rate: number
+        }
+        Insert: {
+          address?: string | null
+          bank_name?: string | null
+          bic?: string | null
+          company_name?: string | null
+          email?: string | null
+          footer_note?: string | null
+          iban?: string | null
+          next_number?: number
+          number_format?: string
+          number_year?: number | null
+          organization_id: string
+          phone?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          vat_id?: string | null
+          vat_rate?: number
+        }
+        Update: {
+          address?: string | null
+          bank_name?: string | null
+          bic?: string | null
+          company_name?: string | null
+          email?: string | null
+          footer_note?: string | null
+          iban?: string | null
+          next_number?: number
+          number_format?: string
+          number_year?: number | null
+          organization_id?: string
+          phone?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          vat_id?: string | null
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          gross_total: number
+          id: string
+          invoice_number: string
+          issue_date: string
+          issuer: Json
+          items: Json
+          net_total: number
+          note: string | null
+          organization_id: string
+          property_id: string
+          recipient_address: string | null
+          recipient_email: string | null
+          recipient_name: string
+          reservation_id: string | null
+          sent_at: string | null
+          vat_total: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          gross_total: number
+          id?: string
+          invoice_number: string
+          issue_date: string
+          issuer?: Json
+          items: Json
+          net_total: number
+          note?: string | null
+          organization_id: string
+          property_id: string
+          recipient_address?: string | null
+          recipient_email?: string | null
+          recipient_name: string
+          reservation_id?: string | null
+          sent_at?: string | null
+          vat_total: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          gross_total?: number
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          issuer?: Json
+          items?: Json
+          net_total?: number
+          note?: string | null
+          organization_id?: string
+          property_id?: string
+          recipient_address?: string | null
+          recipient_email?: string | null
+          recipient_name?: string
+          reservation_id?: string | null
+          sent_at?: string | null
+          vat_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_departments: {
         Row: {
           created_at: string
@@ -3960,6 +4113,19 @@ export type Database = {
         Args: { _booking: Json; _lines: Json }
         Returns: string
       }
+      create_invoice: {
+        Args: {
+          _issue_date: string
+          _items: Json
+          _note?: string
+          _number: string
+          _recipient_address: string
+          _recipient_email: string
+          _recipient_name: string
+          _reservation: string
+        }
+        Returns: string
+      }
       create_rooms_bulk: {
         Args: {
           _floor: number
@@ -4027,6 +4193,10 @@ export type Database = {
           _today: string
         }
         Returns: Json
+      }
+      format_invoice_number: {
+        Args: { _format: string; _n: number; _year: number }
+        Returns: string
       }
       general_todo_action: {
         Args: { _action: string; _id: string; _note?: string }
@@ -4125,6 +4295,7 @@ export type Database = {
         }[]
       }
       maintenance_board: { Args: never; Returns: Json }
+      mark_invoice_sent: { Args: { _invoice: string }; Returns: undefined }
       member_user: { Args: { _member: string }; Returns: string }
       morning_task_counts: {
         Args: { _day: string }

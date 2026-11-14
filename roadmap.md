@@ -8,4 +8,5 @@
 - [x] Müşteri talepleri: takvim düzeni/kısayolları, temizlik tarihi, tıklanabilir rezervasyon sayaçları, ödeme yöntemi ve filtresi
 - [x] Müşteri talepleri: düzenlenebilir misafir mesaj metinleri
 - [x] Müşteri talepleri: uzun dönem misafir kategorisi ve açık uçlu konaklama
-- [ ] Müşteri talepleri: fatura oluşturma ve gönderme
+- [x] Müşteri talepleri: fatura oluşturma (PDF + e-posta programıyla gönderme)
+- [ ] Faturayı sistemden doğrudan e-postayla gönderme (firmanın kendi e-posta alan adı bağlanınca)
