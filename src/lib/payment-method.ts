@@ -6,6 +6,7 @@ const LABELS: Record<string, Record<PaymentMethod | "none", string>> = {
   en: { none: "Not set", cash: "Cash", card: "Card", transfer: "Transfer", invoice: "Invoice", online: "Online" },
 };
 export const PAYMENT_METHOD_TITLE: Record<string, string> = { tr: "Ödeme yöntemi", de: "Zahlungsart", en: "Payment method" };
+export const PAYMENT_METHOD_ALL: Record<string, string> = { tr: "Tüm ödeme yöntemleri", de: "Alle Zahlungsarten", en: "All payment methods" };
 export function paymentMethodLabel(m: string | null | undefined, lang: string): string {
   const l = LABELS[lang.slice(0, 2)] ?? LABELS.de;
   return l[(m ?? "none") as PaymentMethod] ?? l.none;

@@ -5,7 +5,7 @@ import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { paymentMethodLabel } from "@/lib/payment-method";
+import { PAYMENT_METHOD_ALL, PAYMENT_METHODS, PAYMENT_METHOD_TITLE, paymentMethodLabel } from "@/lib/payment-method";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -61,6 +61,7 @@ function ReservationsPage() {
   const [newOpen, setNewOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("all");
+  const [pay, setPay] = useState<ReservationFilters["paymentMethod"]>("all");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<10 | 20 | 30 | 40 | 50>(20);
   const [dq, setDq] = useState("");
@@ -77,10 +78,11 @@ function ReservationsPage() {
     const timer = setTimeout(() => { setDq(q.trim()); setPage(0); }, 300);
     return () => clearTimeout(timer);
   }, [q]);
-  useEffect(() => setPage(0), [src, prop, period, status, createdTodayOnly, from, to, sort, pageSize, focus]);
+  useEffect(() => setPage(0), [src, prop, period, status, pay, createdTodayOnly, from, to, sort, pageSize, focus]);
   const filters: ReservationFilters = {
     search: dq, propertyId: prop, source: src as ReservationFilters["source"],
     status: status as ReservationFilters["status"], period,
+    paymentMethod: pay,
     createdTodayOnly, from, to, sort, focus,
   };
   const { data, refetch, error, isLoading } = useQuery({
@@ -192,6 +194,17 @@ function ReservationsPage() {
           <option value="all">{t("common.allSources")}</option>
           {channels.map((s) => (
             <option key={s} value={s}>{sourceLabel(s, (k) => t(k))}</option>
+          ))}
+        </select>
+        <select
+          aria-label={PAYMENT_METHOD_TITLE[i18n.language.slice(0, 2)] ?? PAYMENT_METHOD_TITLE.de}
+          value={pay}
+          onChange={(e) => setPay(e.target.value as ReservationFilters["paymentMethod"])}
+          className="px-3 py-2 rounded-md border border-input bg-card text-sm"
+        >
+          <option value="all">{PAYMENT_METHOD_ALL[i18n.language.slice(0, 2)] ?? PAYMENT_METHOD_ALL.de}</option>
+          {PAYMENT_METHODS.map((m) => (
+            <option key={m} value={m}>{paymentMethodLabel(m, i18n.language)}</option>
           ))}
         </select>
         <button

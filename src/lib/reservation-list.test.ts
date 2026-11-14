@@ -60,3 +60,23 @@ d2("focus filters", () => {
     e2(calls).toContainEqual(["eq", "check_out", "2026-11-14"]);
   });
 });
+import { describe as d3, it as i3, expect as e3 } from "vitest";
+d3("payment method filter", () => {
+  i3("shows only the chosen payment method", () => {
+    for (const method of ["cash", "card", "transfer", "invoice", "online"]) {
+      const calls: unknown[][] = [];
+      const q: any = new Proxy({}, { get: (_t, k) => (...a: unknown[]) => { calls.push([k, ...a]); return q; } });
+      applyReservationFilters(q, reservationFiltersSchema.parse({ paymentMethod: method, period: "all" }), "2026-11-14");
+      e3(calls).toContainEqual(["eq", "payment_method", method]);
+    }
+  });
+  i3("keeps every payment method when the filter is untouched", () => {
+    const calls: unknown[][] = [];
+    const q: any = new Proxy({}, { get: (_t, k) => (...a: unknown[]) => { calls.push([k, ...a]); return q; } });
+    applyReservationFilters(q, reservationFiltersSchema.parse({ period: "all" }), "2026-11-14");
+    e3(calls.some(c => c[1] === "payment_method")).toBe(false);
+  });
+  i3("rejects a payment method the list does not offer", () => {
+    e3(reservationFiltersSchema.safeParse({ paymentMethod: "paypal" }).success).toBe(false);
+  });
+});

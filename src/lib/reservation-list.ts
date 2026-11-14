@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { businessDayBounds } from "./business-time";
+import { PAYMENT_METHODS } from "./payment-method";
 
 export const RESERVATION_PAGE_SIZES = [10, 20, 30, 40, 50] as const;
 export const reservationFiltersSchema = z.object({
@@ -8,6 +9,7 @@ export const reservationFiltersSchema = z.object({
   source: z.enum(["all", "booking", "airbnb", "expedia", "check24", "website", "direct"]).default("all"),
   status: z.enum(["all", "confirmed", "tentative", "checked_in", "checked_out", "cancelled", "no_show"]).default("all"),
   period: z.enum(["upcoming", "today", "past", "all"]).default("upcoming"),
+  paymentMethod: z.enum(["all", ...PAYMENT_METHODS] as const).default("all"),
   createdTodayOnly: z.boolean().default(false),
   focus: z.enum(["none", "arrivals", "departures", "inHouse"]).default("none"),
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")).default(""),
@@ -45,6 +47,7 @@ export function applyReservationFilters<T>(query: T, filters: ReservationFilters
   if (filters.propertyId !== "all") q = q.eq("property_id", filters.propertyId);
   if (filters.source !== "all") q = q.in("channel", reservationChannels[filters.source]);
   if (filters.status !== "all") q = q.eq("status", filters.status);
+  if (filters.paymentMethod !== "all") q = q.eq("payment_method", filters.paymentMethod);
   if (filters.period === "upcoming") q = q.gte("check_out", today);
   if (filters.period === "today") q = q.lte("check_in", today).gte("check_out", today);
   if (filters.period === "past") q = q.lt("check_out", today);
