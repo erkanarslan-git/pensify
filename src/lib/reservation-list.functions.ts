@@ -52,7 +52,7 @@ export const listReservations = createServerFn({ method: "POST" })
       if (result.error) throw new Error("reservations_unavailable");
     }
     const countBase = () => applyReservationFilters(context.supabase.from("reservations")
-      .select("id", { count: "exact", head: true }).eq("organization_id", s.orgId).in("property_id", s.ids), data, s.today, s.roomIds)
+      .select("id", { count: "exact", head: true }).eq("organization_id", s.orgId).in("property_id", s.ids), { ...data, focus: "none" }, s.today, s.roomIds)
       .not("status", "in", "(cancelled,no_show)");
     const counts = await Promise.all([
       countBase().eq("check_in", s.today), countBase().eq("check_out", s.today),

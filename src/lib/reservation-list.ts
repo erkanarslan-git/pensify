@@ -9,6 +9,7 @@ export const reservationFiltersSchema = z.object({
   status: z.enum(["all", "confirmed", "tentative", "checked_in", "checked_out", "cancelled", "no_show"]).default("all"),
   period: z.enum(["upcoming", "today", "past", "all"]).default("upcoming"),
   createdTodayOnly: z.boolean().default(false),
+  focus: z.enum(["none", "arrivals", "departures", "inHouse"]).default("none"),
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")).default(""),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")).default(""),
   sort: z.enum(["arrivalAsc", "arrivalDesc", "createdDesc"]).default("arrivalAsc"),
@@ -47,6 +48,10 @@ export function applyReservationFilters<T>(query: T, filters: ReservationFilters
   if (filters.period === "upcoming") q = q.gte("check_out", today);
   if (filters.period === "today") q = q.lte("check_in", today).gte("check_out", today);
   if (filters.period === "past") q = q.lt("check_out", today);
+  if (filters.focus === "arrivals") q = q.eq("check_in", today);
+  if (filters.focus === "departures") q = q.eq("check_out", today);
+  if (filters.focus === "inHouse") q = q.lte("check_in", today).gt("check_out", today);
+  if (filters.focus !== "none") q = q.not("status", "in", "(cancelled,no_show)");
   if (filters.from) q = q.gte("check_in", filters.from);
   if (filters.to) q = q.lte("check_in", filters.to);
   if (filters.createdTodayOnly) {

@@ -66,6 +66,8 @@ function ReservationsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sort, setSort] = useState<ReservationFilters["sort"]>("arrivalAsc");
+  const [focus, setFocus] = useState<ReservationFilters["focus"]>("none");
+  const toggleFocus = (f: ReservationFilters["focus"]) => { setCreatedTodayOnly(false); setFrom(""); setTo(""); setPeriod("all"); setFocus(cur => cur === f ? "none" : f); };
   const [exportBusy, setExportBusy] = useState(false);
   const fetchList = useServerFn(listReservations);
   const fetchExport = useServerFn(exportReservations);
@@ -74,11 +76,11 @@ function ReservationsPage() {
     const timer = setTimeout(() => { setDq(q.trim()); setPage(0); }, 300);
     return () => clearTimeout(timer);
   }, [q]);
-  useEffect(() => setPage(0), [src, prop, period, status, createdTodayOnly, from, to, sort, pageSize]);
+  useEffect(() => setPage(0), [src, prop, period, status, createdTodayOnly, from, to, sort, pageSize, focus]);
   const filters: ReservationFilters = {
     search: dq, propertyId: prop, source: src as ReservationFilters["source"],
     status: status as ReservationFilters["status"], period,
-    createdTodayOnly, from, to, sort,
+    createdTodayOnly, from, to, sort, focus,
   };
   const { data, refetch, error, isLoading } = useQuery({
     queryKey: ["reservations-list", filters, page, pageSize, today],
@@ -144,9 +146,9 @@ function ReservationsPage() {
       }
     >
       <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
-        <StatCard highlight active={period === "all" && from === today && to === today} onClick={() => { const on = period === "all" && from === today && to === today; setCreatedTodayOnly(false); setPeriod(on ? "upcoming" : "all"); setFrom(on ? "" : today); setTo(on ? "" : today); }} icon={<LogIn className="w-4 h-4" />} label={t("resv.arrivalsToday")} value={arrivals} />
-        <StatCard icon={<LogOut className="w-4 h-4" />} label={t("resv.departuresToday")} value={departures} />
-        <StatCard active={period === "today" && !from && !to} onClick={() => { const on = period === "today" && !from && !to; setCreatedTodayOnly(false); setFrom(""); setTo(""); setPeriod(on ? "upcoming" : "today"); }} icon={<BedDouble className="w-4 h-4" />} label={t("resv.guestsInHouse")} value={staying} />
+        <StatCard highlight active={focus === "arrivals"} onClick={() => toggleFocus("arrivals")} icon={<LogIn className="w-4 h-4" />} label={t("resv.arrivalsToday")} value={arrivals} />
+        <StatCard active={focus === "departures"} onClick={() => toggleFocus("departures")} icon={<LogOut className="w-4 h-4" />} label={t("resv.departuresToday")} value={departures} />
+        <StatCard active={focus === "inHouse"} onClick={() => toggleFocus("inHouse")} icon={<BedDouble className="w-4 h-4" />} label={t("resv.guestsInHouse")} value={staying} />
       </div>
       <p className="mb-3 text-xs text-muted-foreground">{t("reservationList.filteredScope")}</p>
 
@@ -154,7 +156,7 @@ function ReservationsPage() {
         {periods.map((p) => (
           <button
             key={p.id}
-            onClick={() => setPeriod(p.id)}
+            onClick={() => { setFocus("none"); setPeriod(p.id); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${period === p.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
             {p.label}

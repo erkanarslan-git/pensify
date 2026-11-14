@@ -51,3 +51,12 @@ describe("Reservation database pagination", () => {
     expect(calendarWindow("2026-10-23", 7)).toEqual({ start: "2026-10-23", end: "2026-10-30" });
   });
 });
+import { describe as d2, it as i2, expect as e2 } from "vitest";
+d2("focus filters", () => {
+  i2("departures focus filters check_out to today", () => {
+    const calls: unknown[][] = [];
+    const q: any = new Proxy({}, { get: (_t, k) => (...a: unknown[]) => { calls.push([k, ...a]); return q; } });
+    applyReservationFilters(q, reservationFiltersSchema.parse({ focus: "departures", period: "all" }), "2026-11-14");
+    e2(calls).toContainEqual(["eq", "check_out", "2026-11-14"]);
+  });
+});
