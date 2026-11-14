@@ -15,9 +15,9 @@ it("the collapsed group shares one color so the donut cannot repeat a slice", ()
 });
 
 it("the group is labelled just Privat, without phone/e-mail wording", () => {
-  expect(sourceLabel("phone")).toBe("Privat");
-  expect(sourceLabel("walkin")).toBe("Privat");
-  expect(sourceLabel("direct")).toBe("Privat");
+  expect(sourceLabel("phone")).toBe("Manuell");
+  expect(sourceLabel("walkin")).toBe("Manuell");
+  expect(sourceLabel("direct")).toBe("Manuell");
 });
 
 it("booking platforms stay separate from the private group", () => {

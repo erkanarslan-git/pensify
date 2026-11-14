@@ -13,8 +13,8 @@ import { normalizeChannel } from "@/lib/guest-color";
 export const Route = createFileRoute("/tv")({
  head: () => ({ meta: [{ title: "Pension Highway — TV-Betriebsübersicht" }, { name: "description", content: "Live-Betriebsübersicht mit Reservierungen, Zimmerstatus und Standorten ohne personenbezogene Daten." }, { property: "og:title", content: "Pension Highway — TV-Betriebsübersicht" }, { property: "og:description", content: "Anonyme Tagesübersicht für den Hotelbetrieb." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex, nofollow" }, { name: "referrer", content: "no-referrer" }] }), component: TvPage,
 });
-const sourceLabels: Record<string,string> = {booking:"Booking.com",airbnb:"Airbnb",expedia:"Expedia",check24:"Check24",website:"Website",direct:"Direkt",operation:"Betrieb",ical:"iCal"};
-function sourceName(source:string) { return sourceLabels[source] ?? sourceLabels[normalizeChannel(source)] ?? "Direkt"; }
+const sourceLabels: Record<string,string> = {booking:"Booking.com",airbnb:"Airbnb",expedia:"Expedia",check24:"Check24",website:"Website",direct:"Manuell",operation:"Betrieb",ical:"iCal"};
+function sourceName(source:string) { return sourceLabels[source] ?? sourceLabels[normalizeChannel(source)] ?? "Manuell"; }
 function TvPage() {
  const { i18n } = useTranslation();
  const t = i18n.getFixedT("de");

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ACTIVE_CHANNELS } from "@/lib/guest-color";
 
 const LABEL: Record<string, string> = {
-  booking: "Booking.com", airbnb: "Airbnb", expedia: "Expedia", check24: "Check24", website: "Web", direct: "Direkt",
+  booking: "Booking.com", airbnb: "Airbnb", expedia: "Expedia", check24: "Check24", website: "Web", direct: "Manuell",
 };
 
 export function ChannelPriceRules() {
