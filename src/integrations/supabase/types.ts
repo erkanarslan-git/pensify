@@ -3767,6 +3767,157 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_agent_settings: {
+        Row: {
+          agent_id: string | null
+          default_language: string
+          enabled: boolean
+          fallback_phone: string | null
+          organization_id: string
+          service_from: string
+          service_to: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          default_language?: string
+          enabled?: boolean
+          fallback_phone?: string | null
+          organization_id: string
+          service_from?: string
+          service_to?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          default_language?: string
+          enabled?: boolean
+          fallback_phone?: string | null
+          organization_id?: string
+          service_from?: string
+          service_to?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_agent_settings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_calls: {
+        Row: {
+          actions: Json
+          caller_phone: string | null
+          created_at: string
+          duration_seconds: number
+          external_id: string
+          id: string
+          language: string | null
+          organization_id: string
+          outcome: string
+          reservation_id: string | null
+          started_at: string
+          successful: boolean | null
+          summary: string | null
+          transcript: Json
+          transferred_to: string | null
+        }
+        Insert: {
+          actions?: Json
+          caller_phone?: string | null
+          created_at?: string
+          duration_seconds?: number
+          external_id: string
+          id?: string
+          language?: string | null
+          organization_id: string
+          outcome?: string
+          reservation_id?: string | null
+          started_at?: string
+          successful?: boolean | null
+          summary?: string | null
+          transcript?: Json
+          transferred_to?: string | null
+        }
+        Update: {
+          actions?: Json
+          caller_phone?: string | null
+          created_at?: string
+          duration_seconds?: number
+          external_id?: string
+          id?: string
+          language?: string | null
+          organization_id?: string
+          outcome?: string
+          reservation_id?: string | null
+          started_at?: string
+          successful?: boolean | null
+          summary?: string | null
+          transcript?: Json
+          transferred_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_calls_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_calls_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_on_call: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          duty_date: string
+          id: string
+          organization_id: string
+          phone: string
+          staff_name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          duty_date: string
+          id?: string
+          organization_id: string
+          phone: string
+          staff_name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          duty_date?: string
+          id?: string
+          organization_id?: string
+          phone?: string
+          staff_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_on_call_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       whatsapp_webhook_events: {
         Row: {
           delivery_id: string | null

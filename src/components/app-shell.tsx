@@ -29,6 +29,7 @@ import {
   Store,
   Search,
   ChevronDown,
+  Phone,
 } from "lucide-react";
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
@@ -108,6 +109,7 @@ const navGroups: NavGroup[] = [
     labelKey: "nav.groups.tools",
     items: [
       { to: "/ai", labelKey: "nav.aiAssistant", icon: Sparkles },
+      { to: "/voice-agent", labelKey: "nav.voiceAgent", icon: Phone },
       { to: "/displays", labelKey: "tv.displays", icon: Monitor },
     ],
   },

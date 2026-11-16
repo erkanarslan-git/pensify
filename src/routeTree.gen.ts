@@ -36,6 +36,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTimeTrackingRouteImport } from './routes/_authenticated/time-tracking'
 import { Route as AuthenticatedTodosRouteImport } from './routes/_authenticated/todos'
+import { Route as AuthenticatedVoiceAgentRouteImport } from './routes/_authenticated/voice-agent'
 import { Route as AuthenticatedWorkReportRouteImport } from './routes/_authenticated/work-report'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedClockTokenRouteImport } from './routes/_authenticated/clock.$token'
@@ -55,6 +56,7 @@ import { Route as ApiPublicHooksMorningTasksRouteImport } from './routes/api/pub
 import { Route as ApiPublicSyncManualRouteImport } from './routes/api/public/sync/manual'
 import { Route as ApiPublicWebhooksAirbnbRouteImport } from './routes/api/public/webhooks/airbnb'
 import { Route as ApiPublicWebhooksBookingRouteImport } from './routes/api/public/webhooks/booking'
+import { Route as ApiPublicWebhooksElevenlabsRouteImport } from './routes/api/public/webhooks/elevenlabs'
 import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 import { Route as ApiPublicIcalRoomsRoomIdRouteImport } from './routes/api/public/ical/rooms/$roomId'
@@ -201,6 +203,11 @@ const AuthenticatedTodosRoute = AuthenticatedTodosRouteImport.update({
   path: '/todos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVoiceAgentRoute = AuthenticatedVoiceAgentRouteImport.update({
+  id: '/voice-agent',
+  path: '/voice-agent',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedWorkReportRoute = AuthenticatedWorkReportRouteImport.update({
   id: '/work-report',
   path: '/work-report',
@@ -310,6 +317,12 @@ const ApiPublicWebhooksBookingRoute =
     path: '/api/public/webhooks/booking',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksElevenlabsRoute =
+  ApiPublicWebhooksElevenlabsRouteImport.update({
+    id: '/api/public/webhooks/elevenlabs',
+    path: '/api/public/webhooks/elevenlabs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksWhatsappRoute =
   ApiPublicWebhooksWhatsappRouteImport.update({
     id: '/api/public/webhooks/whatsapp',
@@ -362,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/todos': typeof AuthenticatedTodosRoute
+  '/voice-agent': typeof AuthenticatedVoiceAgentRoute
   '/work-report': typeof AuthenticatedWorkReportRoute
   '/api/chat': typeof ApiChatRoute
   '/clock/$token': typeof AuthenticatedClockTokenRoute
@@ -381,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
+  '/api/public/webhooks/elevenlabs': typeof ApiPublicWebhooksElevenlabsRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
@@ -412,6 +427,7 @@ export interface FileRoutesByTo {
   '/team': typeof AuthenticatedTeamRoute
   '/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/todos': typeof AuthenticatedTodosRoute
+  '/voice-agent': typeof AuthenticatedVoiceAgentRoute
   '/work-report': typeof AuthenticatedWorkReportRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AuthenticatedIndexRoute
@@ -432,6 +448,7 @@ export interface FileRoutesByTo {
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
+  '/api/public/webhooks/elevenlabs': typeof ApiPublicWebhooksElevenlabsRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
@@ -465,6 +482,7 @@ export interface FileRoutesById {
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/time-tracking': typeof AuthenticatedTimeTrackingRoute
   '/_authenticated/todos': typeof AuthenticatedTodosRoute
+  '/_authenticated/voice-agent': typeof AuthenticatedVoiceAgentRoute
   '/_authenticated/work-report': typeof AuthenticatedWorkReportRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -485,6 +503,7 @@ export interface FileRoutesById {
   '/api/public/sync/manual': typeof ApiPublicSyncManualRoute
   '/api/public/webhooks/airbnb': typeof ApiPublicWebhooksAirbnbRoute
   '/api/public/webhooks/booking': typeof ApiPublicWebhooksBookingRoute
+  '/api/public/webhooks/elevenlabs': typeof ApiPublicWebhooksElevenlabsRoute
   '/api/public/webhooks/whatsapp': typeof ApiPublicWebhooksWhatsappRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
   '/api/public/ical/rooms/$roomId': typeof ApiPublicIcalRoomsRoomIdRoute
@@ -519,6 +538,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/time-tracking'
     | '/todos'
+    | '/voice-agent'
     | '/work-report'
     | '/api/chat'
     | '/clock/$token'
@@ -538,6 +558,7 @@ export interface FileRouteTypes {
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
+    | '/api/public/webhooks/elevenlabs'
     | '/api/public/webhooks/whatsapp'
     | '/api/public/whatsapp/webhook'
     | '/api/public/ical/rooms/$roomId'
@@ -569,6 +590,7 @@ export interface FileRouteTypes {
     | '/team'
     | '/time-tracking'
     | '/todos'
+    | '/voice-agent'
     | '/work-report'
     | '/api/chat'
     | '/'
@@ -589,6 +611,7 @@ export interface FileRouteTypes {
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
+    | '/api/public/webhooks/elevenlabs'
     | '/api/public/webhooks/whatsapp'
     | '/api/public/whatsapp/webhook'
     | '/api/public/ical/rooms/$roomId'
@@ -621,6 +644,7 @@ export interface FileRouteTypes {
     | '/_authenticated/team'
     | '/_authenticated/time-tracking'
     | '/_authenticated/todos'
+    | '/_authenticated/voice-agent'
     | '/_authenticated/work-report'
     | '/api/chat'
     | '/_authenticated/'
@@ -641,6 +665,7 @@ export interface FileRouteTypes {
     | '/api/public/sync/manual'
     | '/api/public/webhooks/airbnb'
     | '/api/public/webhooks/booking'
+    | '/api/public/webhooks/elevenlabs'
     | '/api/public/webhooks/whatsapp'
     | '/api/public/whatsapp/webhook'
     | '/api/public/ical/rooms/$roomId'
@@ -659,6 +684,7 @@ export interface RootRouteChildren {
   ApiPublicSyncManualRoute: typeof ApiPublicSyncManualRoute
   ApiPublicWebhooksAirbnbRoute: typeof ApiPublicWebhooksAirbnbRoute
   ApiPublicWebhooksBookingRoute: typeof ApiPublicWebhooksBookingRoute
+  ApiPublicWebhooksElevenlabsRoute: typeof ApiPublicWebhooksElevenlabsRoute
   ApiPublicWebhooksWhatsappRoute: typeof ApiPublicWebhooksWhatsappRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
   ApiPublicIcalRoomsRoomIdRoute: typeof ApiPublicIcalRoomsRoomIdRoute
@@ -856,6 +882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTodosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/voice-agent': {
+      id: '/_authenticated/voice-agent'
+      path: '/voice-agent'
+      fullPath: '/voice-agent'
+      preLoaderRoute: typeof AuthenticatedVoiceAgentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/work-report': {
       id: '/_authenticated/work-report'
       path: '/work-report'
@@ -989,6 +1022,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksBookingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/elevenlabs': {
+      id: '/api/public/webhooks/elevenlabs'
+      path: '/api/public/webhooks/elevenlabs'
+      fullPath: '/api/public/webhooks/elevenlabs'
+      preLoaderRoute: typeof ApiPublicWebhooksElevenlabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/whatsapp': {
       id: '/api/public/webhooks/whatsapp'
       path: '/api/public/webhooks/whatsapp'
@@ -1063,6 +1103,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTimeTrackingRoute: typeof AuthenticatedTimeTrackingRoute
   AuthenticatedTodosRoute: typeof AuthenticatedTodosRoute
+  AuthenticatedVoiceAgentRoute: typeof AuthenticatedVoiceAgentRoute
   AuthenticatedWorkReportRoute: typeof AuthenticatedWorkReportRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClockTokenRoute: typeof AuthenticatedClockTokenRoute
@@ -1097,6 +1138,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTimeTrackingRoute: AuthenticatedTimeTrackingRoute,
   AuthenticatedTodosRoute: AuthenticatedTodosRoute,
+  AuthenticatedVoiceAgentRoute: AuthenticatedVoiceAgentRoute,
   AuthenticatedWorkReportRoute: AuthenticatedWorkReportRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClockTokenRoute: AuthenticatedClockTokenRoute,
@@ -1124,6 +1166,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSyncManualRoute: ApiPublicSyncManualRoute,
   ApiPublicWebhooksAirbnbRoute: ApiPublicWebhooksAirbnbRoute,
   ApiPublicWebhooksBookingRoute: ApiPublicWebhooksBookingRoute,
+  ApiPublicWebhooksElevenlabsRoute: ApiPublicWebhooksElevenlabsRoute,
   ApiPublicWebhooksWhatsappRoute: ApiPublicWebhooksWhatsappRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
   ApiPublicIcalRoomsRoomIdRoute: ApiPublicIcalRoomsRoomIdRoute,

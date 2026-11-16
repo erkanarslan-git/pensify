@@ -10,3 +10,6 @@
 - [x] Müşteri talepleri: uzun dönem misafir kategorisi ve açık uçlu konaklama
 - [x] Müşteri talepleri: fatura oluşturma (PDF + e-posta programıyla gönderme)
 - [ ] Faturayı sistemden doğrudan e-postayla gönderme (firmanın kendi e-posta alan adı bağlanınca)
+- [x] Sesli Asistan bölümü: çağrı geçmişi, başarı sayaçları, günlük nöbetçi, ayarlar, ElevenLabs çağrı sonu kaydı
+- [ ] Sesli Asistan: ElevenLabs bağlantısı + telefon numarası (kullanıcının ElevenLabs hesabı ve +49 numarası gerekiyor)
+- [ ] Sesli Asistan araçları: boş oda sorgu, rezervasyon açma, nöbetçiye aktarma (bağlantıdan sonra)
