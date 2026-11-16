@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { loadCalendarData } from "@/lib/calendar-data.functions";
 import { businessDate } from "@/lib/business-time";
+import { OccupancyOverview, type OverviewMode } from "@/components/occupancy-overview";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Takvim — Pension Highway" }, { name: "description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pension Highway" }, { property: "og:description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -47,14 +48,21 @@ interface UnifiedRes {
   payment?: "paid" | "partial" | "open";
 }
 
+const VIEW_LABELS = {
+  de: { board: "Zimmerplan", month: "Monat", year: "Jahr" },
+  en: { board: "Room board", month: "Month", year: "Year" },
+  tr: { board: "Oda çizelgesi", month: "Aylık", year: "Yıllık" },
+} as const;
+
 function CalendarPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const canCreatePast = perms.can("create_past_reservation");
   const canCreate = perms.can("create_reservation");
   const isManagerOnly =
     perms.roles.includes("manager") && !perms.roles.includes("admin") && !perms.roles.includes("owner");
   const [range, setRange] = useState(14);
+  const [view, setView] = useState<"board" | OverviewMode>("board");
   const [start, setStart] = useState(() => {
     const d = parseLocalIso(businessDate());
     d.setDate(d.getDate() - 3);
@@ -463,6 +471,13 @@ function CalendarPage() {
           className="px-3 py-2 rounded-md border border-input bg-card text-sm"
         />
         <div className="flex rounded-md border border-input bg-card overflow-hidden">
+          {(["board", "month", "year"] as const).map((v) => (
+            <button key={v} onClick={() => setView(v)} className={`px-3 py-2 text-xs ${view === v ? "bg-primary text-primary-foreground font-medium" : "hover:bg-accent"}`}>
+              {VIEW_LABELS[(i18n.language?.slice(0, 2) as keyof typeof VIEW_LABELS) ?? "de"]?.[v] ?? VIEW_LABELS.de[v]}
+            </button>
+          ))}
+        </div>
+        {view === "board" && <div className="flex rounded-md border border-input bg-card overflow-hidden">
           {RANGES.map((r) => (
             <button
               key={r.key}
@@ -472,7 +487,7 @@ function CalendarPage() {
               {t("reservationList.days", { count: r.key })}
             </button>
           ))}
-        </div>
+        </div>}
         <div className="flex items-center gap-1">
           <button
             onClick={() => setShowHelp(true)}
@@ -509,7 +524,11 @@ function CalendarPage() {
 
 
 
-      <div className="md:hidden space-y-3 mb-4">
+      {view !== "board" && (
+        <OccupancyOverview mode={view} propertyId={propertyId} today={businessDate()} onPickDay={(d) => { setStart(parseLocalIso(d)); setView("board"); }} />
+      )}
+
+      <div className={view === "board" ? "md:hidden space-y-3 mb-4" : "hidden"}>
         {days.map((d) => {
           const dIso = iso(d);
           const roomIds = new Set(filteredRooms.map((r) => r.id));
@@ -549,7 +568,7 @@ function CalendarPage() {
         })}
       </div>
 
-      <div className="hidden md:block">
+      <div className={view === "board" ? "hidden md:block" : "hidden"}>
       <Section title={`${iso(days[0])} — ${iso(days[days.length - 1])} · ${t("calendar.roomsCount", { count: filteredRooms.length })}`}>
         <TooltipProvider delayDuration={150}>
         <div
