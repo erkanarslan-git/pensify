@@ -134,6 +134,14 @@
   --sidebar-accent-foreground: oklch(0.36 0.1 258);
   --sidebar-border: oklch(0.86 0.006 250);
   --sidebar-ring: oklch(0.285 0 0);
+  /* Soft month tints — used only by the room-board day header */
+  --month-1: oklch(0.55 0.13 258);
+  --month-2: oklch(0.6 0.12 165);
+  --month-3: oklch(0.72 0.13 65);
+  --month-4: oklch(0.58 0.15 320);
+  --month-5: oklch(0.62 0.12 200);
+  --month-6: oklch(0.62 0.14 30);
+  --month-tint: 10%;
   --tv-arrival: oklch(0.58 0.11 190);
   --tv-departure: oklch(0.56 0.15 300);
 }
@@ -165,6 +173,13 @@
   --info-foreground: oklch(0.15 0.03 250);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
+  --month-1: oklch(0.62 0.14 258);
+  --month-2: oklch(0.68 0.13 165);
+  --month-3: oklch(0.78 0.13 65);
+  --month-4: oklch(0.66 0.16 320);
+  --month-5: oklch(0.7 0.12 200);
+  --month-6: oklch(0.7 0.15 30);
+  --month-tint: 20%;
   --ring: oklch(0.74 0.13 255);
   --chart-1: oklch(0.74 0.13 255);
   --chart-2: oklch(0.7 0.1 255);

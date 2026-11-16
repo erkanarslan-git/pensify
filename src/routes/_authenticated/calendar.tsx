@@ -607,9 +607,33 @@ function CalendarPage() {
                 const isToday = iso(d) === today;
                 const isFocusCol = dIdx === focus.col;
                 const past = isPastDate(iso(d));
+                const prevDay = dIdx > 0 ? days[dIdx - 1] : null;
+                const monthStart =
+                  !prevDay ||
+                  prevDay.getMonth() !== d.getMonth() ||
+                  prevDay.getFullYear() !== d.getFullYear();
+                const monthTint = `var(--month-${(d.getMonth() % 6) + 1})`;
+                const headerOverlay = isFocusCol
+                  ? "linear-gradient(color-mix(in oklab, var(--primary) 15%, transparent), color-mix(in oklab, var(--primary) 15%, transparent))"
+                  : isToday
+                    ? "linear-gradient(color-mix(in oklab, var(--primary) 8%, transparent), color-mix(in oklab, var(--primary) 8%, transparent))"
+                    : "";
                 return (
-                  <div key={iso(d)} className={`sticky top-0 z-30 bg-card text-center py-3 border-b border-border ${isToday ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_8%,transparent),color-mix(in_oklab,var(--primary)_8%,transparent))]" : ""} ${isFocusCol ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""} ${past ? "text-muted-foreground/70" : ""}`}>
-                    <div className="text-[10px] uppercase text-muted-foreground">
+                  <div
+                    key={iso(d)}
+                    className={`sticky top-0 z-30 text-center pt-1 pb-3 border-b border-border ${past ? "text-muted-foreground/70" : ""}`}
+                    style={{
+                      backgroundColor: `color-mix(in oklab, ${monthTint} var(--month-tint), var(--card))`,
+                      backgroundImage: headerOverlay || undefined,
+                      boxShadow: monthStart
+                        ? `inset 1px 0 0 color-mix(in oklab, ${monthTint} 55%, transparent)`
+                        : undefined,
+                    }}
+                  >
+                    <div className="h-3 truncate text-[9px] uppercase leading-none tracking-wide text-muted-foreground/80">
+                      {monthStart ? d.toLocaleDateString(displayLocale(), { month: "short" }) : ""}
+                    </div>
+                    <div className="mt-1 text-[10px] uppercase text-muted-foreground">
                       {d.toLocaleDateString(displayLocale(), { weekday: "short" })}
                     </div>
                     <div className={`text-sm font-semibold ${isToday ? "text-primary" : ""}`}>{d.getDate()}</div>
