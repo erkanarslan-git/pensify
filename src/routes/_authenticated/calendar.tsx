@@ -17,6 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { loadCalendarData } from "@/lib/calendar-data.functions";
 import { businessDate } from "@/lib/business-time";
 import { OccupancyOverview, type OverviewMode } from "@/components/occupancy-overview";
+import { shiftOverviewMonth } from "@/lib/occupancy-overview";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   head: () => ({ meta: [{ title: "Takvim — Pension Highway" }, { name: "description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pension Highway" }, { property: "og:description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -383,13 +384,17 @@ function CalendarPage() {
   };
 
   const shift = (n: number) => {
+    if (view !== "board") {
+      setStart(parseLocalIso(shiftOverviewMonth(localIso(start), Math.sign(n) * (view === "month" ? 1 : 12))));
+      return;
+    }
     const d = new Date(start);
     d.setDate(d.getDate() + n);
     setStart(d);
   };
   const goToday = () => {
     const d = parseLocalIso(businessDate());
-    d.setDate(d.getDate() - 3);
+    if (view === "board") d.setDate(d.getDate() - 3);
     setStart(d);
   };
 
@@ -525,7 +530,7 @@ function CalendarPage() {
 
 
       {view !== "board" && (
-        <OccupancyOverview mode={view} propertyId={propertyId} today={businessDate()} onPickDay={(d) => { setStart(parseLocalIso(d)); setView("board"); }} />
+        <OccupancyOverview mode={view} propertyId={propertyId} today={businessDate()} selectedDate={iso(start)} onDateChange={(d) => setStart(parseLocalIso(d))} onPickDay={(d) => { setStart(parseLocalIso(d)); setView("board"); }} />
       )}
 
       <div className={view === "board" ? "md:hidden space-y-3 mb-4" : "hidden"}>

@@ -1,5 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { dailyOccupancy, heatLevel } from "./occupancy-overview";
+import { dailyOccupancy, heatLevel, overviewMonthStart, shiftOverviewMonth } from "./occupancy-overview";
+
+describe("selected overview period", () => {
+  it("uses the selected past or future month, not the current month", () => {
+    expect(overviewMonthStart("2025-01-24")).toBe("2025-01-01");
+    expect(overviewMonthStart("2027-06-12")).toBe("2027-06-01");
+  });
+  it("moves monthly and yearly periods across year boundaries", () => {
+    expect(shiftOverviewMonth("2026-12-31", 1)).toBe("2027-01-01");
+    expect(shiftOverviewMonth("2026-01-31", -1)).toBe("2025-12-01");
+    expect(shiftOverviewMonth("2026-11-16", 12)).toBe("2027-11-01");
+  });
+  it("calculates different occupancy for different selected periods", () => {
+    const reservations = [{ room_id: "a", check_in: "2026-11-01", check_out: "2026-12-01" }];
+    expect(dailyOccupancy(overviewMonthStart("2026-11-16"), 30, 4, reservations)[0].rate).toBe(0.25);
+    expect(dailyOccupancy(overviewMonthStart("2027-01-16"), 31, 4, reservations)[0].rate).toBe(0);
+  });
+});
 
 describe("dailyOccupancy", () => {
   it("counts the check-out day as free and arrival/departure moves", () => {

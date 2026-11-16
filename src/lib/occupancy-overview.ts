@@ -3,6 +3,13 @@ export interface OverviewReservation { room_id: string; check_in: string; check_
 export interface DayOccupancy { date: string; occupied: number; free: number; rate: number; arrivals: number; departures: number }
 
 const DAY = 86_400_000;
+export function overviewMonthStart(date: string) {
+  return `${date.slice(0, 7)}-01`;
+}
+export function shiftOverviewMonth(date: string, months: number) {
+  const [year, month] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1 + months, 1)).toISOString().slice(0, 10);
+}
 export function addDays(iso: string, n: number) {
   return new Date(Date.parse(`${iso}T00:00:00Z`) + n * DAY).toISOString().slice(0, 10);
 }

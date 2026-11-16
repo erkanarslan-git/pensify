@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { loadOccupancyOverview } from "@/lib/occupancy-overview.functions";
-import { addDays, dailyOccupancy, heatLevel, type DayOccupancy } from "@/lib/occupancy-overview";
+import { addDays, dailyOccupancy, heatLevel, overviewMonthStart, shiftOverviewMonth, type DayOccupancy } from "@/lib/occupancy-overview";
 import { displayLocale } from "@/i18n/legacy-ui";
+import { Button } from "@/components/ui/button";
 
 export type OverviewMode = "month" | "year";
 
@@ -23,22 +24,17 @@ const HEAT = [
 ];
 const heatText = (lvl: number) => (lvl >= 3 ? "text-primary-foreground" : "text-foreground");
 
-function monthStart(iso: string) { return `${iso.slice(0, 7)}-01`; }
-function shiftMonth(iso: string, n: number) {
-  const [y, m] = iso.split("-").map(Number);
-  const d = new Date(Date.UTC(y, m - 1 + n, 1));
-  return d.toISOString().slice(0, 10);
-}
+const shiftMonth = shiftOverviewMonth;
 function daysInMonth(iso: string) { return Number(addDays(shiftMonth(iso, 1), -1).slice(8, 10)); }
 function weekdayMon0(iso: string) { return (new Date(`${iso}T00:00:00Z`).getUTCDay() + 6) % 7; }
 
-export function OccupancyOverview({ mode, propertyId, today, onPickDay }: { mode: OverviewMode; propertyId: string; today: string; onPickDay: (iso: string) => void }) {
+export function OccupancyOverview({ mode, propertyId, today, selectedDate, onDateChange, onPickDay }: { mode: OverviewMode; propertyId: string; today: string; selectedDate: string; onDateChange: (iso: string) => void; onPickDay: (iso: string) => void }) {
   const { i18n } = useTranslation();
   const lang = (i18n.language?.slice(0, 2) ?? "de") as keyof typeof TEXT;
   const tx = TEXT[lang] ?? TEXT.de;
   const locale = displayLocale();
-  const [anchor, setAnchor] = useState(() => monthStart(today));
-  const start = mode === "month" ? anchor : anchor;
+  const anchor = overviewMonthStart(selectedDate);
+  const start = anchor;
   const span = mode === "month" ? daysInMonth(anchor) : Math.round((Date.parse(`${shiftMonth(anchor, 12)}T00:00:00Z`) - Date.parse(`${anchor}T00:00:00Z`)) / 86_400_000);
   const fetchOverview = useServerFn(loadOccupancyOverview);
   const [data, setData] = useState<DayOccupancy[] | null>(null);
@@ -67,9 +63,9 @@ export function OccupancyOverview({ mode, propertyId, today, onPickDay }: { mode
   return (
     <div className="rounded-xl border border-border bg-card p-4 md:p-5">
       <div className="flex flex-wrap items-center gap-3 mb-4">
-        <button onClick={() => setAnchor(shiftMonth(anchor, -step))} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"><ChevronLeft className="w-4 h-4" /></button>
+        <Button variant="outline" size="icon" aria-label={shiftMonth(anchor, -step)} onClick={() => onDateChange(shiftMonth(anchor, -step))}><ChevronLeft className="w-4 h-4" /></Button>
         <h2 className="text-base font-semibold capitalize min-w-[180px] text-center">{title}</h2>
-        <button onClick={() => setAnchor(shiftMonth(anchor, step))} className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"><ChevronRight className="w-4 h-4" /></button>
+        <Button variant="outline" size="icon" aria-label={shiftMonth(anchor, step)} onClick={() => onDateChange(shiftMonth(anchor, step))}><ChevronRight className="w-4 h-4" /></Button>
         {summary && (
           <div className="flex gap-2 text-xs">
             <span className="rounded-full border border-border px-3 py-1">{tx.avg}: <b>{summary.avg}%</b></span>
