@@ -20,7 +20,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listReservations, exportReservations } from "@/lib/reservation-list.functions";
 import { RESERVATION_PAGE_SIZES, reservationCsvCell, type ReservationFilters, type ReservationListRow } from "@/lib/reservation-list";
 
-type Search = { property?: string; created?: string };
+type Search = { property?: string; created?: string; focus?: "arrivals" | "departures" | "inHouse"; q?: string; long?: "1" };
 
 const LS: Record<string,string> = { de: "Dauergast", tr: "Uzun dönem misafir", en: "Long-stay guest" };
 
@@ -29,6 +29,9 @@ export const Route = createFileRoute("/_authenticated/reservations")({
     const out: Search = {};
     if (typeof s.property === "string" && s.property) out.property = s.property;
     if (typeof s.created === "string" && s.created) out.created = s.created;
+    if (s.focus === "arrivals" || s.focus === "departures" || s.focus === "inHouse") out.focus = s.focus;
+    if (typeof s.q === "string" && s.q) out.q = s.q.slice(0, 120);
+    if (s.long === "1" || s.long === 1) out.long = "1";
     return out;
   },
   head: () => ({ meta: [{ title: "Rezervasyonlar — Pension Highway" }, { name: "description", content: "Pension Highway'da rezervasyonları ve girişleri yönetin." }, { property: "og:title", content: "Rezervasyonlar — Pension Highway" }, { property: "og:description", content: "Pension Highway'da rezervasyonları ve girişleri yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -55,7 +58,7 @@ function ReservationsPage() {
   const perms = usePermissions();
   const isAdmin = perms.isAdmin;
   const search = Route.useSearch();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(search.q ?? "");
   const [src, setSrc] = useState<string>("all");
   const [prop, setProp] = useState<string>(search.property ?? "all");
   const [period, setPeriod] = useState<Period>(search.created === "today" ? "all" : "upcoming");
@@ -63,7 +66,7 @@ function ReservationsPage() {
   const [newOpen, setNewOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("all");
-  const [longStay, setLongStay] = useState(false);
+  const [longStay, setLongStay] = useState(search.long === "1");
   const [pay, setPay] = useState<ReservationFilters["paymentMethod"]>("all");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<10 | 20 | 30 | 40 | 50>(20);
@@ -71,7 +74,7 @@ function ReservationsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [sort, setSort] = useState<ReservationFilters["sort"]>("arrivalAsc");
-  const [focus, setFocus] = useState<ReservationFilters["focus"]>("none");
+  const [focus, setFocus] = useState<ReservationFilters["focus"]>(search.focus ?? "none");
   const toggleFocus = (f: ReservationFilters["focus"]) => { setCreatedTodayOnly(false); setFrom(""); setTo(""); setPeriod("all"); setFocus(cur => cur === f ? "none" : f); };
   const [exportBusy, setExportBusy] = useState(false);
   const fetchList = useServerFn(listReservations);

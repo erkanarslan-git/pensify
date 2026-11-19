@@ -25,8 +25,10 @@ import { AccessCodePanel, RoomAccessButton } from "@/components/access-code-pane
 const ROOM_STATUSES = ["available", "occupied", "cleaning_required", "cleaning_in_progress", "cleaned", "checkout_today", "maintenance"];
 
 export const Route = createFileRoute("/_authenticated/rooms")({
-  validateSearch: (s: Record<string, unknown>): { status?: string } =>
-    typeof s.status === "string" && ROOM_STATUSES.includes(s.status) ? { status: s.status } : {},
+  validateSearch: (s: Record<string, unknown>): { status?: string; property?: string } => ({
+    ...(typeof s.status === "string" && ROOM_STATUSES.includes(s.status) ? { status: s.status } : {}),
+    ...(typeof s.property === "string" && /^[0-9a-f-]{36}$/i.test(s.property) ? { property: s.property } : {}),
+  }),
   head: () => ({ meta: [
     { title: "Zimmerübersicht — Pension Highway" },
     { name: "description", content: "Zimmer nach Standort, Typ und Status verwalten." },
@@ -76,13 +78,13 @@ export function RoomsManager({ propertyId }: { propertyId?: string } = {}) {
   const [allRooms, setRooms] = useState<Room[]>([]);
   const [closedRooms, setClosedRooms] = useState<Room[]>([]);
   const [cleaners, setCleaners] = useState<Cleaner[]>([]);
-  const initialStatus = Route.useSearch().status;
+  const { status: initialStatus, property: initialProperty } = Route.useSearch();
   const [filter, setFilter] = useState<RoomStatus | "all">((initialStatus as RoomStatus) ?? "all");
   const [editing, setEditing] = useState<Room | null>(null);
   const [creating, setCreating] = useState<{ propertyId: string } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
-  const [pFilter, setPFilter] = useState("");
+  const [pFilter, setPFilter] = useState(initialProperty ?? "");
   const [tFilter, setTFilter] = useState("");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);

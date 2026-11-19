@@ -20,6 +20,7 @@ import { OccupancyOverview, type OverviewMode } from "@/components/occupancy-ove
 import { shiftOverviewMonth } from "@/lib/occupancy-overview";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
+  validateSearch: (s: Record<string, unknown>): { property?: string } => (typeof s.property === "string" && /^[0-9a-f-]{36}$/i.test(s.property) ? { property: s.property } : {}),
   head: () => ({ meta: [{ title: "Takvim — Pension Highway" }, { name: "description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:title", content: "Takvim — Pension Highway" }, { property: "og:description", content: "Pension Highway takviminde oda doluluk ve rezervasyonları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CalendarPage,
 });
@@ -71,7 +72,8 @@ function CalendarPage() {
   });
   const [propertyId, setPropertyIdState] = useState<string>("first");
   const setPropertyId = (id: string) => { setPropertyIdState(id); try { localStorage.setItem("pensify.calendar.property", id); } catch { /* optional */ } };
-  useEffect(() => { try { const saved = localStorage.getItem("pensify.calendar.property"); if (saved) setPropertyIdState(saved); } catch { /* optional */ } }, []);
+  const searchProperty = Route.useSearch().property;
+  useEffect(() => { if (searchProperty) { setPropertyId(searchProperty); return; } try { const saved = localStorage.getItem("pensify.calendar.property"); if (saved) setPropertyIdState(saved); } catch { /* optional */ } }, [searchProperty]);
   const [roomQ, setRoomQ] = useState("");
   const [guestQ, setGuestQ] = useState("");
   const [suggestOpen, setSuggestOpen] = useState(false);
