@@ -7,7 +7,7 @@ import type { PropertyCard, TodayReservation } from "@/lib/dashboard-today";
 const TXT = {
   tr: { in: "Bugün giriş", out: "Bugün çıkış", all: "Hepsini gör", none: "Bugün kimse yok", room: "Oda", props: "Pansiyonlar", total: "Oda", occupied: "Dolu", free: "Boş", cleaning: "Temizlik", maintenance: "Bakım", longStay: "Uzun dönem", arrivals: "Giriş", departures: "Çıkış", calendar: "Takvimde aç" },
   de: { in: "Anreisen heute", out: "Abreisen heute", all: "Alle anzeigen", none: "Heute niemand", room: "Zimmer", props: "Unterkünfte", total: "Zimmer", occupied: "Belegt", free: "Frei", cleaning: "Reinigung", maintenance: "Wartung", longStay: "Dauergäste", arrivals: "Anreise", departures: "Abreise", calendar: "Im Kalender öffnen" },
-  en: { in: "Check-ins today", out: "Check-outs today", all: "View all", none: "Nobody today", room: "Room", props: "Properties", total: "Rooms", occupied: "Occupied", free: "Free", cleaning: "Cleaning", maintenance: "Maintenance", longStay: "Long-stay", arrivals: "Check-in", departures: "Check-out", calendar: "Open in calendar" },
+  en: { in: "Check-ins today", out: "Check-outs today", all: "View all", none: "Nobody today", room: "Room", props: "Properties", total: "Rooms", occupied: "Occupied", free: "Free", cleaning: "Cleaning", maintenance: "Repair", longStay: "Long-stay", arrivals: "Check-in", departures: "Check-out", calendar: "Open in calendar" },
 };
 export function useDashTxt() {
   const { i18n } = useTranslation();
@@ -47,6 +47,7 @@ export function TodayGuests({ arrivals, departures }: { arrivals: TodayReservati
 
 export function PropertyOverview({ cards }: { cards: PropertyCard[] }) {
   const c = useDashTxt();
+  const lang = useTranslation().i18n.language.slice(0, 2);
   if (!cards.length) return null;
   return (
     <div className="mt-6">
@@ -55,8 +56,8 @@ export function PropertyOverview({ cards }: { cards: PropertyCard[] }) {
         {cards.map((p) => {
           const stat = (label: string, value: number, tone: string, to: React.ReactElement) => ({ label, value, tone, link: to });
           const box = (label: string, value: number, tone: string) => (
-            <span className={`flex min-w-0 flex-col rounded-xl px-3 py-2 ${tone}`}>
-              <span className="truncate text-[11px] opacity-90">{label}</span>
+            <span className={`flex h-full min-w-0 flex-col justify-between rounded-xl px-2 py-2 ${tone}`}>
+              <span className="text-[10px] leading-tight opacity-90 [overflow-wrap:anywhere]">{label}</span>
               <span className="text-xl font-semibold tabular-nums">{value}</span>
             </span>
           );
@@ -74,10 +75,10 @@ export function PropertyOverview({ cards }: { cards: PropertyCard[] }) {
             <div key={p.id} className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-soft">
               <Link to="/calendar" search={{ property: p.id }} title={c.calendar} className="group mb-3 flex min-w-0 items-center justify-between gap-2">
                 <span className="truncate text-sm font-semibold group-hover:text-primary">{p.name}</span>
-                <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground group-hover:text-primary">%{p.rate} <ArrowUpRight className="h-3 w-3" /></span>
+                <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground group-hover:text-primary">{lang === "tr" ? `%${p.rate}` : `${p.rate}%`} <ArrowUpRight className="h-3 w-3" /></span>
               </Link>
               <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${p.rate}%` }} /></div>
-              <div className="grid grid-cols-4 gap-2 [&_a>span]:transition [&_a:hover>span]:ring-1 [&_a:hover>span]:ring-border">
+              <div className="grid grid-cols-4 gap-1.5 [&_a>span]:transition [&_a:hover>span]:ring-1 [&_a:hover>span]:ring-border">
                 {items.map((i) => <span key={i.label} className="contents">{i.link}</span>)}
               </div>
             </div>

@@ -13,6 +13,8 @@ import { useState, useMemo, useId } from "react";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { normalizeChannel, sourceColor, sourceLabel } from "@/lib/guest-color";
 import { formatDateDE } from "@/lib/date-de";
+import { propertyCards, todayMovements, type TodayReservation } from "@/lib/dashboard-today";
+import { TodayGuests, PropertyOverview, useDashTxt } from "@/components/dashboard-today";
 import {
   BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell, Legend, AreaChart, Area,
@@ -65,10 +67,10 @@ function Dashboard() {
     refetchOnMount: "always",
     queryFn: async () => {
       const [rooms, tasks, res, props, live] = await Promise.all([
-        supabase.from("rooms").select("id,number,status,property:properties(name)").eq("active", true),
+        supabase.from("rooms").select("id,number,status,property_id,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
         supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(5),
-        supabase.from("properties").select("id"),
+        supabase.from("properties").select("id,name").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
       ]);
       for (const result of [rooms, tasks, res, props, live]) if (result.error) throw result.error;
@@ -78,6 +80,7 @@ function Dashboard() {
         tasks: (tasks.data ?? []) as any[],
         upcoming: (res.data ?? []) as any[],
         propsCount: (props.data ?? []).length,
+        props: (props.data ?? []) as { id: string; name: string }[],
       };
     },
   });
@@ -86,7 +89,22 @@ function Dashboard() {
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
   const summary = summarizeRooms(rooms);
-  const { total: totalRooms, occupied, maintenance, available, cleaning, checkouts: checkoutToday } = summary;
+  const { total: totalRooms, occupied, maintenance, available, cleaning } = summary;
+  const dt = useDashTxt();
+  const { data: todayRes } = useQuery({
+    queryKey: ["dashboard-today-res", today],
+    staleTime: 0,
+    refetchOnMount: "always",
+    queryFn: async () => {
+      const { data, error } = await supabase.from("reservations")
+        .select("id,guest_name,check_in,check_out,long_stay,property_id,status,room:rooms(number),property:properties(name)")
+        .is("deleted_at", null).lte("check_in", today).gte("check_out", today).limit(2000);
+      if (error) throw error;
+      return (data ?? []) as unknown as TodayReservation[];
+    },
+  });
+  const moves = useMemo(() => todayMovements(todayRes ?? [], today), [todayRes, today]);
+  const cards = useMemo(() => propertyCards(data?.props ?? [], rooms as any, todayRes ?? [], today), [data?.props, rooms, todayRes, today]);
   const completedToday = tasks.filter((t) => t.status === "completed" && (t.due_at ?? "").slice(0, 10) === today).length;
 
   // Weekly occupancy from reservations (last 7 days incl. today)
@@ -182,13 +200,12 @@ function Dashboard() {
       {isError && <div className="mb-4"><LoadError onRetry={() => refetch()} /></div>}
 
       {v2 ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
           {[
             { label: t("dashboard.occupied"), value: occupied, hint: t("dashboard.occupancyRate", { rate: totalRooms ? Math.round((occupied / totalRooms) * 100) : 0 }), to: "/reservations", search: {}, cls: "brand-tile", series: tileSeries.occupied, stroke: "#a8c6fa" },
             { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, cls: "tile-success", series: tileSeries.available, stroke: "#14532d" },
             { label: t("nav.cleaning"), value: cleaning, hint: t("nav.rooms"), to: "/cleaning", search: {}, cls: "tile-warning", series: tileSeries.cleaning, stroke: "#7c4a03" },
             { label: t("dashboard.maintenance"), value: maintenance, hint: t("nav.rooms"), to: "/rooms", search: { status: "maintenance" }, cls: "tile-destructive", series: tileSeries.maintenance, stroke: "#7f1d1d" },
-            { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {}, cls: "tile-ocean", series: tileSeries.checkouts, stroke: "#132b50" },
           ].map((k) => (
             <Link key={k.label} to={k.to as any} search={k.search as any}
               className={`group flex min-w-0 flex-col rounded-2xl p-5 shadow-soft transition hover:shadow-elevated hover:brightness-110 ${k.cls}`}>
@@ -198,6 +215,18 @@ function Dashboard() {
               <Spark data={k.series} stroke={k.stroke} />
             </Link>
           ))}
+          <div className="grid min-w-0 grid-cols-2 gap-3 col-span-2 sm:col-span-3 xl:col-span-2">
+            {[
+              { label: dt.in, value: moves.arrivals.length, focus: "arrivals" as const },
+              { label: dt.out, value: moves.departures.length, focus: "departures" as const },
+            ].map((s) => (
+              <Link key={s.focus} to="/reservations" search={{ focus: s.focus }}
+                className="tile-ocean group flex min-w-0 flex-col rounded-2xl p-4 shadow-soft transition hover:shadow-elevated hover:brightness-110">
+                <span className="truncate text-sm font-medium opacity-95">{s.label}</span>
+                <div className="mt-3 text-4xl font-semibold tabular-nums">{s.value}</div>
+              </Link>
+            ))}
+          </div>
         </div>
       ) : (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -212,8 +241,22 @@ function Dashboard() {
         {[
           { label: t("dashboard.available"), value: available, hint: t("dashboard.properties", { count: data?.propsCount ?? 0 }), to: "/rooms", search: { status: "available" }, tile: "tile-success" },
           "split",
-          { label: t("dashboard.checkoutsToday"), value: checkoutToday, hint: `${completedToday} ${t("dashboard.completedToday")}`, to: "/reservations", search: {}, marker: "v2-checkout" },
-        ].map((k) => typeof k === "string" ? (
+          "moves",
+        ].map((k) => k === "moves" ? (
+          <div key="moves" className="grid grid-cols-2 gap-3">
+            {[
+              { label: dt.in, value: moves.arrivals.length, focus: "arrivals" as const },
+              { label: dt.out, value: moves.departures.length, focus: "departures" as const },
+            ].map((s) => (
+              <Link key={s.focus} to="/reservations" search={{ focus: s.focus }}
+                className="v2-checkout group flex min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-soft transition hover:shadow-elevated">
+                <span className="truncate text-sm font-medium">{s.label}</span>
+                <div className="mt-3 text-4xl font-semibold tabular-nums text-foreground">{s.value}</div>
+                <div className="mt-2 truncate text-xs text-muted-foreground">{dt.all}</div>
+              </Link>
+            ))}
+          </div>
+        ) : typeof k === "string" ? (
           <div key="split" className="grid grid-cols-2 gap-3">
             {[
               { label: t("nav.cleaning"), value: cleaning, hint: t("nav.rooms"), to: "/cleaning", search: {}, tile: "tile-warning" },
@@ -253,6 +296,9 @@ function Dashboard() {
           </Link>
         ))}
       </div>
+
+      <TodayGuests arrivals={moves.arrivals} departures={moves.departures} />
+      <PropertyOverview cards={cards} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 [&>*]:min-w-0">
         <Section title={t("dashboard.activeCleaningTasks")} action={<Link to="/cleaning" className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}>
