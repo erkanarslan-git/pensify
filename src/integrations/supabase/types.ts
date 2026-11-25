@@ -1515,6 +1515,91 @@ export type Database = {
           },
         ]
       }
+      invoice_articles: {
+        Row: {
+          active: boolean
+          article_no: string
+          created_at: string
+          description: string
+          id: string
+          organization_id: string
+          unit: string
+          unit_price: number
+          vat_rate: number
+        }
+        Insert: {
+          active?: boolean
+          article_no: string
+          created_at?: string
+          description: string
+          id?: string
+          organization_id: string
+          unit?: string
+          unit_price?: number
+          vat_rate?: number
+        }
+        Update: {
+          active?: boolean
+          article_no?: string
+          created_at?: string
+          description?: string
+          id?: string
+          organization_id?: string
+          unit?: string
+          unit_price?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_articles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_customers: {
+        Row: {
+          address: string | null
+          created_at: string
+          customer_number: string
+          email: string | null
+          id: string
+          match_key: string
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          customer_number: string
+          email?: string | null
+          id?: string
+          match_key: string
+          name: string
+          organization_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          customer_number?: string
+          email?: string | null
+          id?: string
+          match_key?: string
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_settings: {
         Row: {
           address: string | null
@@ -1524,10 +1609,13 @@ export type Database = {
           email: string | null
           footer_note: string | null
           iban: string | null
+          next_customer_number: number
           next_number: number
           number_format: string
           number_year: number | null
           organization_id: string
+          payment_due_days: number
+          payment_terms: string
           phone: string | null
           tax_number: string | null
           updated_at: string
@@ -1543,10 +1631,13 @@ export type Database = {
           email?: string | null
           footer_note?: string | null
           iban?: string | null
+          next_customer_number?: number
           next_number?: number
           number_format?: string
           number_year?: number | null
           organization_id: string
+          payment_due_days?: number
+          payment_terms?: string
           phone?: string | null
           tax_number?: string | null
           updated_at?: string
@@ -1562,10 +1653,13 @@ export type Database = {
           email?: string | null
           footer_note?: string | null
           iban?: string | null
+          next_customer_number?: number
           next_number?: number
           number_format?: string
           number_year?: number | null
           organization_id?: string
+          payment_due_days?: number
+          payment_terms?: string
           phone?: string | null
           tax_number?: string | null
           updated_at?: string
@@ -1591,6 +1685,8 @@ export type Database = {
           cancelled_by: string | null
           created_at: string
           created_by: string | null
+          customer_number: string | null
+          due_date: string | null
           gross_total: number
           id: string
           invoice_number: string
@@ -1600,6 +1696,8 @@ export type Database = {
           net_total: number
           note: string | null
           organization_id: string
+          payment_method: string | null
+          payment_terms: string | null
           prices_net: boolean
           property_id: string
           recipient_address: string | null
@@ -1616,6 +1714,8 @@ export type Database = {
           cancelled_by?: string | null
           created_at?: string
           created_by?: string | null
+          customer_number?: string | null
+          due_date?: string | null
           gross_total: number
           id?: string
           invoice_number: string
@@ -1625,6 +1725,8 @@ export type Database = {
           net_total: number
           note?: string | null
           organization_id: string
+          payment_method?: string | null
+          payment_terms?: string | null
           prices_net?: boolean
           property_id: string
           recipient_address?: string | null
@@ -1641,6 +1743,8 @@ export type Database = {
           cancelled_by?: string | null
           created_at?: string
           created_by?: string | null
+          customer_number?: string | null
+          due_date?: string | null
           gross_total?: number
           id?: string
           invoice_number?: string
@@ -1650,6 +1754,8 @@ export type Database = {
           net_total?: number
           note?: string | null
           organization_id?: string
+          payment_method?: string | null
+          payment_terms?: string | null
           prices_net?: boolean
           property_id?: string
           recipient_address?: string | null
@@ -4324,6 +4430,23 @@ export type Database = {
           _items: Json
           _note?: string
           _number: string
+          _prices_net?: boolean
+          _recipient_address: string
+          _recipient_email: string
+          _recipient_name: string
+          _reservation: string
+        }
+        Returns: string
+      }
+      create_invoice_v2: {
+        Args: {
+          _due_date?: string
+          _issue_date: string
+          _items: Json
+          _note?: string
+          _number: string
+          _payment_method?: string
+          _payment_terms?: string
           _prices_net?: boolean
           _recipient_address: string
           _recipient_email: string

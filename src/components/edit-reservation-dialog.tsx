@@ -475,7 +475,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
           </>
         )}
       </DialogContent>
-      {r && <InvoiceDialog open={invoiceOpen} onOpenChange={setInvoiceOpen} reservation={{ id: r.id, booking_number: (r as { booking_number?: number }).booking_number ?? null, guest_name: r.guest_name, guest_email: r.guest_email, company_name: r.company_name ?? null, check_in: r.check_in, check_out: r.check_out, revenue: Number(r.revenue), room: rooms.find((x) => x.id === r.room_id)?.number ?? "" }} />}
+      {r && <InvoiceDialog open={invoiceOpen} onOpenChange={setInvoiceOpen} reservation={{ id: r.id, booking_number: (r as { booking_number?: number }).booking_number ?? null, guest_name: r.guest_name, guest_email: r.guest_email, company_name: r.company_name ?? null, check_in: r.check_in, check_out: r.check_out, revenue: Number(r.revenue), room: rooms.find((x) => x.id === r.room_id)?.number ?? "", payment_method: (r as { payment_method?: string | null }).payment_method ?? null }} />}
     </Dialog>
   );
 }

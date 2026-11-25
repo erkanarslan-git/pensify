@@ -986,7 +986,21 @@
       "vat_rate": "VAT rate (%)",
       "number_format": "Number format",
       "next_number": "Next sequence number",
-      "footer_note": "Footer"
-    }
+      "footer_note": "Footer",
+      "payment_due_days": "Payment due (days)",
+      "next_customer_number": "Next customer no."
+    },
+    "articleNo": "Item no.",
+    "unit": "Unit",
+    "customerNo": "Customer no.",
+    "customerNoNew": "New (assigned on save)",
+    "paymentMethod": "Payment method",
+    "dueDate": "Due date",
+    "paymentTerms": "Payment terms",
+    "articles": "Items / services",
+    "articlesText": "Frequent services with item number, unit, price and VAT. They appear as quick picks on the invoice.",
+    "addArticle": "Add",
+    "errArticle": "Enter item number and description.",
+    "errArticleDup": "This item number already exists."
   }
 }

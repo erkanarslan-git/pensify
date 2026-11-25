@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { invoiceTotals, formatInvoiceNumber, nextInvoiceNumber, invoiceHtml } from "./invoice";
+import { invoiceTotals, formatInvoiceNumber, nextInvoiceNumber, invoiceHtml, dueDateOf } from "./invoice";
 
 describe("invoice", () => {
   it("extracts 7% VAT from gross prices", () => {
@@ -28,5 +28,18 @@ describe("net-price invoices", () => {
     expect(t.net).toBe(7104.86);
     expect(t.vat).toBe(497.34);
     expect(t.gross).toBe(7602.2);
+  });
+});
+
+describe("WISO layout", () => {
+  const base = { invoice_number: "2026-0001", issue_date: "2026-11-25", recipient_name: "Firma X", net_total: 0, vat_total: 0, gross_total: 0, issuer: {} };
+  it("prints customer no., position, item no., unit, payment method and terms", () => {
+    const html = invoiceHtml({ ...base, customer_number: "10001", payment_method: "transfer", payment_terms: "Zahlbar innerhalb 14 Tagen", due_date: "2026-12-09",
+      items: [{ pos: 1, article_no: "UEB", description: "Übernachtung", quantity: 3, unit: "Nächte", unit_price: 50, vat_rate: 7 }] });
+    for (const s of ["Kunden-Nr.", "10001", "Pos.", "Artikelnr.", "UEB", "Einheit", "Nächte", "Überweisung", "Zahlbar innerhalb 14 Tagen", "09.12.2026"]) expect(html).toContain(s);
+  });
+  it("computes due date from payment days", () => {
+    expect(dueDateOf("2026-11-25", 14)).toBe("2026-12-09");
+    expect(dueDateOf("2026-12-25", 10)).toBe("2027-01-04");
   });
 });

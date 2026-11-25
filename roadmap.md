@@ -15,5 +15,5 @@
 - [ ] Sesli Asistan araçları: boş oda sorgu, rezervasyon açma, nöbetçiye aktarma (bağlantıdan sonra)
 - [x] Buchungen: 6 tıklanabilir sayaç, ödeme durumu filtresi, rezervasyon numarası (arama + fatura), Rechnungen menüsü, net/brüt fatura, hazır ek kalemler, yalnız admin storno
 - [x] Yeni/düzenle rezervasyon: renkli oda satırları, dolu/zaten seçildi/müsait etiketleri, kapasite (EZ/DZ/TZ), kalan kişi; şu an kalan misafirler müşteri listesinde gizli
-- [ ] Fatura: WISO Rechnung düzenine uyarlama (Kunden-Nr., Pos., Einheit, Artikelnr., Zahlungsart, ödeme süresi metni)
+- [x] Fatura: WISO Rechnung düzenine uyarlama (Kunden-Nr., Pos., Einheit, Artikelnr., Zahlungsart, ödeme süresi metni)
 - [ ] E-Rechnung (XRechnung/ZUGFeRD) — yalnızca bilgi, kullanıcı isteyince başlanacak

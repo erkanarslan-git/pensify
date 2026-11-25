@@ -834,6 +834,13 @@
       "when": 1795624964279,
       "tag": "0118_booking_numbers_payment_status_invoice_modes",
       "breakpoints": true
+    },
+    {
+      "idx": 119,
+      "version": "7",
+      "when": 1795626670100,
+      "tag": "0119_invoice_wiso_layout",
+      "breakpoints": true
     }
   ]
 }

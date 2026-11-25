@@ -985,7 +985,21 @@
       "vat_rate": "KDV oranı (%)",
       "number_format": "Numara biçimi",
       "next_number": "Sıradaki numara",
-      "footer_note": "Alt bilgi"
-    }
+      "footer_note": "Alt bilgi",
+      "payment_due_days": "Ödeme süresi (gün)",
+      "next_customer_number": "Sonraki müşteri no."
+    },
+    "articleNo": "Ürün kodu",
+    "unit": "Birim",
+    "customerNo": "Müşteri no.",
+    "customerNoNew": "Yeni (kayıtta verilir)",
+    "paymentMethod": "Ödeme şekli",
+    "dueDate": "Son ödeme tarihi",
+    "paymentTerms": "Ödeme koşulları",
+    "articles": "Ürünler / hizmetler",
+    "articlesText": "Sık kullanılan hizmetler: ürün kodu, birim, fiyat ve KDV. Faturada hızlı seçim olarak çıkar.",
+    "addArticle": "Ekle",
+    "errArticle": "Ürün kodu ve açıklama girin.",
+    "errArticleDup": "Bu ürün kodu zaten var."
   }
 }

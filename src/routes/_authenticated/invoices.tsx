@@ -75,7 +75,7 @@ function InvoicesPage() {
                   <td className="px-4 py-2 font-medium">{r.invoice_number}</td>
                   <td className="px-4 py-2 font-mono">{r.booking_number ? <Link to="/reservations" search={{ q: `B-${r.booking_number}` }} className="underline-offset-2 hover:underline">B-{r.booking_number}</Link> : "—"}</td>
                   <td className="px-4 py-2 tabular-nums">{formatDateDE(r.issue_date)}</td>
-                  <td className="px-4 py-2">{r.recipient_name}</td>
+                  <td className="px-4 py-2">{r.recipient_name}{r.customer_number && <span className="ml-1.5 text-xs text-muted-foreground">#{r.customer_number}</span>}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{eur(Number(r.net_total))}</td>
                   <td className="px-4 py-2 text-right font-semibold tabular-nums">{eur(Number(r.gross_total))}</td>
                   <td className="px-4 py-2"><span className="flex gap-1">{r.cancelled_at ? <Badge tone="destructive">{T.cancelled}</Badge> : <Badge tone="success">{T.ok}</Badge>}{r.sent_at && <Badge tone="info">{T.sent}</Badge>}</span></td>

@@ -986,7 +986,21 @@
       "vat_rate": "MwSt.-Satz (%)",
       "number_format": "Nummernformat",
       "next_number": "Nächste laufende Nummer",
-      "footer_note": "Fußzeile"
-    }
+      "footer_note": "Fußzeile",
+      "payment_due_days": "Zahlungsziel (Tage)",
+      "next_customer_number": "Nächste Kunden-Nr."
+    },
+    "articleNo": "Artikelnr.",
+    "unit": "Einheit",
+    "customerNo": "Kunden-Nr.",
+    "customerNoNew": "Neu (wird vergeben)",
+    "paymentMethod": "Zahlungsart",
+    "dueDate": "Fällig am",
+    "paymentTerms": "Zahlungsbedingungen",
+    "articles": "Artikel / Leistungen",
+    "articlesText": "Häufige Leistungen mit Artikelnummer, Einheit, Preis und MwSt. Sie erscheinen in der Rechnung als Schnellauswahl.",
+    "addArticle": "Hinzufügen",
+    "errArticle": "Artikelnummer und Beschreibung angeben.",
+    "errArticleDup": "Diese Artikelnummer gibt es bereits."
   }
 }
