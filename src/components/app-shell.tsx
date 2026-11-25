@@ -30,6 +30,7 @@ import {
   Search,
   ChevronDown,
   Phone,
+  FileText,
 } from "lucide-react";
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import brandLogo from "@/assets/pension-highway-logo.png";
@@ -67,6 +68,7 @@ const navGroups: NavGroup[] = [
     labelKey: "nav.groups.stay",
     items: [
       { to: "/reservations", labelKey: "nav.reservations", icon: ClipboardList },
+      { to: "/invoices", labelKey: "nav.invoices", icon: FileText },
       { to: "/guests", labelKey: "guests.title", icon: Users },
       { to: "/calendar", labelKey: "nav.calendar", icon: CalendarDays },
     ],

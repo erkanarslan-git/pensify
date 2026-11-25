@@ -4,6 +4,7 @@
     "tagline": "Pensionsverwaltung"
   },
   "nav": {
+    "invoices": "Rechnungen",
     "dashboard": "Übersicht",
     "reservations": "Buchungen",
     "calendar": "Kalender",
@@ -766,7 +767,7 @@
     "periodToday": "Heute im Haus",
     "periodPast": "Vergangen",
     "periodTrash": "Papierkorb",
-    "searchGuest": "Gast suchen…",
+    "searchGuest": "Gast oder Buchungs-Nr. suchen…",
     "createdTodayToggle": "Heute erstellt",
     "noResults": "Keine Buchungen für diese Auswahl.",
     "loadError": "Buchungen konnten nicht geladen werden.",

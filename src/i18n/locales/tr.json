@@ -4,6 +4,7 @@
     "tagline": "Pansiyon Yönetimi"
   },
   "nav": {
+    "invoices": "Faturalar",
     "dashboard": "Panel",
     "reservations": "Rezervasyonlar",
     "calendar": "Takvim",
@@ -765,7 +766,7 @@
     "periodToday": "Bugün konaklayanlar",
     "periodPast": "Geçmiş",
     "periodTrash": "Çöp kutusu",
-    "searchGuest": "Misafir ara…",
+    "searchGuest": "Misafir veya rezervasyon no. ara…",
     "createdTodayToggle": "Bugün oluşturulan",
     "noResults": "Bu seçim için rezervasyon yok.",
     "loadError": "Rezervasyonlar yüklenemedi.",

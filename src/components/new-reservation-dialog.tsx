@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, User, Building2 } from "lucide-react";
 import { sourceLabel, type ActiveChannel } from "@/lib/guest-color";
 import { useEnabledChannels } from "@/lib/channels";
-import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
+import { canBookRoom, roomChoiceState, roomTypeCode, ROOM_CHOICE_LABELS, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
 import { CustomerPicker } from '@/components/customer-picker';
 import type { CustomerParty } from '@/lib/customer-history';
@@ -33,7 +33,10 @@ import type { CustomerParty } from '@/lib/customer-history';
 type Channel = ActiveChannel;
 
 interface Property { id: string; name: string }
-interface Room extends BookableRoom { number: string }
+interface Room extends BookableRoom { number: string; capacity: number | null }
+
+// Distinct soft tones so each room line of one booking is easy to tell apart.
+const LINE_TONES = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
 interface RoomLine {
   uid: string;
@@ -97,7 +100,7 @@ export function NewReservationDialog({
     (async () => {
       const [ps, rs, ss] = await Promise.all([
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id,status,active").order("number"),
+        supabase.from("rooms").select("id,number,property_id,status,active,capacity").order("number"),
         supabase.from("reservations").select("id,room_id,check_in,check_out,status,deleted_at").is("deleted_at", null).not("status", "in", "(cancelled,no_show)"),
       ]);
       if (ps.error || rs.error || ss.error) { setRooms([]); setLines([]); toast.error(t("bookingAvailability.failed")); return; }
@@ -172,7 +175,7 @@ export function NewReservationDialog({
         if (l.uid !== id) return l;
         const next = { ...l, ...patch };
         if (patch.propertyId && patch.propertyId !== l.propertyId) {
-          const first = rooms.find((r) => r.property_id === patch.propertyId && canBookRoom(r, next.checkIn, next.checkOut, stays));
+          const first = rooms.find((r) => r.property_id === patch.propertyId && roomChoiceState(r, next.checkIn, next.checkOut, stays, ls.filter((o) => o.uid !== id)) === "free");
           next.roomId = first?.id ?? "";
         }
         return next;
@@ -183,7 +186,7 @@ export function NewReservationDialog({
   const addLine = () => {
     const last = lines[lines.length - 1];
     const pid = last?.propertyId ?? properties[0]?.id ?? "";
-    const firstRoom = rooms.find((r) => r.property_id === pid && canBookRoom(r, last?.checkIn ?? today, last?.checkOut ?? addDays(today, 1), stays));
+    const firstRoom = rooms.find((r) => r.property_id === pid && roomChoiceState(r, last?.checkIn ?? today, last?.checkOut ?? addDays(today, 1), stays, lines) === "free");
     setLines((ls) => [
       ...ls,
       {
@@ -209,7 +212,7 @@ export function NewReservationDialog({
     if (lines.length === 0) return toast.error(t("newRes.errMinRoom"));
     for (const l of lines) {
       const room = rooms.find((x) => x.id === l.roomId);
-      if (!room || !canBookRoom(room, l.checkIn, l.checkOut, stays)) return toast.error(t("bookingAvailability.unavailable"));
+      if (!room || roomChoiceState(room, l.checkIn, l.checkOut, stays, lines.filter((o) => o.uid !== l.uid)) !== "free") return toast.error(t("bookingAvailability.unavailable"));
       if (!l.propertyId || !l.roomId)
         return toast.error(t("newRes.errSelectRoom"));
       if (l.checkOut <= l.checkIn)
@@ -298,7 +301,7 @@ export function NewReservationDialog({
                 ))}
               </div>
             </div>
-            <div className="col-span-full"><CustomerPicker kind={customerType} value={payerParty?.id ?? ''} label={t('records.payer')} onChange={p => { setPayerParty(p); setGuestEmail(p.email ?? ''); setGuestPhone(p.phone ?? ''); if(p.kind === 'company') { setCompanyName(p.name); setCompanyVat(p.vat ?? ''); setCompanyAddress(p.address ?? ''); setCompanyContact(p.contact ?? ''); } else { setGuestName(p.name); } }} /></div>
+            <div className="col-span-full"><CustomerPicker hideStaying kind={customerType} value={payerParty?.id ?? ''} label={t('records.payer')} onChange={p => { setPayerParty(p); setGuestEmail(p.email ?? ''); setGuestPhone(p.phone ?? ''); if(p.kind === 'company') { setCompanyName(p.name); setCompanyVat(p.vat ?? ''); setCompanyAddress(p.address ?? ''); setCompanyContact(p.contact ?? ''); } else { setGuestName(p.name); } }} /></div>
             {customerType === "company" && !payerParty && (
               <>
                 <div className="col-span-full space-y-2">
@@ -415,13 +418,27 @@ export function NewReservationDialog({
             </div>
 
             <div className="space-y-3">
-              {lines.map((l) => {
-                const propRooms = rooms.filter((r) => r.property_id === l.propertyId && canBookRoom(r, l.checkIn, l.checkOut, stays));
+              {lines.map((l, idx) => {
+                const others = lines.filter((o) => o.uid !== l.uid);
+                const propRooms = rooms.filter((r) => r.property_id === l.propertyId).map((r) => ({ room: r, state: roomChoiceState(r, l.checkIn, l.checkOut, stays, others) }));
+                const freeCount = propRooms.filter((x) => x.state === "free").length;
+                const RL = ROOM_CHOICE_LABELS[i18n.language.slice(0, 2)] ?? ROOM_CHOICE_LABELS.de!;
+                const chosen = rooms.find((r) => r.id === l.roomId);
+                const cap = Number(chosen?.capacity ?? 0);
+                const tone = LINE_TONES[idx % LINE_TONES.length];
                 return (
                   <div
                     key={l.uid}
-                    className="rounded-xl border border-border bg-card p-4 space-y-4"
+                    className="rounded-xl border-2 bg-card p-4 space-y-4"
+                    style={{ borderColor: `color-mix(in oklab, ${tone} 55%, transparent)`, background: `color-mix(in oklab, ${tone} 7%, var(--card))` }}
                   >
+                    <div className="flex items-center justify-between gap-2 -mt-1">
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold">
+                        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs text-background" style={{ background: tone }}>{idx + 1}</span>
+                        {chosen ? `#${chosen.number} · ${roomTypeCode(chosen.capacity)}` : t("newRes.room")}
+                      </span>
+                      <span className={`text-xs ${freeCount ? "text-muted-foreground" : "text-destructive"}`}>{RL.free_n.replace("{n}", String(freeCount))}</span>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
                       <div className="col-span-2 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
@@ -449,16 +466,19 @@ export function NewReservationDialog({
                         </Label>
                         <Select
                           value={l.roomId}
-                          disabled={propRooms.length === 0}
+                          disabled={freeCount === 0}
                           onValueChange={(v) => updateLine(l.uid, { roomId: v })}
                         >
                           <SelectTrigger className="bg-background">
                             <SelectValue placeholder={t("bookingAvailability.empty")} />
                           </SelectTrigger>
                           <SelectContent>
-                            {propRooms.map((r) => (
-                              <SelectItem key={r.id} value={r.id}>
-                                #{r.number}
+                            {propRooms.map(({ room: r, state }) => (
+                              <SelectItem key={r.id} value={r.id} disabled={state !== "free"}>
+                                <span className="flex w-full items-center justify-between gap-3">
+                                  <span>#{r.number} · {roomTypeCode(r.capacity)} <span className="text-muted-foreground">({RL.beds.replace("{n}", String(r.capacity ?? "?"))})</span></span>
+                                  <span className={`text-[10px] ${state === "free" ? "text-success" : "text-destructive"}`}>{RL[state]}</span>
+                                </span>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -500,7 +520,7 @@ export function NewReservationDialog({
                       </div>
                     </div>
 
-                    <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm">{t('records.occupants')} · {t('records.unknownNames')}: {(occupants[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).length}/{l.guestsCount}</summary><div className="mt-3 space-y-2">{(occupants[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).map(p=><div key={p.id} className="flex items-center justify-between gap-2"><span className="text-sm">{p.name}</span><Button variant="ghost" size="sm" aria-label={t('common.delete')} onClick={()=>setOccupants(current=>({...current,[l.uid]:(current[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).filter(x=>x.id!==p.id)}))}>×</Button></div>)}<CustomerPicker kind="person" value="" label={t('records.addPerson')} onChange={p=>setOccupants(current=>{const people=current[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : []); return people.some(x=>x.id===p.id)||people.length>=l.guestsCount?current:{...current,[l.uid]:[...people,p]};})}/></div></details>
+                    <details className="border-t border-border pt-3"><summary className="cursor-pointer text-sm">{t('records.occupants')} · {t('records.unknownNames')}: {(occupants[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).length}/{l.guestsCount}</summary><div className="mt-3 space-y-2">{(occupants[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).map(p=><div key={p.id} className="flex items-center justify-between gap-2"><span className="text-sm">{p.name}</span><Button variant="ghost" size="sm" aria-label={t('common.delete')} onClick={()=>setOccupants(current=>({...current,[l.uid]:(current[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : [])).filter(x=>x.id!==p.id)}))}>×</Button></div>)}<CustomerPicker hideStaying kind="person" value="" label={t('records.addPerson')} onChange={p=>setOccupants(current=>{const people=current[l.uid] ?? (payerParty?.kind === 'person' ? [payerParty] : []); return people.some(x=>x.id===p.id)||people.length>=l.guestsCount?current:{...current,[l.uid]:[...people,p]};})}/></div></details>
                     <div className="grid grid-cols-2 sm:grid-cols-12 gap-3 pt-4 border-t border-border">
                       <div className="col-span-1 sm:col-span-3 space-y-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase">
@@ -509,12 +529,18 @@ export function NewReservationDialog({
                         <Input
                           type="number"
                           min={1}
+                          max={cap > 0 ? cap : undefined}
                           value={l.guestsCount}
                           onChange={(e) =>
-                            updateLine(l.uid, { guestsCount: Math.max(1, +e.target.value || 1) })
+                            updateLine(l.uid, { guestsCount: Math.min(cap > 0 ? cap : 99, Math.max(1, +e.target.value || 1)) })
                           }
                           className="bg-background"
                         />
+                        {cap > 0 && (
+                          <p className={`text-[11px] ${l.guestsCount >= cap ? "text-destructive" : "text-success"}`}>
+                            {l.guestsCount}/{cap} · {l.guestsCount >= cap ? RL.occupied : RL.free_n.replace("{n}", String(cap - l.guestsCount))}
+                          </p>
+                        )}
                       </div>
                       <div className="col-span-1 sm:col-span-9 space-y-1.5">
                         <Label className="text-xs text-muted-foreground uppercase tracking-wider">

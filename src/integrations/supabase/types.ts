@@ -1585,6 +1585,10 @@ export type Database = {
       }
       invoices: {
         Row: {
+          booking_number: number | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           created_by: string | null
           gross_total: number
@@ -1596,6 +1600,7 @@ export type Database = {
           net_total: number
           note: string | null
           organization_id: string
+          prices_net: boolean
           property_id: string
           recipient_address: string | null
           recipient_email: string | null
@@ -1605,6 +1610,10 @@ export type Database = {
           vat_total: number
         }
         Insert: {
+          booking_number?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           created_by?: string | null
           gross_total: number
@@ -1616,6 +1625,7 @@ export type Database = {
           net_total: number
           note?: string | null
           organization_id: string
+          prices_net?: boolean
           property_id: string
           recipient_address?: string | null
           recipient_email?: string | null
@@ -1625,6 +1635,10 @@ export type Database = {
           vat_total: number
         }
         Update: {
+          booking_number?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           created_by?: string | null
           gross_total?: number
@@ -1636,6 +1650,7 @@ export type Database = {
           net_total?: number
           note?: string | null
           organization_id?: string
+          prices_net?: boolean
           property_id?: string
           recipient_address?: string | null
           recipient_email?: string | null
@@ -2616,9 +2631,42 @@ export type Database = {
           },
         ]
       }
+      reservation_payment_status: {
+        Row: {
+          organization_id: string
+          property_id: string
+          reservation_id: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          organization_id: string
+          property_id: string
+          reservation_id: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          organization_id?: string
+          property_id?: string
+          reservation_id?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_payment_status_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: true
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           booking_id: string | null
+          booking_number: number
           channel: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
@@ -2660,6 +2708,7 @@ export type Database = {
         }
         Insert: {
           booking_id?: string | null
+          booking_number?: number
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
@@ -2701,6 +2750,7 @@ export type Database = {
         }
         Update: {
           booking_id?: string | null
+          booking_number?: number
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in?: string
           check_out?: string
@@ -4193,6 +4243,10 @@ export type Database = {
       }
       can_read_todo: { Args: { _id: string }; Returns: boolean }
       can_reset_member_password: { Args: { _target: string }; Returns: boolean }
+      cancel_invoice: {
+        Args: { _invoice: string; _reason: string }
+        Returns: undefined
+      }
       claim_morning_push: {
         Args: { _day: string; _org: string; _user: string }
         Returns: boolean
@@ -4270,6 +4324,7 @@ export type Database = {
           _items: Json
           _note?: string
           _number: string
+          _prices_net?: boolean
           _recipient_address: string
           _recipient_email: string
           _recipient_name: string
@@ -4521,6 +4576,10 @@ export type Database = {
           _room_id: string
         }
         Returns: number
+      }
+      refresh_reservation_payment_status: {
+        Args: { _rid: string }
+        Returns: undefined
       }
       remove_todo_attachment: { Args: { _id: string }; Returns: undefined }
       reopen_cleaning_task: {

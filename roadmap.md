@@ -13,3 +13,6 @@
 - [x] Sesli Asistan bölümü: çağrı geçmişi, başarı sayaçları, günlük nöbetçi, ayarlar, ElevenLabs çağrı sonu kaydı
 - [ ] Sesli Asistan: ElevenLabs bağlantısı + telefon numarası (kullanıcının ElevenLabs hesabı ve +49 numarası gerekiyor)
 - [ ] Sesli Asistan araçları: boş oda sorgu, rezervasyon açma, nöbetçiye aktarma (bağlantıdan sonra)
+- [x] Buchungen: 6 tıklanabilir sayaç, ödeme durumu filtresi, rezervasyon numarası (arama + fatura), Rechnungen menüsü, net/brüt fatura, hazır ek kalemler, yalnız admin storno
+- [x] Yeni/düzenle rezervasyon: renkli oda satırları, dolu/zaten seçildi/müsait etiketleri, kapasite (EZ/DZ/TZ), kalan kişi; şu an kalan misafirler müşteri listesinde gizli
+- [ ] Fatura: müşterinin kullandığı programa göre düzen/ek alanlar (Kunden-Nr. vb.) — kullanıcının program bilgisi bekleniyor

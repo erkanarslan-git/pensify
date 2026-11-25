@@ -93,3 +93,13 @@ describe("long-stay guests", () => {
     expect(calls.some((c) => c[1] === "long_stay")).toBe(false);
   });
 });
+
+import { bookingNumberQuery } from "./reservation-list";
+describe("booking number search", () => {
+  it("accepts B-, # or plain digits", () => {
+    expect(bookingNumberQuery("B-10023")).toBe(10023);
+    expect(bookingNumberQuery("#10023")).toBe(10023);
+    expect(bookingNumberQuery("10023")).toBe(10023);
+    expect(bookingNumberQuery("Müller")).toBeNull();
+  });
+});

@@ -4,6 +4,7 @@
     "tagline": "Pension Operations"
   },
   "nav": {
+    "invoices": "Invoices",
     "dashboard": "Dashboard",
     "reservations": "Reservations",
     "calendar": "Calendar",
@@ -766,7 +767,7 @@
     "periodToday": "In house today",
     "periodPast": "Past",
     "periodTrash": "Trash",
-    "searchGuest": "Search guest…",
+    "searchGuest": "Search guest or booking no.…",
     "createdTodayToggle": "Created today",
     "noResults": "No bookings for this selection.",
     "loadError": "Bookings could not be loaded.",

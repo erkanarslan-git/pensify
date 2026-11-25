@@ -3,7 +3,7 @@ import { confirmAction, promptAction } from "@/components/confirm-dialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
-import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight, CalendarClock, CircleAlert, CircleDollarSign } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PAYMENT_METHOD_ALL, PAYMENT_METHODS, PAYMENT_METHOD_TITLE, paymentMethodLabel } from "@/lib/payment-method";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -18,9 +18,20 @@ import { formatDateDE } from "@/lib/date-de";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
 import { listReservations, exportReservations } from "@/lib/reservation-list.functions";
-import { RESERVATION_PAGE_SIZES, reservationCsvCell, type ReservationFilters, type ReservationListRow } from "@/lib/reservation-list";
+import { RESERVATION_PAGE_SIZES, reservationCsvCell, formatBookingNumber, type ReservationFilters, type ReservationListRow } from "@/lib/reservation-list";
 
-type Search = { property?: string; created?: string; focus?: "arrivals" | "departures" | "inHouse"; q?: string; long?: "1" };
+type Search = { property?: string; created?: string; focus?: "arrivals" | "departures" | "inHouse"; q?: string; long?: "1"; pay?: "paid" | "partial" | "open" };
+
+const PAY_LABELS: Record<string, Record<"all" | "paid" | "partial" | "open", string>> = {
+  de: { all: "Alle Zahlungsstatus", paid: "Bezahlt", partial: "Teilbezahlt", open: "Offen" },
+  tr: { all: "Tüm ödeme durumları", paid: "Ödendi", partial: "Kısmi ödendi", open: "Ödenmedi" },
+  en: { all: "All payment states", paid: "Paid", partial: "Partly paid", open: "Unpaid" },
+};
+const CARD_LABELS: Record<string, { longStay: string; open: string; partial: string; number: string }> = {
+  de: { longStay: "Dauergäste", open: "Unbezahlt", partial: "Teilbezahlt", number: "Buchungs-Nr." },
+  tr: { longStay: "Uzun dönem", open: "Ödenmedi", partial: "Kısmi ödendi", number: "Rezervasyon no." },
+  en: { longStay: "Long-stay", open: "Unpaid", partial: "Partly paid", number: "Booking no." },
+};
 
 const LS: Record<string,string> = { de: "Dauergast", tr: "Uzun dönem misafir", en: "Long-stay guest" };
 
@@ -32,6 +43,7 @@ export const Route = createFileRoute("/_authenticated/reservations")({
     if (s.focus === "arrivals" || s.focus === "departures" || s.focus === "inHouse") out.focus = s.focus;
     if (typeof s.q === "string" && s.q) out.q = s.q.slice(0, 120);
     if (s.long === "1" || s.long === 1) out.long = "1";
+    if (s.pay === "paid" || s.pay === "partial" || s.pay === "open") out.pay = s.pay;
     return out;
   },
   head: () => ({ meta: [{ title: "Rezervasyonlar — Pension Highway" }, { name: "description", content: "Pension Highway'da rezervasyonları ve girişleri yönetin." }, { property: "og:title", content: "Rezervasyonlar — Pension Highway" }, { property: "og:description", content: "Pension Highway'da rezervasyonları ve girişleri yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -68,6 +80,11 @@ function ReservationsPage() {
   const [status, setStatus] = useState<string>("all");
   const [longStay, setLongStay] = useState(search.long === "1");
   const [pay, setPay] = useState<ReservationFilters["paymentMethod"]>("all");
+  const [payState, setPayState] = useState<ReservationFilters["paymentState"]>(search.pay ?? "all");
+  const lang = i18n.language.slice(0, 2);
+  const PL = PAY_LABELS[lang] ?? PAY_LABELS.de!;
+  const CL = CARD_LABELS[lang] ?? CARD_LABELS.de!;
+  const togglePayState = (v: "open" | "partial") => { setFocus("none"); setPeriod("all"); setPayState(cur => cur === v ? "all" : v); };
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState<10 | 20 | 30 | 40 | 50>(20);
   const [dq, setDq] = useState("");
@@ -84,11 +101,11 @@ function ReservationsPage() {
     const timer = setTimeout(() => { setDq(q.trim()); setPage(0); }, 300);
     return () => clearTimeout(timer);
   }, [q]);
-  useEffect(() => setPage(0), [src, prop, period, status, pay, longStay, createdTodayOnly, from, to, sort, pageSize, focus]);
+  useEffect(() => setPage(0), [src, prop, period, status, pay, payState, longStay, createdTodayOnly, from, to, sort, pageSize, focus]);
   const filters: ReservationFilters = {
     search: dq, propertyId: prop, source: src as ReservationFilters["source"],
     status: status as ReservationFilters["status"], period,
-    paymentMethod: pay,
+    paymentMethod: pay, paymentState: payState,
     createdTodayOnly, longStayOnly: longStay, from, to, sort, focus,
   };
   const { data, refetch, error, isLoading } = useQuery({
@@ -117,8 +134,8 @@ function ReservationsPage() {
     setExportBusy(true);
     try {
       const rows = await fetchExport({ data: filters });
-      const headings = [t("resv.thGuest"), t("resv.companyTag"), t("calendar.allPensions"), t("resv.thRoom"), t("resv.thPeriod"), t("resv.thStatus"), t("common.allSources"), t("resv.thAmount")];
-      const lines = [headings, ...rows.map(r => [r.guest_name, r.company_name, r.property?.name, r.room?.number, `${r.check_in} → ${r.check_out}`, t(`resStatus.${r.status}`), sourceLabel(r.channel, k => t(k)), r.revenue])];
+      const headings = [CL.number, t("resv.thGuest"), t("resv.companyTag"), t("calendar.allPensions"), t("resv.thRoom"), t("resv.thPeriod"), t("resv.thStatus"), t("common.allSources"), t("resv.thAmount")];
+      const lines = [headings, ...rows.map(r => [formatBookingNumber(r.booking_number), r.guest_name, r.company_name, r.property?.name, r.room?.number, `${r.check_in} → ${r.check_out}`, t(`resStatus.${r.status}`), sourceLabel(r.channel, k => t(k)), r.revenue])];
       const url = URL.createObjectURL(new Blob(["\ufeff" + lines.map(line => line.map(reservationCsvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }));
       const anchor = document.createElement("a"); anchor.href = url; anchor.download = `Pension Highway-${today}.csv`; anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -154,10 +171,13 @@ function ReservationsPage() {
         </button>
       }
     >
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-5">
         <StatCard highlight active={focus === "arrivals"} onClick={() => toggleFocus("arrivals")} icon={<LogIn className="w-4 h-4" />} label={t("resv.arrivalsToday")} value={arrivals} />
         <StatCard active={focus === "departures"} onClick={() => toggleFocus("departures")} icon={<LogOut className="w-4 h-4" />} label={t("resv.departuresToday")} value={departures} />
         <StatCard active={focus === "inHouse"} onClick={() => toggleFocus("inHouse")} icon={<BedDouble className="w-4 h-4" />} label={t("resv.guestsInHouse")} value={staying} />
+        <StatCard active={longStay} onClick={() => { setFocus("none"); setLongStay(v => !v); }} icon={<CalendarClock className="w-4 h-4" />} label={CL.longStay} value={data?.stats.longStay} />
+        <StatCard tone="danger" active={payState === "open"} onClick={() => togglePayState("open")} icon={<CircleAlert className="w-4 h-4" />} label={CL.open} value={data?.stats.open} />
+        <StatCard tone="warning" active={payState === "partial"} onClick={() => togglePayState("partial")} icon={<CircleDollarSign className="w-4 h-4" />} label={CL.partial} value={data?.stats.partial} />
       </div>
       <p className="mb-3 text-xs text-muted-foreground">{t("reservationList.filteredScope")}</p>
 
@@ -212,6 +232,9 @@ function ReservationsPage() {
           {PAYMENT_METHODS.map((m) => (
             <option key={m} value={m}>{paymentMethodLabel(m, i18n.language)}</option>
           ))}
+        </select>
+        <select aria-label={PL.all} value={payState} onChange={(e) => setPayState(e.target.value as ReservationFilters["paymentState"])} className="px-3 py-2 rounded-md border border-input bg-card text-sm">
+          {(["all", "paid", "partial", "open"] as const).map((v) => <option key={v} value={v}>{PL[v]}</option>)}
         </select>
         <button
           onClick={() => setLongStay((v) => !v)}
@@ -281,6 +304,7 @@ function ReservationsPage() {
                               <span className="ml-1.5 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded border border-border text-muted-foreground">{r.customer_type === "company" ? t("resv.companyTag") : t("resv.privateTag")}</span>
                             </div>
                             <div className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                              {r.booking_number != null && <span title={CL.number} className="font-mono font-medium text-foreground/80">{formatBookingNumber(r.booking_number)}</span>}
                               <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
                               {sourceLabel(r.channel, (k) => t(k))} · {t("resv.guestsCount", { count: r.guests_count })}
                               {r.customer_type === "company" && r.company_name && r.guest_name !== r.company_name && <>{t("resv.guestSuffix")}{r.guest_name}</>}
@@ -350,12 +374,13 @@ function ReservationsPage() {
   );
 }
 
-function StatCard({ icon, label, value, highlight, onClick, active }: { icon: React.ReactNode; label: string; value: number | undefined; highlight?: boolean; onClick?: () => void; active?: boolean }) {
+function StatCard({ icon, label, value, highlight, onClick, active, tone }: { icon: React.ReactNode; label: string; value: number | undefined; highlight?: boolean; onClick?: () => void; active?: boolean; tone?: "danger" | "warning" }) {
+  const toneCls = tone === "danger" && value ? "text-destructive" : tone === "warning" && value ? "text-warning" : "";
   const Tag = onClick ? "button" : "div";
   return (
     <Tag type={onClick ? "button" : undefined} onClick={onClick} aria-pressed={onClick ? !!active : undefined} className={`text-left min-w-0 rounded-2xl transition ${onClick ? "cursor-pointer hover:brightness-105" : ""} ${active ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : ""} px-3 py-3 sm:px-5 sm:py-4 shadow-sm ${highlight ? "brand-tile" : "border border-border bg-card"}`}>
       <div className={`flex items-center gap-1.5 text-[11px] sm:text-xs leading-tight ${highlight ? "opacity-80" : "text-muted-foreground"}`}><span className="hidden sm:inline">{icon}</span> {label}</div>
-      <div className="text-2xl sm:text-3xl font-semibold mt-1 tabular-nums">{value ?? "—"}</div>
+      <div className={`text-2xl sm:text-3xl font-semibold mt-1 tabular-nums ${toneCls}`}>{value ?? "—"}</div>
     </Tag>
   );
 }

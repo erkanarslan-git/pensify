@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resolveActiveOrg } from "./org-auth.server";
 import { businessDate } from "./business-time";
-import { applyReservationFilters, collectReservationExport, orderReservations, reservationFiltersSchema, reservationPageRange, reservationPageSchema, type ReservationFilters, type ReservationListRow } from "./reservation-list";
+import { applyReservationFilters, reservationColumns, collectReservationExport, orderReservations, reservationFiltersSchema, reservationPageRange, reservationPageSchema, type ReservationFilters, type ReservationListRow } from "./reservation-list";
 
-const columns: string = "id,guest_name,channel,status,check_in,check_out,guests_count,revenue,created_at,customer_type,company_name,payment_method,long_stay,room:rooms(number,property_id),property:properties(id,name)";
+const columns: string = "id,guest_name,channel,status,check_in,check_out,guests_count,revenue,created_at,customer_type,company_name,payment_method,long_stay,booking_number,room:rooms(number,property_id),property:properties(id,name)";
 
 async function scope(client: any, filters: ReservationFilters) {
   const { orgId } = await resolveActiveOrg(client);
@@ -37,8 +37,8 @@ export const listReservations = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => reservationPageSchema.parse(data))
   .handler(async ({ data, context }) => {
     const s = await scope(context.supabase, data);
-    if (!s.ids.length) return { rows: [] as ReservationListRow[], paymentStates: {} as Record<string, "paid" | "partial" | "open">, total: 0, page: 0, properties: s.properties, stats: { arrivals: 0, departures: 0, staying: 0 } };
-    const base = () => context.supabase.from("reservations").select(columns, { count: "exact" })
+    if (!s.ids.length) return { rows: [] as ReservationListRow[], paymentStates: {} as Record<string, "paid" | "partial" | "open">, total: 0, page: 0, properties: s.properties, stats: { arrivals: 0, departures: 0, staying: 0, longStay: 0, open: 0, partial: 0 } };
+    const base = () => context.supabase.from("reservations").select(reservationColumns(columns, data), { count: "exact" })
       .eq("organization_id", s.orgId).in("property_id", s.ids);
     const filtered = () => applyReservationFilters(base(), data, s.today, s.roomIds);
     const [from, to] = reservationPageRange(data.page, data.pageSize);
@@ -51,12 +51,15 @@ export const listReservations = createServerFn({ method: "POST" })
       result = await orderReservations(filtered(), data.sort).range(first, last).returns<ReservationListRow[]>();
       if (result.error) throw new Error("reservations_unavailable");
     }
-    const countBase = () => applyReservationFilters(context.supabase.from("reservations")
-      .select("id", { count: "exact", head: true }).eq("organization_id", s.orgId).in("property_id", s.ids), { ...data, focus: "none" }, s.today, s.roomIds)
+    const statFilters = { ...data, focus: "none" as const, paymentState: "all" as const, longStayOnly: false };
+    const countBase = (pay = false) => applyReservationFilters(context.supabase.from("reservations")
+      .select(pay ? "id,pay:reservation_payment_status!inner(state)" : "id", { count: "exact", head: true }).eq("organization_id", s.orgId).in("property_id", s.ids), statFilters, s.today, s.roomIds)
       .not("status", "in", "(cancelled,no_show)");
     const counts = await Promise.all([
       countBase().eq("check_in", s.today), countBase().eq("check_out", s.today),
       countBase().lte("check_in", s.today).gt("check_out", s.today),
+      countBase().eq("long_stay", true).gte("check_out", s.today),
+      countBase(true).eq("pay.state", "open"), countBase(true).eq("pay.state", "partial"),
     ]);
     if (counts.some(c => c.error)) throw new Error("reservations_unavailable");
     const rowIds = (result.data ?? []).map(r => r.id);
@@ -66,7 +69,8 @@ export const listReservations = createServerFn({ method: "POST" })
       for (const st of (states.data ?? []) as { reservation_id: string; state: "paid" | "partial" | "open" }[]) paymentStates[st.reservation_id] = st.state;
     }
     return { rows: result.data ?? [], paymentStates, total, page, properties: s.properties,
-      stats: { arrivals: counts[0]?.count ?? 0, departures: counts[1]?.count ?? 0, staying: counts[2]?.count ?? 0 } };
+      stats: { arrivals: counts[0]?.count ?? 0, departures: counts[1]?.count ?? 0, staying: counts[2]?.count ?? 0,
+        longStay: counts[3]?.count ?? 0, open: counts[4]?.count ?? 0, partial: counts[5]?.count ?? 0 } };
   });
 
 export const exportReservations = createServerFn({ method: "POST" })
@@ -76,7 +80,7 @@ export const exportReservations = createServerFn({ method: "POST" })
     const s = await scope(context.supabase, data);
     if (!s.ids.length) return [] as ReservationListRow[];
     return collectReservationExport<ReservationListRow>(async (offset, size) => {
-      const query = applyReservationFilters(context.supabase.from("reservations").select(columns)
+      const query = applyReservationFilters(context.supabase.from("reservations").select(reservationColumns(columns, data))
         .eq("organization_id", s.orgId).in("property_id", s.ids), data, s.today, s.roomIds);
       const { data: rows, error } = await orderReservations(query, data.sort).range(offset, offset + size - 1).returns<ReservationListRow[]>();
       if (error) throw new Error("reservations_unavailable");

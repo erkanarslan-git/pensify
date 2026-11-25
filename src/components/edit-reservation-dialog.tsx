@@ -10,7 +10,7 @@ import { History, User as UserIcon, Clock, Lock, CalendarPlus } from "lucide-rea
 import { formatDateDE } from "@/lib/date-de";
 import { extensionDays } from "@/lib/overnight-stats";
 import { usePermissions } from "@/hooks/use-permissions";
-import { canBookRoom, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
+import { canBookRoom, roomChoiceState, roomTypeCode, ROOM_CHOICE_LABELS, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
 import { GuestMessagePanel } from '@/components/guest-message-panel';
 import { ReservationCustomerLinks } from '@/components/reservation-customer-links';
@@ -23,7 +23,7 @@ const STATUSES = ["confirmed", "tentative", "cancelled", "no_show", "checked_in"
 type Status = typeof STATUSES[number];
 
 interface Property { id: string; name: string }
-interface Room extends BookableRoom { number: string }
+interface Room extends BookableRoom { number: string; capacity: number | null }
 
 interface AuditEntry {
   id: string;
@@ -138,7 +138,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       const [resResult, propsResult, roomsResult, histResult, staysResult] = await Promise.all([
         supabase.from("reservations").select("*").eq("id", reservationId).single(),
         supabase.from("properties").select("id,name").order("name"),
-        supabase.from("rooms").select("id,number,property_id,status,active").order("number"),
+        supabase.from("rooms").select("id,number,property_id,status,active,capacity").order("number"),
         supabase.from("audit_logs").select("id,action,created_at,actor_email,diff")
           .eq("entity", "reservations").eq("entity_id", reservationId)
           .order("created_at", { ascending: false }).limit(50),
@@ -224,12 +224,14 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   };
 
   const propRooms = r ? rooms.filter((x) => x.property_id === r.property_id && canBookRoom(x, r.check_in, r.check_out, stays, r.id)) : [];
+  const allPropRooms = r ? rooms.filter((x) => x.property_id === r.property_id).map((x) => ({ room: x, state: roomChoiceState(x, r.check_in, r.check_out, stays, [], r.id) })) : [];
+  const RL = ROOM_CHOICE_LABELS[i18n.language.slice(0, 2)] ?? ROOM_CHOICE_LABELS.de!;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("legacyUi.editReservation")}</DialogTitle>
+          <DialogTitle>{t("legacyUi.editReservation")}{r && (r as { booking_number?: number }).booking_number ? <span className="ml-2 font-mono text-sm text-muted-foreground">B-{(r as { booking_number?: number }).booking_number}</span> : null}</DialogTitle>
           <DialogDescription>
             {r && (
               <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
@@ -288,12 +290,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted-foreground">{t("newRes.room")}</span>
+                <span className="text-xs text-muted-foreground">{t("newRes.room")} · {RL.free_n.replace("{n}", String(propRooms.length))}</span>
                 <select value={r.room_id} onChange={(e) => update("room_id", e.target.value)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
                   {!propRooms.some((x) => x.id === r.room_id) && <option value={r.room_id} disabled>{t("bookingAvailability.unavailable")}</option>}
                   {propRooms.length === 0 && <option value="" disabled>{t("bookingAvailability.empty")}</option>}
-                  {propRooms.map((rm) => <option key={rm.id} value={rm.id}>#{rm.number}</option>)}
+                  {allPropRooms.map(({ room: rm, state }) => <option key={rm.id} value={rm.id} disabled={state !== "free"}>#{rm.number} · {roomTypeCode(rm.capacity)} ({RL.beds.replace("{n}", String(rm.capacity ?? "?"))}){state !== "free" ? ` — ${RL[state]}` : ""}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">
@@ -473,7 +475,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
           </>
         )}
       </DialogContent>
-      {r && <InvoiceDialog open={invoiceOpen} onOpenChange={setInvoiceOpen} reservation={{ id: r.id, guest_name: r.guest_name, guest_email: r.guest_email, company_name: r.company_name ?? null, check_in: r.check_in, check_out: r.check_out, revenue: Number(r.revenue), room: rooms.find((x) => x.id === r.room_id)?.number ?? "" }} />}
+      {r && <InvoiceDialog open={invoiceOpen} onOpenChange={setInvoiceOpen} reservation={{ id: r.id, booking_number: (r as { booking_number?: number }).booking_number ?? null, guest_name: r.guest_name, guest_email: r.guest_email, company_name: r.company_name ?? null, check_in: r.check_in, check_out: r.check_out, revenue: Number(r.revenue), room: rooms.find((x) => x.id === r.room_id)?.number ?? "" }} />}
     </Dialog>
   );
 }

@@ -18,3 +18,15 @@ describe("invoice", () => {
     expect(html).not.toContain("<b>x</b>");
   });
 });
+
+describe("net-price invoices", () => {
+  it("adds 7% VAT on top of net prices (Rechnung 20260576 example)", () => {
+    const t = invoiceTotals([
+      { description: "Unterkunft", quantity: 35, unit_price: 200, vat_rate: 7 },
+      { description: "Beherbergungssteuer", quantity: 1, unit_price: 104.86, vat_rate: 7 },
+    ], true);
+    expect(t.net).toBe(7104.86);
+    expect(t.vat).toBe(497.34);
+    expect(t.gross).toBe(7602.2);
+  });
+});
