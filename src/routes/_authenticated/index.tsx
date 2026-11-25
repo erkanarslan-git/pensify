@@ -55,8 +55,59 @@ export const Route = createFileRoute("/_authenticated/")({
   component: Dashboard,
 });
 
+const UP_TXT = {
+  tr: { in: "Yaklaşan girişler", none: "Yaklaşan giriş yok", paid: "Ödendi", partial: "Kısmi ödendi", open: "Ödenmedi" },
+  de: { in: "Kommende Check-ins", none: "Keine kommenden Anreisen", paid: "Bezahlt", partial: "Teilbezahlt", open: "Offen" },
+  en: { in: "Upcoming check-ins", none: "No upcoming check-ins", paid: "Paid", partial: "Partly paid", open: "Unpaid" },
+};
+type PayState = "paid" | "partial" | "open";
+
+async function loadPayStates(rows: { id: string; organization_id: string }[]): Promise<Record<string, PayState>> {
+  const out: Record<string, PayState> = {};
+  const byOrg = new Map<string, string[]>();
+  for (const r of rows) byOrg.set(r.organization_id, [...(byOrg.get(r.organization_id) ?? []), r.id]);
+  for (const [org, ids] of byOrg) {
+    const { data } = await supabase.rpc("reservation_payment_states", { _org: org, _reservation_ids: ids });
+    for (const st of (data ?? []) as { reservation_id: string; state: PayState }[]) out[st.reservation_id] = st.state;
+  }
+  return out;
+}
+
+function UpcomingList({ title, rows, dateKey, focus, payStates, empty }: { title: string; rows: any[]; dateKey: "check_in" | "check_out"; focus: "arrivals" | "departures"; payStates: Record<string, PayState>; empty: string }) {
+  const { t, i18n } = useTranslation();
+  const l = i18n.language.slice(0, 2);
+  const tx = UP_TXT[(l === "tr" || l === "en" ? l : "de") as keyof typeof UP_TXT];
+  return (
+    <Section title={title} action={<Link to="/reservations" search={{ focus }} className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}>
+      <div className="divide-y divide-border -my-2">
+        {rows.map((r) => {
+          const st = payStates[r.id];
+          const unpaid = st === "open";
+          return (
+            <Link key={r.id} to="/reservations" search={{ q: r.guest_name ?? "" }} className="flex min-w-0 items-center gap-3 py-3 first:pt-0 last:pb-0 hover:bg-accent/50">
+              <div className={`w-9 h-9 rounded-full grid place-items-center text-xs font-semibold shrink-0 ${unpaid ? "bg-destructive/15 text-destructive" : "bg-accent"}`}>
+                {(r.guest_name ?? "").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className={`text-sm font-medium [overflow-wrap:anywhere] ${unpaid ? "text-destructive" : ""}`}>{r.guest_name}</div>
+                <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]">{r.property?.name} · {t("resv.thRoom")} {r.room?.number}</div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="text-sm font-medium">{formatDateDE(r[dateKey])}</div>
+                {st && <Badge tone={st === "paid" ? "success" : st === "partial" ? "warning" : "destructive"}>{tx[st]}</Badge>}
+              </div>
+            </Link>
+          );
+        })}
+        {rows.length === 0 && <div className="py-6 text-sm text-muted-foreground">{empty}</div>}
+      </div>
+    </Section>
+  );
+}
+
 function Dashboard() {
   const { t, i18n } = useTranslation();
+  const lang = ((l) => (l === "tr" || l === "en" ? l : "de"))(i18n.language.slice(0, 2)) as keyof typeof UP_TXT;
   const [newOpen, setNewOpen] = useState(false);
   const v2 = useV2Theme();
   const today = businessDate();
@@ -66,19 +117,22 @@ function Dashboard() {
     staleTime: 0,
     refetchOnMount: "always",
     queryFn: async () => {
-      const [rooms, tasks, res, props, live] = await Promise.all([
+      const [rooms, tasks, res, props, live, arr] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property_id,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
-        supabase.from("reservations").select("id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(5),
+        supabase.from("reservations").select("id,organization_id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(5),
         supabase.from("properties").select("id,name").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
+        supabase.from("reservations").select("id,organization_id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_in", today).not("status", "in", "(cancelled,no_show,checked_out,checked_in)").order("check_in").limit(5),
       ]);
-      for (const result of [rooms, tasks, res, props, live]) if (result.error) throw result.error;
+      for (const result of [rooms, tasks, res, props, live, arr]) if (result.error) throw result.error;
       const liveMap = new Map((live.data ?? []).map(room => [room.room_id, room.status]));
       return {
         rooms: (rooms.data ?? []).map(room => ({ ...room, status: liveMap.get(room.id) ?? room.status })),
         tasks: (tasks.data ?? []) as any[],
         upcoming: (res.data ?? []) as any[],
+        arrivalsSoon: (arr.data ?? []) as any[],
+        payStates: await loadPayStates([...(res.data ?? []), ...(arr.data ?? [])] as any[]),
         propsCount: (props.data ?? []).length,
         props: (props.data ?? []) as { id: string; name: string }[],
       };
@@ -88,6 +142,8 @@ function Dashboard() {
   const rooms = data?.rooms ?? [];
   const tasks = data?.tasks ?? [];
   const upcoming = data?.upcoming ?? [];
+  const arrivalsSoon = data?.arrivalsSoon ?? [];
+  const payStates = data?.payStates ?? {};
   const summary = summarizeRooms(rooms);
   const { total: totalRooms, occupied, maintenance, available, cleaning } = summary;
   const dt = useDashTxt();
@@ -319,36 +375,9 @@ function Dashboard() {
           </div>
         </Section>
 
-        <div className="lg:col-span-2">
-          <Section
-            title={t("dashboard.upcomingCheckouts")}
-            action={<Link to="/reservations" className="text-xs text-primary hover:underline inline-flex shrink-0 items-center gap-0.5">{t("common.viewAll")} <ArrowUpRight className="w-3 h-3" /></Link>}
-          >
-            <div className="divide-y divide-border -my-2">
-              {upcoming.map((r) => (
-                <div key={r.id} className="flex min-w-0 flex-col items-start gap-3 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-9 h-9 rounded-full bg-accent grid place-items-center text-xs font-semibold shrink-0">
-                      {(r.guest_name ?? "").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium [overflow-wrap:anywhere]">{r.guest_name}</div>
-                      <div className="text-xs text-muted-foreground [overflow-wrap:anywhere]" title={r.property?.name}>
-                        {r.property?.name}<span className="block sm:inline"> · {t("resv.thRoom")} {r.room?.number} · {sourceLabel(r.channel, (k) => t(k))}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pl-12 sm:pl-0 sm:shrink-0 sm:text-right">
-                    <div className="text-sm font-medium">{formatDateDE(r.check_out)}</div>
-                    <div className="text-xs text-muted-foreground">{r.guests_count} {t("common.guests")}</div>
-                  </div>
-                </div>
-              ))}
-              {upcoming.length === 0 && (
-                <div className="py-6 text-sm text-muted-foreground">{t("pages.notifications.noCheckouts")}</div>
-              )}
-            </div>
-          </Section>
+        <div className="lg:col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
+          <UpcomingList title={UP_TXT[lang].in} rows={arrivalsSoon} dateKey="check_in" focus="arrivals" payStates={payStates} empty={UP_TXT[lang].none} />
+          <UpcomingList title={t("dashboard.upcomingCheckouts")} rows={upcoming} dateKey="check_out" focus="departures" payStates={payStates} empty={t("pages.notifications.noCheckouts")} />
         </div>
       </div>
 

@@ -72,12 +72,12 @@ export function PropertyOverview({ cards }: { cards: PropertyCard[] }) {
             stat(c.departures, p.departures, "", <Link to="/reservations" search={{ property: p.id, focus: "departures" }}>{box(c.departures, p.departures, "bg-accent text-foreground")}</Link>),
           ];
           return (
-            <div key={p.id} className="flex min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-soft">
+            <div key={p.id} className={`flex min-w-0 flex-col rounded-2xl border bg-card p-4 shadow-soft ${p.total > 0 && p.rate >= 100 ? "border-success/60 bg-success/5" : p.total > 0 && p.occupied === 0 ? "border-destructive/50 bg-destructive/5" : "border-border"}`}>
               <Link to="/calendar" search={{ property: p.id }} title={c.calendar} className="group mb-3 flex min-w-0 items-center justify-between gap-2">
                 <span className="truncate text-sm font-semibold group-hover:text-primary">{p.name}</span>
                 <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground group-hover:text-primary">{lang === "tr" ? `%${p.rate}` : `${p.rate}%`} <ArrowUpRight className="h-3 w-3" /></span>
               </Link>
-              <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${p.rate}%` }} /></div>
+              <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full ${p.rate >= 100 ? "bg-success" : p.occupied === 0 ? "bg-destructive" : "bg-primary"}`} style={{ width: `${p.rate}%` }} /></div>
               <div className="grid grid-cols-4 gap-1.5 [&_a>span]:transition [&_a:hover>span]:ring-1 [&_a:hover>span]:ring-border">
                 {items.map((i) => <span key={i.label} className="contents">{i.link}</span>)}
               </div>
