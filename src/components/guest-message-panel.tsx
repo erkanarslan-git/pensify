@@ -7,9 +7,9 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { accessMessage, bookingMessage, whatsappDigits, MESSAGE_LANGUAGES, isMessageLang, type GuestInfoSettings, type MessageLang } from "@/lib/guest-messages";
+import { type RoomCode, accessMessage, bookingMessage, whatsappDigits, MESSAGE_LANGUAGES, isMessageLang, type GuestInfoSettings, type MessageLang } from "@/lib/guest-messages";
 
-interface Props { reservation: { property_id: string; room_id: string; guest_name: string; guest_phone: string | null; check_in: string; check_out: string; revenue: number } }
+interface Props { reservation: { id?: string; booking_id?: string | null; property_id: string; room_id: string; guest_name: string; guest_phone: string | null; check_in: string; check_out: string; revenue: number } }
 const DEFAULTS: GuestInfoSettings = { check_in_time: "15:00", check_out_time: "11:00" };
 
 export function GuestMessagePanel({ reservation: r }: Props) {
@@ -17,7 +17,7 @@ export function GuestMessagePanel({ reservation: r }: Props) {
   const [mode, setMode] = useState<"booking" | "access" | null>(null);
   const [lang, setLang] = useState<MessageLang>("de");
   const [withBank, setWithBank] = useState(false);
-  const [ctx, setCtx] = useState<{ g: GuestInfoSettings; prop: string; address: string | null; room: string; codes: Record<string, string | null> } | null>(null);
+  const [ctx, setCtx] = useState<{ g: GuestInfoSettings; prop: string; address: string | null; room: string; codes: Record<string, string | null>; rooms: RoomCode[] } | null>(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const canCodes = perms.can("view_access_codes");
@@ -25,7 +25,7 @@ export function GuestMessagePanel({ reservation: r }: Props) {
   const build = (m: "booking" | "access", c = ctx, l = lang, b = withBank) => {
     if (!c) return;
     const stay = { guestName: r.guest_name, propertyName: c.prop, address: c.address, room: c.room, checkIn: r.check_in, checkOut: r.check_out, amount: r.revenue, reference: `${r.guest_name} ${c.room}` };
-    setText(m === "booking" ? bookingMessage(stay, c.g, l, b) : accessMessage(stay, c.g, l, c.codes));
+    setText(m === "booking" ? bookingMessage(stay, c.g, l, b) : accessMessage({ ...stay, room: c.rooms.map((x) => x.room).join(" / ") || c.room }, c.g, l, { building: c.codes.building ?? null, rooms: c.rooms }));
   };
 
   const open = async (m: "booking" | "access") => {
@@ -38,11 +38,26 @@ export function GuestMessagePanel({ reservation: r }: Props) {
     let g = DEFAULTS;
     if (org) { const { data } = await supabase.from("guest_message_settings").select("*").eq("organization_id", org).maybeSingle(); if (data) g = data; }
     const codes: Record<string, string | null> = {};
+    const rooms: RoomCode[] = [];
     if (m === "access") {
       const get = async (room: string | null, kind: string) => { const { data, error } = await supabase.rpc("reveal_access_secret", { _property: r.property_id, _room: room as unknown as string, _kind: kind }); return error ? null : (data ?? null); };
-      [codes.building, codes.door, codes.keybox] = await Promise.all([get(null, "building"), get(r.room_id, "door"), get(r.room_id, "keybox")]);
+      // All rooms of the same booking at this property get one combined message.
+      let roomIds = [r.room_id];
+      if (r.booking_id) {
+        const { data: sib } = await supabase.from("reservations").select("room_id").eq("booking_id", r.booking_id).eq("property_id", r.property_id).is("deleted_at", null).neq("status", "cancelled");
+        const ids = (sib ?? []).map((x) => x.room_id).filter((x): x is string => !!x);
+        if (ids.length) roomIds = Array.from(new Set([r.room_id, ...ids]));
+      }
+      const { data: nums } = await supabase.from("rooms").select("id,number").in("id", roomIds);
+      const numOf = new Map((nums ?? []).map((x) => [x.id, x.number]));
+      const list = await Promise.all(roomIds.map(async (id) => { const [door, keybox] = await Promise.all([get(id, "door"), get(id, "keybox")]); return { room: numOf.get(id) ?? "", door, keybox }; }));
+      list.sort((a, b) => a.room.localeCompare(b.room, undefined, { numeric: true }));
+      rooms.push(...list);
+      codes.building = await get(null, "building");
+      const own = list.find((x) => x.room === room?.number);
+      codes.door = own?.door ?? null; codes.keybox = own?.keybox ?? null;
     }
-    const c = { g, prop: prop?.name ?? "", address: prop?.address ?? null, room: room?.number ?? "", codes };
+    const c = { g, prop: prop?.name ?? "", address: prop?.address ?? null, room: room?.number ?? "", codes, rooms };
     setCtx(c); setMode(m); build(m, c); setBusy(false);
   };
 

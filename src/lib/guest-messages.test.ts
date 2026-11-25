@@ -52,9 +52,10 @@ describe("guest messages", () => {
   it("bank details are left out when not chosen", () => {
     expect(bookingMessage(s, g, "de", false)).not.toContain("IBAN");
   });
-  it("access message uses the short room – code format", () => {
-    const m = accessMessage(s, { ...g, check_in_until: "22:00" }, "de", { keybox: "9465" });
-    expect(m).toContain("Zimmer 101 – Code: 9465"); expect(m).toContain("Check-in: 15:00–22:00");
+  it("German access message lists every room of the booking with its key box code", () => {
+    const m = accessMessage({ ...s, room: "501 / 502" }, { ...g, check_in_time: "18:00", check_in_until: "22:00" }, "de", { rooms: [{ room: "501", keybox: "9465" }, { room: "502", keybox: "2341" }] });
+    expect(m).toContain("Zimmernummern: 501 / 502"); expect(m).toContain("Zimmer 501: Nr. 501 / Code: 9465");
+    expect(m).toContain("Zimmer 502: Nr. 502 / Code: 2341"); expect(m).toContain("von 18:00-22:00 Uhr");
   });
   it("normalizes phone numbers for WhatsApp", () => {
     expect(whatsappDigits("0176 1234567")).toBe("491761234567");
