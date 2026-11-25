@@ -21,7 +21,7 @@ export interface GuestInfoSettings {
 }
 export type MessageMode = "booking" | "access";
 export type MessageTemplates = Partial<Record<MessageLang, Partial<Record<MessageMode, string>>>>;
-export const MESSAGE_FIELDS = ["guest_name", "property_name", "address", "room", "check_in", "check_out", "check_in_time", "check_out_time", "amount", "bank_details", "contact_phone", "extra_note", "rooms", "room_codes"] as const;
+export const MESSAGE_FIELDS = ["guest_name", "property_name", "address", "room", "check_in", "check_out", "check_in_time", "check_out_time", "amount", "bank_details", "contact_phone", "extra_note", "rooms", "room_codes", "map_link"] as const;
 export function readMessageTemplates(value: unknown): MessageTemplates {
   const out: MessageTemplates = {};
   if (!value || typeof value !== "object") return out;
@@ -57,7 +57,7 @@ const L = {
 const fmtDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const address = (s: StayInfo) => s.address ? `${s.propertyName}, ${s.address}` : s.propertyName;
 
-const DE_ACCESS = "Hallo {{guest_name}},\n\nder Aufenthalt beginnt bald. Hier sind die noch fehlenden Informationen für den Check-in:\n\nAdresse: {{address}}\n\nZimmernummern: {{rooms}}\n\nSchlüsselboxen:\n\n{{room_codes}}\n\nDer selbstständige Check-in ist von {{check_in_time}} Uhr jederzeit möglich.\n\nBei Fragen oder falls Hilfe benötigt wird, stehen wir gerne zur Verfügung. {{contact_phone}}\n\nWir wünschen eine angenehme Anreise und einen schönen Aufenthalt.\n\n{{extra_note}}";
+const DE_ACCESS = "Hallo {{guest_name}},\n\nder Aufenthalt beginnt bald. Hier sind die noch fehlenden Informationen für den Check-in:\n\nAdresse: {{address}}\nKarte: {{map_link}}\n\nZimmernummern: {{rooms}}\n\nSchlüsselboxen:\n\n{{room_codes}}\n\nDer selbstständige Check-in ist von {{check_in_time}} Uhr jederzeit möglich. Auch bei später Anreise ist der Check-in mit dem Code problemlos möglich.\n\nBitte die Schlüsselbox nach der Entnahme wieder verschließen und den Code nicht weitergeben.\n\nBei Fragen oder falls Hilfe benötigt wird, stehen wir gerne zur Verfügung. {{contact_phone}}\n\nWir wünschen eine angenehme Anreise und einen schönen Aufenthalt.\n\n{{extra_note}}";
 export function defaultMessageTemplate(mode: MessageMode, lang: MessageLang): string {
   const l = L[lang];
   if (mode === "access" && lang === "de") return DE_ACCESS;
@@ -87,7 +87,7 @@ function renderTemplate(template: string, s: StayInfo, g: GuestInfoSettings, lan
     amount: s.amount != null ? `${s.amount.toFixed(2).replace(".", lang === "en" ? "." : ",")} €` : "",
     bank_details: bankDetails, contact_phone: g.contact_phone ?? "", extra_note: g.extra_note ?? "",
     access_codes: codes ? [codes.building ? `${l.building} – ${l.code}: ${codes.building}` : "", roomCode ? `${l.room} ${s.room} – ${l.code}: ${roomCode}` : `${l.room} ${s.room}`].filter(Boolean).join("\n") : "",
-    rooms: roomList(s, codes).map((r) => r.room).join(" / "), room_codes: codes ? roomCodeLines(lang, s, codes) : "",
+    rooms: roomList(s, codes).map((r) => r.room).join(" / "), room_codes: codes ? roomCodeLines(lang, s, codes) : "", map_link: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address || s.propertyName)}`,
     building_code: codes?.building ?? "", door_code: codes?.door ?? "", keybox_code: codes?.keybox ?? "",
   };
   // Substitute once: guest input and notes cannot expand into secret placeholders.
