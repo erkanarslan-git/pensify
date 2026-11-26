@@ -841,6 +841,20 @@
       "when": 1795626670100,
       "tag": "0119_invoice_wiso_layout",
       "breakpoints": true
+    },
+    {
+      "idx": 120,
+      "version": "7",
+      "when": 1795686920582,
+      "tag": "0120_reservation_cancellation_reasons_and_30_day_trash",
+      "breakpoints": true
+    },
+    {
+      "idx": 121,
+      "version": "7",
+      "when": 1795687061445,
+      "tag": "0121_preserve_existing_cancelled_reservation_edits",
+      "breakpoints": true
     }
   ]
 }

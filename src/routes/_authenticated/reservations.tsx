@@ -1,6 +1,7 @@
 import { displayLocale } from "@/i18n/legacy-ui";
-import { confirmAction, promptAction } from "@/components/confirm-dialog";
-import { createFileRoute } from "@tanstack/react-router";
+import { promptAction } from "@/components/confirm-dialog";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { reservationActionReason } from "@/lib/reservation-actions";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight, CalendarClock, CircleAlert, CircleDollarSign } from "lucide-react";
@@ -143,10 +144,13 @@ function ReservationsPage() {
   }
 
   const softDelete = async (r: Row) => {
-    const reason = await promptAction({ description: t("resv.deletePrompt", { name: r.guest_name }), destructive: true });
-    if (reason === null) return;
-    const { error } = await (supabase as any).rpc("soft_delete_reservation", { _id: r.id, _reason: reason });
-    if (error) { toast.error(error.code === "42501" ? t("resv.noPermission") : t("resv.deleteFailed")); return; }
+    const reason = reservationActionReason(await promptAction({ title: t("resv.deleteTitle"), description: t("resv.deletePrompt", { name: r.guest_name }), confirmLabel: t("common.delete"), input: { label: t("legacyUi.reason") }, destructive: true, required: true }));
+    if (!reason) return;
+    const { error } = await supabase.rpc("soft_delete_reservation", { _id: r.id, _reason: reason });
+    if (error) {
+      toast.error(error.message.includes("invoice_history") ? t("resv.invoiceDeleteBlocked") : error.code === "42501" ? t("resv.noPermission") : t("resv.deleteFailed"));
+      return;
+    }
     toast.success(t("resv.deletedToast"));
     refetch();
   };
@@ -163,12 +167,15 @@ function ReservationsPage() {
       title={t("pages.reservations.title")}
       subtitle={t("resv.bookingsSubtitle", { count: data?.total ?? 0 })}
       actions={
-        <button
-          onClick={() => setNewOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 btn-action rounded-xl text-sm font-semibold hover:brightness-105"
-        >
-          <Plus className="w-4 h-4" /> {t("common.newReservation")}
-        </button>
+        <div className="flex items-center gap-2">
+          {perms.can("delete_reservation") && <Link to="/settings/trash" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-sm hover:bg-accent"><Trash2 className="w-4 h-4" />{t("resv.periodTrash")}</Link>}
+          <button
+            onClick={() => setNewOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 btn-action rounded-xl text-sm font-semibold hover:brightness-105"
+          >
+            <Plus className="w-4 h-4" /> {t("common.newReservation")}
+          </button>
+        </div>
       }
     >
       <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-5">
@@ -335,7 +342,7 @@ function ReservationsPage() {
                             {locked ? <Lock className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
                             {locked ? t("resv.locked") : t("common.edit")}
                           </button>
-                          {!locked && (
+                          {!locked && perms.can("delete_reservation") && (
                             <button
                               onClick={() => softDelete(r)}
                               title={t("resv.deleteTitle")}

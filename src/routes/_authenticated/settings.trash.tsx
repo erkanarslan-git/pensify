@@ -16,7 +16,7 @@ function TrashPage() {
   const queryClient = useQueryClient();
 
   if (perms.loading) return <div className="text-sm text-muted-foreground">{t("common.loading")}</div>;
-  if (!perms.isAdmin) return <div className="rounded-xl border border-border bg-card p-4 text-sm">{t("resv.noPermission")}</div>;
+  if (!perms.can("delete_reservation")) return <div className="rounded-xl border border-border bg-card p-4 text-sm">{t("resv.noPermission")}</div>;
 
   return (
     <Section title={t("resv.periodTrash")}>

@@ -4,7 +4,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { buttonVariants } from "@/components/ui/button";
 
-type Options = { title?: string; description?: string; confirmLabel?: string; destructive?: boolean; input?: { label?: string; defaultValue?: string } };
+type Options = { title?: string; description?: string; confirmLabel?: string; destructive?: boolean; required?: boolean; input?: { label?: string; defaultValue?: string } };
 type Request = Options & { resolve: (v: string | null) => void };
 let push: ((r: Request) => void) | null = null;
 
@@ -30,10 +30,10 @@ export function ConfirmDialogHost() {
           <AlertDialogTitle>{req?.title ?? t("confirmDialog.title")}</AlertDialogTitle>
           {req?.description && <AlertDialogDescription className="whitespace-pre-line">{req.description}</AlertDialogDescription>}
         </AlertDialogHeader>
-        {req?.input && <Input autoFocus aria-label={req.input.label ?? t("confirmDialog.reason")} placeholder={req.input.label ?? t("confirmDialog.reason")} value={value} onChange={(e) => setValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") close(value); }} />}
+        {req?.input && <Input autoFocus required={req.required} aria-label={req.input.label ?? t("confirmDialog.reason")} placeholder={req.input.label ?? t("confirmDialog.reason")} value={value} onChange={(e) => setValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && (!req.required || value.trim())) close(value); }} />}
         <AlertDialogFooter>
           <AlertDialogCancel>{t("confirmDialog.cancel")}</AlertDialogCancel>
-          <AlertDialogAction className={req?.destructive ? buttonVariants({ variant: "destructive" }) : undefined} onClick={() => close(req?.input ? value : "")}>
+          <AlertDialogAction disabled={!!req?.input && !!req.required && !value.trim()} className={req?.destructive ? buttonVariants({ variant: "destructive" }) : undefined} onClick={() => close(req?.input ? value : "")}>
             {req?.confirmLabel ?? t("confirmDialog.confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>

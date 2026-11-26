@@ -20,6 +20,7 @@ import { OccupancyOverview, type OverviewMode } from "@/components/occupancy-ove
 import { shiftOverviewMonth } from "@/lib/occupancy-overview";
 import { calendarFloorTone, compareCalendarRooms } from "@/lib/calendar-rooms";
 import { roomTypeCode } from "@/lib/room-bookability";
+import { RoomAccessButton } from "@/components/access-code-panel";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   validateSearch: (s: Record<string, unknown>): { property?: string } => (typeof s.property === "string" && /^[0-9a-f-]{36}$/i.test(s.property) ? { property: s.property } : {}),
@@ -704,6 +705,11 @@ function CalendarPage() {
                       <div className="font-medium truncate flex items-center gap-1.5">
                         <span>#{r.number}</span>
                         <span className="rounded bg-background/70 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">{roomTypeCode(r.capacity)}</span>
+                        {(perms.can("view_access_codes") || perms.can("edit_access_codes")) && (
+                          <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                            <RoomAccessButton propertyId={p.id} roomId={r.id} />
+                          </span>
+                        )}
 
                         {r.needsCleaning && !r.issue && (
                           <Tooltip>

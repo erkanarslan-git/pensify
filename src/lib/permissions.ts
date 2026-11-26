@@ -98,6 +98,7 @@ export function routeRolesFor(pathname: string): AppRole[] | null {
 }
 
 export function canAccessRoute(pathname: string, roles: AppRole[], allowedReportTeams: string[] = [], timeManagementAccess = false, can?: (key: string) => boolean): boolean {
+  if (pathname === "/settings/trash" && can?.("delete_reservation") === true) return true;
   if (pathname === "/time-tracking" && timeManagementAccess) return true;
   if (pathname === "/work-report") return roles.includes("owner");
   if ((pathname === "/properties" || pathname.startsWith("/properties/")) && can?.("view_properties") === true) return true;

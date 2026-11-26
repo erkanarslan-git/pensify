@@ -11,11 +11,12 @@ import { RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { sourceColor, sourceLabel } from "@/lib/guest-color";
 import { formatDateDE } from "@/lib/date-de";
+import { reservationPurgeAllowed } from "@/lib/reservation-actions";
 
 const PAGE = 20;
 type Row = { id: string; guest_name: string; channel: string; check_in: string; check_out: string; deleted_at: string; purge_at: string; delete_reason: string | null; room: string | null; property: string; deleter: string | null; blocker: string | null };
 
-/** Admin-only 7-day recycle bin for soft-deleted reservations; paging and filters run on the server. */
+/** Permission- and property-scoped 30-day recycle bin; permanent deletion remains admin-only. */
 export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -82,7 +83,7 @@ export function ReservationTrash({ onChanged }: { onChanged: () => void }) {
               {r.delete_reason && <div>{t("legacyUi.reason")}: {r.delete_reason}</div>}
             </div>
             <Button variant="outline" size="sm" disabled={!!busy} onClick={() => act("restore_reservation", r.id)}><RotateCcw className="w-3 h-3" /> {t("legacyUi.restore")}</Button>
-            <Button variant="outline" size="sm" disabled={!!busy || !!r.blocker} onClick={() => act("purge_reservation", r.id)} className="border-destructive/40 text-destructive hover:bg-destructive/10"><Trash2 className="w-3 h-3" /> {t("legacyUi.purge")}</Button>
+            <Button variant="outline" size="sm" disabled={!!busy || !!r.blocker || !reservationPurgeAllowed(r.purge_at)} onClick={() => act("purge_reservation", r.id)} className="border-destructive/40 text-destructive hover:bg-destructive/10"><Trash2 className="w-3 h-3" /> {t("legacyUi.purge")}</Button>
           </div>
         ))}
       </div>}

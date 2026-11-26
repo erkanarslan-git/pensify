@@ -18,3 +18,5 @@
 - [x] Fatura: WISO Rechnung düzenine uyarlama (Kunden-Nr., Pos., Einheit, Artikelnr., Zahlungsart, ödeme süresi metni)
 - [ ] E-Rechnung (XRechnung/ZUGFeRD) — yalnızca bilgi, kullanıcı isteyince başlanacak
 - [x] Takvim: kat bazlı renkli oda grupları ve EZ/DZ/3DZ oda tipi kodları
+- [x] Rezervasyon iptal/silme: zorunlu neden, yetki sınırı, 30 gün koruma ve fatura geçmişi
+- [x] Takvim odalarında yetkili kullanıcılar için hızlı anahtar/şifre erişimi

@@ -2773,6 +2773,9 @@ export type Database = {
         Row: {
           booking_id: string | null
           booking_number: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           channel: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
@@ -2815,6 +2818,9 @@ export type Database = {
         Insert: {
           booking_id?: string | null
           booking_number?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in: string
           check_out: string
@@ -2857,6 +2863,9 @@ export type Database = {
         Update: {
           booking_id?: string | null
           booking_number?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           channel?: Database["public"]["Enums"]["reservation_channel"]
           check_in?: string
           check_out?: string
@@ -4351,6 +4360,10 @@ export type Database = {
       can_reset_member_password: { Args: { _target: string }; Returns: boolean }
       cancel_invoice: {
         Args: { _invoice: string; _reason: string }
+        Returns: undefined
+      }
+      cancel_reservation: {
+        Args: { _id: string; _reason: string }
         Returns: undefined
       }
       claim_morning_push: {

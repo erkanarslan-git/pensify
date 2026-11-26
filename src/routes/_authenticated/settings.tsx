@@ -6,6 +6,7 @@ import { Globe, Bell, Mail, Building2, Shield, Palette, Languages, Paintbrush, S
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Ayarlar — Pension Highway" }, { name: "description", content: "Pension Highway ayarlarını ve şirket bilgilerini yönetin." }, { property: "og:title", content: "Ayarlar — Pension Highway" }, { property: "og:description", content: "Pension Highway ayarlarını ve şirket bilgilerini yönetin." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -34,8 +35,10 @@ const tabs: { key: TabKey; icon: typeof Globe }[] = [
 
 function SettingsLayout() {
   const { t } = useTranslation();
+  const perms = usePermissions();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const visibleTabs = perms.isAdmin ? tabs : tabs.filter((tab) => tab.key === "trash");
   const [activeTab, setActiveTab] = useState<TabKey>("general");
 
   useEffect(() => {
@@ -52,7 +55,7 @@ function SettingsLayout() {
     <AppShell title={t("pages.settings.title")} subtitle={t("pages.settings.subtitle")}>
       <div className="grid lg:grid-cols-[220px_1fr] gap-4">
         <aside className="rounded-xl border border-border bg-card p-2 h-fit">
-          {tabs.map((x) => {
+          {visibleTabs.map((x) => {
             const Icon = x.icon;
             const active = activeTab === x.key;
             return (

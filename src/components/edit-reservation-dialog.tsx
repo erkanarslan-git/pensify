@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { History, User as UserIcon, Clock, Lock, CalendarPlus } from "lucide-react";
+import { History, User as UserIcon, Clock, Lock, CalendarPlus, Ban, Trash2 } from "lucide-react";
+import { promptAction } from "@/components/confirm-dialog";
+import { reservationActionReason } from "@/lib/reservation-actions";
 import { formatDateDE } from "@/lib/date-de";
 import { extensionDays } from "@/lib/overnight-stats";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -56,6 +58,10 @@ interface Reservation {
   long_stay: boolean;
   created_by: string | null;
   created_at: string;
+  deleted_at: string | null;
+  cancelled_at: string | null;
+  cancelled_by: string | null;
+  cancellation_reason: string | null;
 }
 
 interface Extension { id: string; old_check_out: string; new_check_out: string; days: number; note: string | null; created_at: string }
@@ -82,7 +88,7 @@ interface Props {
 }
 
 const TRACKED = ["property_id", "room_id", "guest_name", "guest_email", "guest_phone",
-  "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes", "payment_method", "long_stay"] as const;
+  "guests_count", "check_in", "check_out", "channel", "status", "revenue", "notes", "payment_method", "long_stay", "cancellation_reason"] as const;
 
 export function EditReservationDialog({ open, onOpenChange, reservationId, onSaved }: Props) {
   const { t } = useTranslation();
@@ -98,6 +104,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
   const [rooms, setRooms] = useState<Room[]>([]);
   const [history, setHistory] = useState<AuditEntry[]>([]);
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
+  const [cancellerName, setCancellerName] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const { i18n } = useTranslation();
   const ex = EXT_COPY[i18n.language.startsWith("tr") ? "tr" : i18n.language.startsWith("en") ? "en" : "de"];
@@ -154,11 +161,14 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
       setRooms((rms ?? []) as Room[]);
       setHistory((hist ?? []) as AuditEntry[]);
 
-      if (res?.created_by) {
-        const { data: prof } = await supabase.from("profiles").select("full_name").eq("id", res.created_by).maybeSingle();
-        setCreatorEmail(prof?.full_name ?? null);
+      const peopleIds = Array.from(new Set([res?.created_by, res?.cancelled_by].filter((id): id is string => typeof id === "string")));
+      if (peopleIds.length) {
+        const { data: people } = await supabase.from("profiles").select("id,full_name").in("id", peopleIds);
+        setCreatorEmail(people?.find((person) => person.id === res?.created_by)?.full_name ?? null);
+        setCancellerName(people?.find((person) => person.id === res?.cancelled_by)?.full_name ?? null);
       } else {
         setCreatorEmail(null);
+        setCancellerName(null);
       }
       setLoading(false);
     })();
@@ -223,9 +233,60 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
     onSaved?.();
   };
 
+  const cancelStay = async () => {
+    if (!r) return;
+    const reason = reservationActionReason(await promptAction({
+      title: t("resv.cancelTitle"),
+      description: t("resv.cancelPrompt", { name: r.guest_name }),
+      confirmLabel: t("resv.cancelTitle"),
+      input: { label: t("resv.cancelReason") },
+      destructive: true,
+      required: true,
+    }));
+    if (!reason) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("cancel_reservation", { _id: r.id, _reason: reason });
+    setSaving(false);
+    if (error) {
+      toast.error(error.code === "42501" ? t("legacyUi.noPermission") : t("resv.cancelFailed"), { description: error.message });
+      return;
+    }
+    toast.success(t("resv.cancelledToast"));
+    onOpenChange(false);
+    onSaved?.();
+  };
+
+  const deleteStay = async () => {
+    if (!r) return;
+    const reason = reservationActionReason(await promptAction({
+      title: t("resv.deleteTitle"),
+      description: t("resv.deletePrompt", { name: r.guest_name }),
+      confirmLabel: t("common.delete"),
+      input: { label: t("legacyUi.reason") },
+      destructive: true,
+      required: true,
+    }));
+    if (!reason) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("soft_delete_reservation", { _id: r.id, _reason: reason });
+    setSaving(false);
+    if (error) {
+      const invoiceBlocked = error.message.includes("invoice_history");
+      const message = invoiceBlocked ? t("resv.invoiceDeleteBlocked") : error.code === "42501" ? t("resv.noPermission") : t("resv.deleteFailed");
+      if (invoiceBlocked) toast.error(message);
+      else toast.error(message, { description: error.message });
+      return;
+    }
+    toast.success(t("resv.deletedToast"));
+    onOpenChange(false);
+    onSaved?.();
+  };
+
   const propRooms = r ? rooms.filter((x) => x.property_id === r.property_id && canBookRoom(x, r.check_in, r.check_out, stays, r.id)) : [];
   const allPropRooms = r ? rooms.filter((x) => x.property_id === r.property_id).map((x) => ({ room: x, state: roomChoiceState(x, r.check_in, r.check_out, stays, [], r.id) })) : [];
   const RL = ROOM_CHOICE_LABELS[i18n.language.slice(0, 2)] ?? ROOM_CHOICE_LABELS.de!;
+  const canCancel = !!r && !readOnly && perms.can("create_reservation") && !r.deleted_at && !["cancelled", "no_show", "checked_out"].includes(r.status);
+  const canDelete = !!r && !readOnly && perms.can("delete_reservation") && !r.deleted_at;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -246,6 +307,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
           <div className="py-12 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
         ) : (
           <>
+            {r.status === "cancelled" && r.cancellation_reason && (
+              <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs">
+                <div className="font-semibold text-destructive">{t("resStatus.cancelled")}: {r.cancellation_reason}</div>
+                {r.cancelled_at && <div className="mt-1 text-muted-foreground">{t("resv.cancelledBy", { name: cancellerName ?? t("pages.logs.system"), date: new Date(r.cancelled_at).toLocaleString(displayLocale(), { timeZone: BUSINESS_TIME_ZONE }) })}</div>}
+              </div>
+            )}
             {readOnly && (
               <div className="mb-3 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-foreground dark:text-warning flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5" />
@@ -319,7 +386,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 <span className="text-xs text-muted-foreground">{t("resv.thStatus")}</span>
                 <select value={r.status} onChange={(e) => update("status", e.target.value as Status)}
                   className="px-3 py-2 rounded-md border border-input bg-card">
-                  {STATUSES.map((s) => <option key={s} value={s}>{t(`resStatus.${s}`)}</option>)}
+                  {STATUSES.filter((s) => s !== "cancelled" || r.status === "cancelled").map((s) => <option key={s} value={s}>{t(`resStatus.${s}`)}</option>)}
                 </select>
               </label>
               <label className="grid gap-1">
@@ -443,7 +510,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                           <ul className="mt-1.5 space-y-0.5">
                             {changes.map((k) => (
                               <li key={k}>
-                                <span className="font-medium">{t(({ property_id: "newRes.property", room_id: "newRes.room", guest_name: "resv.thGuest", guest_email: "common.email", guest_phone: "newRes.phone", guests_count: "common.guests", check_in: "newRes.checkIn", check_out: "newRes.checkOut", channel: "newRes.channel", status: "resv.thStatus", revenue: "newRes.amount", notes: "newRes.note" } as Record<string, string>)[k] ?? k)}:</span>{" "}
+                                <span className="font-medium">{t(({ property_id: "newRes.property", room_id: "newRes.room", guest_name: "resv.thGuest", guest_email: "common.email", guest_phone: "newRes.phone", guests_count: "common.guests", check_in: "newRes.checkIn", check_out: "newRes.checkOut", channel: "newRes.channel", status: "resv.thStatus", revenue: "newRes.amount", notes: "newRes.note", cancellation_reason: "resv.cancelReason" } as Record<string, string>)[k] ?? k)}:</span>{" "}
                                 <span className="text-muted-foreground line-through">{String(old[k] ?? "—")}</span>{" → "}
                                 <span>{String(nw[k] ?? "—")}</span>
                               </li>
@@ -460,9 +527,13 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
 
             </fieldset>
 
-            <DialogFooter>
+            <DialogFooter className="flex-wrap gap-2">
               {perms.can("collect_payments") && <button type="button" onClick={() => setInvoiceOpen(true)} disabled={saving}
                 className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent sm:mr-auto">{t("invoice.button")}</button>}
+              {canCancel && <button type="button" onClick={cancelStay} disabled={saving}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-destructive/40 text-sm text-destructive hover:bg-destructive/10 disabled:opacity-50"><Ban className="w-4 h-4" />{t("resv.cancelTitle")}</button>}
+              {canDelete && <button type="button" onClick={deleteStay} disabled={saving}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-destructive/40 text-sm text-destructive hover:bg-destructive/10 disabled:opacity-50"><Trash2 className="w-4 h-4" />{t("common.delete")}</button>}
               <button onClick={() => onOpenChange(false)} disabled={saving}
                 className="px-3 py-2 rounded-md border border-border text-sm hover:bg-accent">{readOnly ? t("editRes.close") : t("common.cancel")}</button>
               {!readOnly && (
