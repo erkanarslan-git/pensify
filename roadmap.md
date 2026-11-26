@@ -20,3 +20,4 @@
 - [x] Takvim: kat bazlı renkli oda grupları ve EZ/DZ/3DZ oda tipi kodları
 - [x] Rezervasyon iptal/silme: zorunlu neden, yetki sınırı, 30 gün koruma ve fatura geçmişi
 - [x] Takvim odalarında yetkili kullanıcılar için hızlı anahtar/şifre erişimi
+- [x] Buchungen liste satırlarında anahtar, düzenleme, zorunlu nedenli Storniert ve yetkili Löschen işlemleri

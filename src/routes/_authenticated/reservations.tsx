@@ -4,7 +4,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { reservationActionReason } from "@/lib/reservation-actions";
 import { AppShell, Badge } from "@/components/app-shell";
 import { useState, useMemo, useEffect } from "react";
-import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight, CalendarClock, CircleAlert, CircleDollarSign } from "lucide-react";
+import { Search, Plus, Pencil, Lock, LogIn, LogOut, BedDouble, ChevronDown, Trash2, Download, ChevronLeft, ChevronRight, CalendarClock, CircleAlert, CircleDollarSign, Ban } from "lucide-react";
+import { RoomAccessButton } from "@/components/access-code-panel";
 import { useTranslation } from "react-i18next";
 import { PAYMENT_METHOD_ALL, PAYMENT_METHODS, PAYMENT_METHOD_TITLE, paymentMethodLabel } from "@/lib/payment-method";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -142,6 +143,25 @@ function ReservationsPage() {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch { toast.error(t("resv.loadError")); } finally { setExportBusy(false); }
   }
+
+  const cancelReservation = async (r: Row) => {
+    const reason = reservationActionReason(await promptAction({
+      title: t("resv.cancelTitle"),
+      description: t("resv.cancelPrompt", { name: r.guest_name }),
+      confirmLabel: t("resv.cancelTitle"),
+      input: { label: t("resv.cancelReason") },
+      destructive: true,
+      required: true,
+    }));
+    if (!reason) return;
+    const { error } = await supabase.rpc("cancel_reservation", { _id: r.id, _reason: reason });
+    if (error) {
+      toast.error(error.code === "42501" ? t("legacyUi.noPermission") : t("resv.cancelFailed"), { description: error.message });
+      return;
+    }
+    toast.success(t("resv.cancelledToast"));
+    refetch();
+  };
 
   const softDelete = async (r: Row) => {
     const reason = reservationActionReason(await promptAction({ title: t("resv.deleteTitle"), description: t("resv.deletePrompt", { name: r.guest_name }), confirmLabel: t("common.delete"), input: { label: t("legacyUi.reason") }, destructive: true, required: true }));
@@ -291,11 +311,12 @@ function ReservationsPage() {
                   </div>
                 </summary>
                 <div className="hidden md:grid grid-cols-[minmax(0,1fr)_64px_190px_110px_80px_auto] gap-4 px-4 py-2 border-t border-border bg-muted/50 text-[11px] uppercase tracking-wide text-muted-foreground">
-                  <span>{t("resv.thGuest")}</span><span>{t("resv.thRoom")}</span><span>{t("resv.thPeriod")}</span><span>{t("resv.thStatus")}</span><span className="text-right">{t("resv.thAmount")}</span><span className="w-[120px]" />
+                  <span>{t("resv.thGuest")}</span><span>{t("resv.thRoom")}</span><span>{t("resv.thPeriod")}</span><span>{t("resv.thStatus")}</span><span className="text-right">{t("resv.thAmount")}</span><span className="w-[168px]" />
                 </div>
                 <div className="border-t border-border divide-y divide-border/60">
                   {g.items.map((r) => {
                     const locked = isLocked(r);
+                    const cancellable = !locked && perms.can("create_reservation") && !["cancelled", "no_show", "checked_out"].includes(r.status);
                     const st = { label: t(`resStatus.${r.status}`, { defaultValue: r.status }), tone: statusTone[r.status] ?? ("muted" as const) };
                     const color = sourceColor(r.channel);
                     return (
@@ -332,7 +353,8 @@ function ReservationsPage() {
                           {r.payment_method && <Badge tone="info">{paymentMethodLabel(r.payment_method, i18n.language)}</Badge>}
                         </span>
                         <span className="hidden md:block text-right font-semibold tabular-nums">€{Number(r.revenue ?? 0).toLocaleString(displayLocale())}</span>
-                        <div className="col-span-2 md:col-span-1 flex justify-end gap-1.5 w-full md:w-[120px]">
+                        <div className="col-span-2 md:col-span-1 flex justify-end gap-1.5 w-full md:w-[168px]">
+                          {r.room && r.property && <span title={t("accessCodes.title")} className="inline-flex rounded-lg border border-input bg-card"><RoomAccessButton propertyId={r.property.id} roomId={r.room.id} /></span>}
                           <button
                             onClick={() => setEditId(r.id)}
                             disabled={locked}
@@ -342,11 +364,21 @@ function ReservationsPage() {
                             {locked ? <Lock className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
                             {locked ? t("resv.locked") : t("common.edit")}
                           </button>
+                          {cancellable && (
+                            <button
+                              onClick={() => cancelReservation(r)}
+                              title={t("resv.cancelTitle")}
+                              aria-label={`${t("resv.cancelTitle")}: ${r.guest_name}`}
+                              className="inline-flex items-center px-2 py-1.5 rounded-lg border border-input bg-card text-xs text-destructive hover:bg-destructive/10"
+                            >
+                              <Ban className="w-3 h-3" />
+                            </button>
+                          )}
                           {!locked && perms.can("delete_reservation") && (
                             <button
                               onClick={() => softDelete(r)}
                               title={t("resv.deleteTitle")}
-                              aria-label={t("common.delete")}
+                              aria-label={`${t("common.delete")}: ${r.guest_name}`}
                               className="inline-flex items-center px-2 py-1.5 rounded-lg border border-input bg-card text-xs text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="w-3 h-3" />
