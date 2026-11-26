@@ -79,8 +79,14 @@
 :root {
   --guest-surface-lightness: 90%;
   --guest-ink-lightness: 22%;
-  --long-stay-surface: oklch(0.9 0.08 300);
-  --long-stay-ink: oklch(0.32 0.12 300);
+  --long-stay-surface: oklch(0.55 0.15 300);
+  --long-stay-ink: oklch(0.99 0 0);
+  --stay-booked-surface: oklch(0.62 0.15 250);
+  --stay-booked-ink: oklch(0.99 0 0);
+  --stay-inhouse-surface: oklch(0.6 0.14 155);
+  --stay-inhouse-ink: oklch(0.99 0 0);
+  --stay-done-surface: oklch(0.88 0.01 250);
+  --stay-done-ink: oklch(0.4 0.02 250);
   --radius: 0.375rem;
   /* Pension Highway brand */
   --brand-navy: oklch(0.33 0.09 258);
@@ -161,6 +167,12 @@
   --guest-ink-lightness: 92%;
   --long-stay-surface: oklch(0.32 0.08 300);
   --long-stay-ink: oklch(0.92 0.06 300);
+  --stay-booked-surface: oklch(0.5 0.14 250);
+  --stay-booked-ink: oklch(0.98 0 0);
+  --stay-inhouse-surface: oklch(0.5 0.13 155);
+  --stay-inhouse-ink: oklch(0.98 0 0);
+  --stay-done-surface: oklch(0.35 0.01 250);
+  --stay-done-ink: oklch(0.8 0.01 250);
   --background: oklch(0.17 0.035 260);
   --foreground: oklch(0.96 0.015 255);
   --card: oklch(0.21 0.04 260);

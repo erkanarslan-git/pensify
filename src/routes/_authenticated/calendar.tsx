@@ -6,13 +6,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick, Check, CircleAlert, Rows3 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick, Check, CircleAlert, Rows3, Maximize2, Minimize2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
 import { EditReservationDialog } from "@/components/edit-reservation-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { guestColor, sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
+import { sourceColor, sourceLabel, ACTIVE_CHANNELS } from "@/lib/guest-color";
 import { usePermissions } from "@/hooks/use-permissions";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -55,6 +55,7 @@ interface UnifiedRes {
   realId: string | null; // supabase id if real
   payment?: "paid" | "partial" | "open";
   longStay: boolean;
+  status?: string;
 }
 
 const VIEW_LABELS = {
@@ -72,6 +73,13 @@ function CalendarPage() {
     perms.roles.includes("manager") && !perms.roles.includes("admin") && !perms.roles.includes("owner");
   const [range, setRange] = useState(14);
   const [compact, setCompact] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !document.querySelector("[role=dialog]")) setFullscreen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreen]);
   useEffect(() => { try { setCompact(localStorage.getItem("pensify.calendar.density") === "compact"); } catch { /* optional */ } }, []);
   const setDensity = (value: boolean) => { setCompact(value); try { localStorage.setItem("pensify.calendar.density", value ? "compact" : "comfortable"); } catch { /* optional */ } };
   const [view, setView] = useState<"board" | OverviewMode>("board");
@@ -243,10 +251,10 @@ function CalendarPage() {
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
       setRealRooms(mappedRooms);
-      setRealReservations(((res ?? []) as { id: string; room_id: string; guest_name: string; channel: string; check_in: string; check_out: string; long_stay: boolean }[])
+      setRealReservations(((res ?? []) as { id: string; room_id: string; guest_name: string; channel: string; check_in: string; check_out: string; long_stay: boolean; status: string }[])
         .map((r) => ({
           id: r.id, realId: r.id, roomId: r.room_id, guestName: r.guest_name,
-          source: r.channel, checkIn: r.check_in, checkOut: r.check_out, longStay: r.long_stay,
+          source: r.channel, checkIn: r.check_in, checkOut: r.check_out, longStay: r.long_stay, status: r.status,
           payment: paymentStates[r.id],
         })));
       } catch { if (current && !controller.signal.aborted) setLoadError(true); }
@@ -428,6 +436,7 @@ function CalendarPage() {
         <StatCard label={t("calendar.cleaningPending")} value={needsCleaningCount} tone="warning" />
         <StatCard label={t("status.maintenance")} value={maintenanceCount} tone="muted" />
       </div>
+      <div className={fullscreen ? "fixed inset-0 z-40 overflow-auto bg-background p-4" : ""}>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <select
           value={propertyId}
@@ -517,6 +526,16 @@ function CalendarPage() {
             title={t("calendar.keyboardShortcuts")}
           >
             <Keyboard className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setFullscreen((v) => !v)}
+            aria-pressed={fullscreen}
+            className="w-9 h-9 rounded-md border border-border grid place-items-center hover:bg-accent"
+            title={fullscreen ? t("calendarExtra.exitFullscreen") : t("calendarExtra.fullscreen")}
+            aria-label={fullscreen ? t("calendarExtra.exitFullscreen") : t("calendarExtra.fullscreen")}
+          >
+            {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
             onClick={goToday}
@@ -790,7 +809,7 @@ function CalendarPage() {
                     >
                       {occupant && isOccupantStart ? (
                         (() => {
-                          const c = calendarReservationColors(occupant, guestColor(occupant.guestName));
+                          const c = calendarReservationColors(occupant);
                           const sc = sourceColor(occupant.source);
                           const label = span >= 2 ? occupant.guestName : occupant.guestName.split(" ")[0];
                            const occPast = isPastDate(occupant.checkIn);
@@ -862,7 +881,9 @@ function CalendarPage() {
         </div>
         </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% var(--guest-surface-lightness))", borderLeft: "3px solid var(--primary)" }} /> {t("calendar.legendColor")}</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "var(--stay-booked-surface)" }} /> {t("calendarExtra.legendBooked")}</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "var(--stay-inhouse-surface)" }} /> {t("calendarExtra.legendInHouse")}</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "var(--stay-done-surface)" }} /> {t("calendarExtra.legendDone")}</div>
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "var(--long-stay-surface)", border: "1px solid var(--long-stay-ink)" }} /> {t("calendarExtra.longStayLegend")}</div>
           <div className="flex items-center gap-1.5"><CircleAlert className="w-3.5 h-3.5 text-destructive" /> {t("calendarExtra.paymentOpen")}</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-warning" /> {t("calendar.cleaningPending")}</div>
@@ -873,6 +894,7 @@ function CalendarPage() {
           <Link to="/reservations" className="ml-auto text-primary text-xs underline">{t("calendarExtra.all")} →</Link>
         </div>
       </Section>
+      </div>
       </div>
 
       {pendingMove && (
