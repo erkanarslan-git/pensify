@@ -692,6 +692,7 @@
     "keyboardNavActivate": "Activate keyboard navigation",
     "groundFloor": "Ground floor",
     "upperFloor": "Floor {{floor}}",
+    "floorUnassigned": "No floor assigned",
     "view": "View",
     "confirmMove": "Confirm move (Enter)",
     "cancelEsc": "Cancel (Esc)",

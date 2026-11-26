@@ -142,6 +142,14 @@
   --month-5: oklch(0.62 0.12 200);
   --month-6: oklch(0.62 0.14 30);
   --month-tint: 10%;
+  /* Soft floor colors — only floor headers and room labels in the room board */
+  --floor-1: oklch(0.55 0.13 258);
+  --floor-2: oklch(0.6 0.12 165);
+  --floor-3: oklch(0.72 0.13 65);
+  --floor-4: oklch(0.58 0.15 320);
+  --floor-5: oklch(0.62 0.12 200);
+  --floor-6: oklch(0.62 0.14 30);
+  --floor-tint: 11%;
   --tv-arrival: oklch(0.58 0.11 190);
   --tv-departure: oklch(0.56 0.15 300);
 }
@@ -180,6 +188,13 @@
   --month-5: oklch(0.7 0.12 200);
   --month-6: oklch(0.7 0.15 30);
   --month-tint: 20%;
+  --floor-1: oklch(0.62 0.14 258);
+  --floor-2: oklch(0.68 0.13 165);
+  --floor-3: oklch(0.78 0.13 65);
+  --floor-4: oklch(0.66 0.16 320);
+  --floor-5: oklch(0.7 0.12 200);
+  --floor-6: oklch(0.7 0.15 30);
+  --floor-tint: 20%;
   --ring: oklch(0.74 0.13 255);
   --chart-1: oklch(0.74 0.13 255);
   --chart-2: oklch(0.7 0.1 255);

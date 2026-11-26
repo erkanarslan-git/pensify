@@ -692,6 +692,7 @@
     "keyboardNavActivate": "Tastatur-Navigation aktivieren",
     "groundFloor": "Erdgeschoss",
     "upperFloor": "{{floor}}. Obergeschoss",
+    "floorUnassigned": "Keine Etage zugeordnet",
     "view": "Ansehen",
     "confirmMove": "Verschieben bestätigen (Enter)",
     "cancelEsc": "Abbrechen (Esc)",

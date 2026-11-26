@@ -17,3 +17,4 @@
 - [x] Yeni/düzenle rezervasyon: renkli oda satırları, dolu/zaten seçildi/müsait etiketleri, kapasite (EZ/DZ/TZ), kalan kişi; şu an kalan misafirler müşteri listesinde gizli
 - [x] Fatura: WISO Rechnung düzenine uyarlama (Kunden-Nr., Pos., Einheit, Artikelnr., Zahlungsart, ödeme süresi metni)
 - [ ] E-Rechnung (XRechnung/ZUGFeRD) — yalnızca bilgi, kullanıcı isteyince başlanacak
+- [x] Takvim: kat bazlı renkli oda grupları ve EZ/DZ/3DZ oda tipi kodları

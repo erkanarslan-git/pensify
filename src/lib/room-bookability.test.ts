@@ -27,5 +27,11 @@ describe("room choice labels", () => {
   it("marks booked rooms as occupied", () => {
     expect(roomChoiceState(room, "2026-12-01", "2026-12-05", [{ id: "x", room_id: "r1", check_in: "2026-11-30", check_out: "2026-12-02", status: "confirmed", deleted_at: null }], [])).toBe("occupied");
   });
-  it("uses DZ for two-person rooms", () => { expect(roomTypeCode(2)).toBe("DZ"); expect(roomTypeCode(1)).toBe("EZ"); });
+  it("uses EZ, DZ and numbered DZ codes for room capacity", () => {
+    expect(roomTypeCode(1)).toBe("EZ");
+    expect(roomTypeCode(2)).toBe("DZ");
+    expect(roomTypeCode(3)).toBe("3DZ");
+    expect(roomTypeCode(4)).toBe("4DZ");
+    expect(roomTypeCode(null)).toBe("Zimmer");
+  });
 });

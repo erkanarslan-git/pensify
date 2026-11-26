@@ -6,10 +6,11 @@ export function canBookRoom(room: BookableRoom, from: string, to: string, stays:
   return !stays.some((stay) => stay.id !== excludeId && stay.room_id === room.id && !stay.deleted_at
     && !["cancelled", "no_show"].includes(stay.status) && stay.check_in < to && stay.check_out > from);
 }
-/** Short German room-type code from capacity: EZ (1), DZ (2), TZ (3), else MZ. */
+/** Short German room-type code: EZ (1), DZ (2), 3DZ/4DZ… for larger rooms. */
 export function roomTypeCode(capacity: number | null | undefined): string {
   const c = Number(capacity ?? 0);
-  return c <= 1 ? "EZ" : c === 2 ? "DZ" : c === 3 ? "TZ" : `MZ`;
+  if (!Number.isFinite(c) || c <= 0) return "Zimmer";
+  return c === 1 ? "EZ" : c === 2 ? "DZ" : `${c}DZ`;
 }
 
 export type RoomChoiceState = "free" | "occupied" | "picked" | "blocked";

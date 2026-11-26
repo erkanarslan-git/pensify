@@ -18,6 +18,8 @@ import { loadCalendarData } from "@/lib/calendar-data.functions";
 import { businessDate } from "@/lib/business-time";
 import { OccupancyOverview, type OverviewMode } from "@/components/occupancy-overview";
 import { shiftOverviewMonth } from "@/lib/occupancy-overview";
+import { calendarFloorTone, compareCalendarRooms } from "@/lib/calendar-rooms";
+import { roomTypeCode } from "@/lib/room-bookability";
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   validateSearch: (s: Record<string, unknown>): { property?: string } => (typeof s.property === "string" && /^[0-9a-f-]{36}$/i.test(s.property) ? { property: s.property } : {}),
@@ -38,7 +40,7 @@ function startOfDay(d: Date) {
 }
 
 interface UnifiedProperty { id: string; name: string }
-interface UnifiedRoom { id: string; number: string; propertyId: string; floor?: number | null; status?: string; needsCleaning?: boolean; issue?: string | null }
+interface UnifiedRoom { id: string; number: string; propertyId: string; floor?: number | null; capacity: number | null; status?: string; needsCleaning?: boolean; issue?: string | null }
 interface UnifiedRes {
   id: string;
   roomId: string;
@@ -227,8 +229,8 @@ function CalendarPage() {
         if (ct.status === "problem") entry.issue = ct.notes ?? t("calendar.problemRoom");
         cleaningByRoom.set(ct.room_id, entry);
       }
-      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null; status: string }[]).map((r) => ({
-        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor, status: r.status,
+      const mappedRooms: UnifiedRoom[] = ((rms ?? []) as { id: string; number: string; property_id: string; floor: number | null; capacity: number | null; status: string }[]).map((r) => ({
+        id: r.id, number: r.number, propertyId: r.property_id, floor: r.floor, capacity: r.capacity, status: r.status,
         needsCleaning: cleaningByRoom.get(r.id)?.needsCleaning ?? false,
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
@@ -318,7 +320,7 @@ function CalendarPage() {
     properties
       .filter((p) => propertyId === "all" || p.id === propertyId)
       .forEach((p) => {
-        filteredRooms.filter((r) => r.propertyId === p.id).sort((a, b) => (a.floor ?? 9999) - (b.floor ?? 9999)).forEach((room) => out.push({ room, property: p }));
+        filteredRooms.filter((r) => r.propertyId === p.id).sort(compareCalendarRooms).forEach((room) => out.push({ room, property: p }));
       });
     return out;
   }, [properties, filteredRooms, propertyId]);
@@ -668,24 +670,40 @@ function CalendarPage() {
                   );
                 }
                 const prevRoom = rowIdx > 0 ? flatRooms[rowIdx - 1] : null;
-                if (!isNewGroup && prevRoom && r.floor != null && prevRoom.room.floor !== r.floor) {
+                const floorColor = r.floor == null ? "var(--muted-foreground)" : `var(--floor-${calendarFloorTone(r.floor)})`;
+                const floorLabel = r.floor == null
+                  ? t("calendar.floorUnassigned")
+                  : r.floor === 0 ? t("calendar.groundFloor") : t("calendar.upperFloor", { floor: r.floor });
+                if (isNewGroup || !prevRoom || prevRoom.room.floor !== r.floor) {
+                  const floorRooms = flatRooms.filter((fr) => fr.property.id === p.id && fr.room.floor === r.floor);
                   cells.push(
-                    <div key={`${r.id}-floor`} style={{ gridColumn: "1 / -1" }} className="h-3 border-b-2 border-dashed border-border bg-muted/40" aria-hidden />,
+                    <div
+                      key={`${p.id}-${r.floor ?? "unassigned"}-floor`}
+                      style={{
+                        gridColumn: "1 / -1",
+                        backgroundColor: `color-mix(in oklab, ${floorColor} var(--floor-tint), var(--card))`,
+                        borderLeft: `4px solid ${floorColor}`,
+                      }}
+                      className="flex items-center justify-between gap-3 px-3 py-1.5 mt-1 rounded-md border border-border/60 text-xs"
+                    >
+                      <span className="font-semibold">{floorLabel}</span>
+                      <span className="text-muted-foreground whitespace-nowrap">{t("calendar.roomsCount", { count: floorRooms.length })}</span>
+                    </div>,
                   );
                 }
                 cells.push(
-                  <div key={`${r.id}-label`} className={`sticky left-0 z-20 bg-card py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""}`}>
+                  <div
+                    key={`${r.id}-label`}
+                    style={{
+                      backgroundColor: `color-mix(in oklab, ${floorColor} var(--floor-tint), var(--card))`,
+                      borderLeft: `3px solid ${floorColor}`,
+                    }}
+                    className={`sticky left-0 z-20 bg-card py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""}`}
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate flex items-center gap-1.5">
-                        {r.floor != null && (
-                          <span
-                            title={r.floor === 0 ? t("calendar.groundFloor") : t("calendar.upperFloor", { floor: r.floor })}
-                            className="inline-flex items-center justify-center min-w-[28px] h-[18px] px-1 rounded text-[10px] font-semibold bg-accent text-accent-foreground"
-                          >
-                            {r.floor === 0 ? "EG" : `${r.floor}.OG`}
-                          </span>
-                        )}
-                        #{r.number}
+                        <span>#{r.number}</span>
+                        <span className="rounded bg-background/70 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">{roomTypeCode(r.capacity)}</span>
 
                         {r.needsCleaning && !r.issue && (
                           <Tooltip>

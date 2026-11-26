@@ -32,7 +32,7 @@ export const loadCalendarData = createServerFn({ method: "POST" })
     const reservationBase = () => context.supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status,property_id")
       .eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").order("id");
     const [rooms, reservations, tasks, todayReservations] = await Promise.all([
-      fetchAll(() => context.supabase.from("rooms").select("id,number,property_id,floor,status").eq("organization_id", orgId).in("property_id", ids).order("floor", { ascending: true, nullsFirst: true }).order("number").order("id")),
+      fetchAll(() => context.supabase.from("rooms").select("id,number,property_id,floor,status,capacity").eq("organization_id", orgId).in("property_id", ids).order("floor", { ascending: true, nullsFirst: false }).order("number").order("id")),
       // Include checkout on the first visible day for the daily departure cards.
       fetchAll(() => reservationBase().lt("check_in", window.end).gte("check_out", window.start)),
       // Only tasks due by today (Berlin): future checkout tasks are not "waiting" yet.

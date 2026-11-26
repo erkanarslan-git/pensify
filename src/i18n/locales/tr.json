@@ -692,6 +692,7 @@
     "keyboardNavActivate": "Klavye navigasyonunu etkinleştir",
     "groundFloor": "Zemin kat",
     "upperFloor": "{{floor}}. kat",
+    "floorUnassigned": "Kat atanmamış",
     "view": "Görüntüle",
     "confirmMove": "Taşımayı onayla (Enter)",
     "cancelEsc": "İptal (Esc)",
