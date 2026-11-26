@@ -6,12 +6,12 @@ function pad(n: number) { return String(n).padStart(2, "0"); }
 function lastDay(y: number, m: number) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); } // m is 1-based
 
 /** First installment is due on check-in; later ones on `dueDay` (clamped to month end) of each following month, before check-out. */
-export function scheduleDueDates(checkIn: string, checkOut: string, dueDay: number): string[] {
+export function scheduleDueDates(checkIn: string, checkOut: string, dueDay: number, maxMonths = 240): string[] {
   const day = Math.min(Math.max(Math.trunc(dueDay) || 1, 1), 31);
   const dates = [checkIn];
   let y = Number(checkIn.slice(0, 4));
   let m = Number(checkIn.slice(5, 7));
-  for (let i = 0; i < 240; i++) {
+  for (let i = 0; i < maxMonths; i++) {
     m += 1; if (m > 12) { m = 1; y += 1; }
     const d = `${y}-${pad(m)}-${pad(Math.min(day, lastDay(y, m)))}`;
     if (d >= checkOut) break;
@@ -20,10 +20,10 @@ export function scheduleDueDates(checkIn: string, checkOut: string, dueDay: numb
   return dates;
 }
 
-/** Fixed monthly amount if given, otherwise the total split evenly (remainder cents on the last installment). */
-export function buildSchedule(opts: { checkIn: string; checkOut: string; dueDay: number; total?: number; monthly?: number }): Installment[] {
-  const dates = scheduleDueDates(opts.checkIn, opts.checkOut, opts.dueDay);
-  const monthly = opts.monthly;
+/** Fixed monthly amount if given; open-ended stays create a bounded 12-month rolling preview. */
+export function buildSchedule(opts: { checkIn: string; checkOut: string; dueDay: number; total?: number; monthly?: number; openEnded?: boolean }): Installment[] {
+  const dates = scheduleDueDates(opts.checkIn, opts.checkOut, opts.dueDay, opts.openEnded ? 11 : 240);
+  const monthly = opts.monthly && opts.monthly > 0 ? opts.monthly : opts.openEnded ? opts.total : opts.monthly;
   if (monthly && monthly > 0) return dates.map((d) => ({ due_date: d, amount: Math.round(monthly * 100) / 100 }));
   const cents = Math.round((opts.total ?? 0) * 100);
   if (cents <= 0) return [];
@@ -34,10 +34,10 @@ export function buildSchedule(opts: { checkIn: string; checkOut: string; dueDay:
 /** Rebuild only unprotected months; the full retained obligation (not just money received) stays in the plan. */
 export function buildReplacementSchedule(opts: Parameters<typeof buildSchedule>[0], retained: Installment[]): Installment[] {
   const protectedMonths = new Set(retained.map((r) => r.due_date.slice(0, 7)));
-  const dates = scheduleDueDates(opts.checkIn, opts.checkOut, opts.dueDay)
+  const dates = scheduleDueDates(opts.checkIn, opts.checkOut, opts.dueDay, opts.openEnded ? 11 : 240)
     .filter((date) => !protectedMonths.has(date.slice(0, 7)));
   if (dates.length === 0) return [];
-  const monthly = opts.monthly;
+  const monthly = opts.monthly && opts.monthly > 0 ? opts.monthly : opts.openEnded ? opts.total : opts.monthly;
   if (monthly && monthly > 0) return dates.map((due_date) => ({ due_date, amount: Math.round(monthly * 100) / 100 }));
   const cents = Math.round((opts.total ?? 0) * 100) - retained.reduce((sum, r) => sum + Math.round(r.amount * 100), 0);
   if (cents <= 0) return [];

@@ -7,7 +7,7 @@ import { calendarWindow, collectReservationExport } from "./reservation-list";
 
 export const loadCalendarData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => z.object({ start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), days: z.union([z.literal(7), z.literal(14), z.literal(30)]), propertyId: z.union([z.literal("all"), z.literal("first"), z.string().uuid()]) }).parse(data))
+  .inputValidator((data: unknown) => z.object({ start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), days: z.union([z.literal(7), z.literal(14), z.literal(30), z.literal(60)]), propertyId: z.union([z.literal("all"), z.literal("first"), z.string().uuid()]) }).parse(data))
   .handler(async ({ data, context }) => {
     const { orgId } = await resolveActiveOrg(context.supabase);
     const { data: props, error } = await context.supabase.from("properties").select("id,name").eq("organization_id", orgId).order("name");
@@ -20,7 +20,7 @@ export const loadCalendarData = createServerFn({ method: "POST" })
     const properties = checked.filter((p): p is { id: string; name: string } => p !== null);
     // "first" keeps the initial calendar load to a single property.
     const ids = data.propertyId === "first" ? properties.slice(0, 1).map(p => p.id) : properties.filter(p => data.propertyId === "all" || p.id === data.propertyId).map(p => p.id);
-    if (!ids.length) return { properties, rooms: [], reservations: [], tasks: [], todayReservations: [] };
+    if (!ids.length) return { properties, rooms: [], reservations: [], tasks: [], todayReservations: [], paymentStates: {} as Record<string, "paid" | "partial" | "open"> };
     const window = calendarWindow(data.start, data.days);
     const today = businessDate();
     // Bounded requests avoid the Data API's 1000-row truncation.
@@ -29,7 +29,7 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       if (result.error) throw new Error("calendar_unavailable");
       return result.data ?? [];
     });
-    const reservationBase = () => context.supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status,property_id")
+    const reservationBase = () => context.supabase.from("reservations").select("id,room_id,guest_name,channel,check_in,check_out,status,property_id,long_stay")
       .eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").order("id");
     const [rooms, reservations, tasks, todayReservations] = await Promise.all([
       fetchAll(() => context.supabase.from("rooms").select("id,number,property_id,floor,status,capacity").eq("organization_id", orgId).in("property_id", ids).order("floor", { ascending: true, nullsFirst: false }).order("number").order("id")),
@@ -40,5 +40,12 @@ export const loadCalendarData = createServerFn({ method: "POST" })
       fetchAll(() => context.supabase.from("reservations").select("id,room_id").eq("organization_id", orgId).in("property_id", ids).is("deleted_at", null).not("status", "in", "(cancelled,no_show)").lte("check_in", today).gt("check_out", today).order("id")),
     ]);
     const dueTasks = (tasks as { room_id: string; status: string; notes: string | null; due_at: string | null }[]).filter(t => !t.due_at || businessDate(new Date(t.due_at)) <= today);
-    return { properties, rooms, reservations, tasks: dueTasks, todayReservations };
+    const paymentStates: Record<string, "paid" | "partial" | "open"> = {};
+    const reservationIds = (reservations as { id: string }[]).map(r => r.id);
+    if (reservationIds.length) {
+      const states = await context.supabase.rpc("reservation_payment_states", { _org: orgId, _reservation_ids: reservationIds });
+      if (states.error) throw new Error("calendar_unavailable");
+      for (const state of (states.data ?? []) as { reservation_id: string; state: "paid" | "partial" | "open" }[]) paymentStates[state.reservation_id] = state.state;
+    }
+    return { properties, rooms, reservations, tasks: dueTasks, todayReservations, paymentStates };
   });

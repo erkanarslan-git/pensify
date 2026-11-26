@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
 import { buildReplacementSchedule, validReplacementSchedule, installmentState, type Installment, type InstallmentState } from "@/lib/payments";
+import { isOpenEndedCheckOut } from "@/lib/open-stay";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 
@@ -276,7 +277,8 @@ function PlanDialog({ rooms, onClose, onDone }: {
   const regenerate = (id = resId, day = dueDay, m = mode, mon = monthly) => {
     const r = reservations.find((x) => x.id === id);
     if (!r) return setRows([]);
-    setRows(buildReplacementSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined }, schedules.filter((s) => s.reservation_id === id && s.kind === "rent" && s.hasPayments)));
+    const openEnded = isOpenEndedCheckOut(r.check_out);
+    setRows(buildReplacementSchedule({ checkIn: r.check_in, checkOut: r.check_out, dueDay: day, total: r.revenue, monthly: m === "manual" ? Number(mon.replace(",", ".")) || 0 : undefined, openEnded }, schedules.filter((s) => s.reservation_id === id && s.kind === "rent" && s.hasPayments)));
   };
 
   useEffect(()=>{if(resId&&contextQuery.data)regenerate();},[resId,contextQuery.data]);

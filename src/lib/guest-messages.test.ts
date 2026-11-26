@@ -57,6 +57,12 @@ describe("guest messages", () => {
     expect(m).toContain("Zimmernummern: 501 / 502"); expect(m).toContain("Zimmer 501: Nr. 501 / Code: 9465");
     expect(m).toContain("Zimmer 502: Nr. 502 / Code: 2341"); expect(m).toContain("von 18:00-22:00 Uhr");
   });
+  it("writes an open-ended checkout in the guest language without a technical date", () => {
+    const openStay = { ...s, checkOut: "9999-12-31" };
+    expect(bookingMessage(openStay, g, "de", false)).toContain("02.11.2026 – offen");
+    expect(bookingMessage(openStay, g, "tr", false)).toContain("02.11.2026 – açık uçlu");
+    expect(bookingMessage(openStay, g, "en", false)).not.toContain("9999");
+  });
   it("normalizes phone numbers for WhatsApp", () => {
     expect(whatsappDigits("0176 1234567")).toBe("491761234567");
     expect(whatsappDigits("+90 532 111 2233")).toBe("905321112233");

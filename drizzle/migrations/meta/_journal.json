@@ -855,6 +855,13 @@
       "when": 1795687061445,
       "tag": "0121_preserve_existing_cancelled_reservation_edits",
       "breakpoints": true
+    },
+    {
+      "idx": 122,
+      "version": "7",
+      "when": 1795687938980,
+      "tag": "0122_open_ended_long_stays",
+      "breakpoints": true
     }
   ]
 }

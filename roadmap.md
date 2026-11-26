@@ -21,3 +21,5 @@
 - [x] Rezervasyon iptal/silme: zorunlu neden, yetki sınırı, 30 gün koruma ve fatura geçmişi
 - [x] Takvim odalarında yetkili kullanıcılar için hızlı anahtar/şifre erişimi
 - [x] Buchungen liste satırlarında anahtar, düzenleme, zorunlu nedenli Storniert ve yetkili Löschen işlemleri
+- [x] Dauergast için çıkış tarihsiz açık uçlu konaklama; gece uzatma görevini kaldırma
+- [x] Takvimde tek renk Dauergast, ödenmemiş kayıt uyarısı ve kompakt yoğunluk görünümü

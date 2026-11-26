@@ -1,10 +1,12 @@
 import { displayLocale } from "@/i18n/legacy-ui";
+import { formatDateDE } from "@/lib/date-de";
+import { calendarReservationColors, hasOpenPayment } from "@/lib/calendar-reservation";
 import { addDaysIso, localIso, nightsBetween, parseLocalIso } from "@/lib/calendar-date";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Section } from "@/components/app-shell";
 
 import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Pencil, Sparkles, AlertTriangle, Keyboard, X, MousePointerClick, Check, CircleAlert, Rows3 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import { NewReservationDialog } from "@/components/new-reservation-dialog";
@@ -32,6 +34,7 @@ const RANGES = [
   { key: 7, label: "7g" },
   { key: 14, label: "14g" },
   { key: 30, label: "30g" },
+  { key: 60, label: "60g" },
 ];
 
 function startOfDay(d: Date) {
@@ -51,6 +54,7 @@ interface UnifiedRes {
   checkOut: string;
   realId: string | null; // supabase id if real
   payment?: "paid" | "partial" | "open";
+  longStay: boolean;
 }
 
 const VIEW_LABELS = {
@@ -67,6 +71,9 @@ function CalendarPage() {
   const isManagerOnly =
     perms.roles.includes("manager") && !perms.roles.includes("admin") && !perms.roles.includes("owner");
   const [range, setRange] = useState(14);
+  const [compact, setCompact] = useState(false);
+  useEffect(() => { try { setCompact(localStorage.getItem("pensify.calendar.density") === "compact"); } catch { /* optional */ } }, []);
+  const setDensity = (value: boolean) => { setCompact(value); try { localStorage.setItem("pensify.calendar.density", value ? "compact" : "comfortable"); } catch { /* optional */ } };
   const [view, setView] = useState<"board" | OverviewMode>("board");
   const [start, setStart] = useState(() => {
     const d = parseLocalIso(businessDate());
@@ -215,9 +222,9 @@ function CalendarPage() {
     (async () => {
       try {
       setLoadError(false);
-      const result = await fetchCalendar({ data: { start: localIso(start), days: range as 7 | 14 | 30, propertyId }, signal: controller.signal });
+      const result = await fetchCalendar({ data: { start: localIso(start), days: range as 7 | 14 | 30 | 60, propertyId }, signal: controller.signal });
       if (!current) return;
-      const { properties: props, rooms: rms, reservations: res, tasks } = result;
+      const { properties: props, rooms: rms, reservations: res, tasks, paymentStates } = result;
       setTodayRoomIds(new Set(result.todayReservations.map(r => r.room_id)));
       setRealProperties((props ?? []) as UnifiedProperty[]);
       const list = (props ?? []) as UnifiedProperty[];
@@ -236,10 +243,11 @@ function CalendarPage() {
         issue: cleaningByRoom.get(r.id)?.issue ?? null,
       }));
       setRealRooms(mappedRooms);
-      setRealReservations(((res ?? []) as { id: string; room_id: string; guest_name: string; channel: string; check_in: string; check_out: string }[])
+      setRealReservations(((res ?? []) as { id: string; room_id: string; guest_name: string; channel: string; check_in: string; check_out: string; long_stay: boolean }[])
         .map((r) => ({
           id: r.id, realId: r.id, roomId: r.room_id, guestName: r.guest_name,
-          source: r.channel, checkIn: r.check_in, checkOut: r.check_out,
+          source: r.channel, checkIn: r.check_in, checkOut: r.check_out, longStay: r.long_stay,
+          payment: paymentStates[r.id],
         })));
       } catch { if (current && !controller.signal.aborted) setLoadError(true); }
     })();
@@ -459,7 +467,7 @@ function CalendarPage() {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{s.res.guestName}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {s.propertyName} · #{s.roomNumber} · {s.res.checkIn} → {s.res.checkOut}
+                      {s.propertyName} · #{s.roomNumber} · {formatDateDE(s.res.checkIn)} → {formatDateDE(s.res.checkOut)}
                     </div>
                   </div>
                 </button>
@@ -497,6 +505,10 @@ function CalendarPage() {
               {t("reservationList.days", { count: r.key })}
             </button>
           ))}
+        </div>}
+        {view === "board" && <div className="flex rounded-md border border-input bg-card overflow-hidden" aria-label={t("calendarExtra.compact")}>
+          <button type="button" onClick={() => setDensity(false)} aria-pressed={!compact} className={`px-3 py-2 text-xs ${!compact ? "bg-accent font-medium" : ""}`}>{t("calendarExtra.comfortable")}</button>
+          <button type="button" onClick={() => setDensity(true)} aria-pressed={compact} className={`inline-flex items-center gap-1 px-3 py-2 text-xs ${compact ? "bg-accent font-medium" : ""}`}><Rows3 className="h-3.5 w-3.5" />{t("calendarExtra.compact")}</button>
         </div>}
         <div className="flex items-center gap-1">
           <button
@@ -558,10 +570,11 @@ function CalendarPage() {
                   {items.map((r) => {
                     const room = rooms.find((rm) => rm.id === r.roomId);
                     return (
-                      <button key={r.id} onClick={() => r.realId && setEditId(r.realId)} className="w-full flex items-center gap-2 text-left text-sm rounded-md border border-border px-2 py-1.5 hover:bg-accent">
-                        <span className="w-1 self-stretch rounded-full" style={{ background: sourceColor(r.source) }} />
+                      <button key={r.id} onClick={() => r.realId && setEditId(r.realId)} className="w-full flex items-center gap-2 text-left text-sm rounded-md border border-border px-2 py-1.5 hover:bg-accent" style={r.longStay ? { background: "var(--long-stay-surface)", color: "var(--long-stay-ink)" } : undefined}>
+                        <span className="w-1 self-stretch rounded-full" style={{ background: r.longStay ? "var(--long-stay-ink)" : sourceColor(r.source) }} />
                         <span className="font-medium tabular-nums w-10">#{room?.number ?? "?"}</span>
                         <span className="flex-1 truncate">{r.guestName}</span>
+                        {hasOpenPayment(r.payment) && <CircleAlert className="h-3.5 w-3.5 shrink-0 text-destructive" aria-label={t("calendarExtra.paymentOpen")} />}
                         {r.checkIn === dIso && <span className="text-[10px] text-primary">↓</span>}
                       </button>
                     );
@@ -590,9 +603,9 @@ function CalendarPage() {
           className="outline-none focus:ring-2 focus:ring-primary/30 rounded-md"
         >
         <ScrollableGrid>
-          <div className="min-w-[900px] px-5">
+          <div className="px-5" style={{ minWidth: compact ? 640 : 900 }}>
 
-            <div className="grid" style={{ gridTemplateColumns: `max-content repeat(${days.length}, minmax(60px, 1fr))` }}>
+            <div className="grid" style={{ gridTemplateColumns: `max-content repeat(${days.length}, minmax(${compact ? 44 : 60}px, 1fr))` }}>
               <div className="sticky top-0 left-0 z-40 bg-card text-xs uppercase tracking-wide text-muted-foreground font-medium py-3 border-b border-border flex items-center gap-1.5">
                 <span>{t("calendar.colRoom")}</span>
                 {!gridFocused && (
@@ -699,7 +712,7 @@ function CalendarPage() {
                       backgroundColor: `color-mix(in oklab, ${floorColor} var(--floor-tint), var(--card))`,
                       borderLeft: `3px solid ${floorColor}`,
                     }}
-                    className={`sticky left-0 z-20 bg-card py-3 pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""}`}
+                    className={`sticky left-0 z-20 bg-card ${compact ? "py-1.5" : "py-3"} pr-3 border-b border-border text-sm flex items-center gap-2 ${rowIdx === focus.row ? "bg-[linear-gradient(color-mix(in_oklab,var(--primary)_15%,transparent),color-mix(in_oklab,var(--primary)_15%,transparent))]" : ""}`}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="font-medium truncate flex items-center gap-1.5">
@@ -773,15 +786,15 @@ function CalendarPage() {
                       onClick={() => setFocus({ row: rowIdx, col: dIdx })}
                       data-cal-focused={isFocused ? "1" : undefined}
                       style={{ ...pastStyle, scrollMarginLeft: 170, scrollMarginTop: 80, scrollMarginBottom: 24, scrollMarginRight: 24 }}
-                      className={`border-b border-l border-border h-12 relative group ${past ? "bg-muted/30" : ""} ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
+                      className={`border-b border-l border-border ${compact ? "h-8" : "h-12"} relative group ${past ? "bg-muted/30" : ""} ${isFocused ? "ring-2 ring-primary ring-inset z-10" : ""}`}
                     >
                       {occupant && isOccupantStart ? (
                         (() => {
-                          const c = guestColor(occupant.guestName);
+                          const c = calendarReservationColors(occupant, guestColor(occupant.guestName));
                           const sc = sourceColor(occupant.source);
                           const label = span >= 2 ? occupant.guestName : occupant.guestName.split(" ")[0];
                            const occPast = isPastDate(occupant.checkIn);
-                           const draggable = !!occupant.realId && (!occPast || canCreatePast);
+                           const draggable = !!occupant.realId && !occupant.longStay && (!occPast || canCreatePast);
                            const dragDays = dragDelta?.resId === occupant.id ? dragDelta.days : 0;
                          const nights = nightsBetween(occupant.checkIn, occupant.checkOut);
                            return (
@@ -789,7 +802,7 @@ function CalendarPage() {
                               <TooltipTrigger asChild>
                               <div
                                onMouseDown={draggable ? (e) => startMoveDrag(e, occupant) : undefined}
-                               className={`absolute top-1 bottom-1 left-1 rounded text-[11px] px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity hover:brightness-105 ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-warning ring-offset-1 ring-offset-background" : ""}`}
+                               className={`absolute top-1 bottom-1 left-1 rounded ${compact ? "text-[10px]" : "text-[11px]"} px-1.5 flex items-center font-medium overflow-hidden z-10 transition-opacity hover:brightness-105 ${draggable ? "cursor-grab active:cursor-grabbing" : ""} ${dragDays !== 0 ? "opacity-70 shadow-lg" : ""} ${occPast && !canCreatePast ? "opacity-70" : ""} ${dim ? "opacity-25" : ""} ${isMatch ? "ring-2 ring-warning ring-offset-1 ring-offset-background" : ""}`}
                                style={{
                                  width: `calc(${span} * 100% - 8px)`,
                                  left: dragDays !== 0 ? `calc(0.25rem + ${dragDays * 100}%)` : undefined,
@@ -799,6 +812,7 @@ function CalendarPage() {
                                }}
                              >
                               <span className="truncate">{label}</span>
+                              {hasOpenPayment(occupant.payment) && <span className="ml-1 inline-flex shrink-0 cursor-help" title={t("calendarExtra.paymentOpen")} aria-label={t("calendarExtra.paymentOpen")}><CircleAlert className="h-3.5 w-3.5" /></span>}
                               {occupant.realId && (
                                  <button
                                     onMouseDown={(e) => e.stopPropagation()}
@@ -814,7 +828,8 @@ function CalendarPage() {
                               <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
                                 <div className="font-semibold">{occupant.guestName}</div>
                                 <div>{sourceLabel(occupant.source, (k) => t(k))}</div>
-                                <div>{occupant.checkIn} → {occupant.checkOut} · {t("calendar.hoverNights", { count: nights })}</div>
+                                <div>{formatDateDE(occupant.checkIn)} → {formatDateDE(occupant.checkOut)}{occupant.longStay ? "" : ` · ${t("calendar.hoverNights", { count: nights })}`}</div>
+                                {hasOpenPayment(occupant.payment) && <div className="font-semibold text-destructive">{t("calendarExtra.paymentOpen")}</div>}
                                 {draggable && <div className="text-muted-foreground">{t("calendar.dragToMove")}</div>}
                                 {occPast && !canCreatePast && <div className="text-muted-foreground">{t("calendar.pastEditNote")}</div>}
                               </TooltipContent>
@@ -848,6 +863,8 @@ function CalendarPage() {
         </TooltipProvider>
         <div className="flex flex-wrap items-center gap-4 mt-5 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "hsl(220 65% var(--guest-surface-lightness))", borderLeft: "3px solid var(--primary)" }} /> {t("calendar.legendColor")}</div>
+          <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: "var(--long-stay-surface)", border: "1px solid var(--long-stay-ink)" }} /> {t("calendarExtra.longStayLegend")}</div>
+          <div className="flex items-center gap-1.5"><CircleAlert className="w-3.5 h-3.5 text-destructive" /> {t("calendarExtra.paymentOpen")}</div>
           <div className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-warning" /> {t("calendar.cleaningPending")}</div>
           <div className="flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5 text-destructive" /> {t("calendar.problemRoom")}</div>
           <button onClick={() => setShowHelp(true)} className="flex items-center gap-1.5 hover:text-foreground transition-colors">

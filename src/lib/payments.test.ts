@@ -43,6 +43,12 @@ describe("payment plans", () => {
   it("uses a manual monthly amount when given", () => {
     expect(buildSchedule({ checkIn: "2026-01-01", checkOut: "2026-03-31", dueDay: 1, total: 1000, monthly: 450 }).map((i) => i.amount)).toEqual([450, 450, 450]);
   });
+  it("uses a monthly amount and a 12-month preview for an open-ended stay", () => {
+    const rows = buildSchedule({ checkIn: "2026-01-10", checkOut: "9999-12-31", dueDay: 5, total: 600, openEnded: true });
+    expect(rows).toHaveLength(12);
+    expect(rows.every((row) => row.amount === 600)).toBe(true);
+    expect(rows.at(-1)?.due_date).toBe("2026-12-05");
+  });
   it("a partially paid installment past its due date is overdue", () => {
     expect(installmentState(500, 200, "2026-10-01", "2026-10-22")).toBe("overdue");
     expect(installmentState(500, 200, "2026-10-30", "2026-10-22")).toBe("partial");

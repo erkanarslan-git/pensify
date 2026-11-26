@@ -79,6 +79,8 @@
 :root {
   --guest-surface-lightness: 90%;
   --guest-ink-lightness: 22%;
+  --long-stay-surface: oklch(0.9 0.08 300);
+  --long-stay-ink: oklch(0.32 0.12 300);
   --radius: 0.375rem;
   /* Pension Highway brand */
   --brand-navy: oklch(0.33 0.09 258);
@@ -157,6 +159,8 @@
 .dark {
   --guest-surface-lightness: 26%;
   --guest-ink-lightness: 92%;
+  --long-stay-surface: oklch(0.32 0.08 300);
+  --long-stay-ink: oklch(0.92 0.06 300);
   --background: oklch(0.17 0.035 260);
   --foreground: oklch(0.96 0.015 255);
   --card: oklch(0.21 0.04 260);

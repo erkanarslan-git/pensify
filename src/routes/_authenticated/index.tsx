@@ -120,7 +120,7 @@ function Dashboard() {
       const [rooms, tasks, res, props, live, arr] = await Promise.all([
         supabase.from("rooms").select("id,number,status,property_id,property:properties(name)").eq("active", true),
         supabase.from("cleaning_tasks").select("id,status,due_at,room:rooms(number),property:properties(name,address)"),
-        supabase.from("reservations").select("id,organization_id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(5),
+        supabase.from("reservations").select("id,organization_id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).eq("long_stay", false).gte("check_out", today).not("status", "in", "(cancelled,no_show,checked_out)").order("check_out").limit(5),
         supabase.from("properties").select("id,name").order("name"),
         supabase.from("room_operational_status").select("room_id,status"),
         supabase.from("reservations").select("id,organization_id,guest_name,channel,check_in,check_out,guests_count,room:rooms(number),property:properties(name)").is("deleted_at", null).gte("check_in", today).not("status", "in", "(cancelled,no_show,checked_out,checked_in)").order("check_in").limit(5),

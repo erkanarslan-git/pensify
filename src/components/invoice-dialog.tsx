@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { businessDate } from "@/lib/business-time";
 import { formatDateDE } from "@/lib/date-de";
+import { isOpenEndedCheckOut } from "@/lib/open-stay";
 import { PAYMENT_METHODS, paymentMethodLabel } from "@/lib/payment-method";
 import { invoiceTotals, nextInvoiceNumber, printInvoice, invoiceMailto, dueDateOf, type InvoiceItem, type InvoiceDoc, type InvoiceIssuer } from "@/lib/invoice";
 
@@ -33,6 +34,7 @@ export function InvoiceDialog({ open, onOpenChange, reservation }: { open: boole
   const [pricesNet, setPricesNet] = useState(false);
   const perms = usePermissions();
   const bn = reservation.booking_number ? `B-${reservation.booking_number}` : "";
+  const openEnded = isOpenEndedCheckOut(reservation.check_out);
   const stay = `${formatDateDE(reservation.check_in)} – ${formatDateDE(reservation.check_out)}`;
 
   const load = async () => {
@@ -47,9 +49,9 @@ export function InvoiceDialog({ open, onOpenChange, reservation }: { open: boole
     setPayMethod(reservation.payment_method ?? "");
     if (org) { const { data: a } = await supabase.from("invoice_articles").select("id,article_no,description,unit,unit_price,vat_rate").eq("organization_id", org).eq("active", true).order("article_no"); setArticles((a ?? []) as Article[]); }
     setNumber(nextInvoiceNumber(settings, Number(businessDate().slice(0, 4))));
-    const n = nightsOf(reservation.check_in, reservation.check_out);
+    const n = openEnded ? 1 : nightsOf(reservation.check_in, reservation.check_out);
     setPricesNet(false);
-    setItems([{ article_no: "UEB", description: `Übernachtung Zimmer ${reservation.room}\nAufenthaltszeitraum: ${stay}${bn ? `\nBuchungs-Nr.: ${bn}` : ""}`, unit: "Nächte", quantity: n, unit_price: Math.round((Number(reservation.revenue) / n) * 100) / 100, vat_rate: Number(settings.vat_rate) }]);
+    setItems([{ article_no: "UEB", description: `Übernachtung Zimmer ${reservation.room}\nAufenthaltszeitraum: ${stay}${bn ? `\nBuchungs-Nr.: ${bn}` : ""}`, unit: openEnded ? "Monat" : "Nächte", quantity: n, unit_price: Math.round((Number(reservation.revenue) / n) * 100) / 100, vat_rate: Number(settings.vat_rate) }]);
   };
   useEffect(() => {
     if (!open) return;

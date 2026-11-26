@@ -11,6 +11,7 @@ import { promptAction } from "@/components/confirm-dialog";
 import { reservationActionReason } from "@/lib/reservation-actions";
 import { formatDateDE } from "@/lib/date-de";
 import { extensionDays } from "@/lib/overnight-stats";
+import { OPEN_ENDED_CHECK_OUT, openEndedLabel } from "@/lib/open-stay";
 import { usePermissions } from "@/hooks/use-permissions";
 import { canBookRoom, roomChoiceState, roomTypeCode, ROOM_CHOICE_LABELS, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
 import { useTranslation } from "react-i18next";
@@ -72,7 +73,7 @@ const addDaysIso = (iso: string, d: number) => {
 };
 
 const LS: Record<string,string> = { de: "Dauergast", tr: "Uzun dönem misafir", en: "Long-stay guest" };
-const LSH: Record<string,string> = { de: "Zimmer bleibt belegt; die Abreise wird automatisch verlängert, bis Sie dies abwählen.", tr: "Oda dolu kalır; işareti kaldırana kadar çıkış tarihi otomatik uzatılır.", en: "The room stays occupied; check-out is extended automatically until you untick this." };
+const LSH: Record<string,string> = { de: "Ohne Abreisedatum; das Zimmer bleibt belegt, bis Sie den Aufenthalt manuell beenden.", tr: "Çıkış tarihi yok; konaklamayı elle bitirene kadar oda dolu kalır.", en: "No check-out date; the room stays occupied until you end the stay manually." };
 
 const EXT_COPY = {
   de: { title: "Aufenthalt verlängern", current: "Abreise", button: "Verlängern", newDate: "Neue Abreise", note: "Notiz (optional)", later: "Die neue Abreise muss nach der aktuellen liegen.", done: (n: number) => `Um ${n} Nächte verlängert`, confirmExt: (n: number) => `+${n} Nächte bestätigen`, guestsMissing: "Personenzahl nicht erfasst", confirm: "Stimmt so" },
@@ -372,8 +373,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
               </label>
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("newRes.checkOut")}</span>
-                <input type="date" value={r.check_out} onChange={(e) => update("check_out", e.target.value)}
-                  className="px-3 py-2 rounded-md border border-input bg-card" />
+                {r.check_out === OPEN_ENDED_CHECK_OUT ? (
+                  <div className="flex min-h-10 items-center rounded-md border border-input bg-muted px-3 py-2 text-muted-foreground">{openEndedLabel(i18n.language)}</div>
+                ) : (
+                  <input type="date" value={r.check_out} onChange={(e) => update("check_out", e.target.value)}
+                    className="px-3 py-2 rounded-md border border-input bg-card" />
+                )}
               </label>
               <label className="grid gap-1">
                 <span className="text-xs text-muted-foreground">{t("newRes.channel")}</span>
@@ -433,7 +438,12 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
                 </select>
               </label>
               <label className="col-span-full flex items-start gap-2 rounded-md border border-border p-3">
-                <input type="checkbox" className="mt-1" checked={r.long_stay} onChange={(e) => update("long_stay", e.target.checked)} />
+                <input type="checkbox" className="mt-1" checked={r.long_stay} onChange={(e) => {
+                  const checked = e.target.checked;
+                  update("long_stay", checked);
+                  update("check_out", checked ? OPEN_ENDED_CHECK_OUT : addDaysIso(r.check_in > todayIso ? r.check_in : todayIso, 1));
+                  if (checked) update("list_price", null);
+                }} />
                 <span><span className="font-medium">{LS[i18n.language.slice(0, 2)] ?? LS.de}</span><span className="block text-xs text-muted-foreground">{LSH[i18n.language.slice(0, 2)] ?? LSH.de}</span></span>
               </label>
               <label className="col-span-full grid gap-1">
@@ -443,7 +453,7 @@ export function EditReservationDialog({ open, onOpenChange, reservationId, onSav
               </label>
             </div>
 
-            {!["cancelled", "no_show", "checked_out"].includes(r.status) && (
+            {!r.long_stay && !["cancelled", "no_show", "checked_out"].includes(r.status) && (
               <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <CalendarPlus className="w-4 h-4 text-primary" />

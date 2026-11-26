@@ -26,6 +26,7 @@ import { Plus, Trash2, User, Building2 } from "lucide-react";
 import { sourceLabel, type ActiveChannel } from "@/lib/guest-color";
 import { useEnabledChannels } from "@/lib/channels";
 import { canBookRoom, roomChoiceState, roomTypeCode, ROOM_CHOICE_LABELS, type BookableRoom, type RoomStay } from "@/lib/room-bookability";
+import { effectiveCheckOut, openEndedLabel } from "@/lib/open-stay";
 import { useTranslation } from "react-i18next";
 import { CustomerPicker } from '@/components/customer-picker';
 import type { CustomerParty } from '@/lib/customer-history';
@@ -94,6 +95,7 @@ export function NewReservationDialog({
   const [saving, setSaving] = useState(false);
   const [payerParty, setPayerParty] = useState<CustomerParty | null>(null);
   const [occupants, setOccupants] = useState<Record<string, CustomerParty[]>>({});
+  const asPicked = (items: RoomLine[]) => items.map((item) => ({ roomId: item.roomId, checkIn: item.checkIn, checkOut: effectiveCheckOut(longStay, item.checkOut) }));
 
   useEffect(() => {
     if (!open) return;
@@ -140,15 +142,20 @@ export function NewReservationDialog({
     if (!open) return;
     setLines((current) => current.map((line) => {
       const room = rooms.find((x) => x.id === line.roomId);
-      return room && !canBookRoom(room, line.checkIn, line.checkOut, stays) ? { ...line, roomId: "", listPrice: null } : line;
+      return room && !canBookRoom(room, line.checkIn, effectiveCheckOut(longStay, line.checkOut), stays) ? { ...line, roomId: "", listPrice: null } : line;
     }));
-  }, [open, rooms, stays, lines.map((l) => `${l.roomId}|${l.checkIn}|${l.checkOut}`).join(",")]);
+  }, [open, rooms, stays, longStay, lines.map((l) => `${l.roomId}|${l.checkIn}|${l.checkOut}`).join(",")]);
 
   // Auto-fill price from the room's rate plan whenever room or dates change.
   // Manual edits to the price stay until room/dates change again.
   const quotedKeys = useRef<Record<string, string>>({});
-  const priceKey = channel + "#" + lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`).join(",");
+  const priceKey = channel + "#" + String(longStay) + "#" + lines.map((l) => `${l.uid}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`).join(",");
   useEffect(() => {
+    if (longStay) {
+      quotedKeys.current = {};
+      setLines((current) => current.map((line) => line.listPrice === null ? line : { ...line, listPrice: null }));
+      return;
+    }
     lines.forEach(async (l) => {
       const key = `${channel}|${l.roomId}|${l.checkIn}|${l.checkOut}|${l.guestsCount}`;
       if (!l.roomId || l.checkOut <= l.checkIn || quotedKeys.current[l.uid] === key) return;
@@ -175,7 +182,7 @@ export function NewReservationDialog({
         if (l.uid !== id) return l;
         const next = { ...l, ...patch };
         if (patch.propertyId && patch.propertyId !== l.propertyId) {
-          const first = rooms.find((r) => r.property_id === patch.propertyId && roomChoiceState(r, next.checkIn, next.checkOut, stays, ls.filter((o) => o.uid !== id)) === "free");
+          const first = rooms.find((r) => r.property_id === patch.propertyId && roomChoiceState(r, next.checkIn, effectiveCheckOut(longStay, next.checkOut), stays, asPicked(ls.filter((o) => o.uid !== id))) === "free");
           next.roomId = first?.id ?? "";
         }
         return next;
@@ -186,7 +193,7 @@ export function NewReservationDialog({
   const addLine = () => {
     const last = lines[lines.length - 1];
     const pid = last?.propertyId ?? properties[0]?.id ?? "";
-    const firstRoom = rooms.find((r) => r.property_id === pid && roomChoiceState(r, last?.checkIn ?? today, last?.checkOut ?? addDays(today, 1), stays, lines) === "free");
+    const firstRoom = rooms.find((r) => r.property_id === pid && roomChoiceState(r, last?.checkIn ?? today, effectiveCheckOut(longStay, last?.checkOut ?? addDays(today, 1)), stays, asPicked(lines)) === "free");
     setLines((ls) => [
       ...ls,
       {
@@ -212,10 +219,10 @@ export function NewReservationDialog({
     if (lines.length === 0) return toast.error(t("newRes.errMinRoom"));
     for (const l of lines) {
       const room = rooms.find((x) => x.id === l.roomId);
-      if (!room || roomChoiceState(room, l.checkIn, l.checkOut, stays, lines.filter((o) => o.uid !== l.uid)) !== "free") return toast.error(t("bookingAvailability.unavailable"));
+      if (!room || roomChoiceState(room, l.checkIn, effectiveCheckOut(longStay, l.checkOut), stays, asPicked(lines.filter((o) => o.uid !== l.uid))) !== "free") return toast.error(t("bookingAvailability.unavailable"));
       if (!l.propertyId || !l.roomId)
         return toast.error(t("newRes.errSelectRoom"));
-      if (l.checkOut <= l.checkIn)
+      if (!longStay && l.checkOut <= l.checkIn)
         return toast.error(t("newRes.errDates"));
     }
 
@@ -236,13 +243,14 @@ export function NewReservationDialog({
         guest_phone: guestPhone.trim(),
         channel,
         notes: notes.trim(),
+        long_stay: longStay,
       },
       _lines: lines.map((l) => ({
         property_id: l.propertyId,
         room_id: l.roomId,
         guests_count: l.guestsCount,
         check_in: l.checkIn,
-        check_out: l.checkOut,
+        check_out: effectiveCheckOut(longStay, l.checkOut),
         revenue: l.revenue,
         discount_reason: l.discountReason.trim(),
         occupants: (occupants[l.uid] ?? (customerType === 'person' && payer ? [payer] : [])).map(p => p.id),
@@ -419,8 +427,8 @@ export function NewReservationDialog({
 
             <div className="space-y-3">
               {lines.map((l, idx) => {
-                const others = lines.filter((o) => o.uid !== l.uid);
-                const propRooms = rooms.filter((r) => r.property_id === l.propertyId).map((r) => ({ room: r, state: roomChoiceState(r, l.checkIn, l.checkOut, stays, others) }));
+                const others = asPicked(lines.filter((o) => o.uid !== l.uid));
+                const propRooms = rooms.filter((r) => r.property_id === l.propertyId).map((r) => ({ room: r, state: roomChoiceState(r, l.checkIn, effectiveCheckOut(longStay, l.checkOut), stays, others) }));
                 const freeCount = propRooms.filter((x) => x.state === "free").length;
                 const RL = ROOM_CHOICE_LABELS[i18n.language.slice(0, 2)] ?? ROOM_CHOICE_LABELS.de!;
                 const chosen = rooms.find((r) => r.id === l.roomId);
@@ -499,12 +507,16 @@ export function NewReservationDialog({
                         <Label className="text-[10px] text-muted-foreground uppercase">
                           {t("newRes.checkOut")}
                         </Label>
-                        <Input
-                          type="date"
-                          value={l.checkOut}
-                          onChange={(e) => updateLine(l.uid, { checkOut: e.target.value })}
-                          className="bg-background"
-                        />
+                        {longStay ? (
+                          <div className="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">{openEndedLabel(i18n.language)}</div>
+                        ) : (
+                          <Input
+                            type="date"
+                            value={l.checkOut}
+                            onChange={(e) => updateLine(l.uid, { checkOut: e.target.value })}
+                            className="bg-background"
+                          />
+                        )}
                       </div>
                       <div className="col-span-1 flex justify-center pb-2">
                         <Button

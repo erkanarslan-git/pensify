@@ -1,3 +1,5 @@
+import { isOpenEndedCheckOut } from "@/lib/open-stay";
+
 export const MESSAGE_LANGUAGES = [
   { value: "de", label: "Deutsch" },
   { value: "en", label: "English" },
@@ -54,7 +56,8 @@ const L = {
   ru: { hello: "Здравствуйте", thanks: "спасибо за бронирование в Pension Highway!", stay: "Проживание", addr: "Адрес", room: "Комната", amount: "Сумма", pay: "Оплата банковским переводом:", holder: "Владелец счёта", ref: "Назначение платежа", later: "Вы получите коды доступа после поступления оплаты.", ready: "ниже приведена информация для заселения.", code: "Код", building: "Входная дверь", checkin: "Заселение", keys: "Ключи находятся в ящиках для ключей.", contact: "Контакт", bye: "Желаем приятного пребывания!", team: "Команда Pension Highway" },
 } as const;
 
-const fmtDate = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
+const OPEN_MESSAGE_LABELS: Record<MessageLang, string> = { de: "offen", en: "open-ended", tr: "açık uçlu", pl: "bez daty wyjazdu", sk: "bez dátumu odchodu", hr: "bez datuma odlaska", sr: "bez datuma odlaska", bs: "bez datuma odlaska", ru: "без даты выезда" };
+const fmtDate = (iso: string, lang: MessageLang) => isOpenEndedCheckOut(iso) ? OPEN_MESSAGE_LABELS[lang] : `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const address = (s: StayInfo) => s.address ? `${s.propertyName}, ${s.address}` : s.propertyName;
 
 const DE_ACCESS = "Hallo {{guest_name}},\n\nder Aufenthalt beginnt bald. Hier sind die noch fehlenden Informationen für den Check-in:\n\nAdresse: {{address}}\nKarte: {{map_link}}\n\nZimmernummern: {{rooms}}\n\nSchlüsselboxen:\n\n{{room_codes}}\n\nDer selbstständige Check-in ist von {{check_in_time}} Uhr jederzeit möglich. Auch bei später Anreise ist der Check-in mit dem Code problemlos möglich.\n\nBitte die Schlüsselbox nach der Entnahme wieder verschließen und den Code nicht weitergeben.\n\nBei Fragen oder falls Hilfe benötigt wird, stehen wir gerne zur Verfügung. {{contact_phone}}\n\nWir wünschen eine angenehme Anreise und einen schönen Aufenthalt.\n\n{{extra_note}}";
@@ -83,7 +86,7 @@ function renderTemplate(template: string, s: StayInfo, g: GuestInfoSettings, lan
   const roomCode = codes?.keybox ?? codes?.door;
   const fields: Record<string, string> = {
     guest_name: s.guestName, property_name: s.propertyName, address: address(s), room: s.room,
-    check_in: fmtDate(s.checkIn), check_out: fmtDate(s.checkOut), check_in_time: g.check_in_time, check_out_time: g.check_out_time,
+    check_in: fmtDate(s.checkIn, lang), check_out: fmtDate(s.checkOut, lang), check_in_time: g.check_in_time, check_out_time: g.check_out_time,
     amount: s.amount != null ? `${s.amount.toFixed(2).replace(".", lang === "en" ? "." : ",")} €` : "",
     bank_details: bankDetails, contact_phone: g.contact_phone ?? "", extra_note: g.extra_note ?? "",
     access_codes: codes ? [codes.building ? `${l.building} – ${l.code}: ${codes.building}` : "", roomCode ? `${l.room} ${s.room} – ${l.code}: ${roomCode}` : `${l.room} ${s.room}`].filter(Boolean).join("\n") : "",
@@ -100,7 +103,7 @@ export function bookingMessage(s: StayInfo, g: GuestInfoSettings, lang: MessageL
   if (custom) return renderTemplate(custom, s, g, lang, includeBank);
   const l = L[lang];
   const out = [`${l.hello} ${s.guestName}, ${l.thanks}`, "",
-    `${l.stay}: ${fmtDate(s.checkIn)} – ${fmtDate(s.checkOut)}`,
+    `${l.stay}: ${fmtDate(s.checkIn, lang)} – ${fmtDate(s.checkOut, lang)}`,
     `${l.addr}: ${address(s)}`];
   if (s.amount && s.amount > 0) out.push(`${l.amount}: ${s.amount.toFixed(2).replace(".", lang === "en" ? "." : ",")} €`);
   if (includeBank && g.iban) {
